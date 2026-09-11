@@ -1,0 +1,17 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const source=fs.readFileSync(path.join(__dirname,'../recovered-frontend/src/pages/financial-analytics/components/DentrixReconciliationTab.jsx'),'utf8');
+const parser=require(path.join(process.env.NDASH_PARSER_ROOT||path.join(__dirname,'../recovered-frontend'),'node_modules/@babel/parser'));
+const ast=parser.parse(source,{sourceType:'module',plugins:['jsx']}),names=['BENCHMARK_METRICS','getBenchmarkDelta','getBenchmarkStatus'],nodes=[];
+function walk(n){if(!n||typeof n!=='object')return;if(n.type==='VariableDeclarator'&&names.includes(n.id?.name))nodes.push(n);for(const v of Object.values(n))if(v&&typeof v==='object')Array.isArray(v)?v.forEach(walk):walk(v)}walk(ast);
+assert.equal(nodes.length,3);const context=vm.createContext({});
+for(const n of nodes)vm.runInContext('const '+source.slice(n.start,n.end),context);
+const {delta,status,metrics}=vm.runInContext('({delta:getBenchmarkDelta,status:getBenchmarkStatus,metrics:BENCHMARK_METRICS})',context);
+const complete=()=>Object.fromEntries(metrics.flatMap(m=>[[m,100],['dashboard_'+m,100]]));
+test('missing dashboard and missing benchmark never invent a zero delta',()=>{for(const absent of [null,undefined,'',NaN,Infinity,false]){assert.equal(delta(100,absent),null);assert.equal(delta(absent,100),null)}});
+test('valid zero and numeric database strings remain comparable',()=>{assert.equal(delta(0,0),0);assert.equal(delta('100.10','25.05'),75.05);assert.equal(delta(1,2),-1)});
+test('all pending live-shape metrics remain pending despite false stored flags',()=>{const r=Object.fromEntries(metrics.flatMap(m=>[[m,100],['dashboard_'+m,null],['mismatch_'+m,false]]));assert.equal(status(r),'pending')});
+test('one missing pair prevents a false OK',()=>{const r=complete();delete r.dashboard_daily_total_coll;assert.equal(status(r),'pending')});
+test('complete equivalent values within inclusive dollar tolerance are OK',()=>{const r=complete();r.dashboard_daily_production=99;r.dashboard_total_monthly_coll=101;assert.equal(status(r),'ok')});
+test('each of the six metrics can cause a mismatch consistently',()=>{for(const m of metrics){const r=complete();r['dashboard_'+m]=98.99;assert.equal(status(r),'mismatch',m)}});
+test('a verified mismatch remains visible when another pair is pending',()=>{const r=complete();r.dashboard_daily_production=90;delete r.dashboard_daily_total_coll;assert.equal(status(r),'mismatch')});
+test('currency delta does not invent floating-point discrepancies',()=>{assert.equal(delta(100.1,99.1),1);assert.equal(delta(0.3,0.2),0.1)});

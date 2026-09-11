@@ -22,9 +22,24 @@ const fmtDelta = (v) => {
   return <span className={`font-mono text-xs ${cls}`}>{n >= 0 ? '+' : ''}{fmtFull(n)}</span>;
 };
 
-const MismatchBadge = ({ flag }) => {
-  if (flag === null || flag === undefined) return <span className="text-muted-foreground text-xs">—</span>;
-  return flag
+const BENCHMARK_METRICS = ['daily_production', 'net_daily_production', 'daily_total_coll', 'monthly_production', 'net_monthly_production', 'total_monthly_coll'];
+
+export const getBenchmarkDelta = (benchmark, dashboard) => {
+  const numeric = (value) => (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) && Number.isFinite(Number(value));
+  if (!numeric(benchmark) || !numeric(dashboard)) return null;
+  return Number((Number(benchmark) - Number(dashboard)).toFixed(2));
+};
+
+export const getBenchmarkStatus = (row) => {
+  const deltas = BENCHMARK_METRICS.map(metric => getBenchmarkDelta(row?.[metric], row?.[`dashboard_${metric}`]));
+  if (deltas.some(delta => delta !== null && Math.abs(delta) > 1)) return 'mismatch';
+  if (deltas.some(delta => delta === null)) return 'pending';
+  return 'ok';
+};
+
+const ReconciliationBadge = ({ status }) => {
+  if (status === 'pending') return <span className="text-muted-foreground text-xs">Pending</span>;
+  return status === 'mismatch'
     ? <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700"><Icon name="XCircle" size={10} /> MISMATCH</span>
     : <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700"><Icon name="CheckCircle2" size={10} /> OK</span>;
 };
@@ -37,7 +52,6 @@ const DentrixReconciliationTab = ({ isSuperAdmin = false }) => {
   const [error, setError] = useState(null);
   const [officeFilter, setOfficeFilter] = useState('All');
   const [showMismatchOnly, setShowMismatchOnly] = useState(false);
-  const [expandedRow, setExpandedRow] = useState(null);
 
   useEffect(() => {
     const load = async () => {
@@ -59,23 +73,12 @@ const DentrixReconciliationTab = ({ isSuperAdmin = false }) => {
 
   const filtered = useMemo(() => {
     if (!showMismatchOnly) return rows;
-    return rows?.filter(r =>
-      r?.mismatch_daily_production ||
-      r?.mismatch_net_daily_production ||
-      r?.mismatch_daily_total_coll ||
-      r?.mismatch_monthly_production ||
-      r?.mismatch_net_monthly_production ||
-      r?.mismatch_total_monthly_coll
-    );
+    return rows?.filter(r => getBenchmarkStatus(r) === 'mismatch');
   }, [rows, showMismatchOnly]);
 
   const summary = useMemo(() => {
     const total = rows?.length;
-    const mismatches = rows?.filter(r =>
-      r?.mismatch_daily_production || r?.mismatch_net_daily_production ||
-      r?.mismatch_daily_total_coll || r?.mismatch_monthly_production ||
-      r?.mismatch_net_monthly_production || r?.mismatch_total_monthly_coll
-    )?.length;
+    const mismatches = rows?.filter(r => getBenchmarkStatus(r) === 'mismatch')?.length;
     const reconciled = rows?.filter(r => r?.reconciled_at)?.length;
     return { total, mismatches, reconciled, pending: total - reconciled };
   }, [rows]);
@@ -186,26 +189,25 @@ const DentrixReconciliationTab = ({ isSuperAdmin = false }) => {
             </thead>
             <tbody className="divide-y divide-border">
               {filtered?.map(row => {
-                const hasMismatch = row?.mismatch_daily_production || row?.mismatch_net_monthly_production || row?.mismatch_total_monthly_coll;
+                const status = getBenchmarkStatus(row);
                 return (
                   <tr
                     key={row?.id}
-                    className={`hover:bg-muted/40 cursor-pointer transition-colors ${hasMismatch ? 'bg-red-50/30' : ''}`}
-                    onClick={() => setExpandedRow(expandedRow === row?.id ? null : row?.id)}
+                    className={`hover:bg-muted/40 transition-colors ${status === 'mismatch' ? 'bg-red-50/30' : ''}`}
                   >
                     <td className="px-3 py-2.5 font-medium text-foreground whitespace-nowrap">{row?.report_date}</td>
                     <td className="px-3 py-2.5 text-foreground">{row?.office_canonical}</td>
                     <td className="px-3 py-2.5 text-right tabular-nums">{fmtFull(row?.daily_production)}</td>
                     <td className="px-3 py-2.5 text-right tabular-nums text-muted-foreground">{fmtFull(row?.dashboard_daily_production)}</td>
-                    <td className="px-3 py-2.5 text-right">{fmtDelta(row?.daily_production - (row?.dashboard_daily_production ?? row?.daily_production))}</td>
+                    <td className="px-3 py-2.5 text-right">{fmtDelta(getBenchmarkDelta(row?.daily_production, row?.dashboard_daily_production))}</td>
                     <td className="px-3 py-2.5 text-right tabular-nums">{fmtFull(row?.net_monthly_production)}</td>
                     <td className="px-3 py-2.5 text-right tabular-nums text-muted-foreground">{fmtFull(row?.dashboard_net_monthly_production)}</td>
-                    <td className="px-3 py-2.5 text-right">{fmtDelta(row?.net_monthly_production - (row?.dashboard_net_monthly_production ?? row?.net_monthly_production))}</td>
+                    <td className="px-3 py-2.5 text-right">{fmtDelta(getBenchmarkDelta(row?.net_monthly_production, row?.dashboard_net_monthly_production))}</td>
                     <td className="px-3 py-2.5 text-right tabular-nums">{fmtFull(row?.total_monthly_coll)}</td>
                     <td className="px-3 py-2.5 text-right tabular-nums text-muted-foreground">{fmtFull(row?.dashboard_total_monthly_coll)}</td>
-                    <td className="px-3 py-2.5 text-right">{fmtDelta(row?.total_monthly_coll - (row?.dashboard_total_monthly_coll ?? row?.total_monthly_coll))}</td>
+                    <td className="px-3 py-2.5 text-right">{fmtDelta(getBenchmarkDelta(row?.total_monthly_coll, row?.dashboard_total_monthly_coll))}</td>
                     <td className="px-3 py-2.5 text-center">
-                      <MismatchBadge flag={hasMismatch} />
+                      <ReconciliationBadge status={status} />
                     </td>
                   </tr>
                 );
