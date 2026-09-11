@@ -337,7 +337,7 @@ const PerformanceTab = ({ dateRange, officeIds, offices }) => {
   // dentrixActivePatients: Dentrix activePatients summed across offices (null if all failed)
   // All null values display as N/A. Real backend 0 displays as $0/0.
 
-  // Stage 4B-3: Scheduled vs Open breakdown — heatmap now uses Dentrix API fields.
+  // Office activity uses actual Dentrix net production, not scheduled production.
   // No MEA production_total/collections_total/new_patients used here.
   // open_appt_hours: no confirmed Dentrix chair-hours endpoint — shows N/A.
   const schedBreakdown = heatmapData?.map((r) => {
@@ -448,16 +448,16 @@ const PerformanceTab = ({ dateRange, officeIds, offices }) => {
           </p>
         </div>
       </div>
-      {/* Scheduled vs Open Breakdown */}
+      {/* Actual office production and activity */}
       {schedBreakdown?.length > 0 && (
         <div className="bg-card border border-border rounded-lg p-4">
-          <h3 className="text-base font-semibold text-foreground mb-4">Scheduled vs Open Breakdown</h3>
+          <h3 className="text-base font-semibold text-foreground mb-4">Office Production &amp; Activity</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border">
                   <th className="text-left text-xs font-semibold text-muted-foreground py-2 pr-4">Location</th>
-                  <th className="text-right text-xs font-semibold text-muted-foreground py-2 pr-4">Scheduled Prod</th>
+                  <th className="text-right text-xs font-semibold text-muted-foreground py-2 pr-4">Net Production</th>
                   <th className="text-right text-xs font-semibold text-muted-foreground py-2 pr-4">Collections</th>
                   <th className="text-right text-xs font-semibold text-muted-foreground py-2 pr-4">Open Appt Hrs</th>
                   <th className="text-right text-xs font-semibold text-muted-foreground py-2">New Pts</th>
