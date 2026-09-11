@@ -1,0 +1,10 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.resolve(__dirname,'../recovered-frontend'),parser=require(path.join(process.env.NDASH_PARSER_ROOT||root,'node_modules/@babel/parser'));
+const source=fs.readFileSync(path.join(root,'src/services/payrollService.js'),'utf8'),ast=parser.parse(source,{sourceType:'module'});
+const scheduleNode=ast.program.body.find(n=>n.type==='ExportNamedDeclaration'&&n.declaration?.declarations?.[0]?.id?.name==='PAYROLL_SCHEDULE').declaration.declarations[0].init;
+const schedule=vm.runInNewContext('('+source.slice(scheduleNode.start,scheduleNode.end)+')');
+const n=ast.program.body.find(n=>n.type==='ExportNamedDeclaration'&&n.declaration?.id?.name==='getPayrollScheduleForYear').declaration;
+const get=vm.runInNewContext('('+source.slice(n.start,n.end)+')',{PAYROLL_SCHEDULE:schedule});
+test('blank custom placeholder cannot be chosen as a dated payroll run',()=>{assert.equal(get(2026).some(r=>r.id==='pp-2026-custom'),false);assert.equal(get(2026).every(r=>r.payday&&r.pay_period_start&&r.pay_period_end),true);});
+test('all existing complete runs and amounts-independent schedule fields are preserved',()=>{for(const year of [2025,2026]){const actual=get(year),expected=schedule.filter(r=>r.payday&&r.pay_period_start&&r.pay_period_end&&(r.year===year||new Date(r.payday).getFullYear()===year));assert.deepEqual([...actual.map(r=>r.id)].sort(),[...expected.map(r=>r.id)].sort());for(const row of actual)assert.equal(JSON.stringify(row),JSON.stringify(schedule.find(r=>r.id===row.id)));}});
+test('nonregular runs remain available and empty years do not invent a schedule',()=>{assert.equal(get(2026).some(r=>r.payroll_type==='tax_reconciliation'),true);assert.equal(get(2026).some(r=>r.payroll_type==='special_correction'),true);assert.equal(get(2027).length,0);});

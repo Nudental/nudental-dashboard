@@ -298,7 +298,7 @@ export const PAYROLL_TYPE_COLORS = {
  * Includes entries whose payday falls in the year OR whose pay_period_start falls in the year.
  */
 export function getPayrollScheduleForYear(year) {
-  return PAYROLL_SCHEDULE?.filter(p => p?.year === year || new Date(p.payday)?.getFullYear() === year)?.sort((a, b) => {
+  return PAYROLL_SCHEDULE?.filter(p => p?.pay_period_start && p?.pay_period_end && p?.payday && (p?.year === year || new Date(p.payday)?.getFullYear() === year))?.sort((a, b) => {
       // Sort by payday ascending, then by pay_period_start
       const pd = new Date(a.payday) - new Date(b.payday);
       if (pd !== 0) return pd;
