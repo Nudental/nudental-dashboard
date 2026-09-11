@@ -98,6 +98,7 @@ export function useGustoSummaryTotals(year) {
           totalTaxesYTD: totalTaxes,
           totalGrossCostYTD: totalGross,
           payrollRunsYTD: runs?.length,
+          offCycleCount: runs.filter(run => run?.off_cycle === true).length,
           contractorSpendYTD: contractorSpend,
           benefitsCostMonth,
           nextPayrollDate: nextJson?.data?.[0]?.check_date || null,

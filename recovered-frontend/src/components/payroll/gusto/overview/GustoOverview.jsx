@@ -55,7 +55,7 @@ export default function GustoOverview() {
             monthlyData={monthlyData}
             annualData={annualData}
             runsYTD={kpis?.payrollRunsYTD}
-            offCycleCount={0}
+            offCycleCount={kpis?.offCycleCount}
             loading={loading}
           />
           {/* Org-wide source note */}
