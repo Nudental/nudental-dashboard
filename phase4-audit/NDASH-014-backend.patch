@@ -1,0 +1,51 @@
+--- a/report_export.py
++++ b/report_export.py
+@@ -738,19 +738,42 @@
+     s = _date.fromisoformat(start)
+     e = _date.fromisoformat(end)
+ 
++    if s > e:
++        raise HTTPException(status_code=400, detail="Report start date must not be after end date")
++    if office_filter:
++        names = _normalize_office_filter(office_filter)
++        if len(names) != len(office_filter) or any(name not in LOCATION_NAMES.values() for name in names):
++            raise HTTPException(status_code=400, detail="Unknown office in report filter")
++        locations = list(dict.fromkeys(_resolve_office_locations(office_filter)))
++    else:
++        locations = [None]  # Keep the existing all-office aggregate endpoint behavior.
++
+     rows = []
+     cur = s.replace(day=1)
+     while cur <= e:
+         last_day = _cal.monthrange(cur.year, cur.month)[1]
+-        m_start = cur.isoformat()
++        m_start = max(cur, s).isoformat()
+         m_end = min(_date(cur.year, cur.month, last_day), e).isoformat()
+         month_label = cur.strftime("%b %Y")
+ 
+-        prod = _api_get(f"/v2/production/summary?startDate={m_start}&endDate={m_end}", api_key)
+-        coll = _api_get(f"/v2/collections/summary?startDate={m_start}&endDate={m_end}", api_key)
+-        exp = _api_get(f"/v2/expenses/summary?startDate={m_start}&endDate={m_end}", api_key)
+-        totals = exp.get("totals", {})
+-        total_exp = totals.get("total_expenses", 0) or 0
++        prod, coll, total_exp = {}, {}, 0
++        for location in locations:
++            location_query = f"&locationId={location}" if location else ""
++            office_query = f"&office={LOCATION_NAMES[location]}" if location else ""
++            p = _api_get(f"/v2/production/summary?startDate={m_start}&endDate={m_end}{location_query}", api_key)
++            c = _api_get(f"/v2/collections/summary?startDate={m_start}&endDate={m_end}{location_query}", api_key)
++            exp = _api_get(f"/v2/expenses/summary?startDate={m_start}&endDate={m_end}{office_query}", api_key)
++            if len(locations) == 1:
++                prod, coll = p, c
++            else:
++                for field in ("grossProduction", "netProduction"):
++                    prod[field] = prod.get(field, 0) + (p.get(field, 0) or 0)
++                for field in ("totalCollections", "patientCollections", "insuranceCollections"):
++                    coll[field] = coll.get(field, 0) + (c.get(field, 0) or 0)
++            total_exp += exp.get("totals", {}).get("total_expenses", 0) or 0
++        coll["collectionRate"] = c.get("collectionRate", 0) if len(locations) == 1 else (
++            round(coll["totalCollections"] / prod["netProduction"] * 100, 1) if prod["netProduction"] else 0
++        )
+         total_coll = coll.get("totalCollections", 0) or 0
+         net_prod = prod.get("netProduction", 0) or 0
+         net_profit = round(total_coll - total_exp, 2)
