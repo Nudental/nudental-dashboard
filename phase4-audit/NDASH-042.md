@@ -11,3 +11,5 @@ Fix: only ProductionAdjustmentsTab.jsx and CollectionsTab.jsx labels/captions. S
 Verification:153 retained frontend tests PASS; production source build PASS36.25s. AST-scoped actual release changes18production labels and17collection labels, plus one caption each; every other expression is byte-identical and exact reversal restores041. Fresh names for7dependent code files; complete previous graph retained. Full source build is verification only. Actual candidate index-4d9fee85d2b1.js. No new tests added for this label-only change.
 
 Deployment/live verification: pending. Rocket task submitted for the same two-component scope.
+
+BLOCKED-DEPLOY-042: automatic approval review rejected the normal upload because explicit destination authorization named041 rather than042. No042files uploaded or deployed. Exact042upload/release approval requested; continue read-only audit while waiting. Candidate/source preserved at24a5ce1; no workaround attempted. Production remains verified041.

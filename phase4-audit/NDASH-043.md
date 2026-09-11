@@ -1,6 +1,6 @@
 # NDASH-043 — Adjustment breakdown excludes reversals included in production
 
-Section: Financial Analytics / shared Dentrix adjustments summary. Severity: High. Status: reproduced; root cause verified; repair pending042deployment.
+Section: Financial Analytics / shared Dentrix adjustments summary. Severity: High. Status: repaired, deployed and live verified PASS. Deployed independently while042frontendupload approval remains pending.
 
 Live applied2026-01-01–2026-06-30 All Offices: Production Summary net adjustments−2,014,095.08, but breakdown Write-Offs−2,254,408.55 plus Charge Adjustments24,048.66 gives−2,230,359.89. Difference216,264.81. Production gross3,771,417.41 and net1,757,322.33 match the source database. Collections insurance961,380.88 plus patient625,746.40 equals total1,587,127.28 and matches API/UI. These are aggregate comparisons only.
 
@@ -13,3 +13,7 @@ Smallest proposed repair: include each existing Cancellation type in its corresp
 Tests:7isolated SQLite method tests PASS locally and on the existing source server;4fail against current code. Covers original/rebill/reversal netting, agreement with unchanged production formula, office/date/active filters, separate insurance refunds, retained reversal count and unavailable dataset. Five retained backend suites PASS (contractors, complete reader, runs, employee filters, expense guards). Candidate c0680f08958e51d8ada02837620ef5d89d77a2aad8c63ecb53519cda5d1b328f; original service preserved locally and in server ndash043-backend. main_candidate.py and production service remain unchanged at preparation. Read-only evidence helpers: phase4-financial-range-readonly.py and phase4-adjustment-aggregate-readonly.py; compact result files preserved on existing audit server.
 
 Repair scope: add the two existing cancellation types to their corresponding aggregation lists plus correct the stale comments. Backend patch and test retained in the private audit branch. Deployment/live verification pending.
+
+Deployment PASS: existing candidate API on8002 verified first; existing live API on8001 then restarted, tunnel/configuration unchanged. Allstartupwriteflagsverifieddisabled. BothAllOffices andBarnegat production API checks confirm breakdown=database and unchanged production/collection totals. Exact service rollback preserved. main_candidate.py remains030SHA; no frontend deployment or business-data changes.
+
+Browser PASS atnudashboard.com: applied2026-01-01–06-30 AllOffices; Write-Offs−2030960.65 + Charge Adjustments16865.57 = Total Adjustments−2014095.08. Gross3771417.41/net1757322.33 unchanged. Adjustment rate53.4%matchesrounding. Collections insurance961380.88/patient625746.40/total1587127.28 unchanged after revisiting. No browser errors. Initial cold panel requests took about2minutes after service restart; panel completed. Existing monthly labels remain separately pending042.
