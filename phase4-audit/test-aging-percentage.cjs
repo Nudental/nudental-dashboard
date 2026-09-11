@@ -1,0 +1,15 @@
+const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
+const {test}=require('node:test');
+const root=process.env.NDASH_SOURCE_ROOT||path.join(__dirname,'..','recovered-frontend');
+const parser=require(path.join(process.env.NDASH_PARSER_ROOT||root,'node_modules/@babel/parser'));
+const source=fs.readFileSync(path.join(root,'src/pages/operations/components/ARAgingTab.jsx'),'utf8');
+const ast=parser.parse(source,{sourceType:'module',plugins:['jsx']});const expressions={};
+function visit(n){if(!n||typeof n!=='object')return;if(n.type==='VariableDeclarator'&&['computePct','pct90'].includes(n.id.name))expressions[n.id.name]=source.slice(n.init.start,n.init.end);for(const v of Object.values(n)){if(Array.isArray(v))v.forEach(visit);else if(v&&typeof v==='object')visit(v);}}visit(ast);
+assert.equal(Object.keys(expressions).length,2);
+const computePct=vm.runInNewContext('('+expressions.computePct+')');
+const percentage=(bOver90,totalBalance,totalInsuranceAR=244872.43)=>vm.runInNewContext(expressions.pct90,{computePct,bOver90,totalBalance,totalInsuranceAR});
+test('total aging percentage uses total A/R, not the insurance portion',()=>assert.equal(percentage(205147.26,541342.52).toFixed(1),'37.9'));
+test('changing insurance mix does not change total aging percentage',()=>assert.equal(percentage(25,100,5),25));
+test('missing total balance does not invent an insurance-based percentage',()=>assert.equal(percentage(25,null),null));
+test('zero total balance suppresses undefined ratio',()=>assert.equal(percentage(0,0),null));
+test('real zero aging remains zero percent',()=>assert.equal(percentage(0,100),0));

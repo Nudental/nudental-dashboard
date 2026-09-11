@@ -154,8 +154,8 @@ const ARAgingTab = ({ dateRange, officeIds, offices }) => {
     return locId || '—';
   };
 
-  // 90+ % of total insurance AR
-  const pct90 = computePct(bOver90, totalInsuranceAR);
+  // 90+ % of total A/R
+  const pct90 = computePct(bOver90, totalBalance);
 
   // Chart data — only include offices with at least one non-null bucket
   const chartData = officeRollup
