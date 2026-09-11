@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useGustoTimeOffBalances } from '../../../../hooks/gusto/useGustoTimeOffBalances';
-import { downloadCSV } from '../../../../lib/gusto/gustoFormatters';
+import { downloadCSV, fmtDate } from '../../../../lib/gusto/gustoFormatters';
 
 const TYPE_BADGE = {
   Vacation: 'bg-blue-100 text-blue-700',
@@ -24,13 +24,16 @@ export default function GustoTimeOffBalances({ isSuperAdmin }) {
   const [expandedEmployee, setExpandedEmployee] = useState(null);
 
   const { data, loading, error } = useGustoTimeOffBalances({});
+  const filteredData = useMemo(() => data.filter(balance =>
+    balance.snapshot_date?.slice(0, 4) === String(year)
+  ), [data, year]);
 
   const years = [2026, 2025, 2024, 2023, 2022, 2021];
 
   // Group by employee
   const grouped = useMemo(() => {
     const map = {};
-    data?.forEach(b => {
+    filteredData?.forEach(b => {
       const key = b?.employee_id;
       if (!map?.[key]) {
         map[key] = {
@@ -42,12 +45,13 @@ export default function GustoTimeOffBalances({ isSuperAdmin }) {
       map?.[key]?.balances?.push(b);
     });
     return Object.values(map)?.sort((a, b) => (a?.employee_name || '')?.localeCompare(b?.employee_name || ''));
-  }, [data]);
+  }, [filteredData]);
 
   const handleExportCSV = () => {
-    const headers = ['Employee', 'Type', 'Accrued YTD (hrs)', 'Used YTD (hrs)', 'Pending (hrs)', 'Remaining (hrs)', 'Remaining (days)'];
+    if (!filteredData.length) return;
+    const headers = ['Employee', 'Type', 'Accrued YTD (hrs)', 'Used YTD (hrs)', 'Pending (hrs)', 'Remaining (hrs)', 'Remaining (days)', 'Snapshot Date'];
     const rows = [headers];
-    data?.forEach(b => {
+    filteredData?.forEach(b => {
       rows?.push([
         b?.employee_name || b?.employee_id,
         b?.time_off_type || '',
@@ -56,6 +60,7 @@ export default function GustoTimeOffBalances({ isSuperAdmin }) {
         parseFloat(b?.pending_hours || 0)?.toFixed(2),
         parseFloat(b?.balance_hours || 0)?.toFixed(2),
         parseFloat(b?.balance_days || 0)?.toFixed(2),
+        b?.snapshot_date || '',
       ]);
     });
     const today = new Date()?.toISOString()?.split('T')?.[0];
@@ -94,7 +99,8 @@ export default function GustoTimeOffBalances({ isSuperAdmin }) {
         </div>
         <button
           onClick={handleExportCSV}
-          className="px-4 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          disabled={!filteredData.length}
+          className="px-4 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
         >
           ↓ Export Time Off Balances CSV
         </button>
@@ -104,7 +110,7 @@ export default function GustoTimeOffBalances({ isSuperAdmin }) {
           <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
             <span className="text-2xl">📊</span>
           </div>
-          <p className="text-gray-500 text-sm">No time off balance data imported yet.</p>
+          <p className="text-gray-500 text-sm">No time off balance snapshots found for {year}.</p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
@@ -117,7 +123,7 @@ export default function GustoTimeOffBalances({ isSuperAdmin }) {
               >
                 <div className="flex items-center gap-3">
                   <span className="font-semibold text-gray-800 text-sm">{emp?.employee_name}</span>
-                  <span className="text-xs text-gray-400">{emp?.balances?.length} balance type{emp?.balances?.length !== 1 ? 's' : ''}</span>
+                  <span className="text-xs text-gray-400">{emp?.balances?.length} balance record{emp?.balances?.length !== 1 ? 's' : ''}</span>
                 </div>
                 <span className="text-gray-400 text-xs">{expandedEmployee === emp?.employee_id ? '▲' : '▼'}</span>
               </button>
@@ -128,7 +134,7 @@ export default function GustoTimeOffBalances({ isSuperAdmin }) {
                   <table className="w-full text-left">
                     <thead>
                       <tr className="bg-white border-b border-gray-100">
-                        {['Type','Accrued YTD','Used YTD','Pending','Remaining (hrs)','Remaining (days)']?.map(h => (
+                        {['Type','Accrued YTD','Used YTD','Pending','Remaining (hrs)','Remaining (days)','Snapshot Date']?.map(h => (
                           <th key={h} className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
@@ -151,6 +157,7 @@ export default function GustoTimeOffBalances({ isSuperAdmin }) {
                             {b?.balance_hours != null ? `${parseFloat(b?.balance_hours)?.toFixed(1)} hrs` : '—'}
                           </td>
                           <td className="px-4 py-2.5 text-sm text-gray-700">{b?.balance_days != null ? `${parseFloat(b?.balance_days)?.toFixed(1)} days` : '—'}</td>
+                          <td className="px-4 py-2.5 text-sm text-gray-700">{fmtDate(b?.snapshot_date)}</td>
                         </tr>
                       ))}
                     </tbody>

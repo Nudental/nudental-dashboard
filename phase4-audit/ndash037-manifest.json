@@ -1,0 +1,126 @@
+{
+  "issue": "NDASH-037",
+  "previous_issue": "036",
+  "expected_previous_deployment": "2c563c49-7e4d-4543-bf72-a816f2ae51e8",
+  "baseline_asset": "index-5cd2646c3645.js",
+  "baseline_sha256": "5cd2646c3645e7dba0b708a012bcf8833ab3ba31da3f61036b8de5d6f717d612",
+  "candidate_sha256": "723f9e45ec66f68096657b8b9176105da690f14b6b0e541ea1a435f9656342f2",
+  "asset": "/assets/index-723f9e45ec66.js",
+  "patches": [
+    {
+      "old": "ndash036-GustoBenefits.js",
+      "new": "ndash037-GustoBenefits.js"
+    },
+    {
+      "old": "ndash036-GustoImportHistory.js",
+      "new": "ndash037-GustoImportHistory.js"
+    },
+    {
+      "old": "ndash036-GustoPaySchedules.js",
+      "new": "ndash037-GustoPaySchedules.js"
+    },
+    {
+      "old": "ndash036-GustoTimeAndAttendance.js",
+      "new": "ndash037-GustoTimeAndAttendance.js"
+    },
+    {
+      "old": "ndash036-date-fns.js",
+      "new": "ndash037-date-fns.js"
+    },
+    {
+      "old": "ndash036-help-manual.js",
+      "new": "ndash037-help-manual.js"
+    },
+    {
+      "old": "ndash036-canvg.js",
+      "new": "ndash037-canvg.js"
+    }
+  ],
+  "added_assets": [
+    {
+      "name": "ndash037-GustoBenefits.js",
+      "sha256": "635d6f18763e682db43334ca3683d5425a6f4f6e6cac19ac38bf2a93310a556b",
+      "bytes": 11506,
+      "previous": "ndash036-GustoBenefits.js"
+    },
+    {
+      "name": "ndash037-GustoImportHistory.js",
+      "sha256": "904814263fd66fbefb81aa9c4c1f7cf521abf54e5ed25bc9b64fe3bcbc2ba244",
+      "bytes": 4776,
+      "previous": "ndash036-GustoImportHistory.js"
+    },
+    {
+      "name": "ndash037-GustoPaySchedules.js",
+      "sha256": "8d64924aa2b5905ff0e47c08cbd71e09b8ab5df8316e0a9bbc6df214e37c47bb",
+      "bytes": 4819,
+      "previous": "ndash036-GustoPaySchedules.js"
+    },
+    {
+      "name": "ndash037-GustoTimeAndAttendance.js",
+      "sha256": "9f93c45922e127774f364f9a7be3129a4c039e0ff702ac9fea8a188120a2d604",
+      "bytes": 39879,
+      "previous": "ndash036-GustoTimeAndAttendance.js"
+    },
+    {
+      "name": "ndash037-date-fns.js",
+      "sha256": "8f576add2d21dcb0ef5e0ac91128a248f7851b9c3eaed865a3576fb60fc808f9",
+      "bytes": 31653,
+      "previous": "ndash036-date-fns.js"
+    },
+    {
+      "name": "ndash037-help-manual.js",
+      "sha256": "cd8ebbb47fca5d944dd6ed4f528178ed71375654528699a2668774260181f592",
+      "bytes": 122300,
+      "previous": "ndash036-help-manual.js"
+    },
+    {
+      "name": "ndash037-canvg.js",
+      "sha256": "01680b3e0d6da615a240b15338a2faef0bf3d779343feecb5363203cff0598e8",
+      "bytes": 150419,
+      "previous": "ndash036-canvg.js"
+    }
+  ],
+  "preserve_previous_entry": true,
+  "target_previous": "ndash036-GustoTimeAndAttendance.js",
+  "target_baseline_sha256": "a007d36e0363973b9bb9f21d29331d725953636e69e2e752af61f704106d4243",
+  "target_fixed_before_relink_sha256": "fa98a9e688563e01d9800708e9beaebf945bfd54e6d6ac829e9eb8d7214a986c",
+  "target_patches": [
+    {
+      "old": "{data:h,loading:y,error:n}=se({})",
+      "new": "{data:h,loading:y,error:n}=se({}),NDASH_balanceYearRows=j.useMemo(()=>h.filter(NDASH_balance=>NDASH_balance.snapshot_date?.slice(0,4)===String(x)),[h,x])"
+    },
+    {
+      "old": "j.useMemo(()=>{var _;const c={};return h==null||h.forEach(m=>{var r,a;const N=m==null?void 0:m.employee_id;c!=null&&c[N]||(c[N]={employee_id:m==null?void 0:m.employee_id,employee_name:(m==null?void 0:m.employee_name)||(m==null?void 0:m.employee_id),balances:[]}),(a=(r=c==null?void 0:c[N])==null?void 0:r.balances)==null||a.push(m)}),(_=Object.values(c))==null?void 0:_.sort((m,N)=>{var r;return(r=(m==null?void 0:m.employee_name)||\"\")==null?void 0:r.localeCompare((N==null?void 0:N.employee_name)||\"\")})},[h])",
+      "new": "j.useMemo(()=>{var _;const c={};return NDASH_balanceYearRows==null||NDASH_balanceYearRows.forEach(m=>{var r,a;const N=m==null?void 0:m.employee_id;c!=null&&c[N]||(c[N]={employee_id:m==null?void 0:m.employee_id,employee_name:(m==null?void 0:m.employee_name)||(m==null?void 0:m.employee_id),balances:[]}),(a=(r=c==null?void 0:c[N])==null?void 0:r.balances)==null||a.push(m)}),(_=Object.values(c))==null?void 0:_.sort((m,N)=>{var r;return(r=(m==null?void 0:m.employee_name)||\"\")==null?void 0:r.localeCompare((N==null?void 0:N.employee_name)||\"\")})},[NDASH_balanceYearRows])"
+    },
+    {
+      "old": "()=>{var N,r,a;const _=[[\"Employee\",\"Type\",\"Accrued YTD (hrs)\",\"Used YTD (hrs)\",\"Pending (hrs)\",\"Remaining (hrs)\",\"Remaining (days)\"]];h==null||h.forEach(l=>{var w,k,t,u,b;_==null||_.push([(l==null?void 0:l.employee_name)||(l==null?void 0:l.employee_id),(l==null?void 0:l.time_off_type)||\"\",(w=parseFloat((l==null?void 0:l.accrued_ytd_hours)||0))==null?void 0:w.toFixed(2),(k=parseFloat((l==null?void 0:l.used_ytd_hours)||0))==null?void 0:k.toFixed(2),(t=parseFloat((l==null?void 0:l.pending_hours)||0))==null?void 0:t.toFixed(2),(u=parseFloat((l==null?void 0:l.balance_hours)||0))==null?void 0:u.toFixed(2),(b=parseFloat((l==null?void 0:l.balance_days)||0))==null?void 0:b.toFixed(2)])});const m=(a=(r=(N=new Date)==null?void 0:N.toISOString())==null?void 0:r.split(\"T\"))==null?void 0:a[0];X(`gusto_time_off_balances_${m}.csv`,_)}",
+      "new": "()=>{if(!NDASH_balanceYearRows.length)return;var N,r,a;const _=[[\"Employee\",\"Type\",\"Accrued YTD (hrs)\",\"Used YTD (hrs)\",\"Pending (hrs)\",\"Remaining (hrs)\",\"Remaining (days)\",\"Snapshot Date\"]];NDASH_balanceYearRows==null||NDASH_balanceYearRows.forEach(l=>{var w,k,t,u,b;_==null||_.push([(l==null?void 0:l.employee_name)||(l==null?void 0:l.employee_id),(l==null?void 0:l.time_off_type)||\"\",(w=parseFloat((l==null?void 0:l.accrued_ytd_hours)||0))==null?void 0:w.toFixed(2),(k=parseFloat((l==null?void 0:l.used_ytd_hours)||0))==null?void 0:k.toFixed(2),(t=parseFloat((l==null?void 0:l.pending_hours)||0))==null?void 0:t.toFixed(2),(u=parseFloat((l==null?void 0:l.balance_hours)||0))==null?void 0:u.toFixed(2),(b=parseFloat((l==null?void 0:l.balance_days)||0))==null?void 0:b.toFixed(2),l?.snapshot_date||\"\"])});const m=(a=(r=(N=new Date)==null?void 0:N.toISOString())==null?void 0:r.split(\"T\"))==null?void 0:a[0];X(`gusto_time_off_balances_${m}.csv`,_)}"
+    },
+    {
+      "old": "{onClick:o,className:\"px-4 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors\",children:\"↓ Export Time Off Balances CSV\"}",
+      "new": "{disabled:!NDASH_balanceYearRows.length,onClick:o,className:\"px-4 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50\",children:\"↓ Export Time Off Balances CSV\"}"
+    },
+    {
+      "old": "[\"Type\",\"Accrued YTD\",\"Used YTD\",\"Pending\",\"Remaining (hrs)\",\"Remaining (days)\"]",
+      "new": "[\"Type\",\"Accrued YTD\",\"Used YTD\",\"Pending\",\"Remaining (hrs)\",\"Remaining (days)\",\"Snapshot Date\"]"
+    },
+    {
+      "old": "[e.jsx(\"td\",{className:\"px-4 py-2.5\",children:e.jsx(\"span\",{className:`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${(H==null?void 0:H[r==null?void 0:r.time_off_type])||\"bg-gray-100 text-gray-600\"}`,children:(r==null?void 0:r.time_off_type)||\"—\"})}),e.jsx(\"td\",{className:\"px-4 py-2.5 text-sm text-gray-700\",children:(r==null?void 0:r.accrued_ytd_hours)!=null?`${(l=parseFloat(r==null?void 0:r.accrued_ytd_hours))==null?void 0:l.toFixed(1)} hrs`:\"—\"}),e.jsxs(\"td\",{className:\"px-4 py-2.5 text-sm text-gray-700\",children:[(r==null?void 0:r.used_ytd_hours)!=null?`${(w=parseFloat(r==null?void 0:r.used_ytd_hours))==null?void 0:w.toFixed(1)} hrs`:\"—\",(r==null?void 0:r.used_ytd_days)!=null?e.jsxs(\"span\",{className:\"text-gray-400 text-xs ml-1\",children:[\"(\",(k=parseFloat(r==null?void 0:r.used_ytd_days))==null?void 0:k.toFixed(1),\" days)\"]}):null]}),e.jsx(\"td\",{className:\"px-4 py-2.5 text-sm text-gray-700\",children:(r==null?void 0:r.pending_hours)!=null?`${(t=parseFloat(r==null?void 0:r.pending_hours))==null?void 0:t.toFixed(1)} hrs`:\"—\"}),e.jsx(\"td\",{className:`px-4 py-2.5 text-sm ${pe(r==null?void 0:r.balance_hours)}`,children:(r==null?void 0:r.balance_hours)!=null?`${(u=parseFloat(r==null?void 0:r.balance_hours))==null?void 0:u.toFixed(1)} hrs`:\"—\"}),e.jsx(\"td\",{className:\"px-4 py-2.5 text-sm text-gray-700\",children:(r==null?void 0:r.balance_days)!=null?`${(b=parseFloat(r==null?void 0:r.balance_days))==null?void 0:b.toFixed(1)} days`:\"—\"})]",
+      "new": "[e.jsx(\"td\",{className:\"px-4 py-2.5\",children:e.jsx(\"span\",{className:`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${(H==null?void 0:H[r==null?void 0:r.time_off_type])||\"bg-gray-100 text-gray-600\"}`,children:(r==null?void 0:r.time_off_type)||\"—\"})}),e.jsx(\"td\",{className:\"px-4 py-2.5 text-sm text-gray-700\",children:(r==null?void 0:r.accrued_ytd_hours)!=null?`${(l=parseFloat(r==null?void 0:r.accrued_ytd_hours))==null?void 0:l.toFixed(1)} hrs`:\"—\"}),e.jsxs(\"td\",{className:\"px-4 py-2.5 text-sm text-gray-700\",children:[(r==null?void 0:r.used_ytd_hours)!=null?`${(w=parseFloat(r==null?void 0:r.used_ytd_hours))==null?void 0:w.toFixed(1)} hrs`:\"—\",(r==null?void 0:r.used_ytd_days)!=null?e.jsxs(\"span\",{className:\"text-gray-400 text-xs ml-1\",children:[\"(\",(k=parseFloat(r==null?void 0:r.used_ytd_days))==null?void 0:k.toFixed(1),\" days)\"]}):null]}),e.jsx(\"td\",{className:\"px-4 py-2.5 text-sm text-gray-700\",children:(r==null?void 0:r.pending_hours)!=null?`${(t=parseFloat(r==null?void 0:r.pending_hours))==null?void 0:t.toFixed(1)} hrs`:\"—\"}),e.jsx(\"td\",{className:`px-4 py-2.5 text-sm ${pe(r==null?void 0:r.balance_hours)}`,children:(r==null?void 0:r.balance_hours)!=null?`${(u=parseFloat(r==null?void 0:r.balance_hours))==null?void 0:u.toFixed(1)} hrs`:\"—\"}),e.jsx(\"td\",{className:\"px-4 py-2.5 text-sm text-gray-700\",children:(r==null?void 0:r.balance_days)!=null?`${(b=parseFloat(r==null?void 0:r.balance_days))==null?void 0:b.toFixed(1)} days`:\"—\"}),e.jsx(\"td\",{className:\"px-4 py-2.5 text-sm text-gray-700\",children:O(r?.snapshot_date)})]"
+    },
+    {
+      "old": "\" balance type\"",
+      "new": "\" balance record\""
+    },
+    {
+      "old": "e.jsx(\"p\",{className:\"text-gray-500 text-sm\",children:\"No time off balance data imported yet.\"})",
+      "new": "e.jsxs(\"p\",{className:\"text-gray-500 text-sm\",children:[\"No time off balance snapshots found for \",x,\".\"]})"
+    },
+    {
+      "old": "`YTD Time Off Summary — ${p}`",
+      "new": "\"Time Off Balances\""
+    }
+  ],
+  "syntax": "PASS"
+}

@@ -112,7 +112,7 @@ export default function GustoTimeAndAttendance({ isSuperAdmin }) {
       {/* Section 4: YTD Time Off Balances */}
       <div className="border border-gray-200 rounded-xl overflow-hidden mb-4">
         <SectionHeader
-          title={`YTD Time Off Summary — ${currentYear}`}
+          title="Time Off Balances"
           expanded={expandedSections?.time_off_balances}
           onToggle={() => toggleSection('time_off_balances')}
         />
