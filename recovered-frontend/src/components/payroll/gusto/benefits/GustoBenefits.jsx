@@ -25,7 +25,7 @@ export default function GustoBenefits({ isSuperAdmin }) {
 
   const handleExport = () => {
     const headers = ['Employee','Plan','Employee/Paycheck','Company/Paycheck','Annual Employee','Annual Company','Active'];
-    const rows = enrollments?.map(e => [
+    const rows = filteredEnrollments?.map(e => [
       `${e?.gusto_employees?.first_name || ''} ${e?.gusto_employees?.last_name || ''}`?.trim(),
       e?.gusto_benefit_plans?.plan_name || e?.benefit_plan_id,
       e?.employee_deduction, e?.company_contribution,
@@ -72,7 +72,7 @@ export default function GustoBenefits({ isSuperAdmin }) {
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h2 className="text-lg font-bold text-gray-800" style={{ fontFamily: 'Barlow Condensed, sans-serif' }}>Benefits</h2>
-        <button onClick={handleExport} disabled={!enrollments?.length}
+        <button onClick={handleExport} disabled={!filteredEnrollments?.length}
           className="flex items-center gap-2 px-4 py-2 bg-[#00B5CC] text-white rounded-lg text-sm font-semibold hover:bg-[#0099b0] disabled:opacity-50 transition-colors">
           ↓ Export Benefits CSV
         </button>

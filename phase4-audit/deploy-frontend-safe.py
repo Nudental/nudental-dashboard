@@ -6,6 +6,8 @@ assert pathlib.Path(meta['candidate']).resolve()==candidate.resolve()
 old_name=meta['baseline_asset'];new_name=pathlib.Path(meta['asset']).name
 before=(baseline/'assets'/old_name).read_bytes();after=(candidate/'assets'/new_name).read_bytes()
 assert hashlib.sha256(before).hexdigest()==meta['baseline_sha256'] and hashlib.sha256(after).hexdigest()==meta['candidate_sha256']
+if meta.get('preserve_previous_entry'):
+ assert (candidate/'assets'/old_name).read_bytes()==before
 restored=after
 for p in reversed(meta['patches']):restored=restored.replace(p['new'].encode(),p['old'].encode(),1)
 assert restored==before

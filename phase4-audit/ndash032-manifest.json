@@ -1,0 +1,113 @@
+{
+  "issue": "NDASH-032",
+  "previous_issue": "031",
+  "expected_previous_deployment": "8aadca0d-cc06-4a51-8376-0cd39e534203",
+  "baseline_asset": "index-4041253c50b0.js",
+  "baseline_sha256": "4041253c50b0b63b5044916dd8b358b96d5a5e8ec15d06b75b84427e88f9d230",
+  "candidate_sha256": "1f6cc164d276e250592173f5d6c91396241450de4ac64c01f6f442d85da5e02c",
+  "asset": "/assets/index-1f6cc164d276.js",
+  "patches": [
+    {
+      "old": "ndash031-GustoBenefits.js",
+      "new": "ndash032-GustoBenefits.js"
+    },
+    {
+      "old": "ndash031-GustoImportHistory.js",
+      "new": "ndash032-GustoImportHistory.js"
+    },
+    {
+      "old": "ndash031-GustoPaySchedules.js",
+      "new": "ndash032-GustoPaySchedules.js"
+    },
+    {
+      "old": "ndash031-GustoTimeAndAttendance.js",
+      "new": "ndash032-GustoTimeAndAttendance.js"
+    },
+    {
+      "old": "ndash031-date-fns.js",
+      "new": "ndash032-date-fns.js"
+    },
+    {
+      "old": "ndash031-help-manual.js",
+      "new": "ndash032-help-manual.js"
+    },
+    {
+      "old": "ndash031-canvg.js",
+      "new": "ndash032-canvg.js"
+    }
+  ],
+  "added_assets": [
+    {
+      "name": "ndash032-GustoBenefits.js",
+      "sha256": "f9985f9a489246893a18181f02bbe338a815af0184a50c19c8435f642eab1f28",
+      "bytes": 11407,
+      "previous": "ndash031-GustoBenefits.js"
+    },
+    {
+      "name": "ndash032-GustoImportHistory.js",
+      "sha256": "e963e30d58f8073102e8bf5bccf9dcc43734634ed8d87fad247c10bf3e54d9ae",
+      "bytes": 4776,
+      "previous": "ndash031-GustoImportHistory.js"
+    },
+    {
+      "name": "ndash032-GustoPaySchedules.js",
+      "sha256": "0c8853f05b1707f70307720c2cd401c8ec77e7e864e9135bae92893a363a31a3",
+      "bytes": 4819,
+      "previous": "ndash031-GustoPaySchedules.js"
+    },
+    {
+      "name": "ndash032-GustoTimeAndAttendance.js",
+      "sha256": "863446a8aad272fa9ec9015badc854a786e1f8a516e4cf2907ee309d408c81e2",
+      "bytes": 38776,
+      "previous": "ndash031-GustoTimeAndAttendance.js"
+    },
+    {
+      "name": "ndash032-date-fns.js",
+      "sha256": "322dfa645e0ea362695916e09a8ce935a601a3904e973d74c226dd39c24a541e",
+      "bytes": 31653,
+      "previous": "ndash031-date-fns.js"
+    },
+    {
+      "name": "ndash032-help-manual.js",
+      "sha256": "df570b7fd83761b41f8012a38d7c9984c09f825a157def022d73ed4ed3a3ff0e",
+      "bytes": 122300,
+      "previous": "ndash031-help-manual.js"
+    },
+    {
+      "name": "ndash032-canvg.js",
+      "sha256": "d9ad281efee1fbd081d9ecfb5c671b6c4cfd429fb7ab23c73cd0f439e09c6040",
+      "bytes": 150419,
+      "previous": "ndash031-canvg.js"
+    }
+  ],
+  "preserve_previous_entry": true,
+  "benefits_baseline_sha256": "6704961b0e505a43aa4a81ebfceeefc18048142caaf1a623567aa755e4f00ec4",
+  "benefits_fixed_before_relink_sha256": "175e4f4782a494665353aa7f9f1ecfd1caf0db2722f4a50cab7cd91bdb651f75",
+  "benefits_reference_edits": [
+    {
+      "start": 4730,
+      "end": 4731,
+      "old": "o",
+      "new": "s"
+    },
+    {
+      "start": 4721,
+      "end": 4722,
+      "old": "o",
+      "new": "s"
+    },
+    {
+      "start": 2985,
+      "end": 2986,
+      "old": "o",
+      "new": "s"
+    },
+    {
+      "start": 2970,
+      "end": 2971,
+      "old": "o",
+      "new": "s"
+    }
+  ],
+  "syntax": "PASS"
+}
