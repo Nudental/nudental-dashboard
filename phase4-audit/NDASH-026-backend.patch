@@ -1,0 +1,35 @@
+--- a/middleware/main_candidate.py
++++ b/middleware/main_candidate.py
+@@ -3472,2 +3472,8 @@
+     status:  Optional[str] = Query(None),
++    id: Optional[str] = Query(None),
++    search: Optional[str] = Query(None),
++    work_state: Optional[str] = Query(None),
++    employment_type: Optional[str] = Query(None),
++    benefits_enrolled: Optional[bool] = Query(None),
++    benefits_eligible: Optional[bool] = Query(None),
+     limit:   int = Query(200),
+@@ -3481,2 +3487,14 @@
+         rows = _sb_get_full(q)
++        # Apply the existing UI filters before counting and paginating imported rows.
++        if id is not None:
++            rows = [row for row in rows if str(row.get("id")) == id]
++        for field, value in (("work_state", work_state), ("employment_type", employment_type)):
++            if value is not None:
++                rows = [row for row in rows if str(row.get(field) or "").casefold() == value.casefold()]
++        for field, value in (("benefits_enrolled", benefits_enrolled), ("benefits_eligible", benefits_eligible)):
++            if value is not None:
++                rows = [row for row in rows if row.get(field) is value]
++        if search and search.strip():
++            term = search.strip().casefold()
++            rows = [row for row in rows if term in " ".join(str(row.get(field) or "") for field in ("first_name", "last_name", "email")).casefold()]
+         page = rows[offset: offset + limit]
+@@ -3514,2 +3532,3 @@
+     mappingStatus: Optional[str] = Query(None),
++    gusto_employee_id: Optional[str] = Query(None),
+     officeId:      Optional[str] = Query(None),
+@@ -3526,2 +3545,4 @@
+         rows = _sb_get_full(q)
++        if gusto_employee_id is not None:
++            rows = [row for row in rows if str(row.get("gusto_employee_id")) == gusto_employee_id]
+         page = rows[offset: offset + limit]
