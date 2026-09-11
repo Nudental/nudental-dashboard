@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 const API_BASE = 'https://api.nudashboard.com/v2/payroll';
 const API_KEY = 'nudashboard_prod_key';
@@ -19,10 +19,14 @@ export function useGustoPayrollRuns(filters = {}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
+  const requestGeneration = useRef(0);
 
   const fetch = useCallback(async () => {
+    const generation = ++requestGeneration.current;
     setLoading(true);
     setError(null);
+    setData([]);
+    setCount(0);
     try {
       const params = {
         offset: page * PAGE_SIZE,
@@ -39,16 +43,17 @@ export function useGustoPayrollRuns(filters = {}) {
       if (filters?.runBy && filters?.runBy !== 'all') params.run_by_user_name = filters?.runBy;
 
       const json = await apiFetch('/runs', params);
+      if (generation !== requestGeneration.current) return;
       setData(json?.data || []);
       setCount(json?.total || 0);
     } catch (err) {
-      setError(err?.message);
+      if (generation === requestGeneration.current) setError(err?.message);
     } finally {
-      setLoading(false);
+      if (generation === requestGeneration.current) setLoading(false);
     }
   }, [page, JSON.stringify(filters)]);
 
-  useEffect(() => { fetch(); }, [fetch]);
+  useEffect(() => { fetch(); return () => { requestGeneration.current += 1; }; }, [fetch]);
 
   return { data, count, loading, error, page, setPage, pageSize: PAGE_SIZE, refetch: fetch };
 }
@@ -58,13 +63,16 @@ export function useGustoPayrollRunSummary(year) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
+    setSummary(null);
     const params = { limit: 1000 };
     if (year && year !== 'all') {
       params.startDate = `${year}-01-01`;
       params.endDate = `${year}-12-31`;
     }
     apiFetch('/runs', params)?.then(json => {
+        if (cancelled) return;
         const runs = json?.data || [];
         setSummary({
           runCount: runs?.length,
@@ -73,7 +81,8 @@ export function useGustoPayrollRunSummary(year) {
           totalTaxes: runs?.reduce((s, r) => s + (parseFloat(r?.total_payable_tax) || 0), 0),
           totalGross: runs?.reduce((s, r) => s + (parseFloat(r?.total_debit_amount) || 0), 0),
         });
-      })?.catch(() => setSummary(null))?.finally(() => setLoading(false));
+      })?.catch(() => { if (!cancelled) setSummary(null); })?.finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
   }, [year]);
 
   return { summary, loading };

@@ -55,7 +55,7 @@ export default function GustoPayrollRuns({ isSuperAdmin }) {
       {/* Summary bar */}
       {summary && (
         <div className="flex flex-wrap gap-4 bg-[#F8F9FA] border border-gray-200 rounded-xl px-4 py-3 text-sm">
-          <span className="text-gray-600">{summary?.runCount} runs</span>
+          <span className="text-gray-600">Period totals (all runs): {summary?.runCount} runs</span>
           <span className="text-gray-400">|</span>
           <span className="text-gray-600">Net Pay: <strong className="text-[#00B5CC]">{fmtCurrency(summary?.totalNetPay)}</strong></span>
           <span className="text-gray-400">|</span>
@@ -74,7 +74,7 @@ export default function GustoPayrollRuns({ isSuperAdmin }) {
         ]?.map(({ label, key, options }) => (
           <div key={key} className="flex flex-col gap-1 min-w-[140px]">
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{label}</label>
-            <select value={filters?.[key]} onChange={e => setFilters(f => ({ ...f, [key]: e?.target?.value }))}
+            <select value={filters?.[key]} onChange={e => { setPage(0); setFilters(f => ({ ...f, [key]: e?.target?.value })); }}
               className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#00B5CC]">
               {options?.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
@@ -83,7 +83,7 @@ export default function GustoPayrollRuns({ isSuperAdmin }) {
         {runByOptions?.length > 0 && (
           <div className="flex flex-col gap-1 min-w-[160px]">
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Run By</label>
-            <select value={filters?.runBy} onChange={e => setFilters(f => ({ ...f, runBy: e?.target?.value }))}
+            <select value={filters?.runBy} onChange={e => { setPage(0); setFilters(f => ({ ...f, runBy: e?.target?.value })); }}
               className="px-3 py-2 rounded-lg border border-gray-200 bg-white text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-[#00B5CC]">
               <option value="all">All</option>
               {runByOptions?.map(n => <option key={n} value={n}>{n}</option>)}
@@ -93,7 +93,7 @@ export default function GustoPayrollRuns({ isSuperAdmin }) {
       </div>
       {error && <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">Error: {error}</div>}
       {!loading && !data?.length && !error ? (
-        <GustoEmptyState message="No payroll runs imported yet. Use Import to load Gusto payroll history." />
+        <GustoEmptyState message="No payroll runs match the current filters." />
       ) : (
         <GustoPayrollRunTable
           data={data} count={count} loading={loading}
