@@ -1,0 +1,142 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
+
+const API_BASE = 'https://api.nudashboard.com/v2/payroll';
+const API_KEY = 'nudashboard_prod_key';
+
+async function apiFetch(path, params = {}) {
+  const url = new URL(`${API_BASE}${path}`);
+  Object.entries(params)?.forEach(([k, v]) => {
+    if (v !== undefined && v !== null) url?.searchParams?.set(k, String(v));
+  });
+  const res = await fetch(url?.toString(), { headers: { 'X-API-Key': API_KEY } });
+  if (!res?.ok) {
+    const body = await res?.text()?.catch(() => '');
+    throw new Error(`API ${res.status} on ${path}: ${body?.substring(0, 200)}`);
+  }
+  return res?.json();
+}
+
+export function useGustoSummaryTotals(year) {
+  const [kpis, setKpis] = useState(null);
+  const [monthlyData, setMonthlyData] = useState([]);
+  const [annualData, setAnnualData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    const currentYear = year || new Date()?.getFullYear();
+    const today = new Date()?.toISOString()?.split('T')?.[0];
+    const prevMonthNum = new Date()?.getMonth() + 2; // +2 because getMonth is 0-indexed and we want next month of last year
+    const last12Start = `${currentYear - 1}-${String(prevMonthNum)?.padStart(2, '0')}-01`;
+
+    console.log('[useGustoSummaryTotals] Fetching for year:', currentYear, { today, last12Start });
+
+    // Use Promise.allSettled so one failed sub-query never crashes the whole hook
+    Promise.allSettled([
+      // [0] Active employees count from middleware
+      apiFetch('/employees', { status: 'active', limit: 1 }),
+      // [1] YTD payroll runs from middleware
+      apiFetch('/runs', { startDate: `${currentYear}-01-01`, endDate: `${currentYear}-12-31`, limit: 1000 }),
+      // [2] YTD contractor spend — via middleware (replaces direct gusto_contractor_payments query)
+      apiFetch('/contractors', { startDate: `${currentYear}-01-01`, endDate: `${currentYear}-12-31`, limit: 1000 }),
+      // [3] Active benefit enrollments — via Supabase (gusto_employee_benefit_enrollments is not a blocked table)
+      supabase?.from('gusto_employee_benefit_enrollments')?.select('company_contribution')?.eq('active', true),
+      // [4] Next payroll from middleware
+      apiFetch('/runs', { startDate: today, limit: 1, sort: 'check_date:asc' }),
+      // [5] Last 12 months for monthly chart from middleware
+      apiFetch('/runs', { startDate: last12Start, limit: 1000, sort: 'check_date:asc' }),
+      // [6] Annual data for bar chart from middleware
+      apiFetch('/runs', { startDate: '2021-01-01', limit: 5000, sort: 'check_date:asc' }),
+    ])
+      ?.then(results => {
+        if (cancelled) return;
+
+        const [empResult, runsResult, contractorResult, benefitsResult, nextResult, monthlyResult, annualResult] = results;
+
+        // Log any individual failures for diagnostics — do not throw
+        results?.forEach((r, i) => {
+          const labels = ['employees', 'ytd-runs', 'contractors', 'benefits-enrollments', 'next-run', 'monthly-runs', 'annual-runs'];
+          if (r?.status === 'rejected') {
+            console.warn(`[useGustoSummaryTotals] Sub-query [${labels?.[i]}] failed (non-fatal):`, r?.reason?.message);
+          }
+        });
+
+        // Extract data safely with fallbacks
+        const empJson = empResult?.status === 'fulfilled' ? empResult?.value : null;
+        const runsJson = runsResult?.status === 'fulfilled' ? runsResult?.value : null;
+        const contractorJson = contractorResult?.status === 'fulfilled' ? contractorResult?.value : null;
+        const benefitsRes = benefitsResult?.status === 'fulfilled' ? benefitsResult?.value : null;
+        const nextJson = nextResult?.status === 'fulfilled' ? nextResult?.value : null;
+        const monthlyJson = monthlyResult?.status === 'fulfilled' ? monthlyResult?.value : null;
+        const annualJson = annualResult?.status === 'fulfilled' ? annualResult?.value : null;
+
+        const runs = runsJson?.data || [];
+        // Contractor data: middleware returns array under .data; each row has total_amount
+        const contractors = contractorJson?.data || [];
+        const benefits = benefitsRes?.data || [];
+
+        const totalNetPay = runs?.reduce((s, r) => s + (parseFloat(r?.total_net_pay) || 0), 0);
+        const totalTaxes = runs?.reduce((s, r) => s + (parseFloat(r?.total_payable_tax) || 0), 0);
+        const totalGross = runs?.reduce((s, r) => s + (parseFloat(r?.total_debit_amount) || 0), 0);
+        const contractorSpend = contractors?.reduce((s, c) => s + (parseFloat(c?.total_amount) || 0), 0);
+        const benefitsCostMonth = benefits?.reduce((s, b) => s + (parseFloat(b?.company_contribution) || 0), 0);
+
+        setKpis({
+          activeEmployees: empJson?.total || 0,
+          totalNetPayYTD: totalNetPay,
+          totalTaxesYTD: totalTaxes,
+          totalGrossCostYTD: totalGross,
+          payrollRunsYTD: runs?.length,
+          contractorSpendYTD: contractorSpend,
+          benefitsCostMonth,
+          nextPayrollDate: nextJson?.data?.[0]?.check_date || null,
+        });
+
+        // Build monthly chart data (last 12 months)
+        const monthMap = {};
+        (monthlyJson?.data || [])?.forEach(r => {
+          const month = r?.check_date?.substring(0, 7);
+          if (!month) return;
+          if (!monthMap?.[month]) monthMap[month] = { month, netPay: 0, taxes: 0 };
+          monthMap[month].netPay += parseFloat(r?.total_net_pay) || 0;
+          monthMap[month].taxes += parseFloat(r?.total_payable_tax) || 0;
+        });
+        setMonthlyData(Object.values(monthMap)?.slice(-12));
+
+        // Build annual chart data
+        const yearMap = {};
+        (annualJson?.data || [])?.forEach(r => {
+          const yr = r?.check_date?.substring(0, 4);
+          if (!yr) return;
+          if (!yearMap?.[yr]) yearMap[yr] = { year: yr, netPay: 0, taxes: 0 };
+          yearMap[yr].netPay += parseFloat(r?.total_net_pay) || 0;
+          yearMap[yr].taxes += parseFloat(r?.total_payable_tax) || 0;
+        });
+        setAnnualData(Object.values(yearMap));
+
+        console.log('[useGustoSummaryTotals] Loaded successfully', {
+          year: currentYear,
+          runs: runs?.length,
+          contractors: contractors?.length,
+          benefits: benefits?.length,
+        });
+      })
+      ?.catch(err => {
+        if (cancelled) return;
+        console.error('[useGustoSummaryTotals] Fatal error:', err?.message);
+        setError(err?.message);
+      })
+      ?.finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [year]);
+
+  return { kpis, monthlyData, annualData, loading, error };
+}

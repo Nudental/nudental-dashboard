@@ -1,0 +1,3262 @@
+[
+  {
+    "path": ".gitignore",
+    "size": 87,
+    "sha256": "9885f71770dfe625d6708bfe6a86581805579fe46083ce529e663c928df6786d"
+  },
+  {
+    "path": "README.md",
+    "size": 2887,
+    "sha256": "a3f186ab66108aeaaa3821d4283f2c9984ea1a3ff3c70051471eb54b4d9ee27d"
+  },
+  {
+    "path": "favicon.ico",
+    "size": 4158,
+    "sha256": "9b21189e81bb69a98bf21bb72eb7ce77ca1771199f8fd70f77d3f0e179f950dd"
+  },
+  {
+    "path": "index.html",
+    "size": 609,
+    "sha256": "b4770411c1275d03815c0c6516d819188fb3818a651e73f59df536363055376f"
+  },
+  {
+    "path": "jsconfig.json",
+    "size": 54,
+    "sha256": "4dfb81f19c497df7a1ad1f098412481a17c5a848d4ad3f869fa3e13b458f83aa"
+  },
+  {
+    "path": "package-lock.json",
+    "size": 244776,
+    "sha256": "6ce542c851dfe34afae4fcae5d940cff1e75960ea0f0176722689f4eb3c52867"
+  },
+  {
+    "path": "package.json",
+    "size": 2620,
+    "sha256": "90efa380fb8a3a29f479d958f057914e6dcebd6da08e17a92be8930aa25304fb"
+  },
+  {
+    "path": "postcss.config.js",
+    "size": 114,
+    "sha256": "5f576deca73c9f36090f17d646cb5a3b0d328ea6ba03c8225bd5faa51f786b00"
+  },
+  {
+    "path": "public/assets/images/no_image.png",
+    "size": 20735,
+    "sha256": "11011ce05a033d158c97f29efceac3d578328de8ec1ef1149343575d2e655260"
+  },
+  {
+    "path": "public/assets/images/nu-dental-stacked-logo_1_-1772244427227.png",
+    "size": 15765,
+    "sha256": "4ef08daea4f70b14bd93d015aee7c82f90f09510c70060f95257ae7d4b8a02cd"
+  },
+  {
+    "path": "public/assets/images/thenudental-logo-color__1_-1778797289362.png",
+    "size": 8790,
+    "sha256": "eb1a880fbcc75c6cca52b5aa291b544b38985fdf4aa794726b7bcfdef2568835"
+  },
+  {
+    "path": "public/favicon.ico",
+    "size": 23540,
+    "sha256": "d4b3b0ca985cb77b44f3d3daf60622b4742a58114b8aa6d8bae518a7d8b9c013"
+  },
+  {
+    "path": "public/manifest.json",
+    "size": 326,
+    "sha256": "f923e1565760a3b31efe67320e918fe3d7a549a8ab334d98f902eeff0c8915e1"
+  },
+  {
+    "path": "public/robots.txt",
+    "size": 67,
+    "sha256": "90d24bc3bf698ac1e173739502298ccca72adf1f564fab05f484b8c48d1cadd2"
+  },
+  {
+    "path": "public/sw.js",
+    "size": 3824,
+    "sha256": "3eeda3e94e0adc1a91c487e2826c43a40d908d9cd68cc6a0935f724aec7bba7d"
+  },
+  {
+    "path": "src/App.jsx",
+    "size": 1434,
+    "sha256": "7be6c6db0fe694fe4e9df95a1155db6714f2e2e12aff55f81ab371e1e798b520"
+  },
+  {
+    "path": "src/Routes.jsx",
+    "size": 9335,
+    "sha256": "3de11f035ba806b9cd4ef8eef58ca5355922e073df47b5d96222808cc404b6ba"
+  },
+  {
+    "path": "src/components/AppIcon.jsx",
+    "size": 621,
+    "sha256": "9554a773601088a9a27dd291c58a62dc289339d1a3102c8b31f0e727afa227cd"
+  },
+  {
+    "path": "src/components/AppImage.jsx",
+    "size": 329,
+    "sha256": "47a14d204e2c97cbd0c2a324c36662b07650a668a97e316ca87f7bef692f1aa7"
+  },
+  {
+    "path": "src/components/BirthdayBanner.jsx",
+    "size": 2218,
+    "sha256": "c5989c18bbe895ef709d3f9df46946adf1914e4c2772f1e723e59cefe0fd7c86"
+  },
+  {
+    "path": "src/components/BirthdayModal.jsx",
+    "size": 4269,
+    "sha256": "81c2cd0e53a07e67d310a53f20de3d20b1877f5b2e8f4f6ce161fd046dfe7d72"
+  },
+  {
+    "path": "src/components/DataAuditPanel.jsx",
+    "size": 25981,
+    "sha256": "5b44affb1829a92c76d4d73685e4933b38de33394050b0ec8bff0934c9298441"
+  },
+  {
+    "path": "src/components/DentrixDataSourceBanner.jsx",
+    "size": 3073,
+    "sha256": "235372deaeefde356b95cb73c71e69613a4d670a092f6ea3470e9f1a49d59a9e"
+  },
+  {
+    "path": "src/components/ErrorBoundary.jsx",
+    "size": 2599,
+    "sha256": "ae2135b6bad60010630023d3889ffcde4ac65767fda147aa338ab2cdc2251e00"
+  },
+  {
+    "path": "src/components/GlobalFilterBar.jsx",
+    "size": 33869,
+    "sha256": "e32918a4194acc3cf767ffa249625724f0e227e98c2847e1a93784d7b0c61b6d"
+  },
+  {
+    "path": "src/components/HelpCenter/HelpCenter.jsx",
+    "size": 9042,
+    "sha256": "9f19fb182c86132b3d3d7745ef06e031d755680b1f8e902239084171296da316"
+  },
+  {
+    "path": "src/components/HelpCenter/helpArticles.js",
+    "size": 34238,
+    "sha256": "fee6682255da029cbd04dde11537cdf7c68477365dc1eb9e4ea54ac7aabd669c"
+  },
+  {
+    "path": "src/components/ProductionCollectionsPanel.jsx",
+    "size": 8920,
+    "sha256": "55a52609d5ae71f2d6f4f0506951a35f7ec8527579c833c46a42e57874521b65"
+  },
+  {
+    "path": "src/components/ScrollToTop.jsx",
+    "size": 263,
+    "sha256": "950b79ec4824ffe08084c5b320f620243729a07cacf47a7b525986927e704bda"
+  },
+  {
+    "path": "src/components/YearComparisonExportButton.jsx",
+    "size": 2799,
+    "sha256": "66286aa13fcb58565861556893eb5eeb852f7f6c8cd9ddff5e5ba992a84e3da0"
+  },
+  {
+    "path": "src/components/YearComparisonPanel.jsx",
+    "size": 14937,
+    "sha256": "61a2a47ed0d3155fd835de897bf5aea45f7798e9d519f16d1253179eeecca460"
+  },
+  {
+    "path": "src/components/YearPicker.jsx",
+    "size": 6676,
+    "sha256": "9a931aa6979b5301f90965b715ac32866b5dc1457f1b7ac9156d5488e1e68441"
+  },
+  {
+    "path": "src/components/layout/Breadcrumb.jsx",
+    "size": 1431,
+    "sha256": "fd0b98c7f9b43ca3d5e6938ccaceb368ce1cd64746058a0a3fed62f8389dbb5e"
+  },
+  {
+    "path": "src/components/layout/CommandPalette.jsx",
+    "size": 8174,
+    "sha256": "b2bc39b514e59c81ec9b45bf131c7eb54d791e01996b58d747d1683f8031cd0a"
+  },
+  {
+    "path": "src/components/layout/Header.jsx",
+    "size": 27210,
+    "sha256": "a57422da4bd101797b865a49ed84500fdac2e08b7f528b3211fe28a584a9bffe"
+  },
+  {
+    "path": "src/components/layout/LoadingOverlay.jsx",
+    "size": 436,
+    "sha256": "bb4c63e6066cde523bebecbbd98c840a223cc9a1256af4f64a9a33d4b099bedd"
+  },
+  {
+    "path": "src/components/layout/MainLayout.jsx",
+    "size": 10841,
+    "sha256": "8d600ff8b5a09a90705a807e0029d6305019f7ee4f083d97b00cb2c28de3329e"
+  },
+  {
+    "path": "src/components/layout/Sidebar.jsx",
+    "size": 22265,
+    "sha256": "b4d0cff47c96c912b5c57463edf0678ccb51742f66fd58d3942a0df0af5de15d"
+  },
+  {
+    "path": "src/components/layout/TabNavigation.jsx",
+    "size": 10141,
+    "sha256": "5de290ace6cb373df56e57c89955060ec831db233fecd3d0e6ea5ded9dfdd8ff"
+  },
+  {
+    "path": "src/components/layout/pages/login.jsx",
+    "size": 279,
+    "sha256": "2573269a336aae7d55184a273952811edb6e5f0f7b72e362a2c45159b2cdfac0"
+  },
+  {
+    "path": "src/components/layout/pages/reports.jsx",
+    "size": 310,
+    "sha256": "ccfe7abcf919f3866d295a5b9261421054dc4b23983aa6737b54128f27b2248d"
+  },
+  {
+    "path": "src/components/payroll/PayrollSourceSwitcher.jsx",
+    "size": 1646,
+    "sha256": "cb5f4ced3faec0c7c4fb48c15d1f1d91582fb9cfa4b67a6f9f70a3ac49d5bdf0"
+  },
+  {
+    "path": "src/components/payroll/comparison/ComparisonRoot.jsx",
+    "size": 48236,
+    "sha256": "8c3e2093adb9eee8c962e0a10f635dc421646b1512b5ed311b962f864694f9d9"
+  },
+  {
+    "path": "src/components/payroll/gusto/GustoPayrollRoot.jsx",
+    "size": 9998,
+    "sha256": "88554657dabe02a8ab24452ba318eb454cde8a6ee467f8b26b2a5b7a0ef92ace"
+  },
+  {
+    "path": "src/components/payroll/gusto/GustoSubNav.jsx",
+    "size": 1689,
+    "sha256": "b35fecb865a0f13cf749b0e145c352dc7998a2ee5c7abce185673e37942820b6"
+  },
+  {
+    "path": "src/components/payroll/gusto/TimeAndAttendance/GustoHoursSummary.jsx",
+    "size": 7518,
+    "sha256": "7230faf3219f5acfd36cf058f0f2e32ac50807902e1267760afb25c27f484157"
+  },
+  {
+    "path": "src/components/payroll/gusto/TimeAndAttendance/GustoTASummaryCards.jsx",
+    "size": 3598,
+    "sha256": "db11f94987754637d834a5cc7d801e3df5a11891a1a1ff28384faf6b937bb1e4"
+  },
+  {
+    "path": "src/components/payroll/gusto/TimeAndAttendance/GustoTimeAndAttendance.jsx",
+    "size": 6733,
+    "sha256": "047a5d1b7769d8ef693069f9b8bfc1f34bd76f5e5df99ce029e969410fea522f"
+  },
+  {
+    "path": "src/components/payroll/gusto/TimeAndAttendance/GustoTimeEntries.jsx",
+    "size": 8906,
+    "sha256": "e6bdb9a181ed2941b7506e706b49384462b9c4242211ef3d27bc5e10a53c523c"
+  },
+  {
+    "path": "src/components/payroll/gusto/TimeAndAttendance/GustoTimeOffBalances.jsx",
+    "size": 7637,
+    "sha256": "4489001395eee65abb8193d878805e51547b9ce03a3e15efc303e4310bf34409"
+  },
+  {
+    "path": "src/components/payroll/gusto/TimeAndAttendance/GustoTimeOffRequests.jsx",
+    "size": 7676,
+    "sha256": "317904a541f9bedf796b3e42a3db08812819fe1de93d05f70e9b98901becb89e"
+  },
+  {
+    "path": "src/components/payroll/gusto/benefits/GustoBenefits.jsx",
+    "size": 10430,
+    "sha256": "e0c69cca642529312a252b08063f6a0d6f2135f1aecea2743bb5560f69c0db34"
+  },
+  {
+    "path": "src/components/payroll/gusto/contractors/GustoContractors.jsx",
+    "size": 9480,
+    "sha256": "3de059559e6b8298da309b90101bb43255c3103a615eb5ccd3570d040896ead1"
+  },
+  {
+    "path": "src/components/payroll/gusto/employees/GustoEmployeeDrawer.jsx",
+    "size": 6718,
+    "sha256": "a5c3bbda53bfff2244613b95e8998b49e7a27bb36a8cdc1b1e9b4b56f2cfb938"
+  },
+  {
+    "path": "src/components/payroll/gusto/employees/GustoEmployeeFilters.jsx",
+    "size": 3548,
+    "sha256": "8767ae01e4c6a8e065ef199a88cb29d21d01c340b7752937f56a62122ff1604e"
+  },
+  {
+    "path": "src/components/payroll/gusto/employees/GustoEmployeeTable.jsx",
+    "size": 5174,
+    "sha256": "0c6ad45ccee153cf654a040ceee6252603c597dddbe1ce0f263bd339771329ee"
+  },
+  {
+    "path": "src/components/payroll/gusto/employees/GustoEmployees.jsx",
+    "size": 3044,
+    "sha256": "d7ea3c410dda166946c1845192445561aba40f69adf70031759742692b88609e"
+  },
+  {
+    "path": "src/components/payroll/gusto/importHistory/GustoImportHistory.jsx",
+    "size": 5161,
+    "sha256": "fa75145905ae623d4fd97e35ff61e7af02cbb8fbf111597ba2c95fb7c5478a78"
+  },
+  {
+    "path": "src/components/payroll/gusto/overview/GustoCharts.jsx",
+    "size": 8138,
+    "sha256": "e3451ed1be65aa78de28364d4fafa61844d5ffec3eb2088944c5993f9fc0356a"
+  },
+  {
+    "path": "src/components/payroll/gusto/overview/GustoExpenseReconciliation.jsx",
+    "size": 13375,
+    "sha256": "93d1c1955dfa79989c785472b4858de67ae29a40018298f63e398175d23de86e"
+  },
+  {
+    "path": "src/components/payroll/gusto/overview/GustoKPICards.jsx",
+    "size": 4407,
+    "sha256": "8eec3ac5bf5a85a8fff2d722eb4b906051520bdefc4d403c1b8036ce97140eca"
+  },
+  {
+    "path": "src/components/payroll/gusto/overview/GustoOverview.jsx",
+    "size": 3113,
+    "sha256": "dbd733aa42eaeff2954b980c0675782c5cb8f70fee54b16a18feb4e0651165e6"
+  },
+  {
+    "path": "src/components/payroll/gusto/paySchedules/GustoPaySchedules.jsx",
+    "size": 5293,
+    "sha256": "a8124a75fbe4538a452ebc91416e2ab86c94bfb0ca8eddd66439276a09cce101"
+  },
+  {
+    "path": "src/components/payroll/gusto/payrollRuns/GustoPayrollRunTable.jsx",
+    "size": 7720,
+    "sha256": "47f15e14be2c22b1ef4ba58ba43139f748856aa412a7b1741aa06be67440a178"
+  },
+  {
+    "path": "src/components/payroll/gusto/payrollRuns/GustoPayrollRuns.jsx",
+    "size": 6274,
+    "sha256": "8e9534f1485655f878ae9b2019c0512d2224556f90399fd48089d092648f4d7a"
+  },
+  {
+    "path": "src/components/ui/Button.jsx",
+    "size": 5605,
+    "sha256": "61aae0e739d4d0914d596c5b6a3b74898999a936e6871ca19c195665fadeb546"
+  },
+  {
+    "path": "src/components/ui/Checkbox.jsx",
+    "size": 4756,
+    "sha256": "26da022a5fdf57b7ae3a14e1a99fc8f1aca1071cc4fe5d7cfa2fb580d696aa03"
+  },
+  {
+    "path": "src/components/ui/Input.jsx",
+    "size": 3121,
+    "sha256": "2045a15deafe391e0b3a3387dbc16b2af0799a74b0b924f6bcc29c15be70be1d"
+  },
+  {
+    "path": "src/components/ui/MobileDatePicker.jsx",
+    "size": 4741,
+    "sha256": "559ffa876d552f1f1a4bf1f2119500715595ede82683258ae82d2782e689b649"
+  },
+  {
+    "path": "src/components/ui/MobileQuickActionMenu.jsx",
+    "size": 7312,
+    "sha256": "1d412f55ea653b3435792e8a44d224ff0729275f7a7ad1d3d7b32f622070e840"
+  },
+  {
+    "path": "src/components/ui/MobileScannerPriority.jsx",
+    "size": 9574,
+    "sha256": "0af1305f453ff1455378b5d757961e3ec7525519d6b43ffd1da81a5a329fb9c3"
+  },
+  {
+    "path": "src/components/ui/NotificationPermissionBanner.jsx",
+    "size": 3097,
+    "sha256": "a50ec9e6b83a634a542b9df491c9e46a1243a645262ae7cfd9200c824f8ede88"
+  },
+  {
+    "path": "src/components/ui/NumericKeypad.jsx",
+    "size": 2924,
+    "sha256": "665442e78cc397d8e4e39c5810ad1fa14276ee2ada75e914190be2acb28543f8"
+  },
+  {
+    "path": "src/components/ui/OfflineBanner.jsx",
+    "size": 4274,
+    "sha256": "10bf3cc1d7d6e7d223c1ee7a9a43fb216cbcce2a1b128ec65a08402ccd5f0021"
+  },
+  {
+    "path": "src/components/ui/ScrollableTabBar.jsx",
+    "size": 4971,
+    "sha256": "2da51159a20aa652e11b943188f0ef05ae8445ada4555295f57394009e2374a4"
+  },
+  {
+    "path": "src/components/ui/Select.jsx",
+    "size": 9820,
+    "sha256": "ae3eeaf6f383086f668d38236465fda7fc2cde06afc8398b8cc3bf8a6e0e71bf"
+  },
+  {
+    "path": "src/components/ui/SupplyNotificationBell.jsx",
+    "size": 7406,
+    "sha256": "eac137d29fc92d34ada45a0786f759ad3f652199924e5d79a61851923273d547"
+  },
+  {
+    "path": "src/components/ui/SupplyToast.jsx",
+    "size": 2471,
+    "sha256": "69395dd68d716bf38fe8ebc4a81d53d31e042471dbd50c8dcd5a05d81d8184b8"
+  },
+  {
+    "path": "src/components/ui/ToastContainer.jsx",
+    "size": 4364,
+    "sha256": "1f42cf92e67d00e7dbf1bce5a6c739ed8fd05437334d76d8896a18d2714ad91b"
+  },
+  {
+    "path": "src/components/ui/TouchDropdown.jsx",
+    "size": 2669,
+    "sha256": "84c41c4098e5b963f36d129ae03d5067e4b4db5fe74abd453102e270b4fae17a"
+  },
+  {
+    "path": "src/config/navConfig.js",
+    "size": 19085,
+    "sha256": "631b60cf470297a443ffeeae62c809a4072f669e4cfd006fa45f65606afbbf21"
+  },
+  {
+    "path": "src/constants/offices.js",
+    "size": 3624,
+    "sha256": "4b65ce1c901bebe6ff713a03280ded94800cedf892c4909f0ee7c0c787cfce93"
+  },
+  {
+    "path": "src/contexts/AuthContext.jsx",
+    "size": 13786,
+    "sha256": "39b73bccd38e904373b05cfb4a7e1de9900e8053d273f3a0884361635b9aa45e"
+  },
+  {
+    "path": "src/contexts/HelpContext.jsx",
+    "size": 457,
+    "sha256": "2ff70d90fe54fabc6d3160b38e1e4cb41643102da59c488828bae5081576f5d6"
+  },
+  {
+    "path": "src/contexts/OfficeContext.jsx",
+    "size": 3886,
+    "sha256": "57c9b247fc1390f65ba0f1559d9f9cc886130c035162ba2ffa3bea9d208b6eaa"
+  },
+  {
+    "path": "src/contexts/ThemeContext.jsx",
+    "size": 5286,
+    "sha256": "aa21e8d16cac42fd4f40351572752d058e7806c7feead8d9fd6869a01d98d262"
+  },
+  {
+    "path": "src/contexts/ToastContext.jsx",
+    "size": 2060,
+    "sha256": "d15d574d670ab9e9aaf81117f610afe924d41b952943611b0916be4e8861943d"
+  },
+  {
+    "path": "src/contexts/YearComparisonContext.jsx",
+    "size": 3469,
+    "sha256": "9d3a07623e36efbd7bdeeea30cfbfb154768cc05309e591c5f892bc5802b6f22"
+  },
+  {
+    "path": "src/hooks/gusto/useGustoBenefits.js",
+    "size": 2641,
+    "sha256": "a8337b5f3794c4f0f26a29f5ea40af5ef0481ee2aacd3fb56ca82c0ca014df81"
+  },
+  {
+    "path": "src/hooks/gusto/useGustoComparison.js",
+    "size": 3528,
+    "sha256": "1bd75e1cccd5809b07772b36cd8b448a7d991194ec683bf1aba90ff6862dffb4"
+  },
+  {
+    "path": "src/hooks/gusto/useGustoContractors.js",
+    "size": 2858,
+    "sha256": "e3691c23c2475b28b1d15388ce76c13d4c704d9352c8bccb912b28b97e7b6896"
+  },
+  {
+    "path": "src/hooks/gusto/useGustoEmployees.js",
+    "size": 3182,
+    "sha256": "cada826ba54e6bd7d4932cdc794d1390e73e5f353fd5f994e75a632a00515f74"
+  },
+  {
+    "path": "src/hooks/gusto/useGustoHoursSummary.js",
+    "size": 1097,
+    "sha256": "b006314af56a7dd252c4c3878af21b567ba542b71c56bc873802dbbef4667d05"
+  },
+  {
+    "path": "src/hooks/gusto/useGustoImportLogs.js",
+    "size": 781,
+    "sha256": "f4fb76a9dc3a501f86e76c5a0cb855b4f5eec1027fec23c1cc2965751ab27fd6"
+  },
+  {
+    "path": "src/hooks/gusto/useGustoPaySchedules.js",
+    "size": 615,
+    "sha256": "b4c28ec02e4027c9ae0a6c2d8ad65689c9a997e43e215e7b7fb47ace88522d72"
+  },
+  {
+    "path": "src/hooks/gusto/useGustoPayrollRuns.js",
+    "size": 2868,
+    "sha256": "0159c36b94e1f456c3cadd2b448ebfc789ae130caa1f84699fc844ec326f6dbc"
+  },
+  {
+    "path": "src/hooks/gusto/useGustoSummaryTotals.js",
+    "size": 6790,
+    "sha256": "2fbb98f5370345b807190dbde84dc05a06131226057f08193944c6e577d6a905"
+  },
+  {
+    "path": "src/hooks/gusto/useGustoTimeEntries.js",
+    "size": 1593,
+    "sha256": "1e2564629a476930fec9369e697180b25d8e568309821afa1b3faf875fde78c2"
+  },
+  {
+    "path": "src/hooks/gusto/useGustoTimeOffBalances.js",
+    "size": 1301,
+    "sha256": "7e98710195a2afdaa04a915ddb9ec9c8c5dd60f61500b016335f69d54680b58d"
+  },
+  {
+    "path": "src/hooks/gusto/useGustoTimeOffRequests.js",
+    "size": 1515,
+    "sha256": "247e936ba7c45c226897d9b90d1d58469c058c11cf7210011f1bded69f947489"
+  },
+  {
+    "path": "src/hooks/useBirthdayCheck.js",
+    "size": 7884,
+    "sha256": "60872d4a02baf82267e9c520f99a1cf66ebec18366544ab85ba20bfe31f9a5fc"
+  },
+  {
+    "path": "src/hooks/useExecutiveOverview.js",
+    "size": 15525,
+    "sha256": "0c4b8a8cf3b73ee3176bb8818b30f07d079fc2f4856fa47380249618df9c287f"
+  },
+  {
+    "path": "src/hooks/useHomeNavigation.js",
+    "size": 1656,
+    "sha256": "548e0ee722efe9cdf3a397c7ad5bef5f11468d8465942ace342083023297b548"
+  },
+  {
+    "path": "src/hooks/useOfficeGuard.js",
+    "size": 1541,
+    "sha256": "12b0087626e70d47c153d60057e6be57b9fbe79eb3e1f73c27487a9d5c17c7c6"
+  },
+  {
+    "path": "src/hooks/useOfflineStatus.js",
+    "size": 1734,
+    "sha256": "dff12ce2d6947aee61c682d16acb9ee7d9261e2489709e4b5c56c0eecad549fa"
+  },
+  {
+    "path": "src/hooks/useRbacGuard.jsx",
+    "size": 2956,
+    "sha256": "30cda37a9e95e07acab303ba9a1c6b6758c8c9e7cee86cf1ac679de1c8071e00"
+  },
+  {
+    "path": "src/hooks/useRealtimeSubscription.js",
+    "size": 6384,
+    "sha256": "360b4d36c5af1bcd355fe76f702eeb616348a36c7af96b6037a06bdb8e282fca"
+  },
+  {
+    "path": "src/hooks/useRolePermissions.js",
+    "size": 3769,
+    "sha256": "7372d1ace04443106d799453d99ba2cd8e52daba68f176b6bbac01cb86274560"
+  },
+  {
+    "path": "src/index.jsx",
+    "size": 604,
+    "sha256": "95b5913e9e619f4a75874d62a26da45a7e5f0eb724c377da8e51e63955d3c590"
+  },
+  {
+    "path": "src/lib/gusto/gustoFormatters.js",
+    "size": 6612,
+    "sha256": "2c34675e3b360152ffe9c90f9d82e0f7e827c14acab75acfc78ff9054f01b566"
+  },
+  {
+    "path": "src/lib/gusto/gustoImportHelpers.js",
+    "size": 26483,
+    "sha256": "28ce32e14736eb4dc634f85aaff62c69691d597b7fce513f49e395dee22d6c0e"
+  },
+  {
+    "path": "src/lib/gusto/gustoTypes.js",
+    "size": 6651,
+    "sha256": "a70fe3e1f716a5d9572aa8c8f54cff04d721f15313aac34b79941bcd3bcf4ea4"
+  },
+  {
+    "path": "src/lib/supabase.js",
+    "size": 500,
+    "sha256": "df6ee6f6fc460129308fc660d79b1e1b0af50777f2170d872a60f94fa6bc9dbf"
+  },
+  {
+    "path": "src/pages/NotFound.jsx",
+    "size": 1438,
+    "sha256": "76b0fcc85dfa43b2c17294d00e1c5e130b7b3821d01e0882f31cd9572e4f8824"
+  },
+  {
+    "path": "src/pages/access-heatmap/index.jsx",
+    "size": 29558,
+    "sha256": "64c60fc2a176db516f3c6e0b855d7a47e2da9c640ff6fa86af58517551de5b65"
+  },
+  {
+    "path": "src/pages/account-settings/components/DangerZone.jsx",
+    "size": 8545,
+    "sha256": "2cc790d5f48657797a74405d03e123e6337769237213c44d4ad408d821199370"
+  },
+  {
+    "path": "src/pages/account-settings/components/NotificationPreferences.jsx",
+    "size": 10426,
+    "sha256": "33b4de11a5d3c46378ee73d298a41c148a4a4bf7731c80a439a4accebfc2d576"
+  },
+  {
+    "path": "src/pages/account-settings/index.jsx",
+    "size": 19229,
+    "sha256": "bc5be08b30cc7a153654e51e321a7e7ba7c2e5d1a0357e8e417e78560e5286d2"
+  },
+  {
+    "path": "src/pages/admin-system-dashboard/index.jsx",
+    "size": 37487,
+    "sha256": "6f47b0ae14f3d72ed12fa0c20cd81ff9dd800ec22262ea08641c5175abb84eb7"
+  },
+  {
+    "path": "src/pages/alert-center/index.jsx",
+    "size": 14127,
+    "sha256": "6d9e208c2b1f34b68beac38c7c0c679e4bc6148d4ab8657b3b67a3a6fa652589"
+  },
+  {
+    "path": "src/pages/alert-rules/index.jsx",
+    "size": 41332,
+    "sha256": "ec586dea8829db4e5b2b62c1c7567e1542dfcc435f6618adc964845e469adddd"
+  },
+  {
+    "path": "src/pages/audit-dashboard/index.jsx",
+    "size": 30564,
+    "sha256": "368310d0c8892fd3744944d410377049cb5988169f529f0092e8c405be6c79e6"
+  },
+  {
+    "path": "src/pages/audit-reports/index.jsx",
+    "size": 38478,
+    "sha256": "c73f9a14664dacfa3b9da4b0608f32bc93eacacf8630db6f9f3fc34d6ab6e5ca"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/AuditPanel.jsx",
+    "size": 2480,
+    "sha256": "435dce0639f25014693491fa6b9b4159147cb558b54bbc37c6e4328c36651e8f"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/BoneTissueScanner.jsx",
+    "size": 25763,
+    "sha256": "637b6ec33c3daa33ebc6fc2103973a646695b7ffcd25dd54b3b1b2edf1c6b24c"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/BulkImportWizard.jsx",
+    "size": 30054,
+    "sha256": "5a998ba486132f4b6e6ae540ae546d79de5c4998b6dfe38154e17a7f97814551"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/CSVImportModal.jsx",
+    "size": 27771,
+    "sha256": "1f21f399036e1155b76bb3b9323e550781f0b187d0864631ec75e53fc8c340d8"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/DeleteConfirmModal.jsx",
+    "size": 2629,
+    "sha256": "c2511c3e8b41725ebfbd5360f8bb689cddb0a997c9391d731c283a80b3f47b92"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/EntryModal.jsx",
+    "size": 34123,
+    "sha256": "119dd3e69dfa7874a5d9e85497b0f2b9deda394cd351316912587902e430a715"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/ExpirationAlerts.jsx",
+    "size": 2685,
+    "sha256": "d5da33e464add42d2d4f8ee15596333da71bcd050b450a64a10e7d58e8d5b753"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/ImportHistoryTab.jsx",
+    "size": 11195,
+    "sha256": "29e4f65808c9d6cba12cfdaccb9d052bd5f69235a2b205141e22118590de3aba"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/InventoryFilters.jsx",
+    "size": 6149,
+    "sha256": "a1ad89f8fbae48af1ee5d24b4095c5d73c3460df684365f030285ada20f7ca04"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/InventoryTable.jsx",
+    "size": 13212,
+    "sha256": "29ca375e7cf6022716592833659c9eb93f90891db4874f28d68656f89b0ff988"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/LowStockBanner.jsx",
+    "size": 2058,
+    "sha256": "8dfd27bfa90dcf744007a54d8089680a10f8f9225a3370ca594ff44fe39f4db7"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/MobileEntryModal.jsx",
+    "size": 19759,
+    "sha256": "bcf146cdd2f2b560678ff3558508545307557ad5cf246f6fc17735bd647569fe"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/ReportsTab.jsx",
+    "size": 14123,
+    "sha256": "7505ce4e9dfe751face0a08373333054ec57debb9a5e17414e083ad85732c015"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/RestockModal.jsx",
+    "size": 5316,
+    "sha256": "2293f68ee0433fd18d0585fd893159a19b00be21c5d10c991fe13335bc32c028"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/StatusBadge.jsx",
+    "size": 916,
+    "sha256": "52fdafc4dcbe7ec3eda6cf6dcb980964ce51af447cbb26e305e48570ce0c75e1"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/components/SummaryCards.jsx",
+    "size": 4111,
+    "sha256": "9548096a17dede14c47f016b00fb24771da8e1da32bf180cfb0d21d3ffaefe45"
+  },
+  {
+    "path": "src/pages/bone-and-tissue-inventory/index.jsx",
+    "size": 16966,
+    "sha256": "42ba9ad72bd175fea1cef7c320f4fd05a720322cf65baa019dea1a936d25727d"
+  },
+  {
+    "path": "src/pages/change-password/index.jsx",
+    "size": 13991,
+    "sha256": "76d9367432560c9c7068ef79a4c6efe68202595dc8310033e6f5b29bf6c52637"
+  },
+  {
+    "path": "src/pages/compliance-retention/index.jsx",
+    "size": 38891,
+    "sha256": "ac544fe18f22e8f7f59a854f3bfd8c6e6b47a8258ca0ccbb6a2026124200ebd9"
+  },
+  {
+    "path": "src/pages/daily-entry-form/components/DailyBulkImportTab.jsx",
+    "size": 48662,
+    "sha256": "401dc1db9aac6b95f28421cf11afe58e305cdf37793ba39371752fb338b90d8a"
+  },
+  {
+    "path": "src/pages/daily-entry-form/components/DailyOperationsSection.jsx",
+    "size": 7203,
+    "sha256": "a96ca3c51130605fec2a926a6b6e11bd0ebf2796b40b9e8fde770f4ae4d7c137"
+  },
+  {
+    "path": "src/pages/daily-entry-form/components/DentrixDailyCloseoutTab.jsx",
+    "size": 38350,
+    "sha256": "519c8dd228e4b031f6e35ced1f813aefbb6f774d15a97bfbbcaf62dd461b8861"
+  },
+  {
+    "path": "src/pages/daily-entry-form/components/EntryDatePicker.jsx",
+    "size": 1692,
+    "sha256": "4f25d7360c234fd638133dbabcf67689e6162370f52d11a1a335b27d7f3af23e"
+  },
+  {
+    "path": "src/pages/daily-entry-form/components/ExpenseSection.jsx",
+    "size": 12558,
+    "sha256": "0b9dd877d593b05013da7d46eb38a0cb08ca39229bfb71eccd70945dd305c2ad"
+  },
+  {
+    "path": "src/pages/daily-entry-form/components/NotesField.jsx",
+    "size": 1770,
+    "sha256": "11450733b3fe53784d4911e520d6f1e2c7e189cb1cf5903a26c8f2bdf8a5ab2f"
+  },
+  {
+    "path": "src/pages/daily-entry-form/components/PendingApprovals.jsx",
+    "size": 71569,
+    "sha256": "10d80d812c7e9386ea3b0c8dced7f05cf899eabcc2b44e3a73d800dd804bcd06"
+  },
+  {
+    "path": "src/pages/daily-entry-form/components/ReconciliationPanel.jsx",
+    "size": 19610,
+    "sha256": "4c3fd8b2925f67c4d62b282ab5fc5b6d85558f4aa2537a88279b2a8652409439"
+  },
+  {
+    "path": "src/pages/daily-entry-form/components/RevenueSection.jsx",
+    "size": 20277,
+    "sha256": "1fa7a4bca01e04347f02b73c93ab1225f28ef78a381c2b4aa29101bbb81325a3"
+  },
+  {
+    "path": "src/pages/daily-entry-form/components/SubmissionConfirmation.jsx",
+    "size": 2401,
+    "sha256": "dbbbcc0c5beab6aba647362fc4d5e4e9676cc4e2a2bd708973845249b13f0b7e"
+  },
+  {
+    "path": "src/pages/daily-entry-form/components/TreatmentPlanCompletionTab.jsx",
+    "size": 20681,
+    "sha256": "f6eda90dacc3d56adc5a0234fc7254668130e486a595b6a02f2aecab70209c30"
+  },
+  {
+    "path": "src/pages/daily-entry-form/components/UnscheduledTreatmentTab.jsx",
+    "size": 79106,
+    "sha256": "e775bf712bba26cc4948196a8301d023fdf722a8b2b72e12dec49948f4913faf"
+  },
+  {
+    "path": "src/pages/daily-entry-form/index.jsx",
+    "size": 44975,
+    "sha256": "fc1c47b6c6346254cdbaa37d5784532aae59751ca62047b2ef20511d42c61627"
+  },
+  {
+    "path": "src/pages/daily-morning-huddle/components/ChecklistSection.jsx",
+    "size": 6022,
+    "sha256": "99bc4dd6bc7ddf6ef5288846877d3e256459df49b591d2fd0dba3978819fb106"
+  },
+  {
+    "path": "src/pages/daily-morning-huddle/components/CollectionsGoalSection.jsx",
+    "size": 2855,
+    "sha256": "db486fd642bbf71fe0d756b5d4cb3c78c611d63125638a077f9912296f274745"
+  },
+  {
+    "path": "src/pages/daily-morning-huddle/components/ConvertToTaskModal.jsx",
+    "size": 7426,
+    "sha256": "140a10c9ccf1fed4ef52f93f898a1f43b497683050a52a9e9e059dac94e43b1b"
+  },
+  {
+    "path": "src/pages/daily-morning-huddle/components/HuddleHistory.jsx",
+    "size": 4860,
+    "sha256": "6ca4ee545342f9a9cc34cb92480e4649127f9daffc7a6634eb2174252f4987b1"
+  },
+  {
+    "path": "src/pages/daily-morning-huddle/components/HuddleHistoryTab.jsx",
+    "size": 7077,
+    "sha256": "ee1ab7003f4f19e2c5eafffa6d94f2ae6f058cc388e7072866af4cef1efd488c"
+  },
+  {
+    "path": "src/pages/daily-morning-huddle/components/HuddleMetaSection.jsx",
+    "size": 1802,
+    "sha256": "47de44b4983d12bd54de853952bd23397caed3380dd500438638d9d271cf5b86"
+  },
+  {
+    "path": "src/pages/daily-morning-huddle/components/HuddleReportsTab.jsx",
+    "size": 9525,
+    "sha256": "5d68918a609521d74426a1fdea9b8bb513155e50eb136f6baf5f7c093ec1d357"
+  },
+  {
+    "path": "src/pages/daily-morning-huddle/components/HuddleStatusBar.jsx",
+    "size": 4053,
+    "sha256": "66b9081f5159c752c187e526ed9f205c95b1e52b934715aaa30a91571436f303"
+  },
+  {
+    "path": "src/pages/daily-morning-huddle/components/NewPatientsSection.jsx",
+    "size": 2884,
+    "sha256": "df8c276e9dcea68b309f718cfb6a4954de7399c5072625c60b6351a4ccfd1b71"
+  },
+  {
+    "path": "src/pages/daily-morning-huddle/components/PreviousOpenDay.jsx",
+    "size": 1764,
+    "sha256": "f3d31925556aabf4d68500a78427100fef9c0c413c044e08b0d3383bbb22dca3"
+  },
+  {
+    "path": "src/pages/daily-morning-huddle/components/ProductionBlock.jsx",
+    "size": 11233,
+    "sha256": "f0092fb69cbe8eb01c64d490070d20c0cd9b8df36dc848fc60d439d5d7c049cd"
+  },
+  {
+    "path": "src/pages/daily-morning-huddle/components/ProviderCombobox.jsx",
+    "size": 5928,
+    "sha256": "ac7ca861ad514c4dd3613d42dbb724058c5d2881176bdda1f98cad2c449bab53"
+  },
+  {
+    "path": "src/pages/daily-morning-huddle/components/UnlockModal.jsx",
+    "size": 2744,
+    "sha256": "ecdf2eb4dd1187beed0062e4634bca44ba8d3aab85ca1ff05c40cf13a5259a63"
+  },
+  {
+    "path": "src/pages/daily-morning-huddle/index.jsx",
+    "size": 52442,
+    "sha256": "413e2d9ae1fe6d9ee813b29092f8f6221d466ea80a9d8c29213305fbfec6464f"
+  },
+  {
+    "path": "src/pages/data-health/index.jsx",
+    "size": 52158,
+    "sha256": "5c9c1e822d91a36a9fd57b830746ac376b6c8893eb9fe54060a491bfd21fbe68"
+  },
+  {
+    "path": "src/pages/dentrix-diagnostics/index.jsx",
+    "size": 54892,
+    "sha256": "3996157d3753b578acb6da75bb3b1502cfe5c7f12c7184a98134537c7a6d0250"
+  },
+  {
+    "path": "src/pages/error-log-viewer/index.jsx",
+    "size": 22324,
+    "sha256": "e7e10255a5a06b26e360d2e43b92d9ec092d7b6ff63f642e31136c639e7c4a71"
+  },
+  {
+    "path": "src/pages/executive-monthly-analytics/components/CSVImportExport.jsx",
+    "size": 14114,
+    "sha256": "311d77e8d932d4abf595477a0a0e93af2c6c28c1fb6a0e5eafbbf7626bf5bb74"
+  },
+  {
+    "path": "src/pages/executive-monthly-analytics/components/ComparisonPanel.jsx",
+    "size": 3902,
+    "sha256": "589a1f63e2f8dbeb3ce17332643f892a6067d06a8c0d3e1f751ccc8a8ec9414a"
+  },
+  {
+    "path": "src/pages/executive-monthly-analytics/components/DataEntryForm.jsx",
+    "size": 27361,
+    "sha256": "3442f33b28daa991895bb949c619d9f748ac4a6070ed994dfbb1418a5e94168d"
+  },
+  {
+    "path": "src/pages/executive-monthly-analytics/components/ExecutiveSummaryTab.jsx",
+    "size": 34339,
+    "sha256": "825f4a0b734464b22c2c771a496fcc0e3c559fe1e02d122d199fff59c22558e3"
+  },
+  {
+    "path": "src/pages/executive-monthly-analytics/components/LiveInsightsSidebar.jsx",
+    "size": 3742,
+    "sha256": "34d03667e377cfcd80a2ca39b46192fce3a625891f35f3ec23f4bf343f03a021"
+  },
+  {
+    "path": "src/pages/executive-monthly-analytics/components/StepperNav.jsx",
+    "size": 2543,
+    "sha256": "98306043218594e739f5cca7e337131bb19a3abfc13643319ff524663114e2cb"
+  },
+  {
+    "path": "src/pages/executive-monthly-analytics/index.jsx",
+    "size": 6683,
+    "sha256": "e49d9453f7d6d2334f1434a05bdfd217a218455278848fbee255380d7feea093"
+  },
+  {
+    "path": "src/pages/executive-overview/components/ChecklistCompletionGauge.jsx",
+    "size": 5935,
+    "sha256": "24d851b875f2ebf27a97dd4d6cf1230ed8de95cd8bf02d05cd5bfe3a7df82747"
+  },
+  {
+    "path": "src/pages/executive-overview/components/ComparisonModeToggle.jsx",
+    "size": 712,
+    "sha256": "c75100a60a98245b0d919a4033a3ea432609a89879162333293d508186d59e9b"
+  },
+  {
+    "path": "src/pages/executive-overview/components/ConnectionStatus.jsx",
+    "size": 907,
+    "sha256": "073f096f164c6a1d4a8a87e706151555a85803559c4b190bb530f80f66a7bf92"
+  },
+  {
+    "path": "src/pages/executive-overview/components/DateRangePicker.jsx",
+    "size": 2521,
+    "sha256": "38f36bcdc05db5975a72959b738dd8849aad26c0728d59e88ff8b726086c00b3"
+  },
+  {
+    "path": "src/pages/executive-overview/components/ExecutiveReconciliationPanel.jsx",
+    "size": 35749,
+    "sha256": "fab55681aba40077b3d2ea08714f42a01113ac6b896b20b9894d443c38ad9abc"
+  },
+  {
+    "path": "src/pages/executive-overview/components/FinancialsPerLocationChart.jsx",
+    "size": 13055,
+    "sha256": "098aa1c6efa320386a971ffdde6c2d1b51987133c12534576c6b0d985abc72ad"
+  },
+  {
+    "path": "src/pages/executive-overview/components/GoalDonutChart.jsx",
+    "size": 9756,
+    "sha256": "420a96da6773ffeae7a466b7fbcdf23fec615234a3b70bc10ae333e9c132e4a3"
+  },
+  {
+    "path": "src/pages/executive-overview/components/MetricCard.jsx",
+    "size": 2578,
+    "sha256": "37b54aaea47cbacaf11c7cdd563181c27cb3a0c34075c90e50b967d37d11e933"
+  },
+  {
+    "path": "src/pages/executive-overview/components/MonthEndForecastWidget.jsx",
+    "size": 28535,
+    "sha256": "2c04cee9632958ec4b1e9b01e3d8741a9f4d7d1a891dc2db2788a64bc4cffd9c"
+  },
+  {
+    "path": "src/pages/executive-overview/components/MonthlyGrowthTab.jsx",
+    "size": 30400,
+    "sha256": "db0796b885facc6541986a12a4aa9523e737bdc90963c91a2ca31a0db31524c6"
+  },
+  {
+    "path": "src/pages/executive-overview/components/MultiYearComparisonTable.jsx",
+    "size": 19147,
+    "sha256": "e2f386bc31fdbcf8bcc822022b8f9845603d5b4b04f1156d0f2ed6639045f1f4"
+  },
+  {
+    "path": "src/pages/executive-overview/components/MultiYearMetricCard.jsx",
+    "size": 4748,
+    "sha256": "36b055428ce5241ea56aa93240b31395f2af163d6ccc967c463c0caee99eef78"
+  },
+  {
+    "path": "src/pages/executive-overview/components/MultiYearRevenueChart.jsx",
+    "size": 7383,
+    "sha256": "3870e36286144f765c29a92cb869a79e2227cd4c97a500a65f358eb7ac212209"
+  },
+  {
+    "path": "src/pages/executive-overview/components/OfficeFilterSelect.jsx",
+    "size": 3513,
+    "sha256": "5d0aea47cc863fcadb576a4a0b828812f7316c0429511dad9292676bf7bd0c41"
+  },
+  {
+    "path": "src/pages/executive-overview/components/OfficeGoalStatusBadge.jsx",
+    "size": 3402,
+    "sha256": "bfea998a027e012a0e68bcfd8dc8ac3a89bcc4686ef74fe1f62a80fbfd8a931c"
+  },
+  {
+    "path": "src/pages/executive-overview/components/OfficeRankingTable.jsx",
+    "size": 3449,
+    "sha256": "05a98abe8419c94b54f450ff15edfbf7714ec63ec97edc68baeee707257b1694"
+  },
+  {
+    "path": "src/pages/executive-overview/components/PLSummaryTable.jsx",
+    "size": 7239,
+    "sha256": "e16678752606efbe24a0c56d54ae9e69bfe1be679400098846ec1f5147b8f3c0"
+  },
+  {
+    "path": "src/pages/executive-overview/components/ProviderDrillDownModal.jsx",
+    "size": 22498,
+    "sha256": "18976cc3ebe2ae9b804da25157a776ddd0c8aa22af8c7b6048493bd5202f7c6b"
+  },
+  {
+    "path": "src/pages/executive-overview/components/RevenueChart.jsx",
+    "size": 6443,
+    "sha256": "7474d69aaab645a25ada9b5e36bd3fe75be5100cbbe221217889f62e8a00b36d"
+  },
+  {
+    "path": "src/pages/executive-overview/components/RevenueSummarySection.jsx",
+    "size": 17247,
+    "sha256": "f825ec46edf638738db75da7e1b668f9f303b33f39c1bc8d19dac32d392f3b38"
+  },
+  {
+    "path": "src/pages/executive-overview/components/ScheduleAutoEmailModal.jsx",
+    "size": 9865,
+    "sha256": "5182322204f5eff9b01806f19bac655e7e1118158b209f6e9483d58fb5330c94"
+  },
+  {
+    "path": "src/pages/executive-overview/components/ScheduleYearComparisonModal.jsx",
+    "size": 40446,
+    "sha256": "febd159b01b8e3ce09ecc3a8f898201323d3fe0b3f9962c3dace4fc7f96ccdcf"
+  },
+  {
+    "path": "src/pages/executive-overview/components/ScheduledProductionCard.jsx",
+    "size": 4033,
+    "sha256": "b8cd00fe891187f06e9510a37484fd3b6d6683348b0a96d121970845578c0f6c"
+  },
+  {
+    "path": "src/pages/executive-overview/index.jsx",
+    "size": 86017,
+    "sha256": "acc5a6aad276fb5f3c716e18386d546eec39fb8283ca0400d04cbe884338405e"
+  },
+  {
+    "path": "src/pages/financial-analytics/ExpenseReport.jsx",
+    "size": 67789,
+    "sha256": "303e3df00bd517e54a47bc1ddfe922742594bd2322e09604c1d07ec3d95c873d"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/BookmarkSystem.jsx",
+    "size": 1791,
+    "sha256": "4ed8fc59d58cf4203673c4c3b696731e53bc47c480af05018446940c5b801813"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/ChartVisualization.jsx",
+    "size": 31858,
+    "sha256": "02fe0ed34199c8db5de734fa0c906d2fad89ec8628fe311496be2ed6316d2a9a"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/CollectionsTab.jsx",
+    "size": 28716,
+    "sha256": "2924071b8651a8ab0a5bd56b4447c95ba52e166197ae5dc0d3b6d8dd64e3f743"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/DentrixReconciliationTab.jsx",
+    "size": 11866,
+    "sha256": "b8aadce6cc545aab8c3de8ab406b5735fa346b3786926e69211cb728212d3864"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/FilterPanel.jsx",
+    "size": 17865,
+    "sha256": "4583c077a173571cbd11d85a9566629bb1129e867e82c4d5d39bff1f951b9ae5"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/FinancialDatePicker.jsx",
+    "size": 9652,
+    "sha256": "f98f6dbca0c6bf581bb224083d110bb2ccf1f27e3f7130e9bf12c0953d72a729"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/FinancialSectionBoundary.jsx",
+    "size": 1881,
+    "sha256": "501a74d2724c33c16c880e4e4bc6b0b21ddb6d51a535641723e2066dc4f7e3f6"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/HierarchicalFilter.jsx",
+    "size": 46412,
+    "sha256": "e8ec07a2da867b21891f940e34bb6f83a831c2e3167b14cf7b543e4293c8fa56"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/PivotTable.jsx",
+    "size": 13284,
+    "sha256": "b68af2316630a99ff97427cb520bf7f5ee4884ccd5bbc2e540df9b1230b4ae3a"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/ProductionAdjustmentsTab.jsx",
+    "size": 20649,
+    "sha256": "b2dabbab5dee08c5af4c30765e7b7cf1703bf397ed4ff0502d7a56bf9c69965b"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/RevenueBreakdownChart.jsx",
+    "size": 1164,
+    "sha256": "53ef19c71f2d88751f82157fbacb130e8475d42a000220d6b28b9268d6348a05"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/RevenueBreakdownTab.jsx",
+    "size": 40338,
+    "sha256": "1e697f0618d0679af7666b7c1027be4d775ddaae34b9f51855678c521fea2bb7"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/ServiceCategoriesTab.jsx",
+    "size": 16691,
+    "sha256": "4d3505ce4c92d9fcbf9e7a0345ba987e6725aa71104c29eeac630c6d9ba2d63c"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/StatisticalSummary.jsx",
+    "size": 29650,
+    "sha256": "cf4d834453d9f6f11cb5eeafaa94adaa689e45c331010b4f9e1be47bb9a840b5"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/expense-report/AddPaymentModal.jsx",
+    "size": 12181,
+    "sha256": "8125f7fd93903763dd43164415e0c107c2654830d6b15f4a5082d08144e30d97"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/expense-report/AdminAuditTools.jsx",
+    "size": 15226,
+    "sha256": "117773390c70d1d59c1b363aee8c0bb5f74a574dedcc0dfc64642b5828131507"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/expense-report/AmexImport.jsx",
+    "size": 16372,
+    "sha256": "aeb24d29084ea43218a4df6908534d7b5c49831976e4040946742942855a5836"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/expense-report/AmexPaymentsTab.jsx",
+    "size": 43342,
+    "sha256": "6587800079c1009909e57a4b301ce5a966ba679b0342f0668047e126fc9b972c"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/expense-report/ExpenseCharts.jsx",
+    "size": 10214,
+    "sha256": "52101d322c8e454bc4df8c306e1338007976c001cfe271f4e53ea5640ba18317"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/expense-report/ExpenseKPICards.jsx",
+    "size": 34266,
+    "sha256": "5da7822cdf3d260a110b6eac6c5a6488969b08798f2770b2459a4654d43a1980"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/expense-report/ExpenseReportFilters.jsx",
+    "size": 9957,
+    "sha256": "28033bdbb01b02a19f2165aaaf84ab9f8933989902e8e5f1b76723e6b23c5fdd"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/expense-report/ExpenseTable.jsx",
+    "size": 70437,
+    "sha256": "d2818ba3ba479f15e9eb53fc54cfc4aa2ec62b1a2441c82c64da43151ff12c19"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/expense-report/GustoDataHealth.jsx",
+    "size": 28878,
+    "sha256": "ab0a0c73091b1a94c38709d89bd2ca512d011b8c1ec83d752532eb149491df00"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/expense-report/ManualExpenseEntry.jsx",
+    "size": 12603,
+    "sha256": "e2834fb6f18e881229c3ddfc852aafe775d8f3504c2d74315e4bf1246c9b5815"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/expense-report/V292AuditPanel.jsx",
+    "size": 42242,
+    "sha256": "834b37bd87e56753ec0a7f279708c2ff6674998309fd12724546870fdfc60aeb"
+  },
+  {
+    "path": "src/pages/financial-analytics/components/expense-report/V292LiveQueryLogger.jsx",
+    "size": 17317,
+    "sha256": "ee5bb543caff73d47b4fdd7f828459275df6077664a8794db6ee0f882f06e7ff"
+  },
+  {
+    "path": "src/pages/financial-analytics/index.jsx",
+    "size": 33016,
+    "sha256": "9eea08b7f5730c27a160dadf76fc2f9c2c88d8b4ce10bda375a9d1caeec143fa"
+  },
+  {
+    "path": "src/pages/forgot-password/components/ForgotPasswordForm.jsx",
+    "size": 4112,
+    "sha256": "82b141498a8359ef37df71d68a7ed73846477ef61d5c966f53057344d1b74ad6"
+  },
+  {
+    "path": "src/pages/forgot-password/components/SuccessMessage.jsx",
+    "size": 2042,
+    "sha256": "9c84afad7967d27c0e0050efe827f397768f64c82d3673298887f13c3db4c645"
+  },
+  {
+    "path": "src/pages/forgot-password/index.jsx",
+    "size": 3780,
+    "sha256": "d9ad2e3af2b983e5c7f817fb963795210fb342777f62f281cc5f4374a1c3f8bc"
+  },
+  {
+    "path": "src/pages/help-manual/index.jsx",
+    "size": 126591,
+    "sha256": "b5afe3118f9a911134d9b0e5869cf593f940c1eb9dcbb3f3de5040d9690d79d9"
+  },
+  {
+    "path": "src/pages/huddle-analytics/components/ChecklistCompletionChart.jsx",
+    "size": 3373,
+    "sha256": "3d53382b076d8383ee8e008ff58412021f94fdd4d31b8a7ace046f26b560b4f6"
+  },
+  {
+    "path": "src/pages/huddle-analytics/components/MTDCollectionsChart.jsx",
+    "size": 3123,
+    "sha256": "5680a8cb2df7cd781f427c70ff66184b316d6269ee59692076426437499da969"
+  },
+  {
+    "path": "src/pages/huddle-analytics/components/NewPatientsTrendChart.jsx",
+    "size": 2770,
+    "sha256": "be98a7cc94232966d06f66d001ec6beb014aa47e687124bca1467ed785db9332"
+  },
+  {
+    "path": "src/pages/huddle-analytics/components/ScheduledVsGoalChart.jsx",
+    "size": 2893,
+    "sha256": "22cd99923a28b973a4147565aa5913227c23bca5794e48c99c27cb21392c587c"
+  },
+  {
+    "path": "src/pages/huddle-analytics/index.jsx",
+    "size": 8766,
+    "sha256": "a7f659ff1cb03cc095b819c311a8b9d53843617910d9a3e97ccec01faa911939"
+  },
+  {
+    "path": "src/pages/huddle-approvals/index.jsx",
+    "size": 83769,
+    "sha256": "07fc50f11d13bd9957314f038ae957e460a898fdc33e306564155966a90d29f7"
+  },
+  {
+    "path": "src/pages/huddle-history/components/HuddleDetailView.jsx",
+    "size": 13559,
+    "sha256": "7cca6e1d8ab8e2fd96b999d635ff4f1e426f0134780b9c5368bb8ae88bbdfbe1"
+  },
+  {
+    "path": "src/pages/huddle-history/components/HuddleFilters.jsx",
+    "size": 4022,
+    "sha256": "e8b6a7ee3e04788d860bf648f1b52c1f713bf52b4a7464fac803d7cdf98f733a"
+  },
+  {
+    "path": "src/pages/huddle-history/components/HuddleGrid.jsx",
+    "size": 4042,
+    "sha256": "671d07be22d6f23e0efeb044076cb4f73fd6cf41d43a90540458e7d9b0a10b79"
+  },
+  {
+    "path": "src/pages/huddle-history/index.jsx",
+    "size": 9664,
+    "sha256": "d62874d2f2501beaca8609fe380874932f3fd22f69941c65257cf6892748b932"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/components/AddImplantModal.jsx",
+    "size": 22044,
+    "sha256": "dc36887ff34cd482e15ad335e459964ccbb795682138df71b973ab7ed8b510e0"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/components/ImplantAuditPanel.jsx",
+    "size": 3647,
+    "sha256": "f5555b43fe78a203a237d78ddcaf5da7688d89e76903957d749a490c1396a6ee"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/components/ImplantBulkImportWizard.jsx",
+    "size": 28340,
+    "sha256": "3ba3c9c65ca4fb1857c30f9cb0b39a1911ccc13ee0d08ac5e5c714b1bb45627b"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/components/ImplantExpirationAlerts.jsx",
+    "size": 2231,
+    "sha256": "943b9beb224b2934f88eb8b42273a24e083fccbf265d4af052de7061311ecc73"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/components/ImplantInventoryTab.jsx",
+    "size": 15245,
+    "sha256": "12db701b929a4e02158d2319020e88d94a9d8ce61dae7264bc31f00b2a435ac5"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/components/ImplantQRScanner.jsx",
+    "size": 7084,
+    "sha256": "9d5d47ea5af1ae658bfa7fd5fbbf95267532c485cb1daf3db4886d703032bfdb"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/components/ImplantReportsTab.jsx",
+    "size": 17989,
+    "sha256": "d46e218249c0d2de7daa393ad23bdfeba3d362af054644d6ffdcdc7320530875"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/components/ImplantScanner.jsx",
+    "size": 26332,
+    "sha256": "77fb8027d0de6ba6e9fa3ebc5170233cf4b19f193f1d50d46f5ab5f493d313c9"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/components/ImplantSettingsTab.jsx",
+    "size": 9926,
+    "sha256": "32ed71b04ee370f826a5228c86ad641aaa459363a5e8f3269a8b143b35008f02"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/components/ImplantStatusBadge.jsx",
+    "size": 1042,
+    "sha256": "6fccd0ea1ab0dd8491bc3ad68d9d2f8933149fbee51423cc0b571316c194fea0"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/components/ImplantSummaryCards.jsx",
+    "size": 4102,
+    "sha256": "ed503bdd56c4d491e4fa7e0292a3e290a811d3080baf017c9122fd47bc733a4d"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/components/ImplantUsageLogTab.jsx",
+    "size": 8117,
+    "sha256": "9450f53ae8226bbaeef5427713e36916bbef036c32f75761de71db025d2a282c"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/components/MobileUseImplantModal.jsx",
+    "size": 24002,
+    "sha256": "da19eecb91b0be83749f82732e1dd5407de549fd38e0189c8d8b189792191647"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/components/UseImplantModal.jsx",
+    "size": 19403,
+    "sha256": "5d29257cef7d1e45f17d6f024aef473c8eadd37a21a8eb623688f78dd9516c71"
+  },
+  {
+    "path": "src/pages/implant-inventory-management/index.jsx",
+    "size": 14299,
+    "sha256": "8897b47d4127bd23ae734f406ee235c6c543942f9e2a50ba0ac5ffc963218ba1"
+  },
+  {
+    "path": "src/pages/import-audit/index.jsx",
+    "size": 39630,
+    "sha256": "6191cb4064801dafb15237117906cc53e5a37c85721c560a885408b5f765f43b"
+  },
+  {
+    "path": "src/pages/insurance-verify/components/DentrixPatientLookupModal.jsx",
+    "size": 14795,
+    "sha256": "7640ad810851d939c03b762ebd45f14088dd4c2a2def128fddc0350c31c1a20e"
+  },
+  {
+    "path": "src/pages/insurance-verify/components/DentrixUploadConfirmModal.jsx",
+    "size": 14130,
+    "sha256": "6247a117f0de77b8a0bbe71612094bc5c381ae8da21abf5f22bccb577df04e6b"
+  },
+  {
+    "path": "src/pages/insurance-verify/components/EmailPDFToOfficeModal.jsx",
+    "size": 8203,
+    "sha256": "c172e6b12e62f4f3929ddc82bc325c45e20666e1c20647d58e9df4b6b9dab5ca"
+  },
+  {
+    "path": "src/pages/insurance-verify/components/InsuranceVerificationForm.jsx",
+    "size": 66151,
+    "sha256": "f881fce509465fcb2646cbc2b1ee1ed65f53b6e07be9b27cba9a91abbf0c64b9"
+  },
+  {
+    "path": "src/pages/insurance-verify/components/NewVerificationRequestForm.jsx",
+    "size": 16791,
+    "sha256": "80a5f554c9c9d2fdd8c133ddab85a7cf978070370a8be9941b2b486733e7462a"
+  },
+  {
+    "path": "src/pages/insurance-verify/components/RequestDetailDrawer.jsx",
+    "size": 37161,
+    "sha256": "401ed6715a2220e1937a7e3ec5bd712e816decc2dc3c4ff2f77ca8b655cdc546"
+  },
+  {
+    "path": "src/pages/insurance-verify/components/RequestQueue.jsx",
+    "size": 15630,
+    "sha256": "50377c5d8bd90ce2675aaec8ecb7a61e532e535c3cea960513dd371948037650"
+  },
+  {
+    "path": "src/pages/insurance-verify/index.jsx",
+    "size": 8613,
+    "sha256": "67fdfa37c41e74442e40bd3856938182b19a4a2e50c39300d13eda92d1143837"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/FrontDeskAmazonOrderHistory.jsx",
+    "size": 50483,
+    "sha256": "2d08d8147052e72d095d5f1385f3d2a031ce5b9cb028ad748edcc2ee8577b89b"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/FrontDeskCurrentInventory.jsx",
+    "size": 35813,
+    "sha256": "16ef6d9eb883d11a53d2c73d9ac5187384097634d82ce07060bb40ebf69303fd"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/FrontDeskInventoryTab.jsx",
+    "size": 115675,
+    "sha256": "8b910ce298d508bb4026cc00d6c05879d96de40f1fbcacf8698fe5b2e091b792"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/FrontDeskRequestHistory.jsx",
+    "size": 22096,
+    "sha256": "3cfcdd2c803dc8c7b8feb38b06650ff39d7ff2589d58d442301f228482c18b95"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/FrontDeskUrgentModal.jsx",
+    "size": 8708,
+    "sha256": "e30d4af18ab154b28a68ef9041a5c90029ec7e7938dc1685c98bc45c04d57f70"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/ImplantGraftingTab.jsx",
+    "size": 82359,
+    "sha256": "2724669545e98d6d63d884c177005dba9eee64f19c73ec9760c56289e1b0ff8b"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/MonthlySupplyModule.jsx",
+    "size": 6591,
+    "sha256": "d68639f702290cddc9c83938662b9a4fc446f8d7c7da3eb12ddc102f131185c6"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/OrderAllocationTab.jsx",
+    "size": 30225,
+    "sha256": "ea7e3945230cf2d093b97d1c40442428e145f976da04b88bba317e7ced5e051c"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/UnifiedBulkImportTab.jsx",
+    "size": 11804,
+    "sha256": "964b7b059b65d7ec9809566b5e630f6a4736c80277638d1ddb2f401c157ec0a9"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/UnifiedReportsTab.jsx",
+    "size": 10856,
+    "sha256": "0c2e75d14fdb09858aff518265fc648954989cb2b1b90a21b91bdce2fa46e8d1"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/UnifiedSettingsTab.jsx",
+    "size": 11130,
+    "sha256": "b517ecd876a1d867e9caec59859a37bca1b8a75f4a631fd1841a3d645e57683d"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/UnifiedUsageLogTab.jsx",
+    "size": 18606,
+    "sha256": "d3304fe66ad50adb5aa83cc8dbcc41cc491a10e9d80c79783596cbb46078b239"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/supply/CurrentInventoryTab.jsx",
+    "size": 17965,
+    "sha256": "e8701c6650458f01e4a56f3cd86d0a1d468c0bef3890d0202998b6e1371935af"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/supply/FulfillmentImportTab.jsx",
+    "size": 34918,
+    "sha256": "f308762a52d79964f52f4995d763f51f5ffa30455d6b23736ed790a32a013e26"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/supply/FulfillmentLogTab.jsx",
+    "size": 21372,
+    "sha256": "742db3bcb4442b0d4af2e7f1f88ffbf2c9d5bc129c86d795bfe3423425ccb591"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/supply/FulfillmentSpendTab.jsx",
+    "size": 29381,
+    "sha256": "92bf244a93ea28b28bde743281f8d7c389254388174ed62cdb9f2f416b535934"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/supply/MobileCatalogView.jsx",
+    "size": 36914,
+    "sha256": "3fc04236aa6f32d1cf6940b3243681cad5ab234fa06412b1681957d8c8ca6566"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/supply/MobileInventoryAdjustModal.jsx",
+    "size": 10196,
+    "sha256": "e884db714936d3535eb11bb54d1685ac84dc451aa103860f9980c853aeb1b004"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/supply/MobileReceiveSuppliesModal.jsx",
+    "size": 21129,
+    "sha256": "db9fa06020f9c8519a731699c088e377da21eb536264c66794615e5f26b2acc0"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/supply/MobileUrgentRequestModal.jsx",
+    "size": 18467,
+    "sha256": "e970ac0749acb88c50d9da74dc6558d2d8ecc6501261118174b85c379c62a1ac"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/supply/MonthlyRequestTab.jsx",
+    "size": 44390,
+    "sha256": "ae6e8e28165742364fd0f4cdd238ccedc3a51e24efcc3ffe4aa668cd2ce88bf5"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/supply/SupplyCatalogTab.jsx",
+    "size": 17414,
+    "sha256": "6b08aaaa881623b5d034de7bbbcf608a644212c65d1f233531a1727dc5b1eb5a"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/supply/SupplyOverviewTab.jsx",
+    "size": 28454,
+    "sha256": "9b342e86af0d2d51d80717dcfd12cb5031539db85029c42414f3ccd1d9ce0e83"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/supply/SupplyReportsTab.jsx",
+    "size": 19020,
+    "sha256": "ec9a2399e9092411d1f54a1fe609909f0d55cfc6103a66c1661b1a5359371517"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/supply/SupplySettingsTab.jsx",
+    "size": 25950,
+    "sha256": "1b89fb1cace3baf7f0097061a464fc3ef67c1687f46f3e776a7b44b2649c2264"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/components/supply/UrgentRequestTab.jsx",
+    "size": 33325,
+    "sha256": "afded218fa1246e59a510f86494266e1df3c96482358be4c004c29de2092663b"
+  },
+  {
+    "path": "src/pages/inventory-dashboard/index.jsx",
+    "size": 16112,
+    "sha256": "4491ebf43002f53b0499a98e2736026090c6dadbe5f1ecb32de13c4a8ffd81a1"
+  },
+  {
+    "path": "src/pages/kpis/components/DoctorSection.jsx",
+    "size": 7128,
+    "sha256": "ea462b0ffb5c23406a1285cda92f65d78a0b43e75b34a9fe46dd0896ee29e1fa"
+  },
+  {
+    "path": "src/pages/kpis/components/GoalVsActualTable.jsx",
+    "size": 12763,
+    "sha256": "53dfbe6b03d70824b09899f29b769e47b0b96fc73d70b3b7596986ad239434fc"
+  },
+  {
+    "path": "src/pages/kpis/components/HygieneSection.jsx",
+    "size": 22466,
+    "sha256": "15bc64b97d440e59bb723ddec01756a9b618a7f6a437411e12cb86c086ea35b3"
+  },
+  {
+    "path": "src/pages/kpis/components/KpiCards.jsx",
+    "size": 18173,
+    "sha256": "c237821e714f9586679262a046087f9baa46d9f1d22e11f5a696c45d24f52723"
+  },
+  {
+    "path": "src/pages/kpis/components/MetricKpiCard.jsx",
+    "size": 1860,
+    "sha256": "83570bf2b22194d188779770a7a90fa7a7b5a139534adfe6988383edf3e658b5"
+  },
+  {
+    "path": "src/pages/kpis/components/ProvidersTab.jsx",
+    "size": 11743,
+    "sha256": "1f1febb241742d5b91886920431dbff6b1ffad8d32690891f996c9f9c437a9be"
+  },
+  {
+    "path": "src/pages/kpis/components/SparklineSection.jsx",
+    "size": 7158,
+    "sha256": "8a889cda08042d425eca448144cd405ddb46f7fd0a7bc66edd8ea1165c42471b"
+  },
+  {
+    "path": "src/pages/kpis/components/SpecialtyProvidersTab.jsx",
+    "size": 19098,
+    "sha256": "9ffcaa571d3afc5e0738b96d3183c7c11736d7da99cd7970b86e15dbf989bed0"
+  },
+  {
+    "path": "src/pages/kpis/components/SpecialtySection.jsx",
+    "size": 10763,
+    "sha256": "94bd3667558dd2c67fc229a61b886d6c271e9aa9baba1238997e0ee37b1229e9"
+  },
+  {
+    "path": "src/pages/kpis/index.jsx",
+    "size": 32481,
+    "sha256": "f2eaec35437034d73120410e6ee7fc3c2cc29afe6db57b8883c5d981c3e9200a"
+  },
+  {
+    "path": "src/pages/login/index.jsx",
+    "size": 13554,
+    "sha256": "80cb806078274432f2d195461c39f780b2755ca97d6cd23f1e7513022e6ff33c"
+  },
+  {
+    "path": "src/pages/management/AuditTrailManagement.jsx",
+    "size": 11688,
+    "sha256": "391e286350a23ff71fd013eb14f6492639b6e34803b58ec9298116c73bfdfb6e"
+  },
+  {
+    "path": "src/pages/management/BackStaffOrdersManagement.jsx",
+    "size": 6653,
+    "sha256": "e2caa203ebc1a5b9d33fdb7dd3e6e2a4636dbd7b40d2d3c2662f0005981aa4e2"
+  },
+  {
+    "path": "src/pages/management/CostDriversManagement.jsx",
+    "size": 4931,
+    "sha256": "22f2e30aafd07157207e16c17aa9596bf78519b3fac7c41153b7fc4f82083f8f"
+  },
+  {
+    "path": "src/pages/management/EmailLogsManagement.jsx",
+    "size": 10221,
+    "sha256": "4d5cece42c97d5267fec65631749569bd0d5cbb55080c4bfc4d3695ca099880b"
+  },
+  {
+    "path": "src/pages/management/GoalsManagement.jsx",
+    "size": 10304,
+    "sha256": "4f2c8bfd2993bd611a038cb4ea8ae0b255cd3a1d5acd6ddbb114bcf343b95997"
+  },
+  {
+    "path": "src/pages/management/OfficesManagement.jsx",
+    "size": 5798,
+    "sha256": "f4b92cbecd18c6ff41992cd87bcff5dc5803bda56aac1bb5328488b018d12284"
+  },
+  {
+    "path": "src/pages/management/ProvidersManagement.jsx",
+    "size": 19462,
+    "sha256": "a539d8ebf97caff8c12901290406e4ccd1d354f4826d40be7b3716a0421b82a3"
+  },
+  {
+    "path": "src/pages/management/RoleEditorModal.jsx",
+    "size": 75819,
+    "sha256": "2afef40120255027d144c6cb8dadd4c1fe10650da35d9ffac949dc189c23166a"
+  },
+  {
+    "path": "src/pages/management/ServiceCategoriesManagement.jsx",
+    "size": 14362,
+    "sha256": "4d6bace4a59e6d7b08c1688ce7b0967246c30103c99100d0865a76ea9bd8d071"
+  },
+  {
+    "path": "src/pages/management/ServiceCategoryGoalsManagement.jsx",
+    "size": 37459,
+    "sha256": "52139e13002bdbc3bc2c537be50b215e304c974712b7c9f2d7a4ae374bc02912"
+  },
+  {
+    "path": "src/pages/management/UsersManagement.jsx",
+    "size": 26991,
+    "sha256": "5df56a5c9af89632dbc2944dafca5eb493220a2444f2bb5866b8f67400241d36"
+  },
+  {
+    "path": "src/pages/management/components/ConfirmDeleteModal.jsx",
+    "size": 1540,
+    "sha256": "ffd37acf4780a7d19dd5cafa8e491b9f482265f6716434e92091b0bfe86c2fa0"
+  },
+  {
+    "path": "src/pages/management/components/ManagementModal.jsx",
+    "size": 5285,
+    "sha256": "c79be7e3bec09e3f830f10b3cb1927759e44c157e019d02aac55bd3762fd32d2"
+  },
+  {
+    "path": "src/pages/management/components/ManagementTable.jsx",
+    "size": 5264,
+    "sha256": "4f300d4cda54bf0a44f3d2e852f0a9a64d3f63a719c2898a2c13b8005bc66efc"
+  },
+  {
+    "path": "src/pages/management/components/ReviewPendingEntities.jsx",
+    "size": 14225,
+    "sha256": "c7507794f53f9506250f50abb03e3ed6c5288b78e86567790038765d6533189c"
+  },
+  {
+    "path": "src/pages/management/index.jsx",
+    "size": 9391,
+    "sha256": "237ce2ab1090437513f79eab905cea3fc251e4ca041dcb2957c1b5bb769f69ed"
+  },
+  {
+    "path": "src/pages/manual-production-entry/index.jsx",
+    "size": 36973,
+    "sha256": "57391e66ce6474e4401c67e66bf106d739638ac16d5aee05cf3519bacd9ee74a"
+  },
+  {
+    "path": "src/pages/metric-alert-thresholds/index.jsx",
+    "size": 48899,
+    "sha256": "869e8445891b0d73fc43266e0a1dd672f596e67d18dd72d0203db0b57ccc41cc"
+  },
+  {
+    "path": "src/pages/office-comparison/components/CollectionExpenseBarChart.jsx",
+    "size": 7994,
+    "sha256": "fce29376e535204c13742f141e11f6c0ae99069495e266333848ac1503586f9e"
+  },
+  {
+    "path": "src/pages/office-comparison/components/ComparisonDateRangePicker.jsx",
+    "size": 2867,
+    "sha256": "0007f5565b626a1da0bb72e97bfb166f3c765aa39c9001e3d8da8cb216621c37"
+  },
+  {
+    "path": "src/pages/office-comparison/components/NetProfitLineChart.jsx",
+    "size": 4097,
+    "sha256": "e47f447576759e068b2180416388e694478003dbfa64236753cd24ad5e7d27fb"
+  },
+  {
+    "path": "src/pages/office-comparison/components/RoleAccessBanner.jsx",
+    "size": 1516,
+    "sha256": "d5a5466e3eadcbf818c4657ea9c0246f8dd960ae067f566e2b7a309cfe5d25f7"
+  },
+  {
+    "path": "src/pages/office-comparison/components/YTDLeaderboardTable.jsx",
+    "size": 9209,
+    "sha256": "6c3b8c3b6fada802f80b835e511e78a8bd52efe208afba29a2ecc93a2a153e63"
+  },
+  {
+    "path": "src/pages/office-comparison/index.jsx",
+    "size": 25691,
+    "sha256": "d217eece3631248299502d669cb627e5bb6746f7d2803d21df40219b0d099a81"
+  },
+  {
+    "path": "src/pages/office-performance/components/ActivityFeed.jsx",
+    "size": 3019,
+    "sha256": "566cdc1f4935a94e8a9e59732c58fa431dff35b44e994afacb51304e21da288e"
+  },
+  {
+    "path": "src/pages/office-performance/components/DentrixYearComparisonPanel.jsx",
+    "size": 21491,
+    "sha256": "154a63291a0bc4063444a8c52cbae5cfcdb4c923034a41bfdd8020b8a245b676"
+  },
+  {
+    "path": "src/pages/office-performance/components/ExpenseCategoryChart.jsx",
+    "size": 1658,
+    "sha256": "db347f795684699991bce07d0e3ad1b177a451a6ceee0cfc37d6ec0e09a14f57"
+  },
+  {
+    "path": "src/pages/office-performance/components/ExportControls.jsx",
+    "size": 1637,
+    "sha256": "ce24ca6f8240decbc2d170f9f6b450f76f90050a04fc83755d0a460717c8b773"
+  },
+  {
+    "path": "src/pages/office-performance/components/KPICard.jsx",
+    "size": 2080,
+    "sha256": "e81ac739e7857139800a182858de013b1680bafb770323896dc38da7339fa6b1"
+  },
+  {
+    "path": "src/pages/office-performance/components/OfficeSelector.jsx",
+    "size": 597,
+    "sha256": "f13093b055a15e7c62e38186849db05f2a67aa287ba540fe2b2dca9fe1be9e71"
+  },
+  {
+    "path": "src/pages/office-performance/components/ProviderFilter.jsx",
+    "size": 905,
+    "sha256": "c1b4de4a789ce8b2fc22ad8e594ec2516de23a2b915c5b151d93e0cd8098f82d"
+  },
+  {
+    "path": "src/pages/office-performance/components/ProviderProductivityChart.jsx",
+    "size": 19716,
+    "sha256": "e1624a4cf96946605bf344a0fd9efb85ff509c823fdbcaa3e028c0347d0a0213"
+  },
+  {
+    "path": "src/pages/office-performance/components/RevenueTrendsChart.jsx",
+    "size": 5114,
+    "sha256": "b3c5a096c2187607bd16126485150986b65bff059cc71514c46ecf9aacd26e89"
+  },
+  {
+    "path": "src/pages/office-performance/components/TimeRangePicker.jsx",
+    "size": 3193,
+    "sha256": "92fbc9974d4638f7159c790547b5ac8681e77e51a4126fa7d636206ef64b8d91"
+  },
+  {
+    "path": "src/pages/office-performance/components/TransactionGrid.jsx",
+    "size": 8887,
+    "sha256": "e679ff6b6bf4c46df7c8e0b945601a55b54b99676e782c4f29f41b350ce24f23"
+  },
+  {
+    "path": "src/pages/office-performance/index.jsx",
+    "size": 41713,
+    "sha256": "9383ee1546d6e27c5f63771c1b7fcdd6f17aa6b97577b390050d8c7b97d14b06"
+  },
+  {
+    "path": "src/pages/operations/components/ARAgingTab.jsx",
+    "size": 21871,
+    "sha256": "17ae5c5764cb284a840f87af779bd6c7fde1e506406f5138013fd07bdbd7bb15"
+  },
+  {
+    "path": "src/pages/operations/components/CancellationsTab.jsx",
+    "size": 11536,
+    "sha256": "e40dd3480f3ae7d791ca4d02fa6c1b8c1558c86d1c00b460267ef8971d69867d"
+  },
+  {
+    "path": "src/pages/operations/components/MarketingTab.jsx",
+    "size": 24189,
+    "sha256": "5d4fc9bd183c7941a2725616842459d2a8f94034a07e3484c56534d877271cb5"
+  },
+  {
+    "path": "src/pages/operations/components/OfficesTab.jsx",
+    "size": 21908,
+    "sha256": "b8cfa27a249a7491035da452a993bd355ac9195c39e6308ebdf176d348f4501b"
+  },
+  {
+    "path": "src/pages/operations/components/PayorsTab.jsx",
+    "size": 38204,
+    "sha256": "59c8553c4f2f5b2b6c2fca13f1f06c9cfbd80ca7fa3a6521210a969e500b5227"
+  },
+  {
+    "path": "src/pages/operations/components/PerformanceTab.jsx",
+    "size": 24565,
+    "sha256": "a7610b76ebae52bc4cb14869a3ab02273ac7580d89f6d89cf3d624843f8ceaf5"
+  },
+  {
+    "path": "src/pages/operations/components/ProductionDetailsTab.jsx",
+    "size": 13625,
+    "sha256": "0cdf677023ffb0a66917448d8adf75568d96d184f95ee090c82771d8d22c8d86"
+  },
+  {
+    "path": "src/pages/operations/components/ProvidersTab.jsx",
+    "size": 18221,
+    "sha256": "c53f5b13a83f04305d562969d4390fcaeacb3e1ac6652d99c2255f0e7a43f9dd"
+  },
+  {
+    "path": "src/pages/operations/components/ScorecardsTab.jsx",
+    "size": 12857,
+    "sha256": "e68dbb931978861bcdddf584d40ebbf92590812e81a0728b77f08cca3798df00"
+  },
+  {
+    "path": "src/pages/operations/components/ServicesTab.jsx",
+    "size": 54918,
+    "sha256": "88c0c9203ad1a4acd0f34f7aa082d58f2d76cda47356c74429b2631ace9651d7"
+  },
+  {
+    "path": "src/pages/operations/components/TrendsTab.jsx",
+    "size": 12469,
+    "sha256": "1c565593ed7774ef01922fede8bfd9b8729bd79d79ad56144d7edf5cd7429ec7"
+  },
+  {
+    "path": "src/pages/operations/index.jsx",
+    "size": 12544,
+    "sha256": "0bd1306572b012679ed7fda7191ceab50ca29fd494514ebea9bb8d24fadf877f"
+  },
+  {
+    "path": "src/pages/otp-challenge/index.jsx",
+    "size": 20555,
+    "sha256": "5211c9aa0611892e30392d04e06bbbfd394b4cacf224d735cff212d935974095"
+  },
+  {
+    "path": "src/pages/payroll/PayrollRoot.jsx",
+    "size": 7911,
+    "sha256": "91e62b69024f18220dd41b22eaeff9a856491b67a4c3244c52f42232f4cde09c"
+  },
+  {
+    "path": "src/pages/payroll/components/MappingReviewTool.jsx",
+    "size": 44879,
+    "sha256": "07ff90c18942f61873a9e419c4ac9d32048b2191740ea2909042401ced5e4f4b"
+  },
+  {
+    "path": "src/pages/payroll/components/ProviderCompensation.jsx",
+    "size": 60236,
+    "sha256": "5642ce38543268212c0b25dcb1967a73c6a5b50a85aae9c8268ab83676320724"
+  },
+  {
+    "path": "src/pages/payroll/components/ProviderCompensationNew.jsx",
+    "size": 121143,
+    "sha256": "4332188060fdbeeea38bfea193025e9645a3eab9853b744fd3a725aa9fcbe8de"
+  },
+  {
+    "path": "src/pages/payroll/components/ProviderPayPeriodReport.jsx",
+    "size": 44291,
+    "sha256": "fcff9010800d3fde9079980f276779d3e0c1ec3210034a65d07a94682bb87b61"
+  },
+  {
+    "path": "src/pages/payroll/components/SendCollectionReportModal.jsx",
+    "size": 32883,
+    "sha256": "e9443f848cf34cfcedfe98ca73716cfc3a1af20fef7b34900eec1aeba08e7296"
+  },
+  {
+    "path": "src/pages/payroll/index.jsx",
+    "size": 101971,
+    "sha256": "e9c5eeeb2b4fb846a64ada23e43f6cde335ccb5730697b5f5d62e8ed47e7dbde"
+  },
+  {
+    "path": "src/pages/payroll-audit/index.jsx",
+    "size": 53189,
+    "sha256": "fe876738ec1d935eb76aa667bcd7394969e6a4a13d418226465d43583f843795"
+  },
+  {
+    "path": "src/pages/payroll-sync-dashboard/index.jsx",
+    "size": 10755,
+    "sha256": "4f3f9b9cf17e1f1e14c8ce8d7b7e10e6b637d1327811deaff41154bac6ceea77"
+  },
+  {
+    "path": "src/pages/pending-approvals/index.jsx",
+    "size": 83645,
+    "sha256": "8714e436352f90a47e266f918057cea3797fa84762b1423d9842f778003d2983"
+  },
+  {
+    "path": "src/pages/profile-settings/components/ProfilePhotoSection.jsx",
+    "size": 5249,
+    "sha256": "b797f66c0c95cfea331c175a22aedfa146f53e1ca19ed74fce182d942a99202d"
+  },
+  {
+    "path": "src/pages/profile-settings/index.jsx",
+    "size": 42685,
+    "sha256": "6145a13462105298fc1aa2ec41f6f0ee8ac49f140909fd595d494e2d2a0a4897"
+  },
+  {
+    "path": "src/pages/provider-performance/components/PerformanceFilters.jsx",
+    "size": 6262,
+    "sha256": "beffedb66969063cab8af2fd9b4809f04a772ab4f32a33e900f9450a296f6c03"
+  },
+  {
+    "path": "src/pages/provider-performance/components/ProviderMetricsTable.jsx",
+    "size": 18838,
+    "sha256": "b272dfcb2d87360fc37085b3e1531d38432cb4edd27fca6e166b009932626a87"
+  },
+  {
+    "path": "src/pages/provider-performance/components/ServiceCategoryTabs.jsx",
+    "size": 1023,
+    "sha256": "80a766629efb705c3674d5a7def14b35e8ede90b40b3a79c83a4e7ba80caa602"
+  },
+  {
+    "path": "src/pages/provider-performance/index.jsx",
+    "size": 22804,
+    "sha256": "58898f6efa633a21f44a1616096e3d791ec5c6dfb039bcce9cf7252bd158aa19"
+  },
+  {
+    "path": "src/pages/rcm/components/AdjustmentTab.jsx",
+    "size": 104613,
+    "sha256": "a04e5abd2f64fb1b046849980a357360e78a7398852792e56f49dc05ec4c305a"
+  },
+  {
+    "path": "src/pages/rcm/components/ArAgingTab.jsx",
+    "size": 54171,
+    "sha256": "2e445c0d93bfddd865a18885c2d077911f09ef82baffaefe6a99c5b1bcfa61b0"
+  },
+  {
+    "path": "src/pages/rcm/components/ClaimSubmissionsTab.jsx",
+    "size": 33134,
+    "sha256": "78ab857c245949eb15e2c0bd5aa6d406823eac63a8c11515976e5ce2f6b947c9"
+  },
+  {
+    "path": "src/pages/rcm/components/CollectionRefundTab.jsx",
+    "size": 21155,
+    "sha256": "398b6ce16206abaf4f88b93478122d584a504d238520c8e1405a5bdf95107627"
+  },
+  {
+    "path": "src/pages/rcm/components/DailyComparisonTab.jsx",
+    "size": 109791,
+    "sha256": "ba7d1eeff3491cf8d360e470fa0ce76246efe586f203844f063ee0cf2c014605"
+  },
+  {
+    "path": "src/pages/rcm/components/EAssistDailySummaryTab.jsx",
+    "size": 30462,
+    "sha256": "a2e87b3c4ccbc844420488ca055a9dca568b75aea5cdb7710b9d77ea8af56594"
+  },
+  {
+    "path": "src/pages/rcm/components/EAssistReportsTab.jsx",
+    "size": 42700,
+    "sha256": "47f8009a5799f494fc9336fcdd774227fed92fb65cafa276f96fd3401c7504a6"
+  },
+  {
+    "path": "src/pages/rcm/components/GuarantorReconciliationTab.jsx",
+    "size": 56087,
+    "sha256": "d07e27b35d6be1804ddde73adc71cd65f12fca81e8eb0149ed57edad93170261"
+  },
+  {
+    "path": "src/pages/rcm/components/PatientBalancesTab.jsx",
+    "size": 35955,
+    "sha256": "da0f348c950cf4cd94b379861f1dae5f5bdadaf0015a1ebab5c56d38ee0272e6"
+  },
+  {
+    "path": "src/pages/rcm/components/PatientStatementsTab.jsx",
+    "size": 116377,
+    "sha256": "b8341d2e5555ad2f909fe7c80fe98fbdbb412a01992f432df0b446f15fa05338"
+  },
+  {
+    "path": "src/pages/rcm/components/PaymentArrangementTab.jsx",
+    "size": 7481,
+    "sha256": "7861eb229214a3918c7724659ff31dce7d5f245b530c1a8a7c42b180039263ef"
+  },
+  {
+    "path": "src/pages/rcm/components/PosCollectionTab.jsx",
+    "size": 52613,
+    "sha256": "3b07efceb2c643aa480cebe0d3a4b10c6079281aa1c69f0aef7080e60fac2162"
+  },
+  {
+    "path": "src/pages/rcm/components/RcmDashboardTab.jsx",
+    "size": 88950,
+    "sha256": "cf09850306383d5fc52ffcf5c6e59db656084fd7365ecca95309781f2af2ca41"
+  },
+  {
+    "path": "src/pages/rcm/components/RcmDiagnosticPanel.jsx",
+    "size": 7196,
+    "sha256": "f9d2a0264fafb1c007da503c4c51cb1339735bb3a518587278cbcec504ddd32c"
+  },
+  {
+    "path": "src/pages/rcm/components/RcmOfficeMultiSelect.jsx",
+    "size": 10298,
+    "sha256": "53d78024b584ffbe2a08f3db3818493bf9f85ca8079279041828c5129c6f0f5e"
+  },
+  {
+    "path": "src/pages/rcm/components/VerifiedArTrendChart.jsx",
+    "size": 17353,
+    "sha256": "7afa7ab954c445e8a89e14ef9b702a006ff542dcf3012bcba7e79b8da74c61bd"
+  },
+  {
+    "path": "src/pages/rcm/index.jsx",
+    "size": 17929,
+    "sha256": "a2a953abf3ae24a11f3e7b55721c432e32cc11fff3ca84547cc8757c794f5819"
+  },
+  {
+    "path": "src/pages/rcm-dashboard/components/BulkActionsToolbar.jsx",
+    "size": 1624,
+    "sha256": "2302e115625dd600d048f92790a2c91828ce9dcac977a738638ef4b709b30e31"
+  },
+  {
+    "path": "src/pages/rcm-dashboard/components/BulkConfirmModal.jsx",
+    "size": 3482,
+    "sha256": "63dc0b6c1b127779ef21d6750b7d718a4b35ff1484e1550bd1d1c2b99971758f"
+  },
+  {
+    "path": "src/pages/rcm-dashboard/components/OfficeSummaryCards.jsx",
+    "size": 3861,
+    "sha256": "48adbb42267846462a64c6e27dec428f72aad79358be542962cee7a72cc2b412"
+  },
+  {
+    "path": "src/pages/rcm-dashboard/components/PendingRequestsTable.jsx",
+    "size": 10387,
+    "sha256": "3ab5e927c45eaef777d077d09dce0eb798d7304157a910eaaa7e87c1c7581ff7"
+  },
+  {
+    "path": "src/pages/rcm-dashboard/components/RCMFilterBar.jsx",
+    "size": 3508,
+    "sha256": "5b9fc498443254d7546fc1e941b9b234c42eda078bdff4016fc77063342add4f"
+  },
+  {
+    "path": "src/pages/rcm-dashboard/components/RCMSummaryBar.jsx",
+    "size": 1695,
+    "sha256": "c8abdb685e6f48ecc53cc5d8871d46c4823646a5c583678c90aac1c1363f598d"
+  },
+  {
+    "path": "src/pages/rcm-dashboard/components/RequestDetailPanel.jsx",
+    "size": 14260,
+    "sha256": "98c78064f5836e7118ca98887661b86b5cef2e219ff1da10ab639596246a30e4"
+  },
+  {
+    "path": "src/pages/rcm-dashboard/components/UrgentRequestsSection.jsx",
+    "size": 9961,
+    "sha256": "50f64ff299b4f14dd937a42996ad6cc1a3d548914c72a0a2de1888354cc5a79d"
+  },
+  {
+    "path": "src/pages/rcm-dashboard/index.jsx",
+    "size": 14688,
+    "sha256": "5bf2a201c9fff175b12f674f2b8f1feec27816ccdc46453cac6d7729f9610220"
+  },
+  {
+    "path": "src/pages/reports/components/CaseAcceptanceGauge.jsx",
+    "size": 10897,
+    "sha256": "c35dc68d34d1964529a18af673a0b85002169f61c11b508ab6468ed8ebbddb70"
+  },
+  {
+    "path": "src/pages/reports/components/CollectionRateChart.jsx",
+    "size": 1490,
+    "sha256": "a55a6d9b1e1b6862775d0b2068b5732fe99f80c41bd28da5f6d00099bcf9c086"
+  },
+  {
+    "path": "src/pages/reports/components/ExpenseBreakdownChart.jsx",
+    "size": 13874,
+    "sha256": "357532c2a7b7dfd809bd1387271a460bc56e0ec7f2175805a841973c0aa10e81"
+  },
+  {
+    "path": "src/pages/reports/components/ExportPanel.jsx",
+    "size": 28905,
+    "sha256": "e37e25f8d620d20519ca8a148d5ca6e8412f96278d55bf8b8ed6a8b3c92be5da"
+  },
+  {
+    "path": "src/pages/reports/components/GoalLeaderboard.jsx",
+    "size": 17688,
+    "sha256": "a5cfa46f302e71316216cde121bc0ec50209af9beede3a56658320da98d9fac7"
+  },
+  {
+    "path": "src/pages/reports/components/OfficeBreakdownTable.jsx",
+    "size": 1124,
+    "sha256": "17e381a5871efbc1bb1a8049afc498613eaf333181b5e7362f1cbc63c061a127"
+  },
+  {
+    "path": "src/pages/reports/components/PLMonthlyTable.jsx",
+    "size": 26737,
+    "sha256": "445a522eab789a1899cfe1fd0789369e909deb99c2e7b63554cf66bf46c5f326"
+  },
+  {
+    "path": "src/pages/reports/components/PatientFlowCard.jsx",
+    "size": 18945,
+    "sha256": "58ca75bc25de76cb1a702c7d06d386a8bcd188e2ea32a21163548bb616895a39"
+  },
+  {
+    "path": "src/pages/reports/components/PeriodComparisonView.jsx",
+    "size": 26779,
+    "sha256": "2d4c0e17b791b9e0b8097968453accd19f48632169f76cdeebc546b58b98b006"
+  },
+  {
+    "path": "src/pages/reports/components/ReportsDateFilter.jsx",
+    "size": 2216,
+    "sha256": "300ccdafafc9b546f18964f8ce4eb6e434fce858cd5711cb68530cb25eea217a"
+  },
+  {
+    "path": "src/pages/reports/components/ReportsOfficeFilter.jsx",
+    "size": 3865,
+    "sha256": "680e33ecb677e358956c6d204b12985061cc61bbc66c2f14431143a395e8ec47"
+  },
+  {
+    "path": "src/pages/reports/components/RevenueByProviderChart.jsx",
+    "size": 13679,
+    "sha256": "1ef466df9d6740544c3426d654c331e8bdbb9246d79fd674c50c3fda7ad02cc3"
+  },
+  {
+    "path": "src/pages/reports/components/RevenueExpenseChart.jsx",
+    "size": 1838,
+    "sha256": "b876b8c32fa2fda865d5ac96e57fa1f78f386d18adffcaf05c5ceff7aae68ab7"
+  },
+  {
+    "path": "src/pages/reports/components/TreatmentPlanCompletionSection.jsx",
+    "size": 17442,
+    "sha256": "cd6a9ac051c5a3eb0c6735a68a2df240f43dcbed1e59e57aa47e50515503bee8"
+  },
+  {
+    "path": "src/pages/reports/components/WorkbookConfirmModal.jsx",
+    "size": 9036,
+    "sha256": "b565c9f809d1cae0731c80c21b507ba23a651379653a73dcd1f77595f27e6b3a"
+  },
+  {
+    "path": "src/pages/reports/index.jsx",
+    "size": 24527,
+    "sha256": "b7e862dc2fbcfa2d72ee4a199e1354b4fc19939397d6f1d8bacc95bfa2a9c95a"
+  },
+  {
+    "path": "src/pages/reset-password/components/PasswordStrengthIndicator.jsx",
+    "size": 2968,
+    "sha256": "c51b1a7141494d47fc1d004926a8557c30cf99c2bba2af28f107d9aee9425ec3"
+  },
+  {
+    "path": "src/pages/reset-password/components/ResetPasswordForm.jsx",
+    "size": 6375,
+    "sha256": "cab419a5f9b3ab1cdbf4efb1f15b16824bd9d7d13416bcf609fdadfd723a280a"
+  },
+  {
+    "path": "src/pages/reset-password/index.jsx",
+    "size": 9529,
+    "sha256": "9a75f0953d2e1656cf4a8094c971cf4bc587e9e769139f5d80d6d1fc9311f515"
+  },
+  {
+    "path": "src/pages/service-categories-management/components/CategoryFilters.jsx",
+    "size": 2198,
+    "sha256": "995840df977bcd2b2a21c99c0feee229a53188f8173a923a1e441d38c0f27e73"
+  },
+  {
+    "path": "src/pages/service-categories-management/components/CategoryModal.jsx",
+    "size": 6978,
+    "sha256": "d61a646db304d409a08fbbeef0fee6615df78ada89cb239e4fe30cfd1f3d4a9a"
+  },
+  {
+    "path": "src/pages/service-categories-management/components/CategoryTable.jsx",
+    "size": 12009,
+    "sha256": "7bf8a0c4fb69c75365391c7a9f21ac89a9c7a7398996b92fd6db54e3fd737bbb"
+  },
+  {
+    "path": "src/pages/service-categories-management/index.jsx",
+    "size": 12023,
+    "sha256": "667caa368bf8e4195dc5e3e8031eb928417bdc60ce2574175c1a0f8a348e711b"
+  },
+  {
+    "path": "src/pages/staff-directory/components/AddStaffModal.jsx",
+    "size": 10393,
+    "sha256": "e9509beca559ab45826cf91681fd68b6b5a6dec39a82670c07b44a24bfa67316"
+  },
+  {
+    "path": "src/pages/staff-directory/components/EditStaffModal.jsx",
+    "size": 11790,
+    "sha256": "995b45ca4ad284200b29f937a4178ebf96dddb38e6fd3f0c5e690b73cc3fc4cf"
+  },
+  {
+    "path": "src/pages/staff-directory/components/PhotoCropModal.jsx",
+    "size": 10421,
+    "sha256": "d5d7026ed2a8e3d94f547c9971342cddac97ec58789ba81078fd837da0d7184f"
+  },
+  {
+    "path": "src/pages/staff-directory/components/StaffPhotoUpload.jsx",
+    "size": 10095,
+    "sha256": "a6267387e9a5a06927d5d4cc9973bc2a2a72d92e7d389cc2f218b6c535924730"
+  },
+  {
+    "path": "src/pages/staff-directory/index.jsx",
+    "size": 26910,
+    "sha256": "5ede6c453158ab68260d93721e7e530e2a6551e394fd24c2836e89fe740afd61"
+  },
+  {
+    "path": "src/pages/staff-management/components/ProviderCSVImportModal.jsx",
+    "size": 19984,
+    "sha256": "665bd50c8fabaedc70f947490dbf3900977d67c6154cafc4e24986e7b1ad4c0d"
+  },
+  {
+    "path": "src/pages/staff-management/index.jsx",
+    "size": 69562,
+    "sha256": "f3ffb76d1fa36b4d6b60fb66ac91c202b216d68927f08bb4837cdc456ad3e48d"
+  },
+  {
+    "path": "src/pages/sync-dashboard/index.jsx",
+    "size": 56851,
+    "sha256": "26254f6ff98820805123f54aa72dd1ee64468d5dea6c2e89693de52f3d281880"
+  },
+  {
+    "path": "src/pages/team-assignments/components/EditTaskModal.jsx",
+    "size": 9044,
+    "sha256": "cf84f1272e50fe764fe4414e427fc85048e7739f13cb177558e724bf1eeb33db"
+  },
+  {
+    "path": "src/pages/team-assignments/components/KanbanBoard.jsx",
+    "size": 2885,
+    "sha256": "1c21f17f6a67d6839eca64f6fd358fd8e6d20783d1d5852af9e0dcac28dc66ed"
+  },
+  {
+    "path": "src/pages/team-assignments/components/NewTaskForm.jsx",
+    "size": 7487,
+    "sha256": "d111e7fb82fc50e342cfb1879c8ab68542fdd250e79fd05ff9173535eeeb55b1"
+  },
+  {
+    "path": "src/pages/team-assignments/components/TaskCard.jsx",
+    "size": 7058,
+    "sha256": "efe28a218207b4d19fa5cdb7d489695b8e767cb607a9f7fe2ef362cfe5aa16af"
+  },
+  {
+    "path": "src/pages/team-assignments/components/TaskFilters.jsx",
+    "size": 3748,
+    "sha256": "76e00d47d2b78d99eebf0f4209b7f8186ecbb62f9ed989fc9133fc0fd94ceea4"
+  },
+  {
+    "path": "src/pages/team-assignments/components/TaskTable.jsx",
+    "size": 11537,
+    "sha256": "c8742bbfbf2534ddfaed69bcb0754652b4ce0db8200d3afe918b72e6ccee3d0f"
+  },
+  {
+    "path": "src/pages/team-assignments/index.jsx",
+    "size": 17551,
+    "sha256": "4348c7eb63fef7dced3fc23e6610c8cf3a9cb3925bfd832e7d1499f2073f1960"
+  },
+  {
+    "path": "src/pages/transaction-audit/index.jsx",
+    "size": 39346,
+    "sha256": "ffa153d8221ebcccf63b0e866748e7a4e6152292ad3f438a4091a2174d15367b"
+  },
+  {
+    "path": "src/pages/unified-inventory-dashboard/components/DashboardHeader.jsx",
+    "size": 2633,
+    "sha256": "ff090e3e4bad2c783aaf339441a4ca39ec9082fbee2c409f526d83748bab8558"
+  },
+  {
+    "path": "src/pages/unified-inventory-dashboard/components/ExpirationTimeline.jsx",
+    "size": 10089,
+    "sha256": "ab828c10df8d26622266ec11154afdac191153cdd0349de40632e65d4cd1096d"
+  },
+  {
+    "path": "src/pages/unified-inventory-dashboard/components/LowStockAlertsPanel.jsx",
+    "size": 5050,
+    "sha256": "9fefc904d0a3da1e7a106e0de201d701b5c63f0b107ee298da88a88f15869503"
+  },
+  {
+    "path": "src/pages/unified-inventory-dashboard/components/StockByLocationCards.jsx",
+    "size": 4127,
+    "sha256": "0af8f664d9b46b52471900e612cecd97eb059367a02148282a4bfaada67da013"
+  },
+  {
+    "path": "src/pages/unified-inventory-dashboard/components/UsageTrends.jsx",
+    "size": 9543,
+    "sha256": "3dc001980130ef9dcaa27d49102765ec2c817027aecbe13fd1f29bf0f71a3f95"
+  },
+  {
+    "path": "src/pages/unified-inventory-dashboard/index.jsx",
+    "size": 7266,
+    "sha256": "1898d3de6c7a8c8ba873afea5c6b6b4936df7ea1cc6a644d5b097a24ed91dacb"
+  },
+  {
+    "path": "src/pages/users-management/components/BulkActionsBar.jsx",
+    "size": 7336,
+    "sha256": "575c1e1c36312e485b9ae9c9175033b0562c8cb761ce0a2b590820172756b465"
+  },
+  {
+    "path": "src/pages/users-management/components/EditUserModal.jsx",
+    "size": 24863,
+    "sha256": "89dabcad39b967f70e840c375d6cdfdc5798a7e58169ddc79fa666b20d0d621f"
+  },
+  {
+    "path": "src/pages/users-management/components/InviteUserModal.jsx",
+    "size": 11062,
+    "sha256": "59ecca0e632f217d7ebca740bd12ce76824c90493705dc6e564d46cc7f10ca91"
+  },
+  {
+    "path": "src/pages/users-management/components/PhoneVerificationModal.jsx",
+    "size": 6735,
+    "sha256": "e622cc55ff37a254a63ddeac5b363083b3048e0be20bb7743b0c0f7c0e0aa3fa"
+  },
+  {
+    "path": "src/pages/users-management/components/UserFilters.jsx",
+    "size": 4395,
+    "sha256": "d50bcdb02f030e63d1e553467463dbfab4057b3312d3dd89f67a568bdbc01f6d"
+  },
+  {
+    "path": "src/pages/users-management/components/UserTable.jsx",
+    "size": 16801,
+    "sha256": "3aa913f675e2b07570cf655733ae90f45707dfb853853ae68fd4277a28af6180"
+  },
+  {
+    "path": "src/pages/users-management/index.jsx",
+    "size": 29161,
+    "sha256": "75d89794781c4d1f8af6356f0fb633fa38e61bd086241e6fdaa086136ec95358"
+  },
+  {
+    "path": "src/services/actionItemsService.js",
+    "size": 13951,
+    "sha256": "1655a97ae6647be04dad3b9e21b046b0a543e6c24904133c5042f3c87f867cac"
+  },
+  {
+    "path": "src/services/alertRulesService.js",
+    "size": 10595,
+    "sha256": "69853cd97562c545abc93ab5e62b858482d218883db2f8e4ff0abb2abe9a9694"
+  },
+  {
+    "path": "src/services/amexPaymentsService.js",
+    "size": 10191,
+    "sha256": "39d9284ad107ffd8c31f9e7f368dc5809a0b206baeb247f5e74c802dc41980c8"
+  },
+  {
+    "path": "src/services/ascendApi.js",
+    "size": 31093,
+    "sha256": "eaceb8d004f4687623c81e1dca107090975692c65965723519ecf0cc0379622d"
+  },
+  {
+    "path": "src/services/ascendSyncService.js",
+    "size": 34433,
+    "sha256": "e29b2bf9023b3b35d90aa3d08604330d1ff03f58e890c52fe9f65455584364d6"
+  },
+  {
+    "path": "src/services/backfillReconciliationService.js",
+    "size": 13862,
+    "sha256": "b22a1e81ac6df7d84b312c155a5e207fe0c7bfb15ec7b33bea9a05b4eedc8758"
+  },
+  {
+    "path": "src/services/boneTissueService.js",
+    "size": 18722,
+    "sha256": "a24065a9b0d00ba789950ea89a6f1b66aeeba2adbf04d9c2625eeb1429844848"
+  },
+  {
+    "path": "src/services/bulkImportService.js",
+    "size": 26545,
+    "sha256": "81fd083d49a6c9ac98aea00e98eba7423b23ee8a6450e48abf2feef688ce6fe2"
+  },
+  {
+    "path": "src/services/dailyEntryBulkImportService.js",
+    "size": 38897,
+    "sha256": "4dceff5444d0798fe111caab3327d92e62b85f473d82dd907aa8f90e8e0afa78"
+  },
+  {
+    "path": "src/services/dashboardService.js",
+    "size": 3234,
+    "sha256": "895d60ecb6e5eacf0597bac6a37c88b27732b35a2df10a305953ac275303ebe1"
+  },
+  {
+    "path": "src/services/dentrixIngestionService.js",
+    "size": 27273,
+    "sha256": "425350f9811a8097d54b189a82e40d6c288eb44faf52baa43f394673c8e4ffd7"
+  },
+  {
+    "path": "src/services/dentrixNormalizedService.js",
+    "size": 48067,
+    "sha256": "c23cde0c391d5d118eee7d88d815bfbac2d4e7491d68bfa3f49505082e62033a"
+  },
+  {
+    "path": "src/services/dentrixUploadService.js",
+    "size": 14245,
+    "sha256": "21a1e0b644457ee43340758975640c7e1d6e0cdcba78644dbc44ef529eebf27e"
+  },
+  {
+    "path": "src/services/emailService.js",
+    "size": 16782,
+    "sha256": "8b82d8d5b9bcf79bff25f48e91bfe9543a3c43379752aa00307feafc13a21d3d"
+  },
+  {
+    "path": "src/services/eodReportService.js",
+    "size": 4909,
+    "sha256": "82d25fd16800a3a49d58192756163e10071c6bd360b057e901dd3aabda894bf9"
+  },
+  {
+    "path": "src/services/eodTreatmentService.js",
+    "size": 5478,
+    "sha256": "d3c6c1740969800f36e2cda281bd6f5eb6c2263ad14b537f40332395c653af1c"
+  },
+  {
+    "path": "src/services/errorLoggingService.js",
+    "size": 4293,
+    "sha256": "77f3e10784bbc8abd1778c63ef1eb438c97e0c669dbc340c1ce0f226295978fa"
+  },
+  {
+    "path": "src/services/executiveMonthlyAnalyticsService.js",
+    "size": 15103,
+    "sha256": "a430e487f62bac783b557b1bceee42e0ce8dd6293d9ae2686321e24dbd0a2b5c"
+  },
+  {
+    "path": "src/services/executiveOverviewService.js",
+    "size": 18446,
+    "sha256": "c3aed2a7e63b56ba32aa3ac4b1c67b14cd06b1bea696192cc8d8864b1beb18e9"
+  },
+  {
+    "path": "src/services/executivePDFService.js",
+    "size": 21180,
+    "sha256": "ab1c945fdacecc074d31d84f6edf5318472558d2a5ef03cf3f3108b5fd9754fd"
+  },
+  {
+    "path": "src/services/executiveSummaryAutomatedService.jsx",
+    "size": 26472,
+    "sha256": "36cd8de0e3b2f98b42471987239013e5f5a113ea29df9603ab3aed6097483b00"
+  },
+  {
+    "path": "src/services/expenseReportService.js",
+    "size": 139820,
+    "sha256": "04dfe0d802957e65043af58c2c494dfa5971bd209c3b0311bb92b6fe21736ad4"
+  },
+  {
+    "path": "src/services/expenseService.js",
+    "size": 12958,
+    "sha256": "6d85058818522a7000e8746b19801f2f6ab433ec37c7ff2a96324c3c47563ba7"
+  },
+  {
+    "path": "src/services/filterPresetsService.js",
+    "size": 1179,
+    "sha256": "1f10391c338d0feb16e47146e76fe249b2cd47f43cc8f4e4152f9fb758d3775e"
+  },
+  {
+    "path": "src/services/frontDeskInventoryService.js",
+    "size": 12301,
+    "sha256": "eab1207e05baebfcee1383b4ab3a11c34306cdddf9374b37037a9b269c40a936"
+  },
+  {
+    "path": "src/services/fullWorkbookService.js",
+    "size": 68273,
+    "sha256": "74a310494ff9889dc7763d188a1e551e073d611d8a63edd4cce2c1b39946ab9d"
+  },
+  {
+    "path": "src/services/goalsService.js",
+    "size": 14175,
+    "sha256": "ac3ec916d3662eca5ace36682a6058032d95b5822257c3bc42f7437397740c64"
+  },
+  {
+    "path": "src/services/gustoDataHealthService.js",
+    "size": 24651,
+    "sha256": "db9ea08e74c8feba0f4112374d7241bb95c1fce682f688b6c57541c39a6214a4"
+  },
+  {
+    "path": "src/services/huddleService.js",
+    "size": 13021,
+    "sha256": "7b3a92eb8e38ec8a448c486625d56593790a431f842b3408e63ca9e3330609bf"
+  },
+  {
+    "path": "src/services/implantInventoryService.js",
+    "size": 21571,
+    "sha256": "548ad3f82ed5c76cc50c66d55d244adf10ca1c512995c802af94cfa6c03093b2"
+  },
+  {
+    "path": "src/services/insuranceVerificationPDFService.js",
+    "size": 44413,
+    "sha256": "8cc32174b9c69c4d79d96a60e3beaf72309608f274f2ce7e51c6d0b28f817d81"
+  },
+  {
+    "path": "src/services/insuranceVerifyService.js",
+    "size": 17978,
+    "sha256": "bbc9d2a080347acab4bc4f374b0d2cab163d40c9bdc5f07c557778ede1d5734c"
+  },
+  {
+    "path": "src/services/kpiService.js",
+    "size": 85090,
+    "sha256": "55f2550764a2bc5cf49966d5f1c44386f4141266afd395e17e40201c4194152b"
+  },
+  {
+    "path": "src/services/managementService.js",
+    "size": 16789,
+    "sha256": "e09636dcdc908c46c3491f74c13bc5aba391dcd14fe7a0db60f388e5b98f4113"
+  },
+  {
+    "path": "src/services/manualProductionService.js",
+    "size": 11913,
+    "sha256": "8c27794b0b372035b647d41d7471a0ff064ae6209f078bc3fc75036d55d02c4e"
+  },
+  {
+    "path": "src/services/metricsService.js",
+    "size": 29269,
+    "sha256": "25f843258a82fd8a45ea200fa6b21f3f7a943d06985306c9ad8467a967490f2c"
+  },
+  {
+    "path": "src/services/monthlyGrowthService.js",
+    "size": 13397,
+    "sha256": "749bfb6da7a3de3fb43fae1471310d09c1b4a71e6424d00aa4a7065102dceae4"
+  },
+  {
+    "path": "src/services/notificationEventsService.js",
+    "size": 3878,
+    "sha256": "8727423d1510b01e62839ff8e8d5377510c095a300f391191a9ea21a2a175966"
+  },
+  {
+    "path": "src/services/notificationsService.js",
+    "size": 4263,
+    "sha256": "21d74a02c76621ddeca829b52d9404207d6f0d7c15953771b0ea46e4866b2bab"
+  },
+  {
+    "path": "src/services/offlineQueueService.js",
+    "size": 6596,
+    "sha256": "3f0665d59523558bcc0b5341f739e5368397a0c2c356616b6c5c48fc2c6da5de"
+  },
+  {
+    "path": "src/services/operationsService.js",
+    "size": 49265,
+    "sha256": "1572ce9cc984db52c3c143e2c064bc885b82ee656bf2f2ed2e6d5d624b71c5ee"
+  },
+  {
+    "path": "src/services/orderRequestService.js",
+    "size": 5583,
+    "sha256": "a70368c7cc7a48ffe8e9167f8f391d55b96330fa541dfb73b67d3ebd25879cb8"
+  },
+  {
+    "path": "src/services/otpAuthService.js",
+    "size": 6861,
+    "sha256": "0679c806d77bd916acd2e9790a98309646614949cc1ddeea68a0ef35ed27b1d0"
+  },
+  {
+    "path": "src/services/payrollService.js",
+    "size": 70759,
+    "sha256": "cc038f1bc2cb30b543a511d49d69d0bbda1ac6826a140d217573d725cca22363"
+  },
+  {
+    "path": "src/services/phoneVerificationService.js",
+    "size": 1286,
+    "sha256": "f077bfbc8413686e8e7096f93d942c30c1234655c51ef59d907564d71a1bce7f"
+  },
+  {
+    "path": "src/services/providerMappingService.js",
+    "size": 42457,
+    "sha256": "489e8726e1059b5dae9cf5ace6ec1c55bbe9bc880cef9e84af0ab3e167066784"
+  },
+  {
+    "path": "src/services/providerPayrollPDFService.js",
+    "size": 15974,
+    "sha256": "161ab64e890594d8514402c3aaa0f611221471997e7ad120e50e594812210b7e"
+  },
+  {
+    "path": "src/services/pushNotificationService.js",
+    "size": 13561,
+    "sha256": "c49df88ce829c9fd2e3826b953bfd8aab713fb9cd79867723a5f389be1d24053"
+  },
+  {
+    "path": "src/services/rcmEmailService.js",
+    "size": 6238,
+    "sha256": "fe9e7e08b288bfe7fb2c8f27dd5fa1efa3efb27717c6b2e7980bdd0d82d5ce6a"
+  },
+  {
+    "path": "src/services/rcmService.js",
+    "size": 124518,
+    "sha256": "2759199e5524f06b11b30dff5da1b3963fac3c7fde2305a1ac90f77b16e4feee"
+  },
+  {
+    "path": "src/services/reportExportService.js",
+    "size": 12354,
+    "sha256": "1b4d4ffb5ab01115ee433f7b7cfa287ff21393918eb83d9327a8e8945bbf3197"
+  },
+  {
+    "path": "src/services/serviceCategoryGoalsService.js",
+    "size": 18739,
+    "sha256": "59b493e86ace1869300edd20f1f54e537aa84303b3ed3faf40e0c3443784ff64"
+  },
+  {
+    "path": "src/services/staffDirectoryService.js",
+    "size": 13461,
+    "sha256": "cc4d5057f40759ce49836aaa1cd9a0ebd24288ae2b1837ab8a3a910d17f1a74c"
+  },
+  {
+    "path": "src/services/supplyNotificationService.js",
+    "size": 12475,
+    "sha256": "44c15d17ea0aca641b7eeb713e5bfb00de8e20ffd658f10c5a65c975ab91a271"
+  },
+  {
+    "path": "src/services/supplyRequestService.js",
+    "size": 41077,
+    "sha256": "a1db33889380b702a5c3385e53334575af6a3d59aa33b4b2e641c64d7468717a"
+  },
+  {
+    "path": "src/services/unifiedInventoryService.js",
+    "size": 12046,
+    "sha256": "04e36ef5a96f576575effccd0c341f465fba4dd74dcb37ed2e16a1dc018f3cf2"
+  },
+  {
+    "path": "src/services/yearComparisonExportService.js",
+    "size": 22434,
+    "sha256": "3174741c33d6d266b7f24a0578070c699e1991ec56ee320b38a906369418f893"
+  },
+  {
+    "path": "src/services/yearComparisonService.js",
+    "size": 8183,
+    "sha256": "983d2e396413d72b965d033cb481909a989c6838d7e1b1e336b94b2132b5a874"
+  },
+  {
+    "path": "src/styles/index.css",
+    "size": 155,
+    "sha256": "e03dd45b32bda47b99372b3322814d2aaed8ee0bc041a1386f7320d925a62aaa"
+  },
+  {
+    "path": "src/styles/tailwind.css",
+    "size": 13770,
+    "sha256": "a5c672e88ef300cd7263f7460231929fcab90b5a8d937559f23f9ab358483e68"
+  },
+  {
+    "path": "src/utils/amexCardMapping.js",
+    "size": 12743,
+    "sha256": "4d2b801df9e0e3ae4998a31f2ca16a84b1f9724bc6f840fbffe28b0e457ccddc"
+  },
+  {
+    "path": "src/utils/calculateProviderCompensation.js",
+    "size": 6369,
+    "sha256": "4a61fe0dbb7a548f1f63d157510afe27aa327f5d844fe96ec92d8f7b0d8c9f9e"
+  },
+  {
+    "path": "src/utils/calendarDateHelpers.js",
+    "size": 3789,
+    "sha256": "9672286b1741e9681ab2d849225dc911a58d145b3e9942aea232d4f6be85b7d6"
+  },
+  {
+    "path": "src/utils/calendarDateHelpers.test.js",
+    "size": 12735,
+    "sha256": "36f41826fc97922395378221b65f19eebb3c5a205221fee337e8596c136b72e1"
+  },
+  {
+    "path": "src/utils/cn.js",
+    "size": 139,
+    "sha256": "c7d98bc6c773376e01158406c0d42a81a3e5442f799baadbec500a2a067287df"
+  },
+  {
+    "path": "src/utils/marketingClassification.js",
+    "size": 9155,
+    "sha256": "3170008bf5d529c3c8a48a4851dd4c93196b694061b6cef0d83b10e3cec6d9d5"
+  },
+  {
+    "path": "src/utils/officeNormalizer.js",
+    "size": 15936,
+    "sha256": "a2a1404f1ebab4986e5c55329b60f2dfc18f0ae922ec0bfcab05cf9b2b993a6e"
+  },
+  {
+    "path": "src/utils/officeResolver.js",
+    "size": 8426,
+    "sha256": "679c54544df09e47d7773ca11a9d257cdae0de425f3c8a0e3391f08df0da3c03"
+  },
+  {
+    "path": "src/utils/resolveProviderIdentity.js",
+    "size": 7552,
+    "sha256": "2dd92e1274ffb90eb9869ecb0051c4f31f096bb7f8e9c62f3b85c1a2fd962525"
+  },
+  {
+    "path": "supabase/functions/approval-notification/index.ts",
+    "size": 7431,
+    "sha256": "6477dd7a121e9dec86ea60eaac12e2dbdb885bad66c20a3cdb8116f8f0b713af"
+  },
+  {
+    "path": "supabase/functions/eod-deadline-reminder/index.ts",
+    "size": 9244,
+    "sha256": "294a5ca8d7febfe5cb3c86c807465f04908f29de7e459d4839233e9b8f0b5d60"
+  },
+  {
+    "path": "supabase/functions/eod-rejection-notification/index.ts",
+    "size": 8559,
+    "sha256": "e236aff44b8802a07203923741da11762527f419bf02d4f44834709931a8d243"
+  },
+  {
+    "path": "supabase/functions/eod-summary-digest/index.ts",
+    "size": 12893,
+    "sha256": "1ed1d1ebff22f222ed89c76f4c35ae8f9ec44632e728acde06811aa5998c3477"
+  },
+  {
+    "path": "supabase/functions/error-log-notification/index.ts",
+    "size": 8075,
+    "sha256": "1b326aaf947e70353f6650554689225eef7e6cabc3deaf5f6d5ac4607c95fd07"
+  },
+  {
+    "path": "supabase/functions/huddle-approval-notification/index.ts",
+    "size": 7213,
+    "sha256": "00a40be0a401000a6e8e9d1a19b52b1d12978dc2694e7222a021b6bdc4ca36ba"
+  },
+  {
+    "path": "supabase/functions/insurance-verify-notification/index.ts",
+    "size": 5722,
+    "sha256": "cd35e953997c08afd483d1f21cd15aae4dba9c1d333051de846bc0251b3540f1"
+  },
+  {
+    "path": "supabase/functions/low-stock-alert/index.ts",
+    "size": 5601,
+    "sha256": "be83eff64a1b651bafe3f9a644d12a84d27665a535b55a8a44b3af08781d587f"
+  },
+  {
+    "path": "supabase/functions/monthly-executive-digest/index.ts",
+    "size": 20019,
+    "sha256": "e68a7301012f58ffaa87a8bc3cc8c4d983bebde3f040f757ae447b89e00b1fe7"
+  },
+  {
+    "path": "supabase/functions/order-request-notifications/index.ts",
+    "size": 65884,
+    "sha256": "1eff50327d0ec69897548d13c6f6d6affcb92d95107b056a35ae49f9f42875be"
+  },
+  {
+    "path": "supabase/functions/pace-alert/index.ts",
+    "size": 10404,
+    "sha256": "1e5d397ced853a61112b128b74dece4c2dd851ec53b8c87ccc33d68e457c2c03"
+  },
+  {
+    "path": "supabase/functions/profile-birthday-notifications/index.ts",
+    "size": 8626,
+    "sha256": "7a54caee400c974a00f61d3b2e8eaac769e03d9d718fac91250747b0d638ff39"
+  },
+  {
+    "path": "supabase/functions/rcm-weekly-digest/index.ts",
+    "size": 17436,
+    "sha256": "2fa0e60b5f09c9b6042bbd3a0a7ce552ff9566021e811c6c3fee7dae3ef68287"
+  },
+  {
+    "path": "supabase/functions/security-alert-notification/index.ts",
+    "size": 7381,
+    "sha256": "d9019b7e623b1801c6e777356e09c9a7e39267db747145980968d0f0a6951b6a"
+  },
+  {
+    "path": "supabase/functions/send-email/index.ts",
+    "size": 19372,
+    "sha256": "0b4ce0dc3eb2c85ac9ebd3ff87d310014b0ac756ac3bc8325a0cf86444386fd7"
+  },
+  {
+    "path": "supabase/functions/send-payroll-report/index.ts",
+    "size": 6066,
+    "sha256": "8e72be576ddbd87105b1f5e379de84f624ba1bd4d2d7afea7045e1d8b1ffc96c"
+  },
+  {
+    "path": "supabase/functions/send-phone-otp/index.ts",
+    "size": 6004,
+    "sha256": "dc613f00b43358250e5815d08f2abb63211583e2c3cfbfa3add4c639db518695"
+  },
+  {
+    "path": "supabase/functions/send-supply-sms/index.ts",
+    "size": 5701,
+    "sha256": "3fae90b1aa4d5e19469b4355f3f53ac636427b314cee74582f197e55d1846120"
+  },
+  {
+    "path": "supabase/functions/send-task-email/index.ts",
+    "size": 5877,
+    "sha256": "9c144632951500b48a65579e1c46a97a8a505bca76a8bc051fac4064cff1c4fc"
+  },
+  {
+    "path": "supabase/functions/supply-status-emails/index.ts",
+    "size": 18833,
+    "sha256": "a3ab28e91951d0c40eaf8ae09511f260cf5b25da1d754f229d3401123303dfe3"
+  },
+  {
+    "path": "supabase/functions/verify-phone-otp/index.ts",
+    "size": 3243,
+    "sha256": "3abf8d994254851f59bbf6f73346be2976666f21ede11e7f1d0e19f8351348f3"
+  },
+  {
+    "path": "supabase/functions/weekly-performance-snapshot/index.ts",
+    "size": 11916,
+    "sha256": "253949b98ab12c83486d03a7573eb286fb44800f1bc2bebd2c533dde6e622cc3"
+  },
+  {
+    "path": "supabase/migrations/20260228000001_management_settings.sql",
+    "size": 15181,
+    "sha256": "21f57765406c4645801cfb7bd3a14d7fb479dc1507e33861878abf1ce5802ba5"
+  },
+  {
+    "path": "supabase/migrations/20260228020000_offices_location_details.sql",
+    "size": 4141,
+    "sha256": "c168833ebd0f66f2e6feee9141fe518c29ce78a0db5d172912414773a6e41cd5"
+  },
+  {
+    "path": "supabase/migrations/20260228030000_providers_profile_fields.sql",
+    "size": 288,
+    "sha256": "344a483fcf82fd6863f22d61e9400c54987189e7befa8bf3414692028d1f5ce9"
+  },
+  {
+    "path": "supabase/migrations/20260228040000_user_profiles_extended_fields.sql",
+    "size": 1398,
+    "sha256": "dced44ac9b8a2ab10d0e2131d65a52697e6ae1d3450aaa4de4ff5b8b8a14a49b"
+  },
+  {
+    "path": "supabase/migrations/20260228050000_roles_permissions_user_offices.sql",
+    "size": 4945,
+    "sha256": "ab8476f7e84b4b1dbf14eb3bc81c5769f2bb28c59e7303c775e5d25856309729"
+  },
+  {
+    "path": "supabase/migrations/20260228060000_invite_only_access_control.sql",
+    "size": 4480,
+    "sha256": "eea42dc5009fa166fde15a2474abbf0c7e6d952e77f45b192f35a498fc1c75e3"
+  },
+  {
+    "path": "supabase/migrations/20260228070000_audit_triggers.sql",
+    "size": 6611,
+    "sha256": "d028d229549bb7182cd98901ea764d72172abab6bfce7e637483d578371fe3ab"
+  },
+  {
+    "path": "supabase/migrations/20260228080000_office_goals.sql",
+    "size": 2871,
+    "sha256": "d2de5c277fa76af04a4b301cc4624f93b286aa09f2db3f4a2a1f8be632b89a10"
+  },
+  {
+    "path": "supabase/migrations/20260228090000_operational_metrics.sql",
+    "size": 4556,
+    "sha256": "059f89a04824e2e938cb1388d0024a4b34e239e367c1c06a8c365306abda40e8"
+  },
+  {
+    "path": "supabase/migrations/20260228100000_office_manager_role_alerts.sql",
+    "size": 3156,
+    "sha256": "85062bac3e71f81fc17b061fd0e4ca036bc76f2940cd34f43daf539bc30dadfe"
+  },
+  {
+    "path": "supabase/migrations/20260228110000_morning_huddle.sql",
+    "size": 8429,
+    "sha256": "86abdfbe7425753789b9104a1ee2d381bd42a4cad693c741fbd2ccd72f59ec57"
+  },
+  {
+    "path": "supabase/migrations/20260228120000_action_items.sql",
+    "size": 3481,
+    "sha256": "c07af8c3f4895db9a99ae772e95c3ac92a3eba1721cd13a6a63c4d5aa4d06f30"
+  },
+  {
+    "path": "supabase/migrations/20260305130000_set_admin_role_active_status.sql",
+    "size": 2084,
+    "sha256": "90b2ae7c761d51e84e03c25f7edd36f73acb9f3ffe4e56d3f3c618ec1f8bf543"
+  },
+  {
+    "path": "supabase/migrations/20260305140000_provider_id_daily_entries_super_admin.sql",
+    "size": 2528,
+    "sha256": "bdcf564249f2bcd5b221563eeca7bb486017e2d2f0398513813cabff2378ebba"
+  },
+  {
+    "path": "supabase/migrations/20260305150000_fix_super_admin_creation.sql",
+    "size": 4231,
+    "sha256": "9b7c276809d0271c223a3046dc2cab1b1fcfcb8652f13572bc322a6311e9e729"
+  },
+  {
+    "path": "supabase/migrations/20260305160000_six_provider_blocks.sql",
+    "size": 2268,
+    "sha256": "18039786d4c6eeac9cc391b737e68950d90bb46e6b156f0f541576056573736a"
+  },
+  {
+    "path": "supabase/migrations/20260305170000_seed_providers_all_offices.sql",
+    "size": 4700,
+    "sha256": "f2452f25a40182625eda9a4d3abc2765a263fc2ad0659c11ad05e984c50a699f"
+  },
+  {
+    "path": "supabase/migrations/20260305180000_rbac_admin_all_offices_om_scoped.sql",
+    "size": 11189,
+    "sha256": "39752166eb07d374176e8272a7d22c5274201101f1f2c44bb6c7a6dbc49db8fd"
+  },
+  {
+    "path": "supabase/migrations/20260305190000_fix_user_office_assignments_rls.sql",
+    "size": 1556,
+    "sha256": "03bebd04a0f3876bb5b386c3102a31fa3357a6e845903c33b290e00cb4b0f4d0"
+  },
+  {
+    "path": "supabase/migrations/20260305200000_remove_fake_providers.sql",
+    "size": 848,
+    "sha256": "f174c007c31edc4fa47ddce91570f549218173dc897daf94a860e827045eae71"
+  },
+  {
+    "path": "supabase/migrations/20260305210000_remove_duplicate_providers.sql",
+    "size": 556,
+    "sha256": "13f16c11ee7adc6cf82ab1a04d2cd0e218112b143a9d1f19561ef55a0238512c"
+  },
+  {
+    "path": "supabase/migrations/20260305220000_rename_offices_brick_eatontown.sql",
+    "size": 270,
+    "sha256": "f2096f5a3e33c5e41fabdd2d3f927d058193a0f02da948416c97537c3c06ea8e"
+  },
+  {
+    "path": "supabase/migrations/20260305230000_add_ny_velez_admin.sql",
+    "size": 4107,
+    "sha256": "dac88d8e23f825f3946b9ecd9497c8f42719322e89933d68b0808916c7cc58ce"
+  },
+  {
+    "path": "supabase/migrations/20260305240000_add_new_roles.sql",
+    "size": 2101,
+    "sha256": "d478ed6183a05e2ac1c614e80082b2e620dde987e419ef7cc926d3ce53021128"
+  },
+  {
+    "path": "supabase/migrations/20260305250000_add_payroll_gusto_cost_drivers.sql",
+    "size": 4457,
+    "sha256": "1eeca35982061558a4015d79b7d11e714a60013579d3f9018476a4f3b7493c5e"
+  },
+  {
+    "path": "supabase/migrations/20260305260000_add_back_staff_orders_expenses.sql",
+    "size": 28027,
+    "sha256": "dec1440c1ed385de7c5d0382c25e460b82993d8549f5762f696ce4c9fb1e6402"
+  },
+  {
+    "path": "supabase/migrations/20260305270000_cleanup_back_staff_orders_dedup.sql",
+    "size": 5502,
+    "sha256": "9411180f582f7d75398631cf01cf06c67e28dff69e4bdac198a022e02cab6104"
+  },
+  {
+    "path": "supabase/migrations/20260305280000_dedup_cost_drivers_unique_index.sql",
+    "size": 1041,
+    "sha256": "f5a54f9acfbb524bf6ee8ef65652ac4fa856f28b8e519fd5cd4bdb22a8e4f91b"
+  },
+  {
+    "path": "supabase/migrations/20260305290000_service_categories.sql",
+    "size": 2468,
+    "sha256": "96b2605d3290b22ea0f3d3e07f1751268ad3ed63c8166f20d9dad5a5fa40f6c1"
+  },
+  {
+    "path": "supabase/migrations/20260306160000_add_provider_name_daily_entries.sql",
+    "size": 369,
+    "sha256": "9ae209068d58362f4e54a5fe9a976c8f151d1169d3fa3923d6d2f375d0bcc4ef"
+  },
+  {
+    "path": "supabase/migrations/20260306170000_dedup_offices_cleanup.sql",
+    "size": 6473,
+    "sha256": "a803450ab1d33af5c60d1ae8cb08afe3c2558f31f80087a04525e8f643b15aba"
+  },
+  {
+    "path": "supabase/migrations/20260306200000_bone_tissue_inventory.sql",
+    "size": 9028,
+    "sha256": "3d1cb79e8815cb0b26bfc5dd33006c2d1e2a5a175f203ecd944d617be7f3f285"
+  },
+  {
+    "path": "supabase/migrations/20260306210000_bone_tissue_stock.sql",
+    "size": 4155,
+    "sha256": "93290a7786695aad2ba8b049f97f315d5e25e7ab1bf279bf337292ccc7886395"
+  },
+  {
+    "path": "supabase/migrations/20260306220000_implant_inventory.sql",
+    "size": 16352,
+    "sha256": "d17e79d94399c8f6253b5fb6cbe9fcd1da08c51bfccf31f4c7f82c3aa0542da4"
+  },
+  {
+    "path": "supabase/migrations/20260306230000_bulk_inventory_import.sql",
+    "size": 9912,
+    "sha256": "f5f4d89dad21cd5721ad5009b51bc52455371ec4c1aba65790400a8f4c3a4923"
+  },
+  {
+    "path": "supabase/migrations/20260307000000_supply_request_module.sql",
+    "size": 44925,
+    "sha256": "4ef8462a1b80240fe8841596984d82fa796da95a0d9a8bf3f9d877aaa4ed503f"
+  },
+  {
+    "path": "supabase/migrations/20260307100000_rcm_weekly_digest_cron.sql",
+    "size": 1057,
+    "sha256": "55bdb3b8f1cb2cfdf6d6e85a4bde68a31cd59f33bbf75a261cff45a1924a8665"
+  },
+  {
+    "path": "supabase/migrations/20260307110000_add_phone_to_user_profiles.sql",
+    "size": 613,
+    "sha256": "1bba07b3f52c3cc9c33781805e94fe82eb75d5e737f315230c6e92601e25a6d1"
+  },
+  {
+    "path": "supabase/migrations/20260307120000_fix_bone_tissue_stock_columns.sql",
+    "size": 542,
+    "sha256": "b918fc87b56f82209e114c85427777201352b51562cc35cc3a5cd19335815c5e"
+  },
+  {
+    "path": "supabase/migrations/20260307130000_fix_bone_tissue_stock_missing_columns.sql",
+    "size": 684,
+    "sha256": "4e6d82ba79cee6ba80e61a499f918624731ac884bd1f371179b6c1b0dcf97751"
+  },
+  {
+    "path": "supabase/migrations/20260307140000_add_expiration_date_to_bone_tissue_stock.sql",
+    "size": 403,
+    "sha256": "dc2398bf848158424c6f947dc21e7df52665fe0181d01be4573a98565bc5e567"
+  },
+  {
+    "path": "supabase/migrations/20260307150000_add_expiration_date_bone_tissue_stock.sql",
+    "size": 405,
+    "sha256": "c43f7ade4649b00ce3cc7ea88e2c4791361683c745d1d087e0142558e841661f"
+  },
+  {
+    "path": "supabase/migrations/20260308000000_department_category_supply.sql",
+    "size": 4090,
+    "sha256": "5f62a34e34d5ecbd3efba602f38f10efd6a87e6b8e11434b1fb124988f6ff4c8"
+  },
+  {
+    "path": "supabase/migrations/20260308010000_front_desk_inventory.sql",
+    "size": 14033,
+    "sha256": "fdec917e4908c04015658fdf77bb917dbc26ef2d564bb01f058f10bcc84fc80b"
+  },
+  {
+    "path": "supabase/migrations/20260308020000_fix_fdi_get_user_office.sql",
+    "size": 358,
+    "sha256": "e0fb77259e3882bcd5075f5668344977a9aafac853b66e168e7abaa0ad9e9489"
+  },
+  {
+    "path": "supabase/migrations/20260308030000_create_front_desk_inventory_table.sql",
+    "size": 14290,
+    "sha256": "f7a36c5380ac6de5634dbe62eccc4c114a8d89e9864fd095cac926ec27e2fc6d"
+  },
+  {
+    "path": "supabase/migrations/20260308040000_bone_tissue_usage_log.sql",
+    "size": 3676,
+    "sha256": "83640cc11ecf4594eba205746deed41627888f01d387fbf892d7b8ac2fcd0cf7"
+  },
+  {
+    "path": "supabase/migrations/20260309000000_order_requests_notifications.sql",
+    "size": 8247,
+    "sha256": "ab449a389f2c619d69c0a85885c2349a4f008ca0425a4bd2829293247e5de82b"
+  },
+  {
+    "path": "supabase/migrations/20260310000000_management_contacts_office_constraints.sql",
+    "size": 10617,
+    "sha256": "fe4a1acfe567ddfa6edd2acc1c1945cfab8d60822409449dd62ed249c5371479"
+  },
+  {
+    "path": "supabase/migrations/20260311000000_phone_otp_verification.sql",
+    "size": 1846,
+    "sha256": "679aab45ccc83c27aaf45d7206dcfd9fa4bfe7c955fd60bb0d71349536b714e0"
+  },
+  {
+    "path": "supabase/migrations/20260312000000_supply_chain_permissions.sql",
+    "size": 2035,
+    "sha256": "a21f5332efcec5e84bba2e90af170bc10d67d5d7529182c1d8c41db520bc296f"
+  },
+  {
+    "path": "supabase/migrations/20260313000000_rbac_new_permissions.sql",
+    "size": 7383,
+    "sha256": "14f08a342ade6405e5c9c11ebcf2a376e08579d7038c8f42cf66ab8de43271d4"
+  },
+  {
+    "path": "supabase/migrations/20260313100000_add_theme_to_user_profiles.sql",
+    "size": 176,
+    "sha256": "b2c8617158d176dfb22b7787193d5067d5a7c2d7b2412da587c17fae5489faaa"
+  },
+  {
+    "path": "supabase/migrations/20260314000000_office_rls_data_isolation.sql",
+    "size": 11544,
+    "sha256": "44a81f51abee1cb35a3ff2b174bd35d0856227d05a1f6bafb1bcdca434b4c802"
+  },
+  {
+    "path": "supabase/migrations/20260315000000_executive_overview_permission.sql",
+    "size": 821,
+    "sha256": "e0527b7fd6f8a2b4f80c3a15c5cf023744f4a25dda9306bd4f9c057264dc4b6c"
+  },
+  {
+    "path": "supabase/migrations/20260316000000_add_regional_clinical_manager_role.sql",
+    "size": 2209,
+    "sha256": "57fa17fa5ca883650c228c9b68612395c8ff74153955e35f049cf6f28131fc4b"
+  },
+  {
+    "path": "supabase/migrations/20260317000000_daily_entries_upsert_constraint.sql",
+    "size": 1132,
+    "sha256": "3aac3703ed7f4d0b78cb7abb9c6825a035b3022740b0ada029d6e7f04d370c8e"
+  },
+  {
+    "path": "supabase/migrations/20260318000000_auto_entity_creation_bulk_import.sql",
+    "size": 2202,
+    "sha256": "574cb0500ad83fe450892c32dec10624e87470b05a72166f1b6c64581b881e38"
+  },
+  {
+    "path": "supabase/migrations/20260318100000_add_date_of_birth_to_user_profiles.sql",
+    "size": 391,
+    "sha256": "16db8ea23464f82ec3b1173a36aab585ee46aa112738eff077fdb4ab207a7877"
+  },
+  {
+    "path": "supabase/migrations/20260319000000_multi_office_bulk_import_distribution.sql",
+    "size": 2023,
+    "sha256": "035b797bf7e3cd18d6022e2927aeb67413b2ebb2c4f5709fa891b0669ba698cf"
+  },
+  {
+    "path": "supabase/migrations/20260320000000_multi_day_import_indexes.sql",
+    "size": 1903,
+    "sha256": "6418d288394a5a89c1856b8230a51828a586dc54f1bcd1cabfb05c501af6bcb1"
+  },
+  {
+    "path": "supabase/migrations/20260321000000_monthly_executive_email_cron.sql",
+    "size": 2195,
+    "sha256": "5c19b8e73c7b62b9e12e9cb71a7c9698f2fb8dfbf6d18f871bf8c36c5da88527"
+  },
+  {
+    "path": "supabase/migrations/20260322000000_executive_monthly_analytics.sql",
+    "size": 4772,
+    "sha256": "9a6bf7bae581a1929292f1a2c2b94e77e9da24f6f2390df7f6a20f515f327bd3"
+  },
+  {
+    "path": "supabase/migrations/20260323000000_office_goals_extended_columns.sql",
+    "size": 526,
+    "sha256": "5ceb665bc68d949fabbfd0c7f49b15ccff212b9ba10f1c917ddc1ce7051103b6"
+  },
+  {
+    "path": "supabase/migrations/20260323000001_rcm_module.sql",
+    "size": 11329,
+    "sha256": "1c7fc6043eea3781d92c4a02759def5be5c4ce02363223565272730ef3d85ca8"
+  },
+  {
+    "path": "supabase/migrations/20260325000000_notification_center_events.sql",
+    "size": 2427,
+    "sha256": "a67880f042f3c704b86a3cdecf425cbc527bdf9ac81e18e72f1f31174a432541"
+  },
+  {
+    "path": "supabase/migrations/20260326000000_alert_rules_audit_access_control.sql",
+    "size": 8986,
+    "sha256": "2106cb8f9f5c9b1fc0215addce133fdbe4ceece216ebcb22f53a0a808bf09788"
+  },
+  {
+    "path": "supabase/migrations/20260326200000_fix_eod_approval_office_id_uuid.sql",
+    "size": 3963,
+    "sha256": "0ddfd33daa39d32514b267f70b0f748ab40ca5467fac1126cc8f0bffd0e52fff"
+  },
+  {
+    "path": "supabase/migrations/20260326210000_fix_eod_approval_on_conflict_text.sql",
+    "size": 4741,
+    "sha256": "8084b367119d07e81196144f95f1b5d47661a726e77c674a410046f0d1796349"
+  },
+  {
+    "path": "supabase/migrations/20260326220000_fix_mea_office_id_to_uuid_final.sql",
+    "size": 12672,
+    "sha256": "7bd2605c447ad88c94b8cb9482651a192b74e1841a8a59eaf2d28b838b434acf"
+  },
+  {
+    "path": "supabase/migrations/20260326230000_eod_post_approval_workflow.sql",
+    "size": 10326,
+    "sha256": "697abf73beaff8b0288f137a083b66b7cd0c47ddcd0e92375df9c58ae58eff85"
+  },
+  {
+    "path": "supabase/migrations/20260327000000_eod_approval_workflow_fix.sql",
+    "size": 7310,
+    "sha256": "e12ba91783884a43955b5b0aa01b65361652f72e37e20cfeb1dfc54044dcf918"
+  },
+  {
+    "path": "supabase/migrations/20260328000000_eod_approval_analytics_trigger.sql",
+    "size": 5175,
+    "sha256": "967f97bf892d5c2fa346434a908fa8eb1c144ce789b67d8c0cd4713b8dbc526e"
+  },
+  {
+    "path": "supabase/migrations/20260329000000_eod_reminder_cron.sql",
+    "size": 1632,
+    "sha256": "ed114d92fb6fe2509e1e63e32652cf673b19075f3fb0ab1ea5d7a6b57a4bf1a1"
+  },
+  {
+    "path": "supabase/migrations/20260330000000_add_service_category_to_daily_entries.sql",
+    "size": 522,
+    "sha256": "bb3230850d5295e5abeeb93e76a373068892cb91e395b8d20acfa6816ebf08df"
+  },
+  {
+    "path": "supabase/migrations/20260331000000_add_username_to_user_profiles.sql",
+    "size": 1319,
+    "sha256": "dc9a63aaa289d3c3568ce07bcd708272c9438dca07f7ac95aac22c508c6ed010"
+  },
+  {
+    "path": "supabase/migrations/20260331170000_error_logs_table.sql",
+    "size": 2796,
+    "sha256": "7153a86eacd5fb1063738cad9c557c106e6df27224330f9e43787c67a4ab4414"
+  },
+  {
+    "path": "supabase/migrations/20260331180000_error_log_notification_trigger.sql",
+    "size": 2011,
+    "sha256": "521b21c713ae824b7f975dd0bad6194c9f8650c04c70432ddecd42235b56798f"
+  },
+  {
+    "path": "supabase/migrations/20260409140000_fix_users_management_rls.sql",
+    "size": 2774,
+    "sha256": "d7619b92cb32bb1000ba27d23cd3404d5e197a52d75e22aa0924389a7bd35799"
+  },
+  {
+    "path": "supabase/migrations/20260410100000_data_pipeline_audit_tables.sql",
+    "size": 15852,
+    "sha256": "09306598ad6990963ccfbc9e707423dac1ecc02a81fbf4b5e0be9485b863d0c9"
+  },
+  {
+    "path": "supabase/migrations/20260410200000_dentrix_import_audit.sql",
+    "size": 7253,
+    "sha256": "334a333c5459477b0aab4370ade5efa4f31c193e5a392706126d9a85624eb953"
+  },
+  {
+    "path": "supabase/migrations/20260418000000_ucr_production_adjustment_separation.sql",
+    "size": 13941,
+    "sha256": "3bc579497f83583541246371661d8af7522e780da5363d2f30e1433254904c80"
+  },
+  {
+    "path": "supabase/migrations/20260418200000_payroll_rbac.sql",
+    "size": 2590,
+    "sha256": "c5a83f10a950f04516e05e1d6bb0f2b6dcc918177e9d8bef2a38f1a800478c9e"
+  },
+  {
+    "path": "supabase/migrations/20260418210000_payroll_schedule_seed.sql",
+    "size": 4871,
+    "sha256": "d564272fba65de4bc42178a7ae71339994ba2f5b9a5d08b6f566d1924a0b8007"
+  },
+  {
+    "path": "supabase/migrations/20260418220000_provider_payroll_mapping_layer.sql",
+    "size": 10888,
+    "sha256": "ee88aa8780cad2fca4f088fa6673f60f374f4653bcfa398cb36d4abea1e8d886"
+  },
+  {
+    "path": "supabase/migrations/20260419000000_canonical_provider_seed_and_alias_fix.sql",
+    "size": 36248,
+    "sha256": "0a0089262c7054d6a60219b3fd20895d0d25704e0b8a58b8249b4fee7212e084"
+  },
+  {
+    "path": "supabase/migrations/20260419100000_gusto_payroll_tables.sql",
+    "size": 30414,
+    "sha256": "e042d74e6c127b23de50f15bc3e08ad89bd23a20f8fa1cd5eeed29c78bef93e2"
+  },
+  {
+    "path": "supabase/migrations/20260419200000_gusto_time_attendance_tables.sql",
+    "size": 8042,
+    "sha256": "0fd97bbcb0caf209ab2e60d17a720d6abf15daf406b74c1e063ff132dcd37355"
+  },
+  {
+    "path": "supabase/migrations/20260419300000_expense_facts_gusto_payroll_layer.sql",
+    "size": 25186,
+    "sha256": "f22d699c31b6a0b0885bf942f6356b34a3872336606961b4300698edb1a132ea"
+  },
+  {
+    "path": "supabase/migrations/20260419400000_office_normalization_canonical_layer.sql",
+    "size": 12094,
+    "sha256": "1bfae2a4698125681869e6c4c2a72c38a52c7aa89a4c8fc4185d4d367fac565b"
+  },
+  {
+    "path": "supabase/migrations/20260419500000_expense_report_module.sql",
+    "size": 27667,
+    "sha256": "72318e38c489397fcf3691def63b01a84b26c9b44d05c35ed27fe7ceb91b0376"
+  },
+  {
+    "path": "supabase/migrations/20260419600000_amex_payments_ledger.sql",
+    "size": 4989,
+    "sha256": "e7dbc9eefcdaacd7ae7e3b9ce0821af2f852174182fba420aed4dc11f03e4760"
+  },
+  {
+    "path": "supabase/migrations/20260423100000_benchmark_eassist_reconciliation.sql",
+    "size": 21510,
+    "sha256": "c1d29b4fc45634e209733d44978ca5acb67eab6377f6e7bad16d477ac89d430d"
+  },
+  {
+    "path": "supabase/migrations/20260423220000_backfill_production_collections_ar_48months.sql",
+    "size": 21609,
+    "sha256": "1f000e417003ff94b0cc190880508277f523f3d7f0a22c70e121a0880d4482df"
+  },
+  {
+    "path": "supabase/migrations/20260429000000_payroll_report_sent_log.sql",
+    "size": 2220,
+    "sha256": "13ea27043b3bedbe98d07066830fe3f1f4f8139c36ab1ab0a27a19c37721147b"
+  },
+  {
+    "path": "supabase/migrations/20260429100000_reseed_office_production_goals.sql",
+    "size": 21590,
+    "sha256": "073f166b6a3ed7d931bc09191fce0578ff1fbdecd73de5b6f388b096a0af85f4"
+  },
+  {
+    "path": "supabase/migrations/20260429110000_fix_may2024_collection_goal_null.sql",
+    "size": 635,
+    "sha256": "2e5412c58050a1502a8dab65dc849994dee5b9b81c0a0827f4d97e40ff29ee48"
+  },
+  {
+    "path": "supabase/migrations/20260502000000_service_category_goals.sql",
+    "size": 4915,
+    "sha256": "b44189a9afedcf17fc5cc9b1acf67feb562cdc277b754da3dbf1cbfd49b2272f"
+  },
+  {
+    "path": "supabase/migrations/20260504000000_rbac_phase1a_permission_keys.sql",
+    "size": 104833,
+    "sha256": "c34283c06638d6899e6c903faf343faa340fac8ade3a293bd9d0588a3e00c2b9"
+  },
+  {
+    "path": "supabase/migrations/20260504100000_rbac_phase1c_admin_safety_seed.sql",
+    "size": 3495,
+    "sha256": "2c55f317ece7ea75141a172fb2f06569254e98e2f14af00c844327ea4ef81952"
+  },
+  {
+    "path": "supabase/migrations/20260524150000_fix_supply_item_categories.sql",
+    "size": 5680,
+    "sha256": "27483612ae9667b514040ed39fe0c39c0026e4c0a4d603b5898bfc66a3ddc855"
+  },
+  {
+    "path": "supabase/migrations/20260526100000_staff_directory_phase2a.sql",
+    "size": 26623,
+    "sha256": "c2d69d8112aa2189519d5a305c356d5b12e3ce221b60cb97d5567fdd59c01812"
+  },
+  {
+    "path": "supabase/migrations/20260526110000_staff_directory_dedup.sql",
+    "size": 2432,
+    "sha256": "025cceed6bc373eced16f60e20d3d3e0dc033f97bc447268e0e9248619326c0f"
+  },
+  {
+    "path": "supabase/migrations/20260526120000_staff_directory_phase4a.sql",
+    "size": 4503,
+    "sha256": "58f42c92dc1519d624586d303ee59ddefe37cb136802eb26c9b7d9904d3c5e64"
+  },
+  {
+    "path": "supabase/migrations/20260526130000_staff_directory_phase4a_seed.sql",
+    "size": 2759,
+    "sha256": "99a494d2af0e1dc223cb8f97be19be5dfedc2b2d409a0edce3dadd79a634d37c"
+  },
+  {
+    "path": "supabase/migrations/20260527200000_role_permission_audit_log.sql",
+    "size": 5547,
+    "sha256": "8f79ef4924cc99bbb86f823bc4d3fad9c07ea8dfe184bf29e63e5641231eb4f9"
+  },
+  {
+    "path": "supabase/migrations/20260605000000_profile_photos_self_upload_rls.sql",
+    "size": 1460,
+    "sha256": "c60c96430f24bc4dee4d1e9c90b32aea89dcda593ec3dbc126fd339c4edd9be2"
+  },
+  {
+    "path": "supabase/migrations/20260605010000_staff_directory_self_photo_upload.sql",
+    "size": 6381,
+    "sha256": "68043973222757cba12b5e050b4bc77ed76b7196930d8a56721109e34c20a1f4"
+  },
+  {
+    "path": "supabase/migrations/20260605020000_restore_staff_directory_photo_read_policy.sql",
+    "size": 2165,
+    "sha256": "1f08d927328e10a841384dae16449431557dd15d4adfebe46d30af42946bf866"
+  },
+  {
+    "path": "tailwind.config.js",
+    "size": 3781,
+    "sha256": "24b2cf1d7d01e9512fd338213fe735a2ab09dfadf2a9324d83ffb9d57acd1958"
+  },
+  {
+    "path": "vite.config.mjs",
+    "size": 554,
+    "sha256": "410d468752edd0cd9f49061144ae41227fe5aa37d11343f052c221e094ebf9ce"
+  }
+]
