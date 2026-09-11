@@ -1,0 +1,102 @@
+{
+  "issue": "NDASH-038",
+  "previous_issue": "037",
+  "expected_previous_deployment": "62059406-9031-4586-a4a9-636d6c30a691",
+  "baseline_asset": "index-723f9e45ec66.js",
+  "baseline_sha256": "723f9e45ec66f68096657b8b9176105da690f14b6b0e541ea1a435f9656342f2",
+  "candidate_sha256": "baf7a9e6cfa2a249a2a2acbd39bfb3e2776dd439d44c362676722b9b6fa0f590",
+  "asset": "/assets/index-baf7a9e6cfa2.js",
+  "patches": [
+    {
+      "old": "ndash037-GustoBenefits.js",
+      "new": "ndash038-GustoBenefits.js"
+    },
+    {
+      "old": "ndash037-GustoImportHistory.js",
+      "new": "ndash038-GustoImportHistory.js"
+    },
+    {
+      "old": "ndash037-GustoPaySchedules.js",
+      "new": "ndash038-GustoPaySchedules.js"
+    },
+    {
+      "old": "ndash037-GustoTimeAndAttendance.js",
+      "new": "ndash038-GustoTimeAndAttendance.js"
+    },
+    {
+      "old": "ndash037-date-fns.js",
+      "new": "ndash038-date-fns.js"
+    },
+    {
+      "old": "ndash037-help-manual.js",
+      "new": "ndash038-help-manual.js"
+    },
+    {
+      "old": "ndash037-canvg.js",
+      "new": "ndash038-canvg.js"
+    }
+  ],
+  "added_assets": [
+    {
+      "name": "ndash038-GustoBenefits.js",
+      "sha256": "960c84842fdf9a6ae07a69aa588f47986582bcc0a0c0108d0740e495db0a0384",
+      "bytes": 11506,
+      "previous": "ndash037-GustoBenefits.js"
+    },
+    {
+      "name": "ndash038-GustoImportHistory.js",
+      "sha256": "70747af3b37872e35bec2c27271cec13c330e81607815179fbf75e16a01bab4a",
+      "bytes": 4776,
+      "previous": "ndash037-GustoImportHistory.js"
+    },
+    {
+      "name": "ndash038-GustoPaySchedules.js",
+      "sha256": "11cfeb78522f2dc3a80371de9c3666c4b08c643f71690e5d84ac0bb6f1f80939",
+      "bytes": 4819,
+      "previous": "ndash037-GustoPaySchedules.js"
+    },
+    {
+      "name": "ndash038-GustoTimeAndAttendance.js",
+      "sha256": "c7078592a669c6e1c1558114949ddc511748b0041b3275f36a0354bc18ccb9b1",
+      "bytes": 39931,
+      "previous": "ndash037-GustoTimeAndAttendance.js"
+    },
+    {
+      "name": "ndash038-date-fns.js",
+      "sha256": "1dbbfd984b9a5911ce923b226f734720d62483b15c8f3ed178bc173dda5dd0e3",
+      "bytes": 31653,
+      "previous": "ndash037-date-fns.js"
+    },
+    {
+      "name": "ndash038-help-manual.js",
+      "sha256": "7ccbc4aa31fb0127190adfa0ee3894258732b4c3d8bf256bff9714851c66d4de",
+      "bytes": 122300,
+      "previous": "ndash037-help-manual.js"
+    },
+    {
+      "name": "ndash038-canvg.js",
+      "sha256": "494559641abe1bdc2110398faa018a82132f3c21dea2c79ccd29635d880b841f",
+      "bytes": 150419,
+      "previous": "ndash037-canvg.js"
+    }
+  ],
+  "preserve_previous_entry": true,
+  "target_previous": "ndash037-GustoTimeAndAttendance.js",
+  "target_baseline_sha256": "9f93c45922e127774f364f9a7be3129a4c039e0ff702ac9fea8a188120a2d604",
+  "target_fixed_before_relink_sha256": "bcb4eeb0b294602c0e91ea5fda7d4e3b60ede0d81da9e6b49a0af3640fbd79b3",
+  "target_patches": [
+    {
+      "old": "()=>{var k,t,u,b,T,A,U,Y,R,V;const l=[[\"Employee\",\"Regular Hrs\",\"Overtime Hrs\",\"PTO Used\",\"Sick Used\",\"Vacation Used\",\"Holiday\",\"Total Worked\",\"Pay Periods\"]];d==null||d.forEach(F=>{var L,G,W,M,z,Z,K;l==null||l.push([(F==null?void 0:F.employee_name)||(F==null?void 0:F.employee_id),(L=parseFloat((F==null?void 0:F.regular_hours)||0))==null?void 0:L.toFixed(1),(G=parseFloat((F==null?void 0:F.overtime_hours)||0))==null?void 0:G.toFixed(1),(W=parseFloat((F==null?void 0:F.pto_hours_used)||0))==null?void 0:W.toFixed(1),(M=parseFloat((F==null?void 0:F.sick_hours_used)||0))==null?void 0:M.toFixed(1),(z=parseFloat((F==null?void 0:F.vacation_hours_used)||0))==null?void 0:z.toFixed(1),(Z=parseFloat((F==null?void 0:F.holiday_hours)||0))==null?void 0:Z.toFixed(1),(K=parseFloat((F==null?void 0:F.total_hours_worked)||0))==null?void 0:K.toFixed(1),(F==null?void 0:F.pay_periods_count)||0])}),l==null||l.push([\"TOTAL\",(k=n==null?void 0:n.regular_hours)==null?void 0:k.toFixed(1),(t=n==null?void 0:n.overtime_hours)==null?void 0:t.toFixed(1),(u=n==null?void 0:n.pto_hours_used)==null?void 0:u.toFixed(1),(b=n==null?void 0:n.sick_hours_used)==null?void 0:b.toFixed(1),(T=n==null?void 0:n.vacation_hours_used)==null?void 0:T.toFixed(1),(A=n==null?void 0:n.holiday_hours)==null?void 0:A.toFixed(1),(U=n==null?void 0:n.total_hours_worked)==null?void 0:U.toFixed(1),n==null?void 0:n.pay_periods_count]);const w=(V=(R=(Y=new Date)==null?void 0:Y.toISOString())==null?void 0:R.split(\"T\"))==null?void 0:V[0];X(`gusto_hours_summary_${x}_${w}.csv`,l)}",
+      "new": "()=>{if(!d?.length)return;var k,t,u,b,T,A,U,Y,R,V;const l=[[\"Employee\",\"Regular Hrs\",\"Overtime Hrs\",\"PTO Used\",\"Sick Used\",\"Vacation Used\",\"Holiday\",\"Total Worked\",\"Pay Periods\"]];d==null||d.forEach(F=>{var L,G,W,M,z,Z,K;l==null||l.push([(F==null?void 0:F.employee_name)||(F==null?void 0:F.employee_id),(L=parseFloat((F==null?void 0:F.regular_hours)||0))==null?void 0:L.toFixed(1),(G=parseFloat((F==null?void 0:F.overtime_hours)||0))==null?void 0:G.toFixed(1),(W=parseFloat((F==null?void 0:F.pto_hours_used)||0))==null?void 0:W.toFixed(1),(M=parseFloat((F==null?void 0:F.sick_hours_used)||0))==null?void 0:M.toFixed(1),(z=parseFloat((F==null?void 0:F.vacation_hours_used)||0))==null?void 0:z.toFixed(1),(Z=parseFloat((F==null?void 0:F.holiday_hours)||0))==null?void 0:Z.toFixed(1),(K=parseFloat((F==null?void 0:F.total_hours_worked)||0))==null?void 0:K.toFixed(1),(F==null?void 0:F.pay_periods_count)||0])}),l==null||l.push([\"TOTAL\",(k=n==null?void 0:n.regular_hours)==null?void 0:k.toFixed(1),(t=n==null?void 0:n.overtime_hours)==null?void 0:t.toFixed(1),(u=n==null?void 0:n.pto_hours_used)==null?void 0:u.toFixed(1),(b=n==null?void 0:n.sick_hours_used)==null?void 0:b.toFixed(1),(T=n==null?void 0:n.vacation_hours_used)==null?void 0:T.toFixed(1),(A=n==null?void 0:n.holiday_hours)==null?void 0:A.toFixed(1),(U=n==null?void 0:n.total_hours_worked)==null?void 0:U.toFixed(1),n==null?void 0:n.pay_periods_count]);const w=(V=(R=(Y=new Date)==null?void 0:Y.toISOString())==null?void 0:R.split(\"T\"))==null?void 0:V[0];X(`gusto_hours_summary_${x}_${w}.csv`,l)}"
+    },
+    {
+      "old": "onClick:C,className:\"px-4 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors\"",
+      "new": "onClick:C,disabled:!d?.length,className:\"px-4 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50\""
+    },
+    {
+      "old": "title:`Hours Summary — ${p}`",
+      "new": "title:\"Hours Summary\""
+    }
+  ],
+  "syntax": "PASS"
+}

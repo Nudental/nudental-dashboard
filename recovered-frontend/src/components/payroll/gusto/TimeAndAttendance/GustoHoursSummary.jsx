@@ -31,6 +31,7 @@ export default function GustoHoursSummary({ isSuperAdmin }) {
   }), [data]);
 
   const handleExportCSV = () => {
+    if (!data?.length) return;
     const headers = ['Employee','Regular Hrs','Overtime Hrs','PTO Used','Sick Used','Vacation Used','Holiday','Total Worked','Pay Periods'];
     const rows = [headers];
     data?.forEach(r => {
@@ -93,7 +94,8 @@ export default function GustoHoursSummary({ isSuperAdmin }) {
         </div>
         <button
           onClick={handleExportCSV}
-          className="px-4 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          disabled={!data?.length}
+          className="px-4 py-1.5 text-xs font-semibold bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
         >
           ↓ Export Hours Summary CSV
         </button>

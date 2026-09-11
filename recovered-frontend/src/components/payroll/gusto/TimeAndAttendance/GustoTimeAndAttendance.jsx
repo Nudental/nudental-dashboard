@@ -125,7 +125,7 @@ export default function GustoTimeAndAttendance({ isSuperAdmin }) {
       {/* Section 5: Hours Summary */}
       <div className="border border-gray-200 rounded-xl overflow-hidden">
         <SectionHeader
-          title={`Hours Summary — ${currentYear}`}
+          title="Hours Summary"
           expanded={expandedSections?.hours_summary}
           onToggle={() => toggleSection('hours_summary')}
         />
