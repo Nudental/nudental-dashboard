@@ -52,5 +52,7 @@ async def run():
  mode['permissions']=['finance.payroll.gusto.overview.view'];check('overview grant allows summary',(await request({'summaryOnly':'true'}))[0]==200);check('overview grant denies details',(await request())[0]==403)
  mode['permissions']=['finance.payroll.gusto.contractors.view'];check('contractor grant allows details',(await request())[0]==200)
  mode['fail']=True;status,b=await request();check('source error unavailable without private error leak',status==503 and 'private' not in json.dumps(b));mode['fail']=False
+ rows[0]['contractor_id']=None;rows[0]['contractor_name']=None
+ status,b=await request();check('missing identities do not become payment-ID contractor counts',status==200 and b['summary']['uniqueContractors'] is None and b['summary']['unidentifiedPayments']==1 and b['summary']['paidAmount']==140)
  print(json.dumps({'cases':len(results),'passed':sum(r['pass'] for r in results),'failed':[r['case'] for r in results if not r['pass']],'production_accessed':False}));return all(r['pass'] for r in results)
 raise SystemExit(0 if asyncio.run(run()) else 1)

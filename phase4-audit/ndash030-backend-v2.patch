@@ -1,0 +1,8 @@
+--- a/middleware/main_candidate.py
++++ b/middleware/main_candidate.py
+@@ -3571,3 +3571,4 @@
+             "paidAmount": float(paid),
+-            "uniqueContractors": len({r.get("contractor_id") or r.get("contractor_display_name") or r.get("contractor_name") or r["id"] for r in rows}),
++            "uniqueContractors": len({r["contractor_id"] for r in rows}) if all(r.get("contractor_id") for r in rows) else None,
++            "unidentifiedPayments": sum(not (r.get("contractor_id") or r.get("contractor_display_name") or r.get("contractor_name")) for r in rows),
+             "annualPaid": [{"year": year, "amount": float(value)} for year, value in sorted(annual.items())],

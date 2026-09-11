@@ -21,7 +21,8 @@ export default function GustoContractors({ isSuperAdmin }) {
   // Contractor summary cards
   const contractorMap = {};
   data?.forEach(p => {
-    const key = p?.contractor_id || p?.contractor_name;
+    const key = p?.contractor_id || p?.contractor_display_name || p?.contractor_name;
+    if (!key) return;
     if (!contractorMap?.[key]) {
       contractorMap[key] = { name: p?.contractor_display_name || p?.contractor_name, total: 0, lastDate: p?.check_date, wageType: p?.wage_type };
     }
@@ -33,7 +34,7 @@ export default function GustoContractors({ isSuperAdmin }) {
   const handleExport = () => {
     const headers = ['ID','Contractor','Check Date','Wage Type','Hours','Rate','Wage','Bonus','Reimbursement','Total','Method','Funded','Cancelled','Memo'];
     const rows = data?.map(p => [
-      p?.id, p?.contractor_display_name || p?.contractor_name, fmtDateCSV(p?.check_date),
+      p?.id, p?.contractor_display_name || p?.contractor_name || 'Not identified in import', fmtDateCSV(p?.check_date),
       p?.wage_type, p?.hours_worked, p?.hourly_rate, p?.wage, p?.bonus, p?.reimbursement, p?.total_amount,
       p?.payment_method, String(p?.funded ?? ''), String(p?.cancelled ?? ''), p?.memo,
     ]);
@@ -69,9 +70,10 @@ export default function GustoContractors({ isSuperAdmin }) {
           <span className="text-gray-400">|</span>
           <span>Total Paid (all matches): <strong className="text-[#00B5CC]">{fmtCurrency(totalPaid)}</strong></span>
           <span className="text-gray-400">|</span>
-          <span>{uniqueContractors} unique contractors</span>
+          <span>{Number.isInteger(uniqueContractors) ? `${uniqueContractors} unique contractors` : 'Contractor count unavailable (missing IDs)'}</span>
         </div>
       )}
+      {summary?.unidentifiedPayments > 0 && <p className="text-sm text-amber-700">{summary.unidentifiedPayments} payments have no contractor identity in the import. Payment totals remain available; names and a unique-contractor count cannot be verified.</p>}
       {/* Contractor summary cards */}
       {contractorCards?.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -130,7 +132,7 @@ export default function GustoContractors({ isSuperAdmin }) {
               {data?.map((p, i) => (
                 <tr key={p?.id || i} className="hover:bg-[#F0FAFB] transition-colors"
                   style={{ background: i % 2 === 0 ? '#FFFFFF' : '#F8F9FA' }}>
-                  <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">{p?.contractor_display_name || p?.contractor_name}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">{p?.contractor_display_name || p?.contractor_name || 'Not identified in import'}</td>
                   <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtDate(p?.check_date)}</td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <Badge badge={p?.wage_type || '—'} className={p?.wage_type === 'hourly' ? 'bg-[#DBEAFE] text-[#1E40AF]' : 'bg-gray-100 text-gray-600'} />
