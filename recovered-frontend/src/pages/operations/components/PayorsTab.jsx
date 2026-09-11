@@ -160,7 +160,7 @@ const PayorsTab = ({ dateRange, officeIds }) => {
     setLoading(true);
     setError(null);
     try {
-      const snapshot = await fetchAgingReceivablesLive();
+      const snapshot = await fetchAgingReceivablesLive({ officeIds });
       setData(snapshot);
     } catch (e) {
       console.error('[PayorsTab] fetchAgingReceivablesLive error:', e);
@@ -168,7 +168,7 @@ const PayorsTab = ({ dateRange, officeIds }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [officeIds?.join(',')]);
 
   // ── Load Section 2: Claim-level payor activity ────────────────────────────
   const loadClaims = useCallback(async () => {

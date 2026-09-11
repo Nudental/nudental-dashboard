@@ -11,4 +11,5 @@ The deployed-artifact candidate changes only the uniquely matched expression k=R
 
 Previous asset SHA256: 6d3e6bafcf0c7ede473c49ee521916a745fd2add0e6fde19fd5f96f6cd0626ec.
 Candidate asset SHA256: d24473609d7eb85e501107d2c18f0e801e8cee07f05104673ecca74077675fd6.
-Deployment/live verification pending at this commit.
+Deployment: PASS, Cloudflare Pages 7ec49d30-068f-489a-99ba-178119920a7c, asset index-d24473609d7e.js. Previous dist remains available for rollback. No backend/configuration/data changes.
+Live verification: PASS on nudashboard.com/operations?audit=ndash008, Claims / AR. The original test now displays 37.9% of total; $205,147.26 overdue, $541,342.52 total A/R and other dollar values are unchanged. A normal reload initially retained cached HTML; a fresh query loaded the verified new asset. Fresh Dentrix requests take about a minute; no invented timeout success was recorded.

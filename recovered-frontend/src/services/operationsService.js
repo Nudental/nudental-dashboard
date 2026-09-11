@@ -455,7 +455,7 @@ export const fetchCancellationsData = async ({ startYear, startMonth, endYear, e
 //          ar_90_plus / outstanding_claims_value — these were MEA fields and
 //          are NOT acceptable as true AR Aging values.
 //
-// The dateRange / officeIds parameters are accepted for API compatibility but
+// The dateRange parameters are accepted for API compatibility but
 // the /v2/rcm/aging-receivables-live endpoint returns a point-in-time snapshot
 // (not a date-filtered range). The snapshot includes snapshotDate / lastSyncedAt
 // so the UI can display the as-of date.
@@ -467,7 +467,7 @@ export const fetchARAgingData = async ({ startYear, startMonth, endYear, endMont
   // Do NOT fall back to monthly_executive_analytics.
   // Do NOT reconstruct AR from /v2/rcm/claims.
   // Do NOT use daily_entries or manual/EOD data.
-  return await fetchAgingReceivablesLive();
+  return await fetchAgingReceivablesLive({ officeIds });
 };
 
 // ─── TAB 8: Marketing ────────────────────────────────────────────────────────

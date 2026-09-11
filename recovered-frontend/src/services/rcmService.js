@@ -624,7 +624,29 @@ export const fetchClaimSubmissions = async ({
  * Does NOT expose PHI, patient names, or claim IDs.
  * /v2/ar/patients is disabled (returns 403) and is never called.
  */
-export const fetchAgingReceivablesLive = async () => {
+// Scope the verified per-office snapshot; never substitute practice totals.
+const scopeArPayload = (payload, officeIds = []) => {
+  if (!officeIds.length) return payload;
+  const names = [...new Set(officeIds.map(id => DASHBOARD_UUID_TO_NAME[id] || DENTRIX_LOCATION_ID_TO_NAME[id]))];
+  if (names.some(name => !name) || !Array.isArray(payload?.offices)) {
+    throw new Error('Selected office A/R snapshot unavailable');
+  }
+  const offices = payload.offices.filter(office => names.includes(resolveOfficeDisplayName(office)));
+  if (offices.length !== names.length || names.some(name => !offices.some(office => resolveOfficeDisplayName(office) === name))) {
+    throw new Error('Selected office A/R snapshot incomplete');
+  }
+  const fields = ['current_0_30', 'aged_31_60', 'aged_61_90', 'aged_over_90', 'totalAR',
+    'insurancePortion', 'guarantorPortion', 'estimatedWriteOff', 'unappliedCredits', 'netBalance', 'patientCount'];
+  const totals = Object.fromEntries(fields.map(field => {
+    const values = offices.map(office => office[field]);
+    return [field, values.every(value => typeof value === 'number' && Number.isFinite(value))
+      ? Math.round(values.reduce((sum, value) => sum + value, 0) * 100) / 100 : null];
+  }));
+  return { ...payload, ...totals, offices, officeRollup: undefined, fullAR: undefined, agingBuckets: undefined,
+    locationId: offices.length === 1 ? offices[0].locationId : null, locationName: names.join(', ') };
+};
+
+export const fetchAgingReceivablesLive = async ({ officeIds = [] } = {}) => {
   const API_BASE_V2 = 'https://api.nudashboard.com/v2';
   const API_KEY = import.meta.env?.VITE_ASCEND_API_KEY || '';
   const headers = { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' };
@@ -656,7 +678,7 @@ export const fetchAgingReceivablesLive = async () => {
       // V337: Normalize top-level verified fields into the shape expected by all consumers.
       // Some endpoints return flat top-level fields; others nest under fullAR/agingBuckets.
       // Merge both shapes so all consumers get a consistent object.
-      const normalized = normalizeArPayload(payload);
+      const normalized = normalizeArPayload(scopeArPayload(payload, officeIds));
 
       sourceUsed = url;
       recordDiagnostic('aging-receivables-live', {
