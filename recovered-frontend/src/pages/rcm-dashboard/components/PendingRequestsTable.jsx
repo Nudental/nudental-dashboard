@@ -191,7 +191,7 @@ export default function PendingRequestsTable({ batches, loading, selectedIds, on
                       {batch?.requested_by_profile?.full_name || '—'}
                     </td>
                     <td className="px-3 py-3 text-sm text-gray-600 text-center">
-                      —
+                      {Array.isArray(batch?.request_items) ? batch.request_items.length : '—'}
                     </td>
                     <td className="px-3 py-3">
                       <StatusBadge status={batch?.batch_status} />
