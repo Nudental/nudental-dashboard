@@ -1,6 +1,6 @@
 # NDASH-030 — Contractor source disconnected and displays used misleading substitutes
 
-Status: IMPLEMENTED / tested; deployment and live verification pending.
+Status: DEPLOYED / final live verification PASS, with source-identity limitation disclosed below.
 
 - Section: Payroll / Imported from Gusto / Contractors and Overview. Severity: High.
 - Live reproduction: both2026 and2025 Contractor views say the endpoint is not connected; export disabled. `/v2/payroll/contractors` returns404. Overview silently substitutes zero for that failed query, and its annual Contractor chart actually plots payroll net pay.
@@ -23,3 +23,17 @@ Verification before deployment:
 - Rocket version 761 records the six frontend file changes.
 - Frontend candidate SHA256: `5ae3302f87ad2e388657ab03a49da25d5cd69f731dde6d02edb12aa64dfe0fba`; previous NDASH-029 release preserved.
 - Backend candidate SHA256: `6454af130067d29f9679a0a6c070a6bf11419934a8322bd8292a94ecfd024be1`; baseline `8c769b4cc140fcf2e35e6969143f23fcd3ae57c5f608fceac41d6901229e04ba` preserved in `ndash030-backend/main_candidate.before.py`.
+
+Final live validation and corrections:
+- Source wage types are74 Hourly and15 Fixed; replaced the incorrect Salary filter option with Fixed.
+- All89 source records lack contractor IDs and names. Final backend returns an unavailable unique-contractor count rather than counting payment IDs as people. UI discloses the missing identities, labels rows/CSV Not identified in import, and skips anonymous summary cards. No identities were guessed or backfilled.
+- Final frontend release `f0f51264-d4ee-4438-8683-491042545cd8`, asset `/assets/index-616ce871a6a1.js`, SHA256 `616ce871a6a1e1a9dc682d6f4a5c307dbd28799576ca1b3c511fab603e00651c`.
+- Final backend SHA256 `18f3000e310ec982bfa53b5e5cc345e79f883e9e4a3fc192fd0e5b0a7c14bde9`. Existing candidate-first deployment and public API/guard regressions PASS. Both pre030 and intermediate snapshots remain recoverable.
+- Final tests:100 frontend regressions; production build33.03s;30 contractor API/session/role cases;6 complete-reader cases; retained16 run+16 employee cases and21 expense guard assertions;11 actual-artifact scenarios. All PASS.
+- Live all-year totals89 payments / paid61,847.92; pages1–50 and51–89 reachable with unchanged complete totals. Page2 filtering resets to page1.
+- Live filters match independent source aggregates: Hourly74 / paid59,147.92; Fixed15 /2700.00; Funded64 /61,847.92; Canceled2 /0.00.
+- Live2025:23 / paid32,291.68.2026 and no-match search return0, correct empty message, disabled export. Rapid2026→2025→2026 ends at the latest selection without stale rows.
+- Overview2025 and AllTime paid KPIs match source. All six rendered annual bar proportions match2020–2025 paid amounts, including zero2021. Retained payroll counts2025 regular26/off-cycle7 and AllTime122/35 remain correct. Browser errors empty after final release.
+- Source commits7597a97,58404b0,2c0f07d are preserved privately; public GitHubmain untouched. Rocket initial version761 plus Fixed and missing-identity follow-ups completed in the same project.
+- Actual current-page CSV handler/content verified with synthetic records. Browser-managed file save remains unverified. Positive contractor-name search cannot be live-verified because source names are missing. Ordinary-role boundaries passed isolated tests; no ordinary-role live account available. Signed-in super-admin access and unauthenticated API rejection passed live.
+- No business records, imports, provider sync, configuration, policies, or credentials changed. This closes the scoped repair; Payroll/Phase4 audit continues.
