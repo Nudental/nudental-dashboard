@@ -58,15 +58,13 @@ export default function GustoTimeAndAttendance({ isSuperAdmin }) {
       <div className="mx-0 mb-4 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start gap-3">
         <span className="text-blue-500 mt-0.5 flex-shrink-0">ℹ️</span>
         <p className="text-sm text-blue-700">
-          <strong>Time &amp; Attendance</strong> data requires Gusto production API scopes (<code className="bg-blue-100 px-1 rounded text-xs">time_tracking:read</code>, <code className="bg-blue-100 px-1 rounded text-xs">time_off:read</code>).
-          Data will be available once Gusto API production access is granted <strong>(expected May 2026)</strong>.
-          Use the Import buttons below to load data once access is approved.
+          Imported time and attendance records are shown below. Time-entry totals cover all imported periods. Overtime and PTO used figures use current-year summaries.
         </p>
       </div>
       {/* Section 1: Summary Cards */}
       <div className="border border-gray-200 rounded-xl overflow-hidden mb-4">
         <SectionHeader
-          title="Summary — Current Pay Period"
+          title="Summary — Imported Records"
           expanded={expandedSections?.summary}
           onToggle={() => toggleSection('summary')}
         />

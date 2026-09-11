@@ -1,0 +1,110 @@
+{
+  "issue": "NDASH-036",
+  "previous_issue": "035",
+  "expected_previous_deployment": "bce13a03-e14c-4a4b-8adb-14f76002657e",
+  "baseline_asset": "index-7255faae59d4.js",
+  "baseline_sha256": "7255faae59d4dd3cb4cac018d70ac3412d21cc6817381bc50b336f3bc2eadc4c",
+  "candidate_sha256": "5cd2646c3645e7dba0b708a012bcf8833ab3ba31da3f61036b8de5d6f717d612",
+  "asset": "/assets/index-5cd2646c3645.js",
+  "patches": [
+    {
+      "old": "ndash035-GustoBenefits.js",
+      "new": "ndash036-GustoBenefits.js"
+    },
+    {
+      "old": "ndash035-GustoImportHistory.js",
+      "new": "ndash036-GustoImportHistory.js"
+    },
+    {
+      "old": "ndash035-GustoPaySchedules.js",
+      "new": "ndash036-GustoPaySchedules.js"
+    },
+    {
+      "old": "ndash035-GustoTimeAndAttendance.js",
+      "new": "ndash036-GustoTimeAndAttendance.js"
+    },
+    {
+      "old": "ndash035-date-fns.js",
+      "new": "ndash036-date-fns.js"
+    },
+    {
+      "old": "ndash035-help-manual.js",
+      "new": "ndash036-help-manual.js"
+    },
+    {
+      "old": "ndash035-canvg.js",
+      "new": "ndash036-canvg.js"
+    }
+  ],
+  "added_assets": [
+    {
+      "name": "ndash036-GustoBenefits.js",
+      "sha256": "21c83a08f623f40ca98ed2501d6ae69031cc7c5eb02e52a5a0087dec6ddb9312",
+      "bytes": 11506,
+      "previous": "ndash035-GustoBenefits.js"
+    },
+    {
+      "name": "ndash036-GustoImportHistory.js",
+      "sha256": "2c694c897b25b9056c3a06cb7ce206edd90a08f0da8e386abe159b1bbd244ff2",
+      "bytes": 4776,
+      "previous": "ndash035-GustoImportHistory.js"
+    },
+    {
+      "name": "ndash036-GustoPaySchedules.js",
+      "sha256": "bf87bfff67015e6bece707c44c172dbce5eeb65ee7875d7b432e45e0bd15239d",
+      "bytes": 4819,
+      "previous": "ndash035-GustoPaySchedules.js"
+    },
+    {
+      "name": "ndash036-GustoTimeAndAttendance.js",
+      "sha256": "a007d36e0363973b9bb9f21d29331d725953636e69e2e752af61f704106d4243",
+      "bytes": 39417,
+      "previous": "ndash035-GustoTimeAndAttendance.js"
+    },
+    {
+      "name": "ndash036-date-fns.js",
+      "sha256": "d11f167a63023a7baa3e44b69228d0ee4cbadd4de5c3725b9fea30254681ef38",
+      "bytes": 31653,
+      "previous": "ndash035-date-fns.js"
+    },
+    {
+      "name": "ndash036-help-manual.js",
+      "sha256": "c237422bbf8faa82ed3f703506a04895f793be358f16c9388800927f60ddeae8",
+      "bytes": 122300,
+      "previous": "ndash035-help-manual.js"
+    },
+    {
+      "name": "ndash036-canvg.js",
+      "sha256": "145cf972953ef32efd4c44a055d934e0bdda53db8ad2f4ed957dbea89d6c904e",
+      "bytes": 150419,
+      "previous": "ndash035-canvg.js"
+    }
+  ],
+  "preserve_previous_entry": true,
+  "target_previous": "ndash035-GustoTimeAndAttendance.js",
+  "target_baseline_sha256": "b35bb6c59c63b755c228b48e98928368e62e9e3e95afa689fb1f4f1192119704",
+  "target_fixed_before_relink_sha256": "57fd83f96ac6b972302f4a35fd23cea3ab8bbed9a18605286a2184f6375500e4",
+  "target_patches": [
+    {
+      "old": "\"Summary — Current Pay Period\"",
+      "new": "\"Summary — Imported Records\""
+    },
+    {
+      "old": "\"Employees Tracked This Period\"",
+      "new": "\"Employees with Imported Time Entries\""
+    },
+    {
+      "old": "\"Total Hours This Period\"",
+      "new": "\"Total Imported Hours\""
+    },
+    {
+      "old": "\"Overtime Hours\"",
+      "new": "\"Overtime Hours YTD\""
+    },
+    {
+      "old": "e.jsxs(\"p\",{className:\"text-sm text-blue-700\",children:[e.jsx(\"strong\",{children:\"Time & Attendance\"}),\" data requires Gusto production API scopes (\",e.jsx(\"code\",{className:\"bg-blue-100 px-1 rounded text-xs\",children:\"time_tracking:read\"}),\", \",e.jsx(\"code\",{className:\"bg-blue-100 px-1 rounded text-xs\",children:\"time_off:read\"}),\"). Data will be available once Gusto API production access is granted \",e.jsx(\"strong\",{children:\"(expected May 2026)\"}),\". Use the Import buttons below to load data once access is approved.\"]})",
+      "new": "e.jsx(\"p\",{className:\"text-sm text-blue-700\",children:\"Imported time and attendance records are shown below. Time-entry totals cover all imported periods. Overtime and PTO used figures use current-year summaries.\"})"
+    }
+  ],
+  "syntax": "PASS"
+}

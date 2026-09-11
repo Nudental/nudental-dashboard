@@ -38,10 +38,10 @@ function SummaryCard({ icon: IconComponent, label, value, color, warn }) {
 export default function GustoTASummaryCards({ timeEntries = [], timeOffRequests = [], hoursSummary = [], timeOffBalances = [] }) {
   const currentYear = new Date()?.getFullYear();
 
-  // Total employees tracked this pay period (unique employee_ids in time entries)
+  // Unique employees across all imported time entries.
   const uniqueEmployees = new Set(timeEntries?.map(e => e?.employee_id))?.size;
 
-  // Total hours this period
+  // Total hours across all imported time entries.
   const totalHours = timeEntries?.reduce((sum, e) => sum + (parseFloat(e?.hours_worked) || 0), 0);
 
   // Overtime hours (from hours_summary current year)
@@ -61,19 +61,19 @@ export default function GustoTASummaryCards({ timeEntries = [], timeOffRequests 
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
       <SummaryCard
         icon={Users}
-        label="Employees Tracked This Period"
+        label="Employees with Imported Time Entries"
         value={uniqueEmployees}
         color="blue"
       />
       <SummaryCard
         icon={Clock}
-        label="Total Hours This Period"
+        label="Total Imported Hours"
         value={`${totalHours?.toFixed(1)} hrs`}
         color="blue"
       />
       <SummaryCard
         icon={AlertTriangle}
-        label="Overtime Hours"
+        label="Overtime Hours YTD"
         value={`${overtimeHours?.toFixed(1)} hrs`}
         color={overtimeHours > 0 ? 'orange' : 'blue'}
         warn={overtimeHours > 0}
