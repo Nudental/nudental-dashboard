@@ -24,17 +24,17 @@ export default function GustoTimeOffRequests({ isSuperAdmin }) {
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const { data, loading, error } = useGustoTimeOffRequests({
-    year: yearFilter,
-    employeeId: employeeFilter,
-    timeOffType: typeFilter,
-    status: statusFilter,
-  });
+  const { data: allData, loading, error } = useGustoTimeOffRequests({ year: yearFilter });
+  const data = useMemo(() => allData.filter(request =>
+    (employeeFilter === 'all' || request.employee_name === employeeFilter) &&
+    (typeFilter === 'all' || request.time_off_type === typeFilter) &&
+    (statusFilter === 'all' || request.status === statusFilter)
+  ), [allData, employeeFilter, typeFilter, statusFilter]);
 
   const employees = useMemo(() => {
-    const names = [...new Set(data?.map(r => r?.employee_name)?.filter(Boolean))];
+    const names = [...new Set(allData?.map(r => r?.employee_name)?.filter(Boolean))];
     return names?.sort();
-  }, [data]);
+  }, [allData]);
 
   const summaryStats = useMemo(() => ({
     total: data?.length,

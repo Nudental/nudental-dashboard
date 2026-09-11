@@ -1,0 +1,118 @@
+{
+  "issue": "NDASH-035",
+  "previous_issue": "034",
+  "expected_previous_deployment": "948203d5-6fcf-4fed-af91-acaed1f0cbb1",
+  "baseline_asset": "index-c3f09f11cfc3.js",
+  "baseline_sha256": "c3f09f11cfc316a49dea6f7cc44c4a1e519e3b72a869daf500f195e7744c9def",
+  "candidate_sha256": "7255faae59d4dd3cb4cac018d70ac3412d21cc6817381bc50b336f3bc2eadc4c",
+  "asset": "/assets/index-7255faae59d4.js",
+  "patches": [
+    {
+      "old": "ndash034-GustoBenefits.js",
+      "new": "ndash035-GustoBenefits.js"
+    },
+    {
+      "old": "ndash034-GustoImportHistory.js",
+      "new": "ndash035-GustoImportHistory.js"
+    },
+    {
+      "old": "ndash034-GustoPaySchedules.js",
+      "new": "ndash035-GustoPaySchedules.js"
+    },
+    {
+      "old": "ndash034-GustoTimeAndAttendance.js",
+      "new": "ndash035-GustoTimeAndAttendance.js"
+    },
+    {
+      "old": "ndash034-date-fns.js",
+      "new": "ndash035-date-fns.js"
+    },
+    {
+      "old": "ndash034-help-manual.js",
+      "new": "ndash035-help-manual.js"
+    },
+    {
+      "old": "ndash034-canvg.js",
+      "new": "ndash035-canvg.js"
+    }
+  ],
+  "added_assets": [
+    {
+      "name": "ndash035-GustoBenefits.js",
+      "sha256": "c9633995bdfb2369336466a4fbdb8402af348c5b21dd2afc41146d7e312259ee",
+      "bytes": 11506,
+      "previous": "ndash034-GustoBenefits.js"
+    },
+    {
+      "name": "ndash035-GustoImportHistory.js",
+      "sha256": "e5777f1c8ba4960cef78e0e8a05ff2b085e1900d1ae0cd2f4843dfcdad474ba2",
+      "bytes": 4776,
+      "previous": "ndash034-GustoImportHistory.js"
+    },
+    {
+      "name": "ndash035-GustoPaySchedules.js",
+      "sha256": "e482f61ae15da16d6467d4950b43aaa32716f48a98cc28bd173e7f82c4ca9b87",
+      "bytes": 4819,
+      "previous": "ndash034-GustoPaySchedules.js"
+    },
+    {
+      "name": "ndash035-GustoTimeAndAttendance.js",
+      "sha256": "b35bb6c59c63b755c228b48e98928368e62e9e3e95afa689fb1f4f1192119704",
+      "bytes": 39723,
+      "previous": "ndash034-GustoTimeAndAttendance.js"
+    },
+    {
+      "name": "ndash035-date-fns.js",
+      "sha256": "0f15b5dd98c0e139c3977c89c0fa3c1b85841f47f23a375f127638f1616f7346",
+      "bytes": 31653,
+      "previous": "ndash034-date-fns.js"
+    },
+    {
+      "name": "ndash035-help-manual.js",
+      "sha256": "afede385e4615c3f3ca96eab3544ba060fb08d0c1a276cdcd99c52703344e167",
+      "bytes": 122300,
+      "previous": "ndash034-help-manual.js"
+    },
+    {
+      "name": "ndash035-canvg.js",
+      "sha256": "88eb71469cdb0ffdbc1058976ab6e63bf57f8644b84dc741143b21668371b3a9",
+      "bytes": 150419,
+      "previous": "ndash034-canvg.js"
+    }
+  ],
+  "preserve_previous_entry": true,
+  "target_previous": "ndash034-GustoTimeAndAttendance.js",
+  "target_baseline_sha256": "db9a01e2812ebec0de92369130d3e2c5f079d39f9745a1fca67767fe70397bf8",
+  "target_fixed_before_relink_sha256": "a866d42b7a10c9717b2eae5f2684076d29689c2d960593797a996a5efa33067c",
+  "target_patches": [
+    {
+      "old": "{data:o,loading:g,error:c}=q({employeeId:p,officeName:f,status:v})",
+      "new": "{data:NDASH_entriesAll,loading:g,error:c}=q({}),o=j.useMemo(()=>NDASH_entriesAll.filter(NDASH_row=>(p===\"all\"||NDASH_row.employee_name===p)&&(f===\"all\"||NDASH_row.office_name===f)&&(v===\"all\"||NDASH_row.status===v)),[NDASH_entriesAll,p,f,v])"
+    },
+    {
+      "old": "j.useMemo(()=>{var u;const t=[...new Set((u=o==null?void 0:o.map(b=>b==null?void 0:b.employee_name))==null?void 0:u.filter(Boolean))];return t==null?void 0:t.sort()},[o])",
+      "new": "j.useMemo(()=>{var u;const t=[...new Set((u=NDASH_entriesAll==null?void 0:NDASH_entriesAll.map(b=>b==null?void 0:b.employee_name))==null?void 0:u.filter(Boolean))];return t==null?void 0:t.sort()},[NDASH_entriesAll])"
+    },
+    {
+      "old": "j.useMemo(()=>{var u;const t=[...new Set((u=o==null?void 0:o.map(b=>b==null?void 0:b.office_name))==null?void 0:u.filter(Boolean))];return t==null?void 0:t.sort()},[o])",
+      "new": "j.useMemo(()=>{var u;const t=[...new Set((u=NDASH_entriesAll==null?void 0:NDASH_entriesAll.map(b=>b==null?void 0:b.office_name))==null?void 0:u.filter(Boolean))];return t==null?void 0:t.sort()},[NDASH_entriesAll])"
+    },
+    {
+      "old": "if(!(o!=null&&o.length))return e.jsxs(\"div\",{className:\"flex flex-col items-center justify-center py-12 text-center\",children:[e.jsx(\"div\",{className:\"w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3\",children:e.jsx(\"span\",{className:\"text-2xl\",children:\"🕐\"})}),e.jsx(\"p\",{className:\"text-gray-500 text-sm\",children:\"No time entries found for the selected filters.\"})]});",
+      "new": ""
+    },
+    {
+      "old": "y&&r?(l=Object.entries(r))==null?void 0:l.map(([t,u])=>{var b,T;return e.jsxs(ce.Fragment,{children:[e.jsx(\"tr\",{className:\"bg-blue-50\",children:e.jsxs(\"td\",{colSpan:9,className:\"px-4 py-2 text-xs font-bold text-blue-700\",children:[\"Week of \",t,\" — \",(b=u==null?void 0:u.totalHours)==null?void 0:b.toFixed(1),\" hrs total\"]})}),(T=u==null?void 0:u.entries)==null?void 0:T.map(a)]},t)}):o==null?void 0:o.map(a)",
+      "new": "!o.length?e.jsx(\"tr\",{children:e.jsx(\"td\",{colSpan:9,className:\"px-4 py-8 text-center text-gray-500\",children:\"No time entries found for the selected filters.\"})}):(y&&r?(l=Object.entries(r))==null?void 0:l.map(([t,u])=>{var b,T;return e.jsxs(ce.Fragment,{children:[e.jsx(\"tr\",{className:\"bg-blue-50\",children:e.jsxs(\"td\",{colSpan:9,className:\"px-4 py-2 text-xs font-bold text-blue-700\",children:[\"Week of \",t,\" — \",(b=u==null?void 0:u.totalHours)==null?void 0:b.toFixed(1),\" hrs total\"]})}),(T=u==null?void 0:u.entries)==null?void 0:T.map(a)]},t)}):o==null?void 0:o.map(a))"
+    },
+    {
+      "old": "{data:i,loading:o,error:g}=ee({year:x,employeeId:d,timeOffType:h,status:n})",
+      "new": "{data:NDASH_requestsAll,loading:o,error:g}=ee({year:x}),i=j.useMemo(()=>NDASH_requestsAll.filter(NDASH_row=>(d===\"all\"||NDASH_row.employee_name===d)&&(h===\"all\"||NDASH_row.time_off_type===h)&&(n===\"all\"||NDASH_row.status===n)),[NDASH_requestsAll,d,h,n])"
+    },
+    {
+      "old": "j.useMemo(()=>{var l;const a=[...new Set((l=i==null?void 0:i.map(w=>w==null?void 0:w.employee_name))==null?void 0:l.filter(Boolean))];return a==null?void 0:a.sort()},[i])",
+      "new": "j.useMemo(()=>{var l;const a=[...new Set((l=NDASH_requestsAll==null?void 0:NDASH_requestsAll.map(w=>w==null?void 0:w.employee_name))==null?void 0:l.filter(Boolean))];return a==null?void 0:a.sort()},[NDASH_requestsAll])"
+    }
+  ],
+  "syntax": "PASS"
+}

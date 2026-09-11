@@ -46,21 +46,22 @@ export default function GustoTimeEntries({ isSuperAdmin }) {
   const [weeklyView, setWeeklyView] = useState(false);
   const [expandedNote, setExpandedNote] = useState(null);
 
-  const { data, loading, error } = useGustoTimeEntries({
-    employeeId: employeeFilter,
-    officeName: officeFilter,
-    status: statusFilter,
-  });
+  const { data: allData, loading, error } = useGustoTimeEntries({});
+  const data = useMemo(() => allData.filter(entry =>
+    (employeeFilter === 'all' || entry.employee_name === employeeFilter) &&
+    (officeFilter === 'all' || entry.office_name === officeFilter) &&
+    (statusFilter === 'all' || entry.status === statusFilter)
+  ), [allData, employeeFilter, officeFilter, statusFilter]);
 
   const employees = useMemo(() => {
-    const names = [...new Set(data?.map(e => e?.employee_name)?.filter(Boolean))];
+    const names = [...new Set(allData?.map(e => e?.employee_name)?.filter(Boolean))];
     return names?.sort();
-  }, [data]);
+  }, [allData]);
 
   const offices = useMemo(() => {
-    const names = [...new Set(data?.map(e => e?.office_name)?.filter(Boolean))];
+    const names = [...new Set(allData?.map(e => e?.office_name)?.filter(Boolean))];
     return names?.sort();
-  }, [data]);
+  }, [allData]);
 
   // Per-employee subtotals
   const employeeTotals = useMemo(() => {
@@ -96,17 +97,6 @@ export default function GustoTimeEntries({ isSuperAdmin }) {
 
   if (error) {
     return <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">Error: {error}</div>;
-  }
-
-  if (!data?.length) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-          <span className="text-2xl">🕐</span>
-        </div>
-        <p className="text-gray-500 text-sm">No time entries found for the selected filters.</p>
-      </div>
-    );
   }
 
   const renderRow = (entry) => (
@@ -186,7 +176,9 @@ export default function GustoTimeEntries({ isSuperAdmin }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {weeklyView && weeklyGroups ? (
+            {!data.length ? (
+              <tr><td colSpan={9} className="px-4 py-8 text-center text-gray-500">No time entries found for the selected filters.</td></tr>
+            ) : weeklyView && weeklyGroups ? (
               Object.entries(weeklyGroups)?.map(([week, group]) => (
                 <React.Fragment key={week}>
                   <tr className="bg-blue-50">
