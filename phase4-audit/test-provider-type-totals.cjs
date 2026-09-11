@@ -1,0 +1,14 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.resolve(__dirname,'../recovered-frontend'),parser=require(path.join(process.env.NDASH_PARSER_ROOT||root,'node_modules/@babel/parser'));
+const source=fs.readFileSync(path.join(root,'src/pages/provider-performance/index.jsx'),'utf8'),ast=parser.parse(source,{sourceType:'module',plugins:['jsx']});
+const declaration=ast.program.body.find(n=>n.type==='VariableDeclaration'&&n.declarations[0].id.name==='getProviderSummaryTotals').declarations[0].init;
+const totals=vm.runInNewContext('('+source.slice(declaration.start,declaration.end)+')');
+const summary={netProduction:1000,totalCollections:800};
+const rows=[{production:100,collections:90},{production:-20,collections:30}];
+test('specific type totals use selected rows including negative adjustments',()=>{const r=totals(summary,rows,['hygienist'],false,'');assert.equal(r.production,80);assert.equal(r.collections,120);});
+test('combined selected types and unattributed use their complete row set',()=>{for(const types of [['doctor','hygienist'],['unattributed']]){const r=totals(summary,rows,types,false,'');assert.equal(r.production,80);assert.equal(r.collections,120);}});
+test('All preserves authoritative office summary amounts',()=>{const r=totals(summary,rows,['all'],false,'');assert.equal(r.production,1000);assert.equal(r.collections,800);});
+test('valid empty selection displays zero instead of every provider total',()=>{const r=totals(summary,[],['house'],false,'');assert.equal(r.production,0);assert.equal(r.collections,0);});
+test('missing and nonfinite row amounts stay unavailable independently',()=>{for(const value of [null,undefined,NaN,Infinity]){const r=totals(summary,[{production:value,collections:0}],['doctor'],false,'');assert.equal(r.production,null);assert.equal(r.collections,0);}});
+test('loading and failed requests cannot display stale totals',()=>{for(const types of [['all'],['doctor']])for(const state of [[true,''],[false,'Unavailable']]){const r=totals(summary,rows,types,...state);assert.equal(r.production,null);assert.equal(r.collections,null);}});
+test('All missing net does not fall back to gross and zero remains zero',()=>{const r=totals({grossProduction:900,netProduction:0,totalCollections:0},rows,['all'],false,'');assert.equal(r.production,0);assert.equal(r.collections,0);assert.equal(totals({grossProduction:900},rows,['all'],false,'').production,null);});

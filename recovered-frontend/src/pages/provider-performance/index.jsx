@@ -58,6 +58,15 @@ const mergeProviderOfficeResults = (results) => {
   return { providers: [...providers.values()], summary };
 };
 
+const getProviderSummaryTotals = (summary, rows, types, loading, error) => {
+  const unavailable = { production: null, collections: null };
+  if (loading || error || !Array.isArray(rows)) return unavailable;
+  const sum = field => rows.some(row => row?.[field] == null || !Number.isFinite(row[field]))
+    ? null : rows.reduce((total, row) => total + row[field], 0);
+  if (!types?.includes('all')) return { production: sum('production'), collections: sum('collections') };
+  return { production: summary?.netProduction ?? null, collections: summary?.totalCollections ?? sum('collections') };
+};
+
 const ProviderPerformance = () => {
   const { userProfile } = useAuth();
   const navigate = useNavigate();
@@ -190,7 +199,7 @@ const ProviderPerformance = () => {
             homeOffice: isUnattributed ? null : homeOffice,
             offices: p?.offices ?? [],
             production: (() => { const rawNet = p?.netProduction ?? p?.net_production ?? null; return (rawNet !== null && rawNet !== undefined && rawNet !== '') ? parseFloat(rawNet) : null; })(),
-            collections: parseFloat(p?.collections ?? p?.totalCollections ?? 0),
+            collections: (() => { const raw = p?.collections ?? p?.totalCollections ?? null; return raw == null || raw === '' ? null : parseFloat(raw); })(),
             newPatients: parseInt(p?.newPatients ?? p?.new_patients ?? 0),
             totalPatients: parseInt(p?.totalPatients ?? p?.total_patients ?? p?.patientVisits ?? 0),
             categories: { general: { name: 'General', production: (() => { const rawNet = p?.netProduction ?? p?.net_production ?? null; return (rawNet !== null && rawNet !== undefined && rawNet !== '') ? parseFloat(rawNet) : null; })(), collections: parseFloat(p?.collections ?? 0) } },
@@ -235,18 +244,10 @@ const ProviderPerformance = () => {
     return () => window.removeEventListener('daily-entries-updated', handleDailyEntriesUpdated);
   }, [loadPerformanceData]);
 
-  // Summary stats — prefer API-level summary totals when available
-  // V315 FIX: totalProduction uses ONLY true netProduction — no grossProduction fallback
-  const totalProduction = apiSummary?.netProduction != null
-    ? apiSummary?.netProduction
-    : null; // V315: do NOT fall back to grossProduction for summary denominator
-
-  const totalCollections = apiSummary?.totalCollections != null
-    ? apiSummary?.totalCollections
-    : performanceData?.reduce((s, p) => {
-        if (p?.collections == null) return s;
-        return s + p?.collections;
-      }, 0);
+  // Specific provider types use their displayed rows; All retains the office API totals.
+  const { production: totalProduction, collections: totalCollections } = getProviderSummaryTotals(
+    apiSummary, performanceData, providerTypeFilter, loading, error
+  );
 
   // Avg collection rate only from attributed (non-unattributed) providers
   const attributedProviders = performanceData?.filter(p => !p?.isUnattributed);
@@ -315,7 +316,7 @@ const ProviderPerformance = () => {
             </div>
           </div>
 
-          {/* Summary KPI Cards — use API-level totals */}
+          {/* Summary KPI Cards — match the selected provider types */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
             <div className="bg-card border border-border rounded-lg px-4 py-3">
               <p className="text-xs text-muted-foreground mb-1">Net Production</p>
@@ -343,7 +344,7 @@ const ProviderPerformance = () => {
             <div className="bg-card border border-border rounded-lg px-4 py-3 mb-4">
               <div className="flex items-center gap-2 mb-3">
                 <Icon name="BarChart2" size={14} color="var(--color-muted-foreground)" />
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Attribution Reconciliation</p>
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Attribution Reconciliation{!providerTypeFilter?.includes('all') ? ' · All provider types' : ''}</p>
                 {apiSummary?.reconcilesToOfficeTotals != null && (
                   <span className={`ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                     apiSummary?.reconcilesToOfficeTotals ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
