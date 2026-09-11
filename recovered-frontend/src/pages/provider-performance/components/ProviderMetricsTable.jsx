@@ -264,7 +264,7 @@ const ProviderMetricsTable = ({ data, loading, trendDays, activeCategory, select
                             </div>
                           ) : (
                             <>
-                              <p className="font-semibold text-foreground mb-2">Category Breakdown</p>
+                              <p className="font-semibold text-foreground mb-2">Category breakdown unavailable</p>
                               {showHomeOfficeTooltip && (
                                 <p className="text-xs text-muted-foreground mb-2">
                                   <span className="font-medium">Provider Home Office:</span> {p?.homeOffice}

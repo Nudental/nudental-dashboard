@@ -140,8 +140,10 @@ const PerformanceFilters = ({
 
         {/* Service Category */}
         <div className="min-w-[160px]">
-          <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Service Category</label>
+          <label className="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Service Category · Unavailable</label>
           <select
+            disabled
+            title="Provider category breakdown is unavailable from the current data source."
             value={serviceCategoryFilter}
             onChange={(e) => onServiceCategoryChange(e?.target?.value)}
             className="w-full px-3 py-1.5 text-xs border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-primary"

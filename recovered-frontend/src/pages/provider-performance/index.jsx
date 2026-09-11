@@ -202,7 +202,7 @@ const ProviderPerformance = () => {
             collections: (() => { const raw = p?.collections ?? p?.totalCollections ?? null; return raw == null || raw === '' ? null : parseFloat(raw); })(),
             newPatients: parseInt(p?.newPatients ?? p?.new_patients ?? 0),
             totalPatients: parseInt(p?.totalPatients ?? p?.total_patients ?? p?.patientVisits ?? 0),
-            categories: { general: { name: 'General', production: (() => { const rawNet = p?.netProduction ?? p?.net_production ?? null; return (rawNet !== null && rawNet !== undefined && rawNet !== '') ? parseFloat(rawNet) : null; })(), collections: parseFloat(p?.collections ?? 0) } },
+            categories: {}, // The current provider response has no verified category attribution.
             trendData: [],
             entries: p?.entries ?? [],
             officeBreakdown: p?.officeBreakdown ?? [],
@@ -422,7 +422,7 @@ const ProviderPerformance = () => {
             serviceCategoryFilter={serviceCategoryFilter}
             onServiceCategoryChange={setServiceCategoryFilter}
             offices={offices}
-            serviceCategories={serviceCategories}
+            serviceCategories={[]}
             isOfficeManager={isOfficeManager}
           />
 
@@ -435,7 +435,7 @@ const ProviderPerformance = () => {
 
           {/* Service Category Tabs */}
           <ServiceCategoryTabs
-            categories={serviceCategories}
+            categories={[]}
             activeCategory={activeCategory}
             onCategoryChange={setActiveCategory}
           />
