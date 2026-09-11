@@ -105,7 +105,7 @@ const ProvidersHeatmapTable = ({ rows, columns, loading }) => {
     );
   }
 
-  if (!filtered?.length) {
+  if (!filtered?.length && !search?.trim()) {
     return (
       <div className="text-center py-12 text-slate-400">
         <p className="text-sm">No provider data found for the selected period.</p>

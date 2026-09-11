@@ -11,4 +11,4 @@ Tests: six actual source row/benchmark regression tests fail before and pass aft
 Candidate asset index-8d9aea49a6d5.js; SHA256 8d9aea49a6d566d541d4badb5d22113055b11d05bc4da0b3628036ba0787f47b.
 Prior deployment fed81b66-df3d-4257-8116-ccbc8587fddf; rollback /home/openclaw/.cache/nudashboard-audit-20260910/ndash003-dist.
 
-Production build, deployment and live verification recorded after execution. No business records changed.
+Production build PASS (31.61 seconds). Deployment 3761ea17-03b2-4ce6-8023-e5268b66131e succeeded. Live verification PASS: NaN count zero; valid goal-progress values return (Eatontown 102.8% production and 93.5% collections), collection rates 86.4%, 63.9%, 87.6%, 108.4%, average 86.6%; zero patient goals still show no divided-by-zero progress. Dollar totals unchanged. The initial KPI refresh loaded slowly; API/frontend health 200, all three services active, 4,671 MiB available memory. No business records changed.
