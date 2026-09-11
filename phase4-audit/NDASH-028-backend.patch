@@ -1,0 +1,21 @@
+--- a/middleware/main_candidate.py
++++ b/middleware/main_candidate.py
+@@ -3453,2 +3453,6 @@
+     endDate:   Optional[str] = Query(None),
++    off_cycle: Optional[bool] = Query(None),
++    status: Optional[str] = Query(None),
++    run_by_user_name: Optional[str] = Query(None),
++    sort: Optional[str] = Query(None),
+     limit:     int = Query(200),
+@@ -3462,2 +3466,11 @@
+         rows = _sb_get_full(q)
++        # Honor imported-run filters and requested order before total/pagination.
++        if off_cycle is not None:
++            rows = [row for row in rows if row.get("off_cycle") is off_cycle]
++        if status and status != "all":
++            rows = [row for row in rows if status in ("processed", "reversed", "needs_reprocessing") and row.get(status) is True]
++        if run_by_user_name is not None:
++            rows = [row for row in rows if str(row.get("run_by_user_name") or "") == run_by_user_name]
++        if sort == "check_date:asc":
++            rows = sorted(rows, key=lambda row: str(row.get("check_date") or ""))
+         page = rows[offset: offset + limit]
