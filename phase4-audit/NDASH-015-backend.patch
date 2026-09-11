@@ -1,0 +1,62 @@
+--- a/report_export.py
++++ b/report_export.py
+@@ -939,32 +939,35 @@
+ 
+ def _fetch_provider_production_collections(start: str, end: str, office_filter: list, api_key: str) -> tuple[list[str], list[dict]]:
+     """Provider Production & Collections."""
+-    data = _api_get(f"/v2/reports/provider-performance?startDate={start}&endDate={end}", api_key)
+-    providers = data.get("providers", [])
+-
+-    locs = _resolve_office_locations(office_filter) if office_filter else None
++    if office_filter:
++        names = _normalize_office_filter(office_filter)
++        if len(names) != len(office_filter) or any(name not in LOCATION_NAMES.values() for name in names):
++            raise HTTPException(status_code=400, detail="Unknown office in report filter")
++        locations = list(dict.fromkeys(_resolve_office_locations(office_filter)))
++    else:
++        locations = [None]
+ 
+     rows = []
+-    for p in providers:
+-        # Filter by office if requested
+-        if locs and p.get("locationId") and p["locationId"] not in locs:
+-            continue
+-
+-        rows.append({
+-            "Provider": p.get("providerName", ""),
+-            "Office": p.get("officeName") or p.get("office", ""),
+-            "Provider Type": p.get("providerType", ""),
+-            "Specialty": p.get("specialtyLabel", ""),
+-            "Gross Production": p.get("grossProduction", 0),
+-            "Adjustments": p.get("adjustments", 0),
+-            "Net Production": p.get("netProduction", 0),
+-            "Patient Collections": p.get("patientCollections", 0),
+-            "Insurance Collections": p.get("insuranceCollections", 0),
+-            "Total Collections": p.get("collections", 0),
+-            "Collection Rate %": p.get("collectionRate", 0),
+-            "Procedure Count": p.get("procedureCount", 0),
+-            "Patients": p.get("patients", 0),
+-        })
++    for location in locations:
++        query = f"&locationId={location}" if location else ""
++        data = _api_get(f"/v2/reports/provider-performance?startDate={start}&endDate={end}{query}", api_key)
++        # Activity is scoped by the API, not by a provider's primary office.
++        for p in data.get("providers", []):
++            rows.append({
++                "Provider": p.get("providerName", ""),
++                "Office": LOCATION_NAMES[location] if location else (p.get("officeName") or p.get("office", "")),
++                "Provider Type": p.get("providerType", ""),
++                "Specialty": p.get("specialtyLabel", ""),
++                "Gross Production": p.get("grossProduction", 0),
++                "Adjustments": p.get("adjustments", 0),
++                "Net Production": p.get("netProduction", 0),
++                "Patient Collections": p.get("patientCollections", 0),
++                "Insurance Collections": p.get("insuranceCollections", 0),
++                "Total Collections": p.get("collections", 0),
++                "Collection Rate %": p.get("collectionRate", 0),
++                "Procedure Count": p.get("procedureCount", 0),
++                "Patients": p.get("patients", 0),
++            })
+ 
+     headers = [
+         "Provider", "Office", "Provider Type", "Specialty",
