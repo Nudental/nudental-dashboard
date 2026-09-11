@@ -799,7 +799,7 @@ const OfficePerformance = () => {
                 <Button variant="outline" iconName="RefreshCw" iconSize={16} loading={kpiLoading} onClick={() => setRefreshKey(key => key + 1)}>
                   Refresh Data
                 </Button>
-                <Button variant="default" iconName="Download" iconSize={16} onClick={() => document.getElementById('office-report-export')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
+                <Button variant="default" iconName="Download" iconSize={16} onClick={event => event.currentTarget.closest('.main-content')?.querySelector('#office-report-export')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
                   Export Report
                 </Button>
               </div>
