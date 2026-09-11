@@ -397,9 +397,8 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
             <YAxis stroke="var(--color-muted-foreground)" style={{ fontSize: '12px' }} tickFormatter={(v) => `${(v / 1000)?.toFixed(0)}K`} />
             <RechartsTooltip contentStyle={{ backgroundColor: 'var(--color-popover)', border: '1px solid var(--color-border)', borderRadius: '8px' }} formatter={(v) => `${v?.toLocaleString()}`} />
             <Legend />
-            <Line type="monotone" dataKey="revenue" stroke="var(--color-primary)" strokeWidth={2} dot={{ r: 4 }} />
-            <Line type="monotone" dataKey="expenses" stroke="var(--color-warning)" strokeWidth={2} dot={{ r: 4 }} />
-            <Line type="monotone" dataKey="profit" stroke="var(--color-success)" strokeWidth={2} dot={{ r: 4 }} />
+            <Line type="monotone" dataKey="revenue" name="Net Production" stroke="var(--color-primary)" strokeWidth={2} dot={{ r: 4 }} />
+            <Line type="monotone" dataKey="collections" name="Total Collections" stroke="var(--color-success)" strokeWidth={2} dot={{ r: 4 }} />
             {dailyTarget > 0 && (
               <ReferenceLine y={dailyTarget} stroke="#f59e0b" strokeDasharray="8 4" strokeWidth={2} label={{ value: `Daily Target: $${Math.round(dailyTarget / 1000)}K`, position: 'insideTopRight', fontSize: 11, fill: '#f59e0b' }} />
             )}
@@ -417,9 +416,8 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
             <YAxis stroke="var(--color-muted-foreground)" style={{ fontSize: '12px' }} tickFormatter={(v) => `${(v / 1000)?.toFixed(0)}K`} />
             <RechartsTooltip contentStyle={{ backgroundColor: 'var(--color-popover)', border: '1px solid var(--color-border)', borderRadius: '8px' }} formatter={(v) => `${v?.toLocaleString()}`} />
             <Legend />
-            <Bar dataKey="revenue" fill="var(--color-primary)" radius={[8, 8, 0, 0]} />
-            <Bar dataKey="expenses" fill="var(--color-warning)" radius={[8, 8, 0, 0]} />
-            <Bar dataKey="profit" fill="var(--color-success)" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="revenue" name="Net Production" fill="var(--color-primary)" radius={[8, 8, 0, 0]} />
+            <Bar dataKey="collections" name="Total Collections" fill="var(--color-success)" radius={[8, 8, 0, 0]} />
             {dailyTarget > 0 && (
               <ReferenceLine y={dailyTarget} stroke="#f59e0b" strokeDasharray="8 4" strokeWidth={2} label={{ value: `Daily Target: $${Math.round(dailyTarget / 1000)}K`, position: 'insideTopRight', fontSize: 11, fill: '#f59e0b' }} />
             )}
@@ -513,9 +511,9 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
-  const modeLabel = mode === 'trend' ? 'Revenue Trend Analysis'
+  const modeLabel = mode === 'trend' ? 'Production and Collections Trend'
     : mode === 'comparison' ? 'Comparative Analysis'
-    : mode === 'forecast'? 'Forecasting' :'Revenue Trend Analysis';
+    : mode === 'forecast'? 'Forecasting' :'Production and Collections Trend';
 
   return (
     <div className="bg-card border border-border rounded-lg p-4 md:p-6 shadow-elevation-1">

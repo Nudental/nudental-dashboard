@@ -204,10 +204,6 @@ const FinancialAnalytics = () => {
               revenue: prod?.netProduction ?? 0,
               // Production Adjustments — reductions (displayed as positive for chart)
               adjustments: Math.abs(prod?.adjustments ?? prod?.writeOffs ?? 0),
-              expenses: 0,
-              profit: (prod?.netProduction ?? 0) - (coll?.totalCollections ?? 0) > 0
-                ? (prod?.netProduction ?? 0) - (coll?.totalCollections ?? 0)
-                : 0,
               collections: Math.abs(coll?.totalCollections ?? coll?.collections ?? 0),
               newPatients: patients?.newPatients ?? 0,
             }));
