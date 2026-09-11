@@ -854,6 +854,7 @@ export default function PayrollPage() {
   const [mappingStats, setMappingStats] = useState(null);
   const [markingNonProvider, setMarkingNonProvider] = useState(null);
   const [showResolvedDiagnostics, setShowResolvedDiagnostics] = useState(false);
+  const payrollRequestId = React.useRef(0);
 
   // ── Build schedule for selected year ──────────────────────────────────────
   useEffect(() => {
@@ -908,7 +909,20 @@ export default function PayrollPage() {
 
   // ── Fetch Payroll Data ─────────────────────────────────────────────────────
   const loadPayroll = useCallback(async () => {
-    if (!isSuperAdmin || !activeDateRange) return;
+    const requestId = ++payrollRequestId.current;
+    setDoctors([]);
+    setHygienists([]);
+    setPlaceholders([]);
+    setResolvedPlaceholders([]);
+    setSummary({});
+    setDataSource(null);
+    setDataSourceWarning(null);
+    setAppliedDentrixWindow(null);
+    if (!isSuperAdmin || !activeDateRange?.startDate || !activeDateRange?.endDate) {
+      setLoading(false);
+      setError(isSuperAdmin ? 'Choose a payroll run or enter both custom dates.' : null);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -951,6 +965,7 @@ export default function PayrollPage() {
         providerType: selectedProviderType !== 'all' ? selectedProviderType : null,
         payrollRun: selectedRun,
       });
+      if (requestId !== payrollRequestId.current) return;
       setDoctors(result?.doctors || []);
       setHygienists(result?.hygienists || []);
       setPlaceholders(result?.placeholders || []);
@@ -962,14 +977,15 @@ export default function PayrollPage() {
       // Refresh mapping stats after load
       getMappingStats()?.then(setMappingStats)?.catch(() => {});
     } catch (err) {
-      setError(err?.message);
+      if (requestId === payrollRequestId.current) setError(err?.message);
     } finally {
-      setLoading(false);
+      if (requestId === payrollRequestId.current) setLoading(false);
     }
   }, [isSuperAdmin, activeDateRange, selectedOffice, selectedProvider, selectedProviderType, selectedRun, useCustomRange]);
 
   useEffect(() => {
     loadPayroll();
+    return () => { payrollRequestId.current += 1; };
   }, [loadPayroll]);
 
   // ── Real-time: auto-refresh when upstream payroll data changes ────────────
