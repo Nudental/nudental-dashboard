@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 const API_BASE = 'https://api.nudashboard.com/v2/payroll';
 const API_KEY = 'nudashboard_prod_key';
@@ -28,6 +28,16 @@ async function apiFetch(path, params = {}) {
  *   variancePercent = from backend
  *   Frontend does NOT recalculate Provider Compensation.
  */
+export function getComparisonDateMessage(filters = {}) {
+  const { startDate, endDate } = filters;
+  if (!startDate || !endDate) return 'Select both a start date and an end date to load payroll comparison.';
+  const validDate = value => /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+    Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
+  if (!validDate(startDate) || !validDate(endDate)) return 'Enter valid start and end dates.';
+  if (startDate > endDate) return 'Start date must be on or before end date.';
+  return '';
+}
+
 export function useGustoComparison(filters = {}) {
   const [data, setData] = useState([]);
   const [count, setCount] = useState(0);
@@ -35,10 +45,19 @@ export function useGustoComparison(filters = {}) {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const PAGE_SIZE = 50;
+  const requestGeneration = useRef(0);
+  const dateRangeMessage = getComparisonDateMessage(filters);
 
   const fetchData = useCallback(async () => {
-    setLoading(true);
+    const generation = ++requestGeneration.current;
     setError(null);
+    setData([]);
+    setCount(0);
+    if (dateRangeMessage) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     try {
       const params = {
         offset: page * PAGE_SIZE,
@@ -58,19 +77,24 @@ export function useGustoComparison(filters = {}) {
       if (filters?.officeId && filters?.officeId !== 'all') params.office_id = filters?.officeId;
 
       const json = await apiFetch('/comparison', params);
+      if (generation !== requestGeneration.current) return;
       setData(json?.data || []);
       setCount(json?.total || 0);
     } catch (err) {
+      if (generation !== requestGeneration.current) return;
       setError(err?.message);
       setData([]);
     } finally {
-      setLoading(false);
+      if (generation === requestGeneration.current) setLoading(false);
     }
-  }, [page, JSON.stringify(filters)]);
+  }, [page, JSON.stringify(filters), dateRangeMessage]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+    return () => { requestGeneration.current += 1; };
+  }, [fetchData]);
 
-  return { data, count, loading, error, page, setPage, pageSize: PAGE_SIZE, refetch: fetchData };
+  return { data: dateRangeMessage ? [] : data, count: dateRangeMessage ? 0 : count, loading: dateRangeMessage ? false : loading, error, dateRangeMessage, page, setPage, pageSize: PAGE_SIZE, refetch: fetchData };
 }
 
 export function useGustoCrosswalk() {

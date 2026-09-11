@@ -869,7 +869,7 @@ export default function ComparisonRoot({ isSuperAdmin, isAdmin }) {
   const [selectedProviderName, setSelectedProviderName] = useState('all');
   const [mappingEmployee, setMappingEmployee] = useState(null);
 
-  const { data, count, loading, error, page, setPage, pageSize, refetch } = useGustoComparison(filters);
+  const { data, count, loading, error, dateRangeMessage, page, setPage, pageSize, refetch } = useGustoComparison(filters);
   const { data: crosswalkData, refetch: refetchCrosswalk } = useGustoCrosswalk();
 
   // Real-time refresh
@@ -1052,21 +1052,26 @@ export default function ComparisonRoot({ isSuperAdmin, isAdmin }) {
         </div>
       </div>
 
-      {error && (
+      {dateRangeMessage && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800">
+          {dateRangeMessage}
+        </div>
+      )}
+      {error && !dateRangeMessage && (
         <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
           Error loading comparison data: {error}
         </div>
       )}
 
       {/* Summary cards — driven by filteredRows so they update with provider name filter */}
-      <ComparisonSummaryCards data={filteredRows} />
+      {!dateRangeMessage && <ComparisonSummaryCards data={filteredRows} />}
 
       {/* Payroll Comparison Table — driven by filteredRows */}
-      <PayrollComparisonTable
+      {!dateRangeMessage && <PayrollComparisonTable
         data={filteredRows}
         loading={loading}
         isSuperAdmin={isSuperAdmin}
-      />
+      />}
 
       {/* Row count */}
       {!loading && data?.length > 0 && (

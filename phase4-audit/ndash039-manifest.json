@@ -1,0 +1,109 @@
+{
+  "issue": "NDASH-039",
+  "previous_issue": "038",
+  "expected_previous_deployment": "d8d096aa-2a25-4020-82d5-c7c7a75c05c6",
+  "baseline_asset": "index-baf7a9e6cfa2.js",
+  "baseline_sha256": "baf7a9e6cfa2a249a2a2acbd39bfb3e2776dd439d44c362676722b9b6fa0f590",
+  "candidate_sha256": "3aefb73e45d0e50aece2e64ff0603dca874a901caa25bc4b6b56d173f349b7df",
+  "asset": "/assets/index-3aefb73e45d0.js",
+  "patches": [
+    {
+      "old": "function cMt(e={}){const[t,a]=D.useState([]),[o,s]=D.useState(0),[c,d]=D.useState(!0),[i,r]=D.useState(null),[m,p]=D.useState(0),l=50,u=D.useCallback(async()=>{d(!0),r(null);try{const x={offset:m*l,limit:l,sort:\"check_date:desc\"};e!=null&&e.startDate&&(x.startDate=e==null?void 0:e.startDate),e!=null&&e.endDate&&(x.endDate=e==null?void 0:e.endDate),e!=null&&e.providerType&&(e==null?void 0:e.providerType)!==\"all\"&&(x.providerType=e==null?void 0:e.providerType),e!=null&&e.providerId&&(e==null?void 0:e.providerId)!==\"all\"&&(x.providerId=e==null?void 0:e.providerId),e!=null&&e.checkDate&&(x.checkDate=e==null?void 0:e.checkDate),e!=null&&e.payrollRunId&&(e==null?void 0:e.payrollRunId)!==\"all\"&&(x.payrollRunId=e==null?void 0:e.payrollRunId),e!=null&&e.officeId&&(e==null?void 0:e.officeId)!==\"all\"&&(x.office_id=e==null?void 0:e.officeId);const g=await FWe(\"/comparison\",x);a((g==null?void 0:g.data)||[]),s((g==null?void 0:g.total)||0)}catch(x){r(x==null?void 0:x.message),a([])}finally{d(!1)}},[m,JSON.stringify(e)]);return D.useEffect(()=>{u()},[u]),{data:t,count:o,loading:c,error:i,page:m,setPage:p,pageSize:l,refetch:u}}",
+      "new": "function __ndash039DateMessage(filters = {}) {\n  const { startDate, endDate } = filters;\n  if (!startDate || !endDate) return 'Select both a start date and an end date to load payroll comparison.';\n  const validDate = value => /^\\d{4}-\\d{2}-\\d{2}$/.test(value) &&\n    Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;\n  if (!validDate(startDate) || !validDate(endDate)) return 'Enter valid start and end dates.';\n  if (startDate > endDate) return 'Start date must be on or before end date.';\n  return '';\n}\nfunction cMt(filters = {}) {\n  const [data, setData] = D.useState([]);\n  const [count, setCount] = D.useState(0);\n  const [loading, setLoading] = D.useState(true);\n  const [error, setError] = D.useState(null);\n  const [page, setPage] = D.useState(0);\n  const PAGE_SIZE = 50;\n  const requestGeneration = D.useRef(0);\n  const dateRangeMessage = __ndash039DateMessage(filters);\n\n  const fetchData = D.useCallback(async () => {\n    const generation = ++requestGeneration.current;\n    setError(null);\n    setData([]);\n    setCount(0);\n    if (dateRangeMessage) {\n      setLoading(false);\n      return;\n    }\n    setLoading(true);\n    try {\n      const params = {\n        offset: page * PAGE_SIZE,\n        limit: PAGE_SIZE,\n        sort: 'check_date:desc',\n      };\n\n      // Phase 2B required filters\n      if (filters?.startDate) params.startDate = filters?.startDate;\n      if (filters?.endDate) params.endDate = filters?.endDate;\n      if (filters?.providerType && filters?.providerType !== 'all') params.providerType = filters?.providerType;\n      if (filters?.providerId && filters?.providerId !== 'all') params.providerId = filters?.providerId;\n      if (filters?.checkDate) params.checkDate = filters?.checkDate;\n      if (filters?.payrollRunId && filters?.payrollRunId !== 'all') params.payrollRunId = filters?.payrollRunId;\n\n      // Legacy filters kept for backward compat\n      if (filters?.officeId && filters?.officeId !== 'all') params.office_id = filters?.officeId;\n\n      const json = await FWe('/comparison', params);\n      if (generation !== requestGeneration.current) return;\n      setData(json?.data || []);\n      setCount(json?.total || 0);\n    } catch (err) {\n      if (generation !== requestGeneration.current) return;\n      setError(err?.message);\n      setData([]);\n    } finally {\n      if (generation === requestGeneration.current) setLoading(false);\n    }\n  }, [page, JSON.stringify(filters), dateRangeMessage]);\n\n  D.useEffect(() => {\n    fetchData();\n    return () => { requestGeneration.current += 1; };\n  }, [fetchData]);\n\n  return { data: dateRangeMessage ? [] : data, count: dateRangeMessage ? 0 : count, loading: dateRangeMessage ? false : loading, error, dateRangeMessage, page, setPage, pageSize: PAGE_SIZE, refetch: fetchData };\n}"
+    },
+    {
+      "old": "{data:r,count:m,loading:p,error:l,page:u,setPage:x,pageSize:g}",
+      "new": "{data:r,count:m,loading:p,error:l,page:u,setPage:x,pageSize:g,dateRangeMessage:__ndash039RangeMessage}"
+    },
+    {
+      "old": "l&&n.jsxs(\"div\",{\"data-component-id\":\"src/components/payroll/comparison/ComparisonRoot.jsx:1056:8\",\"data-component-path\":\"src/components/payroll/comparison/ComparisonRoot.jsx\",\"data-component-line\":\"1056\",\"data-component-end-line\":\"1058\",\"data-component-file\":\"ComparisonRoot.jsx\",\"data-component-name\":\"div\",\"data-component-content\":\"%7B%22elementName%22%3A%22div%22%2C%22className%22%3A%22bg-red-50%20border%20border-red-200%20rounded-xl%20px-4%20py-3%20text-sm%20text-red-700%22%2C%22textContent%22%3A%22Error%20loading%20comparison%20data%3A%22%7D\",className:\"bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700\",children:[\"Error loading comparison data: \",l]})",
+      "new": "(__ndash039RangeMessage?n.jsx(\"div\",{className:\"bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800\",children:__ndash039RangeMessage}):l&&n.jsxs(\"div\",{\"data-component-id\":\"src/components/payroll/comparison/ComparisonRoot.jsx:1056:8\",\"data-component-path\":\"src/components/payroll/comparison/ComparisonRoot.jsx\",\"data-component-line\":\"1056\",\"data-component-end-line\":\"1058\",\"data-component-file\":\"ComparisonRoot.jsx\",\"data-component-name\":\"div\",\"data-component-content\":\"%7B%22elementName%22%3A%22div%22%2C%22className%22%3A%22bg-red-50%20border%20border-red-200%20rounded-xl%20px-4%20py-3%20text-sm%20text-red-700%22%2C%22textContent%22%3A%22Error%20loading%20comparison%20data%3A%22%7D\",className:\"bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700\",children:[\"Error loading comparison data: \",l]}))"
+    },
+    {
+      "old": "n.jsx(fMt,{\"data-component-id\":\"src/components/payroll/comparison/ComparisonRoot.jsx:1062:6\",\"data-component-path\":\"src/components/payroll/comparison/ComparisonRoot.jsx\",\"data-component-line\":\"1062\",\"data-component-end-line\":\"1062\",\"data-component-file\":\"ComparisonRoot.jsx\",\"data-component-name\":\"ComparisonSummaryCards\",\"data-component-content\":\"%7B%22elementName%22%3A%22ComparisonSummaryCards%22%7D\",data:h})",
+      "new": "(!__ndash039RangeMessage&&n.jsx(fMt,{\"data-component-id\":\"src/components/payroll/comparison/ComparisonRoot.jsx:1062:6\",\"data-component-path\":\"src/components/payroll/comparison/ComparisonRoot.jsx\",\"data-component-line\":\"1062\",\"data-component-end-line\":\"1062\",\"data-component-file\":\"ComparisonRoot.jsx\",\"data-component-name\":\"ComparisonSummaryCards\",\"data-component-content\":\"%7B%22elementName%22%3A%22ComparisonSummaryCards%22%7D\",data:h}))"
+    },
+    {
+      "old": "n.jsx(gMt,{\"data-component-id\":\"src/components/payroll/comparison/ComparisonRoot.jsx:1065:6\",\"data-component-path\":\"src/components/payroll/comparison/ComparisonRoot.jsx\",\"data-component-line\":\"1065\",\"data-component-end-line\":\"1069\",\"data-component-file\":\"ComparisonRoot.jsx\",\"data-component-name\":\"PayrollComparisonTable\",\"data-component-content\":\"%7B%22elementName%22%3A%22PayrollComparisonTable%22%7D\",data:h,loading:p,isSuperAdmin:e})",
+      "new": "(!__ndash039RangeMessage&&n.jsx(gMt,{\"data-component-id\":\"src/components/payroll/comparison/ComparisonRoot.jsx:1065:6\",\"data-component-path\":\"src/components/payroll/comparison/ComparisonRoot.jsx\",\"data-component-line\":\"1065\",\"data-component-end-line\":\"1069\",\"data-component-file\":\"ComparisonRoot.jsx\",\"data-component-name\":\"PayrollComparisonTable\",\"data-component-content\":\"%7B%22elementName%22%3A%22PayrollComparisonTable%22%7D\",data:h,loading:p,isSuperAdmin:e}))"
+    },
+    {
+      "old": "ndash038-GustoBenefits.js",
+      "new": "ndash039-GustoBenefits.js"
+    },
+    {
+      "old": "ndash038-GustoImportHistory.js",
+      "new": "ndash039-GustoImportHistory.js"
+    },
+    {
+      "old": "ndash038-GustoPaySchedules.js",
+      "new": "ndash039-GustoPaySchedules.js"
+    },
+    {
+      "old": "ndash038-GustoTimeAndAttendance.js",
+      "new": "ndash039-GustoTimeAndAttendance.js"
+    },
+    {
+      "old": "ndash038-date-fns.js",
+      "new": "ndash039-date-fns.js"
+    },
+    {
+      "old": "ndash038-help-manual.js",
+      "new": "ndash039-help-manual.js"
+    },
+    {
+      "old": "ndash038-canvg.js",
+      "new": "ndash039-canvg.js"
+    }
+  ],
+  "added_assets": [
+    {
+      "name": "ndash039-GustoBenefits.js",
+      "sha256": "37d5bc608fb538812439f88cb0ba40173235fbe5abc1a1511268550f24b9aad1",
+      "bytes": 11506,
+      "previous": "ndash038-GustoBenefits.js"
+    },
+    {
+      "name": "ndash039-GustoImportHistory.js",
+      "sha256": "fd9d4ff93f494e06cbb149ce3def648799ab0de3293688aab191d0425a869224",
+      "bytes": 4776,
+      "previous": "ndash038-GustoImportHistory.js"
+    },
+    {
+      "name": "ndash039-GustoPaySchedules.js",
+      "sha256": "c7e2061dd64d25e418284e169a908b43c344a154289bd15d5f00e55ccf850523",
+      "bytes": 4819,
+      "previous": "ndash038-GustoPaySchedules.js"
+    },
+    {
+      "name": "ndash039-GustoTimeAndAttendance.js",
+      "sha256": "2457b989900b235fbae698912ebe191f71a4e57c04d191d240c77dbffb061908",
+      "bytes": 39931,
+      "previous": "ndash038-GustoTimeAndAttendance.js"
+    },
+    {
+      "name": "ndash039-date-fns.js",
+      "sha256": "efc122dd151a4569eb2b5b6eba84bb2c54839d77ac99abbd27b3515443c25ece",
+      "bytes": 31653,
+      "previous": "ndash038-date-fns.js"
+    },
+    {
+      "name": "ndash039-help-manual.js",
+      "sha256": "eb595967cb8f71e4856f7144267c0703ee39fbbb09e9181b61331f6eb7578bde",
+      "bytes": 122300,
+      "previous": "ndash038-help-manual.js"
+    },
+    {
+      "name": "ndash039-canvg.js",
+      "sha256": "e8bc900907eb0d4dc47ee0257f2991478018bb9446d1185afdf1a0620e381577",
+      "bytes": 150419,
+      "previous": "ndash038-canvg.js"
+    }
+  ],
+  "preserve_previous_entry": true,
+  "target_previous": "ndash038-GustoTimeAndAttendance.js",
+  "target_baseline_sha256": "c7078592a669c6e1c1558114949ddc511748b0041b3275f36a0354bc18ccb9b1",
+  "target_fixed_before_relink_sha256": "c7078592a669c6e1c1558114949ddc511748b0041b3275f36a0354bc18ccb9b1",
+  "target_patches": [],
+  "syntax": "PASS"
+}
