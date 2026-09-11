@@ -26,6 +26,20 @@ const PRESET_RANGES = [
   { label: 'Custom', value: 'custom' },
 ];
 
+export function getExpenseDateError(filters) {
+  if (filters?.datePreset !== 'custom') return '';
+  const { customStart, customEnd } = filters;
+  if (!customStart || !customEnd) return 'Choose both a start and an end date.';
+  const isValidDate = value => {
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+    const date = new Date(`${value}T00:00:00Z`);
+    return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+  };
+  if (!isValidDate(customStart) || !isValidDate(customEnd)) return 'Choose valid start and end dates.';
+  if (customStart > customEnd) return 'The end date must be on or after the start date.';
+  return '';
+}
+
 const ExpenseReportFilters = ({
   filters,
   onFilterChange,
@@ -36,6 +50,7 @@ const ExpenseReportFilters = ({
   onReset,
 }) => {
   const [expanded, setExpanded] = useState(true);
+  const dateError = getExpenseDateError(filters);
 
   const handleChange = useCallback((key, value) => {
     onFilterChange(prev => ({ ...prev, [key]: value }));
@@ -197,11 +212,14 @@ const ExpenseReportFilters = ({
             </select>
           </div>
 
+          {dateError && <p role="alert" className="text-xs text-destructive">{dateError}</p>}
+
           {/* Actions */}
           <div className="flex gap-2 pt-1">
             <button
               onClick={onApply}
-              className="flex-1 bg-primary text-primary-foreground text-xs font-medium py-1.5 rounded-lg hover:bg-primary/90 transition-colors"
+              disabled={!!dateError}
+              className="flex-1 bg-primary text-primary-foreground text-xs font-medium py-1.5 rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Apply
             </button>

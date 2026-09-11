@@ -25,7 +25,7 @@ import { OFFICE_MAP, getLocationIdByOfficeId } from '../../constants/offices';
 import { normalizeOfficeName } from '../../utils/officeNormalizer';
 import { enrichAmexRows } from '../../utils/amexCardMapping';
 
-import ExpenseReportFilters from './components/expense-report/ExpenseReportFilters';
+import ExpenseReportFilters, { getExpenseDateError } from './components/expense-report/ExpenseReportFilters';
 import ExpenseKPICards from './components/expense-report/ExpenseKPICards';
 import ExpenseCharts from './components/expense-report/ExpenseCharts';
 import ExpenseTable from './components/expense-report/ExpenseTable';
@@ -583,6 +583,7 @@ const ExpenseReport = () => {
   }, [appliedFilters, refreshKey, userProfile, permLoading]);
 
   const handleApplyFilters = useCallback(() => {
+    if (getExpenseDateError(filters)) return;
     setAppliedFilters({ ...filters });
     // refreshKey increment forces re-fetch even if filters are identical to previous
     setRefreshKey(k => k + 1);
