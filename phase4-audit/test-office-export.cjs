@@ -1,0 +1,19 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.resolve(__dirname,'../recovered-frontend'),parser=require(path.join(process.env.NDASH_PARSER_ROOT||root,'node_modules/@babel/parser'));
+const source=fs.readFileSync(path.join(root,'src/pages/office-performance/index.jsx'),'utf8');
+function walk(n,visit){if(!n||typeof n!=='object')return;visit(n);for(const v of Object.values(n)){if(Array.isArray(v))v.forEach(x=>walk(x,visit));else if(v&&typeof v==='object')walk(v,visit);}}
+let handler,permission;
+walk(parser.parse(source,{sourceType:'module',plugins:['jsx']}),n=>{if(n.type==='VariableDeclarator'&&n.id.name==='handleExport')handler=n.init;if(n.type==='VariableDeclarator'&&n.id.name==='canExport')permission=n.init;});
+function setup(overrides={}){
+ const calls=[],state={error:'',success:'',busy:false};
+ const ctx={exporting:false,canExport:true,selectedOffice:'qa-office',accessibleOffices:[{id:'qa-office'}],selectedRange:'custom',customStart:'2026-08-20',customEnd:'2026-08-31',customRangeError:'',user:{id:'qa-user',email:'qa@example.invalid'},userProfile:{role:'admin'},getDateRange:()=>({start:'2026-08-20',end:'2026-08-31'}),exportIndividualReport:async p=>calls.push(JSON.parse(JSON.stringify(p))),setExportError:v=>state.error=v,setExportSuccess:v=>state.success=v,setExporting:v=>{state.busy=v;ctx.exporting=v;},...overrides};
+ const run=vm.runInNewContext('('+source.slice(handler.start,handler.end)+')',ctx);return {run,calls,state,ctx};
+}
+const options={format:'xlsx',reportType:'pl_summary'};
+test('actual handler sends one accessible office, exact dates, real actor fields, and selected format',async()=>{const t=setup();await t.run(options);assert.deepEqual(t.calls,[{reportType:'pl_summary',exportFormat:'xlsx',dateRangeStart:'2026-08-20',dateRangeEnd:'2026-08-31',officeFilter:['qa-office'],userId:'qa-user',userEmail:'qa@example.invalid',userRole:'admin'}]);assert.equal(t.state.busy,false);assert.match(t.state.success,/Report generated/);});
+test('no permission prevents an export request',async()=>{const t=setup({canExport:false});await t.run(options);assert.equal(t.calls.length,0);assert.match(t.state.error,/permission/);});
+test('an absent or inaccessible office cannot become an all-office export',async()=>{for(const selectedOffice of [null,'another-office']){const t=setup({selectedOffice});await t.run(options);assert.equal(t.calls.length,0);assert.match(t.state.error,/accessible office/);}});
+test('invalid custom dates are rejected before invoking the service',async()=>{for(const override of [{customStart:''},{customEnd:''},{customStart:'2026-09-01'},{customRangeError:'Invalid'}]){const t=setup(override);await t.run(options);assert.equal(t.calls.length,0);assert.match(t.state.error,/valid custom/);}});
+test('in-flight duplicate submission is ignored',async()=>{let resolve;const t=setup({exportIndividualReport:()=>new Promise(r=>resolve=r)});const first=t.run(options);assert.equal(t.state.busy,true);await t.run(options);resolve();await first;assert.equal(t.state.busy,false);});
+test('service failure is visible and clears busy state without success',async()=>{const t=setup({exportIndividualReport:async()=>{throw Error('Synthetic export failure');}});await t.run(options);assert.equal(t.state.error,'Synthetic export failure');assert.equal(t.state.success,'');assert.equal(t.state.busy,false);});
+test('existing permission or administrator role is required after loading',()=>{const expr=source.slice(permission.start,permission.end);const evaluate=x=>vm.runInNewContext(expr,{permLoading:false,profileLoading:false,userProfile:{role:'viewer'},hasPermission:()=>false,...x});assert.equal(evaluate({}),false);assert.equal(evaluate({userProfile:{role:'admin'}}),true);assert.equal(evaluate({hasPermission:()=>true}),true);assert.equal(evaluate({permLoading:true,userProfile:{role:'admin'}}),false);});

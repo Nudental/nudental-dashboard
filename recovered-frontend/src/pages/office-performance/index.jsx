@@ -27,6 +27,7 @@ import DentrixDataSourceBanner from '../../components/DentrixDataSourceBanner';
 import DentrixYearComparisonPanel from './components/DentrixYearComparisonPanel';
 import { fetchWFAmexOperatingExpenses } from '../../services/expenseReportService';
 import { AccessDenied } from '../../hooks/useRbacGuard';
+import { exportIndividualReport } from '../../services/reportExportService';
 
 // ─── V281: Null-preserving parse helpers ─────────────────────────────────────
 // These helpers return null (not 0) when the value is missing/null/undefined/NaN.
@@ -59,7 +60,7 @@ const fmtCount = (val) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const OfficePerformance = () => {
-  const { userProfile, profileLoading } = useAuth();
+  const { user, userProfile, profileLoading } = useAuth();
   const navigate = useNavigate();
   const { hasPermission, loading: permLoading, permissionsMap } = useRolePermissions();
   const [selectedOffice, setSelectedOffice] = useState(null);
@@ -85,6 +86,12 @@ const OfficePerformance = () => {
   // V286: WF/AmEx expense ratio state
   const [expenseRatioData, setExpenseRatioData] = useState(null); // { amexExpense, wfBankingExpense, totalWFAmexExpense, error }
   const [expenseRatioLoading, setExpenseRatioLoading] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState('');
+  const [exportSuccess, setExportSuccess] = useState('');
+  const canExport = !permLoading && !profileLoading && (
+    ['admin', 'super_admin'].includes(userProfile?.role) || hasPermission('resources.reports.individual_export')
+  );
 
   // Page-level guard: replace navigate redirect with AccessDenied panel
   if (!permLoading && userProfile && permissionsMap && Object.keys(permissionsMap)?.length > 0 && !hasPermission('performance:office_view') && !hasPermission('performance.office_performance.view')) {
@@ -698,8 +705,36 @@ const OfficePerformance = () => {
     console.log('Bulk action:', action);
   };
 
-  const handleExport = (options) => {
-    console.log('Exporting report:', options);
+  const handleExport = async (options) => {
+    if (exporting) return;
+    setExportError('');
+    setExportSuccess('');
+    try {
+      if (!canExport) throw new Error('Report export permission is required.');
+      if (!selectedOffice || !accessibleOffices?.some(office => office.id === selectedOffice)) {
+        throw new Error('Select an accessible office before exporting.');
+      }
+      if (selectedRange === 'custom' && (!customStart || !customEnd || customStart > customEnd || customRangeError)) {
+        throw new Error('Enter a valid custom date range before exporting.');
+      }
+      const { start, end } = getDateRange();
+      setExporting(true);
+      await exportIndividualReport({
+        reportType: options.reportType,
+        exportFormat: options.format,
+        dateRangeStart: start,
+        dateRangeEnd: end,
+        officeFilter: [selectedOffice],
+        userId: user?.id,
+        userEmail: user?.email,
+        userRole: userProfile?.role,
+      });
+      setExportSuccess('Report generated. Check your downloads.');
+    } catch (error) {
+      setExportError(error?.message || 'Report export failed. Please try again.');
+    } finally {
+      setExporting(false);
+    }
   };
 
   const selectedOfficeName = accessibleOffices?.find(o => o?.id === selectedOffice)?.name || '';
@@ -764,7 +799,7 @@ const OfficePerformance = () => {
                 <Button variant="outline" iconName="RefreshCw" iconSize={16} loading={kpiLoading} onClick={() => setRefreshKey(key => key + 1)}>
                   Refresh Data
                 </Button>
-                <Button variant="default" iconName="Download" iconSize={16}>
+                <Button variant="default" iconName="Download" iconSize={16} onClick={() => document.getElementById('office-report-export')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}>
                   Export Report
                 </Button>
               </div>
@@ -939,7 +974,7 @@ const OfficePerformance = () => {
 
             <div className="lg:col-span-4 space-y-6">
               <ActivityFeed activities={activityFeedData} />
-              <ExportControls onExport={handleExport} />
+              <ExportControls onExport={handleExport} disabled={!canExport || !selectedOffice} exporting={exporting} error={exportError} success={exportSuccess} />
             </div>
           </div>
         </div>
