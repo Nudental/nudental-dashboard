@@ -1,0 +1,94 @@
+{
+  "issue": "NDASH-034",
+  "previous_issue": "033",
+  "expected_previous_deployment": "09c842a7-d7a3-4c0a-bfe5-5535974287c5",
+  "baseline_asset": "index-1079acb66c5f.js",
+  "baseline_sha256": "1079acb66c5f44ac90de20ee544eff2d525975ab805ecbd666473df35c8c8a1f",
+  "candidate_sha256": "c3f09f11cfc316a49dea6f7cc44c4a1e519e3b72a869daf500f195e7744c9def",
+  "asset": "/assets/index-c3f09f11cfc3.js",
+  "patches": [
+    {
+      "old": "ndash033-GustoBenefits.js",
+      "new": "ndash034-GustoBenefits.js"
+    },
+    {
+      "old": "ndash033-GustoImportHistory.js",
+      "new": "ndash034-GustoImportHistory.js"
+    },
+    {
+      "old": "ndash033-GustoPaySchedules.js",
+      "new": "ndash034-GustoPaySchedules.js"
+    },
+    {
+      "old": "ndash033-GustoTimeAndAttendance.js",
+      "new": "ndash034-GustoTimeAndAttendance.js"
+    },
+    {
+      "old": "ndash033-date-fns.js",
+      "new": "ndash034-date-fns.js"
+    },
+    {
+      "old": "ndash033-help-manual.js",
+      "new": "ndash034-help-manual.js"
+    },
+    {
+      "old": "ndash033-canvg.js",
+      "new": "ndash034-canvg.js"
+    }
+  ],
+  "added_assets": [
+    {
+      "name": "ndash034-GustoBenefits.js",
+      "sha256": "40e7ed4282e36e94545ff44900d8ce5b2fc05ef506df094d333e0146f0d7287f",
+      "bytes": 11506,
+      "previous": "ndash033-GustoBenefits.js"
+    },
+    {
+      "name": "ndash034-GustoImportHistory.js",
+      "sha256": "8f2deac30e9df34d4d014b13da4b4aacb8758e712dad62842163e7736631eaa6",
+      "bytes": 4776,
+      "previous": "ndash033-GustoImportHistory.js"
+    },
+    {
+      "name": "ndash034-GustoPaySchedules.js",
+      "sha256": "6198ed74b9d0b659f7932e73a57172c7c58676e7cdcb52e4f490c4853148b81d",
+      "bytes": 4819,
+      "previous": "ndash033-GustoPaySchedules.js"
+    },
+    {
+      "name": "ndash034-GustoTimeAndAttendance.js",
+      "sha256": "db9a01e2812ebec0de92369130d3e2c5f079d39f9745a1fca67767fe70397bf8",
+      "bytes": 39464,
+      "previous": "ndash033-GustoTimeAndAttendance.js"
+    },
+    {
+      "name": "ndash034-date-fns.js",
+      "sha256": "4e79c82e16f9097a5129d273b4aca3c50e8ade6d085b762ca6821dbb45c030d9",
+      "bytes": 31653,
+      "previous": "ndash033-date-fns.js"
+    },
+    {
+      "name": "ndash034-help-manual.js",
+      "sha256": "67157e6bfa3ea9de7e1a59122766e1e3e3b99c9d2d62c851da40c062ebf9b763",
+      "bytes": 122300,
+      "previous": "ndash033-help-manual.js"
+    },
+    {
+      "name": "ndash034-canvg.js",
+      "sha256": "c543b78dfa0c5a0d6ea64a3c2686dac920bc6bed45af29dcc1098336a36c0dff",
+      "bytes": 150419,
+      "previous": "ndash033-canvg.js"
+    }
+  ],
+  "preserve_previous_entry": true,
+  "target_previous": "ndash033-GustoTimeAndAttendance.js",
+  "target_baseline_sha256": "1c81e419360a5e164ad74118c39204771b21396e6a7f051e0c7422646b1a74ad",
+  "target_fixed_before_relink_sha256": "9b07505d1919d45419f27d74bba2cf0b20c4c215f475084e9034ff9762b8f66c",
+  "target_patches": [
+    {
+      "old": "function q(s={}){const[p,x]=j.useState([]),[f,d]=j.useState(!0),[v,h]=j.useState(null),y=j.useCallback(async()=>{var n,C,i;d(!0),h(null);try{let o=(i=(C=(n=B)==null?void 0:n.from(\"gusto_time_entries\"))==null?void 0:C.select(\"*\"))==null?void 0:i.order(\"clockin_time\",{ascending:!1});s!=null&&s.employeeId&&(s==null?void 0:s.employeeId)!==\"all\"&&(o=o==null?void 0:o.eq(\"employee_id\",s==null?void 0:s.employeeId)),s!=null&&s.officeName&&(s==null?void 0:s.officeName)!==\"all\"&&(o=o==null?void 0:o.eq(\"office_name\",s==null?void 0:s.officeName)),s!=null&&s.status&&(s==null?void 0:s.status)!==\"all\"&&(o=o==null?void 0:o.eq(\"status\",s==null?void 0:s.status)),s!=null&&s.payPeriodStart&&(o=o==null?void 0:o.gte(\"pay_period_start\",s==null?void 0:s.payPeriodStart)),s!=null&&s.payPeriodEnd&&(o=o==null?void 0:o.lte(\"pay_period_end\",s==null?void 0:s.payPeriodEnd));const{data:g,error:c}=await o;if(c)throw c;x(g||[])}catch(o){h(o==null?void 0:o.message)}finally{d(!1)}},[s==null?void 0:s.employeeId,s==null?void 0:s.officeName,s==null?void 0:s.status,s==null?void 0:s.payPeriodStart,s==null?void 0:s.payPeriodEnd]);return j.useEffect(()=>{y()},[y]),{data:p,loading:f,error:v,refetch:y}}",
+      "new": "function q(filters={}){const[data,setData]=j.useState([]),[loading,setLoading]=j.useState(!0),[error,setError]=j.useState(null),requestId=j.useRef(0),fetch=j.useCallback(async()=>{const request=++requestId.current;setLoading(!0),setError(null);try{let query=B?.from(\"gusto_time_entries\")?.select(\"*\",{count:\"exact\"})?.order(\"clockin_time\",{ascending:!1})?.order(\"id\",{ascending:!1});filters?.employeeId&&filters?.employeeId!==\"all\"&&(query=query?.eq(\"employee_id\",filters?.employeeId)),filters?.officeName&&filters?.officeName!==\"all\"&&(query=query?.eq(\"office_name\",filters?.officeName)),filters?.status&&filters?.status!==\"all\"&&(query=query?.eq(\"status\",filters?.status)),filters?.payPeriodStart&&(query=query?.gte(\"pay_period_start\",filters?.payPeriodStart)),filters?.payPeriodEnd&&(query=query?.lte(\"pay_period_end\",filters?.payPeriodEnd));const rows=[];let expectedCount=null;for(;;){const{data:page,error:err,count}=await query.range(rows.length,rows.length+999);if(request!==requestId.current)return;if(err)throw err;if(!Number.isSafeInteger(count)||expectedCount!==null&&count!==expectedCount)throw new Error(\"Time entries changed or the result is incomplete. Please refresh.\");if(expectedCount=count,rows.push(...page||[]),rows.length>count||new Set(rows.map(row=>row.id)).size!==rows.length)throw new Error(\"Time entries changed or the result is incomplete. Please refresh.\");if(rows.length===count)break;if(!page?.length)throw new Error(\"Time entries result is incomplete. Please refresh.\")}setData(rows)}catch(err){if(request!==requestId.current)return;setData([]),setError(err?.message)}finally{request===requestId.current&&setLoading(!1)}},[filters?.employeeId,filters?.officeName,filters?.status,filters?.payPeriodStart,filters?.payPeriodEnd]);return j.useEffect(()=>(fetch(),()=>{requestId.current++}),[fetch]),{data,loading,error,refetch:fetch}}"
+    }
+  ],
+  "syntax": "PASS"
+}
