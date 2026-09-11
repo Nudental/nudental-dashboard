@@ -1129,7 +1129,7 @@ const ExecutiveOverview = () => {
                 const c = Number(current) || 0;
                 const p = Number(prior) || 0;
                 if (!p) return null;
-                const pct = ((c - p) / p) * 100;
+                const pct = ((c - p) / Math.abs(p)) * 100;
                 const sign = pct >= 0 ? '+' : '';
                 return `${sign}${pct?.toFixed(1)}% vs prior year`;
               };
