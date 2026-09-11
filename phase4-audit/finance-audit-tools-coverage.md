@@ -1,0 +1,13 @@
+# Finance audit tools coverage
+
+Transaction Audit: live1932source2026records versus capped1000shown, missing2025/2024yearchoices;045confirmed. Existing page1→2shows1–50→51–100of1000. Synthetic unmatched search producesNoentriesfound; search controlsremain; CSVstaysenabled(notdownloaded). No realentrydetailschanged. Audit is not complete.
+
+Audit Dashboard: Last30Daysloads1row. AllTimecount2261/46pages; page1and2each50rows andcorrectpaginationlabel. Synthetic unmatched current-page search yields0rows; clearingvia keyboardrestores50. Search/userfilter clearlylabeledcurrent-page; date/action/resourcequeryserver. Logbodies/details notexpanded. RestoredLast30Daysbeforeleaving. Globalaction/resourceoptioncoverage andordinary-rolepermission transitions remainunverified.
+
+Audit Reports local write test: baselineSavedConfigs0. Created exactlyone `[TEMP QA NDASH] report preset 20260911`, Dailyfrequency. Save requirednonblankname; blankSavewasdisabled. ModalclosedandSavedConfigs1appeared. Refreshedandverifiedexactonepreset; LoadConfigurationrestoredDaily, whose existingdatewindowisYesterday; noautomaticpreview/send. Deletedonlythatverifiedtestcard. Refreshed:Nosavedconfigurations,0testnames,0LoadConfigurationbuttons. CleanupPASS. Toast wastransientandnotcaptured; persistedUIstateconfirmssaveoutcome. This wasbrowser-local only; no scheduler or serverbusinessrecordcreated, no externalemail orreportexport, and nolocalpresetleft. Serverauditlogging doesnotcoverlocalpresetsbydesign. Preview/filter/export behaviorremainsunderreview.
+
+Audit Reports preview: Daily/Yesterdayread-onlypreview0events; emailcontrolisexplicitlydisabled(not justavoided). Sequentialfrequencychangeinvalidatespreview/exportcorrectly. RapidMonthlyPreview→Dailychangeallowsoldresponse toreenableexport;046confirmed. No reportdownloadoractualemail. Originalsourcecontainsbutton-levelinvalidation, so the normalfilterchangefailurehypothesiswasrejected.
+
+Automaticapprovalreview:042browseruploadrequiresseparateexplicitdestinationapproval,stillpending. Rocketstatusdestinationblockresolvedbyuserapprovaland775confirmed. Do notreatRocketasblockednow.
+
+Compliance & Retention: Overview/RetentionRules/PurgeScheduler/PurgeHistoryopenedread-only. UIclearlylabelsretentionrulesbrowser-local/notbackend-enforced andexcludesotherlog/PHIdata. All12Purgebuttonsdisabled; schedulerunconnectedandnojobcanrunfrompage. No rule/policy changed, no purgeperformed. TotalAuditRecords2243misstatesall-resourcecount2261; sourceHEADand18unlistedresource-nameonlyrecordsconfirm047. This isnotalegalcomplianceassessment. Rule/purgeexecutionintentionallyuntestedbecausebackendguarded/unavailable.

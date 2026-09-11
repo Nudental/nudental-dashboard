@@ -163,9 +163,19 @@ const AuditReports = () => {
   const [sendingEmail, setSendingEmail] = useState(false);
   const [previewLogs, setPreviewLogs] = useState([]);
   const [previewLoaded, setPreviewLoaded] = useState(false);
+  const previewRequest = useRef(0);
   const [toast, setToast] = useState(null);
   const [saveName, setSaveName] = useState('');
   const [showSaveModal, setShowSaveModal] = useState(false);
+
+  const invalidatePreview = () => {
+    previewRequest.current += 1;
+    setPreviewLoaded(false);
+    setPreviewLogs([]);
+    setGenerating(false);
+  };
+
+  useEffect(() => () => { previewRequest.current += 1; }, []);
 
   const showToast = (msg, type = 'success') => {
     setToast({ msg, type });
@@ -217,7 +227,10 @@ const AuditReports = () => {
   };
 
   const fetchLogs = useCallback(async () => {
+    const request = ++previewRequest.current;
     setGenerating(true);
+    setPreviewLoaded(false);
+    setPreviewLogs([]);
     try {
       const { start, end } = getDateRange(config?.frequency);
       let query = supabase?.from('audit_logs')?.select(`
@@ -230,17 +243,18 @@ const AuditReports = () => {
 
       const { data, error } = await query;
       if (error) throw error;
+      if (request !== previewRequest.current) return;
       setPreviewLogs(data || []);
       setPreviewLoaded(true);
     } catch (err) {
-      showToast('Failed to load audit data: ' + err?.message, 'error');
+      if (request === previewRequest.current) showToast('Failed to load audit data: ' + err?.message, 'error');
     } finally {
-      setGenerating(false);
+      if (request === previewRequest.current) setGenerating(false);
     }
   }, [config?.frequency, config?.actionFilters, config?.resourceFilters]);
 
   const handleExport = async () => {
-    if (!previewLoaded) await fetchLogs();
+    if (!previewLoaded || generating) return;
     const { label } = getDateRange(config?.frequency);
     const filename = `audit-report-${config?.frequency}-${format(new Date(), 'yyyyMMdd')}`;
     if (config?.exportFormat === 'csv') {
@@ -319,8 +333,7 @@ const AuditReports = () => {
 
   const handleLoadConfig = (saved) => {
     setConfig({ ...saved?.config, recipientInput: '' });
-    setPreviewLoaded(false);
-    setPreviewLogs([]);
+    invalidatePreview();
     showToast(`Loaded: ${saved?.name}`);
   };
 
@@ -409,7 +422,7 @@ const AuditReports = () => {
                   {FREQUENCY_OPTIONS?.map(opt => (
                     <button
                       key={opt?.value}
-                      onClick={() => { updateConfig('frequency', opt?.value); setPreviewLoaded(false); }}
+                      onClick={() => { updateConfig('frequency', opt?.value); invalidatePreview(); }}
                       className={`flex flex-col items-center gap-1.5 p-3 rounded-lg border text-xs font-medium transition-all ${config?.frequency === opt?.value ? 'border-primary bg-primary/5 text-primary' : 'border-border text-muted-foreground hover:border-primary/50'}`}
                     >
                       <Icon name={opt?.icon} size={16} />
@@ -453,7 +466,7 @@ const AuditReports = () => {
                   {Object.entries(ACTION_META)?.map(([key, meta]) => (
                     <button
                       key={key}
-                      onClick={() => { toggleAction(key); setPreviewLoaded(false); }}
+                      onClick={() => { toggleAction(key); invalidatePreview(); }}
                       className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${config?.actionFilters?.includes(key) ? meta.color + ' border-current' : 'border-border text-muted-foreground hover:border-primary/50'}`}
                     >
                       {meta.label}
@@ -472,7 +485,7 @@ const AuditReports = () => {
                   {Object.entries(RESOURCE_LABELS)?.map(([key, label]) => (
                     <button
                       key={key}
-                      onClick={() => { toggleResource(key); setPreviewLoaded(false); }}
+                      onClick={() => { toggleResource(key); invalidatePreview(); }}
                       className={`px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${config?.resourceFilters?.includes(key) ? 'border-primary bg-primary/10 text-primary' : 'border-border text-muted-foreground hover:border-primary/50'}`}
                     >
                       {label}
