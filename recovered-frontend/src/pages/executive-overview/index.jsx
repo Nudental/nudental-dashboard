@@ -963,9 +963,9 @@ const ExecutiveOverview = () => {
             const startObj = new Date(dr?.startDate + 'T00:00:00');
             return (
               <MonthlyGrowthTab
-                propOfficeIds={effectiveOfficeIds}
-                propMonth={startObj?.getMonth() + 1}
-                propYear={startObj?.getFullYear()}
+                selectedOfficeIds={effectiveOfficeIds}
+                selectedMonth={startObj?.getMonth() + 1}
+                selectedYear={startObj?.getFullYear()}
               />
             );
           })()
@@ -1615,7 +1615,7 @@ const ExecutiveOverview = () => {
                       key={`${office?.id}-${refreshKey}`}
                       officeId={office?.id}
                       officeName={office?.name}
-                      monthYearProp={goalMonthYear}
+                      monthYear={goalMonthYear}
                       onPaceAlertNeeded={() => {}}
                     />
                   ))}
@@ -1633,7 +1633,7 @@ const ExecutiveOverview = () => {
                   key={`forecast-${accessibleOffices?.[0]?.id}-${refreshKey}`}
                   officeId={accessibleOffices?.[0]?.id}
                   officeName={accessibleOffices?.[0]?.name}
-                  monthYearProp={goalMonthYear}
+                  monthYear={goalMonthYear}
                   onPaceAlertNeeded={() => {}}
                 />
               </div>

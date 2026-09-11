@@ -13,4 +13,4 @@ Candidate directory: /home/openclaw/.cache/nudashboard-audit-20260910/ndash001-d
 
 Rocket contains the formatter repair, but downloaded exports still contain unrelated MonthlyGrowthTab property changes despite correction requests. Those changes and Rocket's generated historical recovery files are excluded from this source commit and the production candidate. Do not deploy the entire Rocket export. The recovered dependency lockfile is also incomplete; its local compile check is not an exact reproducible production build.
 
-Deployment and live verification: pending at this commit. Existing production rollback artifact and owner-only source snapshot remain preserved. No business data was changed.
+Deployment: Cloudflare Pages a997ce91-f82b-4220-946a-59106c11c4fb, success on September 11, 2026. Live verification PASS: the public domain loads the expected new asset, and August 2026 / All Locations shows +226.2% in both net-production comparisons. Net production $280,649, collections $264,130, and 194 new patients are unchanged. Existing production rollback artifact and owner-only source snapshot remain preserved. No business data was changed.
