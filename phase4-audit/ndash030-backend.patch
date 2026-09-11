@@ -1,0 +1,121 @@
+--- a/middleware/main_candidate.py
++++ b/middleware/main_candidate.py
+@@ -3421,3 +3421,3 @@
+ 
+-def _sb_get_full(path: str, max_rows: int = 5000) -> list:
++def _sb_get_full(path: str, max_rows: int = 5000, strict: bool = False) -> list:
+     """GET all rows from Supabase with pagination, up to max_rows."""
+@@ -3436,4 +3436,6 @@
+         try:
+-            with urllib.request.urlopen(req) as r:
++            with urllib.request.urlopen(req, timeout=30 if strict else None) as r:
+                 batch = json.loads(r.read())
++                if strict and not isinstance(batch, list):
++                    raise ValueError("Invalid Supabase response")
+                 if not batch:
+@@ -3445,3 +3447,7 @@
+         except Exception:
++            if strict:
++                raise
+             break
++    if strict and offset >= max_rows:
++        raise ValueError("Complete source exceeds bounded reader")
+     return all_rows
+@@ -3480,2 +3486,97 @@
+         raise HTTPException(500, str(e))
++
++
++@app.get("/v2/payroll/contractors", tags=["Payroll"], dependencies=[Depends(verify_api_key)])
++def payroll_contractors(
++    request: Request,
++    summaryOnly: Optional[bool] = Query(None),
++    startDate: Optional[str] = Query(None),
++    endDate: Optional[str] = Query(None),
++    search: Optional[str] = Query(None, max_length=100),
++    wage_type: Optional[str] = Query(None, max_length=50),
++    funded: Optional[bool] = Query(None),
++    cancelled: Optional[bool] = Query(None),
++    sort: str = Query("check_date:desc"),
++    limit: int = Query(50, ge=1, le=200),
++    offset: int = Query(0, ge=0),
++):
++    """Read imported payments with existing session/role grants; never sync Gusto."""
++    from datetime import date
++    from decimal import Decimal
++    from urllib.parse import urlencode
++    from otp_auth import _get_user_from_request, _get_user_profile
++
++    # Reuse the Dashboard's existing identity validation and tab permission keys.
++    # Old clients cannot safely interpret raw payment amounts as paid spending.
++    if summaryOnly is None:
++        raise HTTPException(status_code=409, detail="Refresh the Dashboard to load contractor data.")
++    try:
++        user = _get_user_from_request(request)
++        profile = _get_user_profile(user["id"])
++        if not profile or profile.get("is_active") is not True:
++            raise HTTPException(status_code=403, detail="An active Dashboard profile is required.")
++        if profile.get("role") != "super_admin":
++            permissions = _sb_get_full("role_permissions?" + urlencode({
++                "select": "permission,enabled", "role": "eq." + str(profile.get("role") or ""),
++            }), strict=True)
++            allowed = {row.get("permission") for row in permissions if row.get("enabled") is True}
++            required = {"finance.payroll.gusto.contractors.view"}
++            if summaryOnly:
++                required.add("finance.payroll.gusto.overview.view")
++            if not allowed.intersection(required):
++                raise HTTPException(status_code=403, detail="Contractor access is not enabled for your role.")
++        for value in [startDate, endDate]:
++            if value is not None:
++                try:
++                    if date.fromisoformat(value).isoformat() != value:
++                        raise ValueError()
++                except ValueError:
++                    raise HTTPException(status_code=422, detail="Dates must use YYYY-MM-DD.")
++        if startDate and endDate and startDate > endDate:
++            raise HTTPException(status_code=422, detail="Start date must not follow end date.")
++        if sort not in ("check_date:desc", "check_date:asc"):
++            raise HTTPException(status_code=422, detail="Unsupported contractor sort order.")
++        fields = "id,contractor_id,contractor_name,contractor_display_name,check_date,payment_method,wage_type,hours_worked,hourly_rate,wage,bonus,reimbursement,total_amount,funded,cancelled,memo"
++        params = [("select", fields), ("order", "check_date.desc,id.asc")]
++        if startDate:
++            params.append(("check_date", "gte." + startDate))
++        if endDate:
++            params.append(("check_date", "lte." + endDate))
++        rows = _sb_get_full("gusto_contractor_payments?" + urlencode(params), strict=True)
++        if search:
++            term = search.strip().casefold()
++            rows = [r for r in rows if any(term in str(r.get(k) or "").casefold() for k in ("contractor_name", "contractor_display_name"))]
++        if wage_type and wage_type != "all":
++            rows = [r for r in rows if str(r.get("wage_type") or "").casefold() == wage_type.casefold()]
++        if funded is not None:
++            rows = [r for r in rows if r.get("funded") is funded]
++        if cancelled is not None:
++            rows = [r for r in rows if r.get("cancelled") is cancelled]
++        rows.sort(key=lambda r: str(r.get("id") or ""))
++        rows.sort(key=lambda r: str(r.get("check_date") or ""), reverse=sort == "check_date:desc")
++        paid = Decimal("0")
++        annual = {}
++        for row in rows:
++            year = str(row.get("check_date") or "")[:4]
++            if len(year) != 4 or not year.isdigit():
++                raise ValueError("Incomplete contractor dates")
++            annual.setdefault(year, Decimal("0"))
++            if row.get("funded") is True and row.get("cancelled") is not True:
++                value = Decimal(str(row["total_amount"]))
++                if not value.is_finite():
++                    raise ValueError("Invalid contractor amount")
++                paid += value
++                annual[year] += value
++        summary = {
++            "paidAmount": float(paid),
++            "uniqueContractors": len({r.get("contractor_id") or r.get("contractor_display_name") or r.get("contractor_name") or r["id"] for r in rows}),
++            "annualPaid": [{"year": year, "amount": float(value)} for year, value in sorted(annual.items())],
++            "scope": "company-wide",
++            "paidDefinition": "Funded and not canceled",
++        }
++        return {"data": [] if summaryOnly else rows[offset:offset + limit], "total": len(rows), "summary": summary}
++    except HTTPException:
++        raise
++    except Exception:
++        raise HTTPException(status_code=503, detail="Contractor data is unavailable. Please retry.")
+ 

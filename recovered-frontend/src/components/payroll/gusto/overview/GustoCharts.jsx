@@ -25,7 +25,7 @@ function formatMonthLabel(monthStr) {
   return `${getMonthName(parseInt(month))} '${year?.slice(2)}`;
 }
 
-export default function GustoCharts({ monthlyData, annualData, runsYTD, offCycleCount, loading, periodLabel = 'Selected Period', monthlyPeriodEnd }) {
+export default function GustoCharts({ monthlyData, annualData, contractorAnnualData, runsYTD, offCycleCount, loading, periodLabel = 'Selected Period', monthlyPeriodEnd }) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -145,12 +145,14 @@ export default function GustoCharts({ monthlyData, annualData, runsYTD, offCycle
         )}
       </ChartCard>
       {/* Contractor Spend by Year */}
-      <ChartCard title="Contractor Spend by Year">
-        {annualData?.length === 0 ? (
+      <ChartCard title="Paid Contractors by Year (All Time)">
+        {!Array.isArray(contractorAnnualData) ? (
+          <div className="h-48 flex items-center justify-center text-gray-400 text-sm">Contractor data unavailable</div>
+        ) : contractorAnnualData.length === 0 ? (
           <div className="h-48 flex items-center justify-center text-gray-400 text-sm">No data</div>
         ) : (
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={annualData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
+            <BarChart data={contractorAnnualData} margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
               <XAxis dataKey="year" tick={{ fontSize: 11 }} />
               <YAxis tickFormatter={v => fmtCurrencyShort(v)} tick={{ fontSize: 11 }} width={70} />
@@ -167,7 +169,7 @@ export default function GustoCharts({ monthlyData, annualData, runsYTD, offCycle
                 }
                 return null;
               }} />
-              <Bar dataKey="netPay" name="Payroll" fill={COLORS?.contractors} radius={[3, 3, 0, 0]} />
+              <Bar dataKey="amount" name="Paid Contractors" fill={COLORS?.contractors} radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}

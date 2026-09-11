@@ -54,6 +54,7 @@ export default function GustoOverview() {
             monthlyPeriodEnd={kpis?.monthlyPeriodEnd}
             monthlyData={monthlyData}
             annualData={annualData}
+            contractorAnnualData={kpis?.contractorAnnualData}
             runsYTD={kpis?.payrollRunsYTD}
             offCycleCount={kpis?.offCycleCount}
             loading={loading}

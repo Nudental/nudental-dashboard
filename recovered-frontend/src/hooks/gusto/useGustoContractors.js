@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../../lib/supabase';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 const API_BASE = 'https://api.nudashboard.com/v2/payroll';
 const API_KEY = 'nudashboard_prod_key';
@@ -9,7 +10,9 @@ async function apiFetch(path, params = {}) {
   Object.entries(params)?.forEach(([k, v]) => {
     if (v !== undefined && v !== null) url?.searchParams?.set(k, String(v));
   });
-  const res = await fetch(url?.toString(), { headers: { 'X-API-Key': API_KEY } });
+  const { data: { session } = {} } = await supabase.auth.getSession();
+  if (!session?.access_token) throw new Error('Sign in to view contractor data.');
+  const res = await fetch(url?.toString(), { headers: { Authorization: `Bearer ${session.access_token}`, 'X-API-Key': API_KEY } });
   if (!res?.ok) {
     const body = await res?.text()?.catch(() => '');
     const err = new Error(`API ${res.status} on ${path}: ${body?.substring(0, 200)}`);
@@ -25,60 +28,42 @@ export function useGustoContractors(filters = {}) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
+  const [summary, setSummary] = useState(null);
+  const generation = useRef(0);
 
   const fetchData = useCallback(async () => {
+    const current = ++generation.current;
+    setData([]);
+    setCount(0);
+    setSummary(null);
     setLoading(true);
     setError(null);
     try {
-      const params = {
-        offset: page * PAGE_SIZE,
-        limit: PAGE_SIZE,
-        sort: 'check_date:desc',
-      };
-
-      if (filters?.year && filters?.year !== 'all') {
-        params.startDate = `${filters?.year}-01-01`;
-        params.endDate = `${filters?.year}-12-31`;
+      const params = { summaryOnly: false, offset: page * PAGE_SIZE, limit: PAGE_SIZE, sort: 'check_date:desc' };
+      if (filters?.year && filters.year !== 'all') {
+        params.startDate = `${filters.year}-01-01`;
+        params.endDate = `${filters.year}-12-31`;
       }
-      if (filters?.search) params.search = filters?.search;
-      if (filters?.wageType && filters?.wageType !== 'all') params.wage_type = filters?.wageType;
+      if (filters?.search) params.search = filters.search;
+      if (filters?.wageType && filters.wageType !== 'all') params.wage_type = filters.wageType;
       if (filters?.status === 'funded') params.funded = true;
       if (filters?.status === 'cancelled') params.cancelled = true;
-
-      console.log('[useGustoContractors] Fetching contractors', { page, filters });
-
       const json = await apiFetch('/contractors', params);
-      const rows = json?.data || [];
-      const total = json?.total || 0;
-
-      // Empty data is a valid state — not a failure
-      if (rows?.length === 0) {
-        console.log('[useGustoContractors] No contractor data for filters:', filters);
+      if (!Number.isFinite(json?.summary?.paidAmount) || !Number.isInteger(json?.total)) {
+        throw new Error('Contractor totals are unavailable. Please retry.');
       }
-
-      setData(rows);
-      setCount(total);
+      if (current !== generation.current) return;
+      setData(json.data || []);
+      setCount(json.total);
+      setSummary(json.summary);
     } catch (err) {
-      // 404 means the endpoint is not yet available — treat as empty, not an error
-      if (err?.status === 404) {
-        console.warn('[useGustoContractors] /contractors endpoint not available (404). Showing empty state.');
-        setData([]);
-        setCount(0);
-        setError(null);
-      } else {
-        console.error('[useGustoContractors] Fetch failed:', {
-          error: err?.message,
-          page,
-          filters,
-        });
-        setError(err?.message);
-      }
+      if (current === generation.current) setError(err?.message || 'Contractor data is unavailable.');
     } finally {
-      setLoading(false);
+      if (current === generation.current) setLoading(false);
     }
   }, [page, JSON.stringify(filters)]);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => { fetchData(); return () => { generation.current++; }; }, [fetchData]);
 
-  return { data, count, loading, error, page, setPage, pageSize: PAGE_SIZE, refetch: fetchData };
+  return { data, count, summary, loading, error, page, setPage, pageSize: PAGE_SIZE, refetch: fetchData };
 }

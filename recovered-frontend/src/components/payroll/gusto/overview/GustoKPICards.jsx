@@ -86,8 +86,8 @@ export default function GustoKPICards({ kpis, loading }) {
       sub: periodLabel,
     },
     {
-      label: `Contractor Spend ${periodLabel}`,
-      value: loading ? '—' : fmtCurrency(kpis?.contractorSpendYTD),
+      label: `Paid Contractors ${periodLabel}`,
+      value: loading ? '—' : (Number.isFinite(kpis?.contractorSpendYTD) ? fmtCurrency(kpis.contractorSpendYTD) : 'Unavailable'),
       sub: periodLabel,
     },
     {

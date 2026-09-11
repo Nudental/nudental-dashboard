@@ -9,7 +9,9 @@ async function apiFetch(path, params = {}) {
   Object.entries(params)?.forEach(([k, v]) => {
     if (v !== undefined && v !== null) url?.searchParams?.set(k, String(v));
   });
-  const res = await fetch(url?.toString(), { headers: { 'X-API-Key': API_KEY } });
+  const session = path === '/contractors' ? (await supabase.auth.getSession()).data?.session : null;
+  if (path === '/contractors' && !session?.access_token) throw new Error('Sign in to view contractor data.');
+  const res = await fetch(url?.toString(), { headers: { ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}), 'X-API-Key': API_KEY } });
   if (!res?.ok) {
     const body = await res?.text()?.catch(() => '');
     throw new Error(`API ${res.status} on ${path}: ${body?.substring(0, 200)}`);
@@ -47,7 +49,7 @@ export function useGustoSummaryTotals(year) {
       // [1] YTD payroll runs from middleware
       apiFetch('/runs', { ...periodParams, limit: 1000 }),
       // [2] YTD contractor spend — via middleware (replaces direct gusto_contractor_payments query)
-      apiFetch('/contractors', { ...periodParams, limit: 1000 }),
+      apiFetch('/contractors', { ...periodParams, summaryOnly: true }),
       // [3] Active benefit enrollments — via Supabase (gusto_employee_benefit_enrollments is not a blocked table)
       supabase?.from('gusto_employee_benefit_enrollments')?.select('company_contribution')?.eq('active', true),
       // [4] Next payroll from middleware
@@ -56,15 +58,17 @@ export function useGustoSummaryTotals(year) {
       apiFetch('/runs', { startDate: last12Start, endDate: periodEnd, limit: 1000, sort: 'check_date:asc' }),
       // [6] Annual data for bar chart from middleware
       apiFetch('/runs', { startDate: '2021-01-01', limit: 5000, sort: 'check_date:asc' }),
+      // Contractor chart uses actual funded, non-canceled payments across all years.
+      apiFetch('/contractors', { summaryOnly: true }),
     ])
       ?.then(results => {
         if (cancelled) return;
 
-        const [empResult, runsResult, contractorResult, benefitsResult, nextResult, monthlyResult, annualResult] = results;
+        const [empResult, runsResult, contractorResult, benefitsResult, nextResult, monthlyResult, annualResult, contractorAnnualResult] = results;
 
         // Log any individual failures for diagnostics — do not throw
         results?.forEach((r, i) => {
-          const labels = ['employees', 'ytd-runs', 'contractors', 'benefits-enrollments', 'next-run', 'monthly-runs', 'annual-runs'];
+          const labels = ['employees', 'ytd-runs', 'contractors', 'benefits-enrollments', 'next-run', 'monthly-runs', 'annual-runs', 'annual-contractors'];
           if (r?.status === 'rejected') {
             console.warn(`[useGustoSummaryTotals] Sub-query [${labels?.[i]}] failed (non-fatal):`, r?.reason?.message);
           }
@@ -80,14 +84,13 @@ export function useGustoSummaryTotals(year) {
         const annualJson = annualResult?.status === 'fulfilled' ? annualResult?.value : null;
 
         const runs = runsJson?.data || [];
-        // Contractor data: middleware returns array under .data; each row has total_amount
-        const contractors = contractorJson?.data || [];
+        const contractorAnnual = contractorAnnualResult?.status === 'fulfilled' ? contractorAnnualResult.value?.summary?.annualPaid : null;
         const benefits = benefitsRes?.data || [];
 
         const totalNetPay = runs?.reduce((s, r) => s + (parseFloat(r?.total_net_pay) || 0), 0);
         const totalTaxes = runs?.reduce((s, r) => s + (parseFloat(r?.total_payable_tax) || 0), 0);
         const totalGross = runs?.reduce((s, r) => s + (parseFloat(r?.total_debit_amount) || 0), 0);
-        const contractorSpend = contractors?.reduce((s, c) => s + (parseFloat(c?.total_amount) || 0), 0);
+        const contractorSpend = Number.isFinite(contractorJson?.summary?.paidAmount) ? contractorJson.summary.paidAmount : null;
         const benefitsCostMonth = benefits?.reduce((s, b) => s + (parseFloat(b?.company_contribution) || 0), 0);
 
         setKpis({
@@ -100,6 +103,7 @@ export function useGustoSummaryTotals(year) {
           payrollRunsYTD: runs?.length,
           offCycleCount: runs.filter(run => run?.off_cycle === true).length,
           contractorSpendYTD: contractorSpend,
+          contractorAnnualData: Array.isArray(contractorAnnual) ? contractorAnnual : null,
           benefitsCostMonth,
           nextPayrollDate: nextJson?.data?.[0]?.check_date || null,
         });
@@ -129,7 +133,7 @@ export function useGustoSummaryTotals(year) {
         console.log('[useGustoSummaryTotals] Loaded successfully', {
           year: currentYear,
           runs: runs?.length,
-          contractors: contractors?.length,
+          contractors: contractorJson?.total ?? null,
           benefits: benefits?.length,
         });
       })
