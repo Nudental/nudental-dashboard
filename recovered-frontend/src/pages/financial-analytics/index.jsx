@@ -24,9 +24,25 @@ import { useNavigate } from 'react-router-dom';
 import { useOffice } from '../../contexts/OfficeContext';
 import YearComparisonPanel from '../../components/YearComparisonPanel';
 import { ascendApi } from '../../services/ascendApi';
-import { getLastNMonths, monthLabel } from '../../services/kpiService';
+import { monthLabel } from '../../services/kpiService';
 import { getLocationIdByOfficeId } from '../../constants/offices';
 import { AccessDenied } from '../../hooks/useRbacGuard';
+
+export const getFinancialTrendPeriods = (endDate) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(endDate || '') || !Number.isFinite(Date.parse(endDate))) return [];
+  const anchor = new Date(`${endDate}T00:00:00Z`);
+  if (anchor.toISOString().slice(0, 10) !== endDate) return [];
+  return Array.from({ length: 12 }, (_, index) => {
+    const start = new Date(anchor);
+    start.setUTCDate(1);
+    start.setUTCMonth(anchor.getUTCMonth() - 11 + index);
+    const end = new Date(start);
+    end.setUTCMonth(end.getUTCMonth() + 1, 0);
+    const monthEnd = end.toISOString().slice(0, 10);
+    return { year: start.getUTCFullYear(), month: start.getUTCMonth() + 1,
+      startDate: start.toISOString().slice(0, 10), endDate: monthEnd < endDate ? monthEnd : endDate };
+  });
+};
 
 const FinancialAnalytics = () => {
   // ── Staged filter state (what the user is editing in the panel) ──────────
@@ -65,6 +81,7 @@ const FinancialAnalytics = () => {
   const [pivotFetchVersion, setPivotFetchVersion] = useState(0);
   const [lastRefreshed, setLastRefreshed] = useState(new Date());
   const [monthlyTrendData, setMonthlyTrendData] = useState([]);
+  const [monthlyTrendLoading, setMonthlyTrendLoading] = useState(true);
 
   const isSuperAdmin = userProfile?.role === 'super_admin';
 
@@ -182,16 +199,15 @@ const FinancialAnalytics = () => {
   // Fetch last 12 months trend data from middleware API — uses APPLIED office state
   React.useEffect(() => {
     const loadMonthlyTrend = async () => {
+      setMonthlyTrendLoading(true);
+      setMonthlyTrendData([]);
       try {
-        const months = getLastNMonths(12);
+        const months = getFinancialTrendPeriods(appliedDateRange?.end);
         const locationId = appliedOffices?.length === 1 && appliedOffices?.[0] !== 'all'
           ? getLocationIdByOfficeId(appliedOffices?.[0])
           : null;
         const results = await Promise.allSettled(
-          months?.map(({ year, month }) => {
-            const startDate = `${year}-${String(month)?.padStart(2, '0')}-01`;
-            const lastDay = new Date(year, month, 0)?.getDate();
-            const endDate = `${year}-${String(month)?.padStart(2, '0')}-${String(lastDay)?.padStart(2, '0')}`;
+          months?.map(({ year, month, startDate, endDate }) => {
             return Promise.all([
               ascendApi?.getProduction(startDate, endDate, locationId)?.catch(() => null),
               ascendApi?.getCollections(startDate, endDate, locationId)?.catch(() => null),
@@ -210,14 +226,18 @@ const FinancialAnalytics = () => {
           })
         );
         const trendPoints = results?.filter((r) => r?.status === 'fulfilled')?.map((r) => r?.value);
-        setMonthlyTrendData(trendPoints);
+        if (current) setMonthlyTrendData(trendPoints);
       } catch (err) {
         console.warn('[FinancialAnalytics] Monthly trend fetch error:', err);
+      } finally {
+        if (current) setMonthlyTrendLoading(false);
       }
     };
+    let current = true;
     loadMonthlyTrend();
+    return () => { current = false; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [refreshKey, appliedOffices?.join(',')]);
+  }, [refreshKey, appliedOffices?.join(','), appliedDateRange?.end]);
 
   // Fetch filter options for Service Categories (serviceCategories + serviceCategoryMapping)
   // Re-fetches when applied date range or applied offices change
@@ -577,6 +597,7 @@ const FinancialAnalytics = () => {
                       <FinancialSectionBoundary section="Analytics Charts">
                         <ChartVisualization
                           data={{ trendData: monthlyTrendData }}
+                          loading={monthlyTrendLoading}
                           mode={appliedAnalysisMode}
                           goalData={appliedAnalysisMode === 'trend' ? goalData : null}
                           appliedDateRange={appliedDateRange}

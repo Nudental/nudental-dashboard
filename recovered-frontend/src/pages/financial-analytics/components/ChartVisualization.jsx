@@ -357,7 +357,7 @@ const ForecastingPanel = ({ appliedDateRange, appliedOffices }) => {
 };
 
 // ── ChartVisualization ────────────────────────────────────────────────────────
-const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, appliedOffices }) => {
+const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, appliedOffices, loading = false }) => {
   const [chartType, setChartType] = useState('line');
 
   const trendData = data?.trendData || [];
@@ -374,6 +374,7 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
   ];
 
   const renderTrendChart = () => {
+    if (loading) return <div role="status" className="w-full h-full flex items-center justify-center text-muted-foreground">Loading trend data...</div>;
     if (!trendData?.length) {
       return (
         <div className="w-full h-full flex flex-col items-center justify-center text-center p-8">
