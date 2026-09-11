@@ -370,7 +370,7 @@ const CollectionsTab = ({
       {/* View toggle */}
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1 bg-muted/40 rounded-lg p-1">
-          {[{ id: 'mtd', label: 'Month-to-Date' }, { id: 'daily', label: 'Daily' }]?.map(v => (
+          {[{ id: 'mtd', label: "Selected Range" }, { id: 'daily', label: "Today (UTC)" }]?.map(v => (
             <button
               key={v?.id}
               onClick={() => setViewMode(v?.id)}
@@ -382,26 +382,26 @@ const CollectionsTab = ({
             </button>
           ))}
         </div>
-        <span className="text-xs text-muted-foreground">{fallbackDateRange?.label}</span>
+        <span className="text-xs text-muted-foreground">{viewMode === 'daily' ? 'Current day (UTC)' : `${resolvedStartDate} – ${resolvedEndDate}`}</span>
       </div>
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KpiCard
-          label={viewMode === 'daily' ? 'Daily Insurance Collections' : 'Monthly Insurance Collections'}
+          label={viewMode === 'daily' ? "Today's Insurance Collections" : "Selected Range Insurance Collections"}
           value={fmtFull(insColl)}
           icon="Shield"
           iconBg="bg-blue-500"
           sub="Insurance payments received"
         />
         <KpiCard
-          label={viewMode === 'daily' ? 'Daily Patient Collections' : 'Monthly Patient Collections'}
+          label={viewMode === 'daily' ? "Today's Patient Collections" : "Selected Range Patient Collections"}
           value={fmtFull(patColl)}
           icon="User"
           iconBg="bg-purple-500"
           sub="Patient payments received"
         />
         <KpiCard
-          label={viewMode === 'daily' ? 'Daily Total Collections' : 'Total Monthly Collections'}
+          label={viewMode === 'daily' ? "Today's Total Collections" : "Total Selected Range Collections"}
           value={fmtFull(totalColl)}
           valueClass="text-emerald-600"
           icon="DollarSign"
@@ -414,21 +414,21 @@ const CollectionsTab = ({
         <div className="bg-card border border-border rounded-xl p-5">
           <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
             <Icon name="DollarSign" size={14} className="text-emerald-500" />
-            Collections — {viewMode === 'daily' ? 'Daily' : 'Month-to-Date'}
+            Collections — {viewMode === 'daily' ? "Today (UTC)" : "Selected Range"}
           </h3>
           <div>
             <MetricRow
-              label={viewMode === 'daily' ? 'Daily Insurance Collections' : 'Monthly Insurance Collections'}
+              label={viewMode === 'daily' ? "Today's Insurance Collections" : "Selected Range Insurance Collections"}
               value={fmtFull(insColl)}
               sub="Insurance checks + EFTs"
             />
             <MetricRow
-              label={viewMode === 'daily' ? 'Daily Patient Collections' : 'Monthly Patient Collections'}
+              label={viewMode === 'daily' ? "Today's Patient Collections" : "Selected Range Patient Collections"}
               value={fmtFull(patColl)}
               sub="Patient payments at POS + statements"
             />
             <MetricRow
-              label={viewMode === 'daily' ? 'Daily Total Collections' : 'Total Monthly Collections'}
+              label={viewMode === 'daily' ? "Today's Total Collections" : "Total Selected Range Collections"}
               value={fmtFull(totalColl)}
               valueClass="text-emerald-600 font-bold"
               sub="Insurance + Patient combined"
@@ -547,7 +547,7 @@ const CollectionsTab = ({
         <div className="bg-card border border-border rounded-xl p-5">
           <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
             <Icon name="Building2" size={14} className="text-primary" />
-            Collections by Office (MTD)
+            Collections by Office (Selected Range)
           </h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={officeChartData} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>

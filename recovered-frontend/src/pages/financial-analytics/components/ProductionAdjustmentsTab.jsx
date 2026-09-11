@@ -320,7 +320,7 @@ const ProductionAdjustmentsTab = ({
       {/* View toggle */}
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1 bg-muted/40 rounded-lg p-1">
-          {[{ id: 'mtd', label: 'Month-to-Date' }, { id: 'daily', label: 'Daily' }]?.map(v => (
+          {[{ id: 'mtd', label: "Selected Range" }, { id: 'daily', label: "Today (UTC)" }]?.map(v => (
             <button
               key={v?.id}
               onClick={() => setViewMode(v?.id)}
@@ -332,12 +332,12 @@ const ProductionAdjustmentsTab = ({
             </button>
           ))}
         </div>
-        <span className="text-xs text-muted-foreground">{fallbackDateRange?.label}</span>
+        <span className="text-xs text-muted-foreground">{viewMode === 'daily' ? 'Current day (UTC)' : `${resolvedStartDate} – ${resolvedEndDate}`}</span>
       </div>
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <KpiCard
-          label={viewMode === 'daily' ? 'Daily Production' : 'Monthly Production'}
+          label={viewMode === 'daily' ? "Today's Production" : "Selected Range Production"}
           value={fmt(viewMode === 'daily' ? grossDaily : grossMtd)}
           valueClass="text-foreground"
           icon="TrendingUp"
@@ -345,7 +345,7 @@ const ProductionAdjustmentsTab = ({
           sub="Gross (before adjustments)"
         />
         <KpiCard
-          label={viewMode === 'daily' ? 'Daily Adj' : 'Monthly Adj'}
+          label={viewMode === 'daily' ? "Today's Adjustments" : "Selected Range Adjustments"}
           value={fmtFull(viewMode === 'daily' ? adjDaily : adjMtd)}
           valueClass={adjMtd < 0 ? 'text-red-600' : 'text-foreground'}
           icon="Minus"
@@ -353,7 +353,7 @@ const ProductionAdjustmentsTab = ({
           sub="Write-offs, contractual adj"
         />
         <KpiCard
-          label={viewMode === 'daily' ? 'Net Daily Production' : 'Net Monthly Production'}
+          label={viewMode === 'daily' ? "Today's Net Production" : "Net Selected Range Production"}
           value={fmt(viewMode === 'daily' ? netDaily : netMtd)}
           valueClass="text-emerald-600"
           icon="CheckCircle"
@@ -367,22 +367,22 @@ const ProductionAdjustmentsTab = ({
         <div className="bg-card border border-border rounded-xl p-5">
           <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
             <Icon name="BarChart2" size={14} className="text-primary" />
-            Production Summary — {viewMode === 'daily' ? 'Daily' : 'Month-to-Date'}
+            Production Summary — {viewMode === 'daily' ? "Today (UTC)" : "Selected Range"}
           </h3>
           <div>
             <MetricRow
-              label={viewMode === 'daily' ? 'Daily Production' : 'Monthly Production'}
+              label={viewMode === 'daily' ? "Today's Production" : "Selected Range Production"}
               value={fmtFull(viewMode === 'daily' ? grossDaily : grossMtd)}
               sub="Gross production (UCR fees)"
             />
             <MetricRow
-              label={viewMode === 'daily' ? 'Daily Production Adjustment' : 'Monthly Production Adjustment'}
+              label={viewMode === 'daily' ? "Today's Production Adjustment" : "Selected Range Production Adjustment"}
               value={fmtFull(viewMode === 'daily' ? adjDaily : adjMtd)}
               valueClass={adjMtd < 0 ? 'text-red-600' : 'text-foreground'}
               sub="Write-offs + contractual adjustments"
             />
             <MetricRow
-              label={viewMode === 'daily' ? 'Net Daily Production' : 'Net Monthly Production'}
+              label={viewMode === 'daily' ? "Today's Net Production" : "Net Selected Range Production"}
               value={fmtFull(viewMode === 'daily' ? netDaily : netMtd)}
               valueClass="text-emerald-600 font-bold"
               sub="Gross + Adjustments"
@@ -394,7 +394,7 @@ const ProductionAdjustmentsTab = ({
         <div className="bg-card border border-border rounded-xl p-5">
           <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
             <Icon name="Layers" size={14} className="text-amber-500" />
-            Adjustment Breakdown (MTD)
+            Adjustment Breakdown (Selected Range)
           </h3>
           <div>
             <MetricRow label="Write-Offs" value={fmtFull(writeOffs)} valueClass={writeOffs < 0 ? 'text-red-600' : 'text-foreground'} sub="PPO write-offs, contractual" />
@@ -413,7 +413,7 @@ const ProductionAdjustmentsTab = ({
         <div className="bg-card border border-border rounded-xl p-5">
           <h3 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
             <Icon name="Building2" size={14} className="text-primary" />
-            Production by Office (MTD)
+            Production by Office (Selected Range)
           </h3>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={chartData} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
