@@ -314,6 +314,7 @@ const ExpenseReport = () => {
   const [expenseRows, setExpenseRows] = useState([]);   // table + export
   const [expenseRowsError, setExpenseRowsError] = useState(null);
   const [amexRows, setAmexRows] = useState([]);          // amex tab table + export (posted only)
+  const [amexRowsError, setAmexRowsError] = useState(null);
   const [amexDraftRows, setAmexDraftRows] = useState([]); // V295: draft/pending Plaid rows — excluded from official totals
   const [monthlyTrend, setMonthlyTrend] = useState([]);  // trend chart
   const [byCategory, setByCategory] = useState([]);      // category chart
@@ -390,6 +391,8 @@ const ExpenseReport = () => {
       setLoading(true);
       setExpenseRows([]);
       setExpenseRowsError(null);
+      setAmexRows([]);
+      setAmexRowsError(null);
       try {
         // Fetch ALL data in parallel — every widget gets the same filtered dataset
         const [
@@ -519,6 +522,7 @@ const ExpenseReport = () => {
 
         if (cancelled) return;
         setExpenseRowsError(rows.status === 'rejected' ? 'Expense transactions could not be loaded completely. Narrow the date or office filter and refresh.' : null);
+        setAmexRowsError(amex.status === 'rejected' ? 'Posted AmEx transactions could not be loaded completely. Narrow the date or office filter and refresh.' : null);
         const resolvedKpis = kpiData?.status === 'fulfilled' ? kpiData?.value : {};
         const resolvedRows = rows?.status === 'fulfilled' ? rows?.value : [];
         const resolvedAmex = amex?.status === 'fulfilled' ? amex?.value : [];
@@ -579,6 +583,7 @@ const ExpenseReport = () => {
 
       } catch (err) {
         if (!cancelled) setExpenseRowsError('Expense transactions could not be loaded completely. Refresh to retry.');
+        if (!cancelled) setAmexRowsError('Posted AmEx transactions could not be loaded completely. Refresh to retry.');
         console.warn('[ExpenseReport] load error:', err?.message);
       } finally {
         if (!cancelled) setLoading(false);
@@ -608,7 +613,7 @@ const ExpenseReport = () => {
   // Export uses the SAME filtered dataset that is currently displayed
   // — expenseRows and amexRows are always from the last appliedFilters fetch
   const handleExportCSV = useCallback(() => {
-    if (loading || (activeTab !== 'amex' && expenseRowsError)) return;
+    if (loading || (activeTab === 'amex' ? amexRowsError : expenseRowsError)) return;
     const rows = activeTab === 'amex' ? amexRows : expenseRows;
     if (!rows?.length) return;
     const csv = formatExpensesForCSV(rows);
@@ -619,7 +624,7 @@ const ExpenseReport = () => {
     a.download = `expense-report-all-${new Date()?.toISOString()?.slice(0, 10)}.csv`;
     a?.click();
     URL.revokeObjectURL(url);
-  }, [activeTab, amexRows, expenseRows, loading, expenseRowsError]);
+  }, [activeTab, amexRows, expenseRows, loading, expenseRowsError, amexRowsError]);
 
   const handleImportComplete = useCallback(() => {
     setRefreshKey(k => k + 1);
@@ -673,7 +678,7 @@ const ExpenseReport = () => {
               </button>
               <button
                 onClick={handleExportCSV}
-                disabled={loading || (activeTab !== 'amex' && !!expenseRowsError) || !(activeTab === 'amex' ? amexRows : expenseRows)?.length}
+                disabled={loading || !!(activeTab === 'amex' ? amexRowsError : expenseRowsError) || !(activeTab === 'amex' ? amexRows : expenseRows)?.length}
                 className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-muted transition-colors"
               >
                 <Icon name="Download" size={13} />
@@ -881,7 +886,9 @@ const ExpenseReport = () => {
               )}
 
               {/* AmEx Tab */}
-              {activeTab === 'amex' && (
+              {activeTab === 'amex' && loading && <p className="p-4 text-sm text-muted-foreground">Loading posted AmEx transactions…</p>}
+              {activeTab === 'amex' && !loading && amexRowsError && <p role="alert" className="p-4 text-sm text-destructive border border-destructive/30 rounded-lg">{amexRowsError}</p>}
+              {activeTab === 'amex' && !loading && !amexRowsError && (
                 <div className="space-y-6">
                   {/* Reconciliation-only notice */}
                   <div className="flex items-start gap-3 px-4 py-3 bg-indigo-500/6 border border-indigo-400/25 rounded-xl text-xs text-indigo-700">

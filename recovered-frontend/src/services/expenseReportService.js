@@ -2628,7 +2628,7 @@ export async function fetchAmexTransactions({
     console.warn('[expenseReportService] fetchAmexTransactions: API fetch failed, falling back to Supabase:', apiErr?.message);
   }
 
-  // ── FALLBACK: Direct Supabase with high limit ─────────────────────────────
+  // ── FALLBACK: Complete, exact-count Supabase pages ────────────────────────
   // V295 FIX: Use eq('expense_status', 'posted') instead of neq('archived').
   // This ensures the fallback path also returns posted-only rows, consistent with
   // the API path and the KPI summary source. Draft/pending Plaid rows are excluded.
@@ -2638,13 +2638,13 @@ export async function fetchAmexTransactions({
       office_name, department_name, category_name, merchant_name,
       cardholder_name, cardholder_role, card_last4, amount,
       source_type, source_reference_id, notes, expense_status
-    `)
+    `, { count: 'exact' })
     ?.in('source_type', ['amex_api', 'amex_statement_import'])
     ?.gte('expense_date', startDate)
     ?.lte('expense_date', endDate)
     ?.eq('expense_status', 'posted')
     ?.order('expense_date', { ascending: false })
-    ?.range(offset, offset + limit - 1);
+    ?.order('id', { ascending: true });
 
   query = _applyFilters(query, {
     officeIds,
@@ -2657,11 +2657,7 @@ export async function fetchAmexTransactions({
     merchantName,
   });
 
-  const { data, error } = await query;
-  if (error) {
-    console.warn('[expenseReportService] fetchAmexTransactions error:', error?.message);
-    return [];
-  }
+  const { data } = await readCompleteExpenseQuery(query);
 
   let normalized = (data || [])?.map(r => ({
     ...r,
