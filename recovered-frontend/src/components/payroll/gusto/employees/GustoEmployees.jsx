@@ -40,7 +40,7 @@ export default function GustoEmployees({ isSuperAdmin }) {
         )}
       </div>
 
-      <GustoEmployeeFilters filters={filters} onChange={setFilters} />
+      <GustoEmployeeFilters filters={filters} onChange={nextFilters => { setPage(0); setFilters(nextFilters); }} />
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
@@ -49,7 +49,7 @@ export default function GustoEmployees({ isSuperAdmin }) {
       )}
 
       {!loading && !data?.length && !error ? (
-        <GustoEmptyState message="No employees imported yet. Use Import to load Gusto employee data." />
+        <GustoEmptyState message="No employees match the current filters." />
       ) : (
         <GustoEmployeeTable
           data={data}
