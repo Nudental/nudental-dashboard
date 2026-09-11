@@ -1,0 +1,125 @@
+{
+  "issue": "NDASH-033",
+  "previous_issue": "032",
+  "expected_previous_deployment": "ea7b1cbc-ef0d-4dc3-a5f0-56d0bad724f4",
+  "baseline_asset": "index-1f6cc164d276.js",
+  "baseline_sha256": "1f6cc164d276e250592173f5d6c91396241450de4ac64c01f6f442d85da5e02c",
+  "candidate_sha256": "1079acb66c5f44ac90de20ee544eff2d525975ab805ecbd666473df35c8c8a1f",
+  "asset": "/assets/index-1079acb66c5f.js",
+  "patches": [
+    {
+      "old": "benefits?.reduce((s,b)=>s+(parseFloat(b?.company_contribution)||0),0)",
+      "new": "(benefits?.reduce((s,b)=>s+(parseFloat(b?.company_contribution)||0),0))*26/12"
+    },
+    {
+      "old": "Estimated from active enrollments",
+      "new": "Active enrollments; estimate using 26 paychecks/year"
+    },
+    {
+      "old": "ndash032-GustoBenefits.js",
+      "new": "ndash033-GustoBenefits.js"
+    },
+    {
+      "old": "ndash032-GustoImportHistory.js",
+      "new": "ndash033-GustoImportHistory.js"
+    },
+    {
+      "old": "ndash032-GustoPaySchedules.js",
+      "new": "ndash033-GustoPaySchedules.js"
+    },
+    {
+      "old": "ndash032-GustoTimeAndAttendance.js",
+      "new": "ndash033-GustoTimeAndAttendance.js"
+    },
+    {
+      "old": "ndash032-date-fns.js",
+      "new": "ndash033-date-fns.js"
+    },
+    {
+      "old": "ndash032-help-manual.js",
+      "new": "ndash033-help-manual.js"
+    },
+    {
+      "old": "ndash032-canvg.js",
+      "new": "ndash033-canvg.js"
+    }
+  ],
+  "added_assets": [
+    {
+      "name": "ndash033-GustoBenefits.js",
+      "sha256": "ef2d0ec9f612e5fb38212eb02d1c901a02b1327c2a84fff0c5031c666b056eec",
+      "bytes": 11506,
+      "previous": "ndash032-GustoBenefits.js"
+    },
+    {
+      "name": "ndash033-GustoImportHistory.js",
+      "sha256": "72cd80b0135e4fb53342d78268aa57f4d4f297196f1196468a6232c9361ffafc",
+      "bytes": 4776,
+      "previous": "ndash032-GustoImportHistory.js"
+    },
+    {
+      "name": "ndash033-GustoPaySchedules.js",
+      "sha256": "1932f3d56a9a15e068597218b98943caa024fffc6240335cc3c3a7314ad366ec",
+      "bytes": 4819,
+      "previous": "ndash032-GustoPaySchedules.js"
+    },
+    {
+      "name": "ndash033-GustoTimeAndAttendance.js",
+      "sha256": "1c81e419360a5e164ad74118c39204771b21396e6a7f051e0c7422646b1a74ad",
+      "bytes": 38776,
+      "previous": "ndash032-GustoTimeAndAttendance.js"
+    },
+    {
+      "name": "ndash033-date-fns.js",
+      "sha256": "a43f9b007396031b4e92f222fb89bba53c1eefb61a36d25d09e6bd551a58b51e",
+      "bytes": 31653,
+      "previous": "ndash032-date-fns.js"
+    },
+    {
+      "name": "ndash033-help-manual.js",
+      "sha256": "234d38b8518aac639482575865b1ad4dd393c6635842ec8e7c6ee23dbf9c0123",
+      "bytes": 122300,
+      "previous": "ndash032-help-manual.js"
+    },
+    {
+      "name": "ndash033-canvg.js",
+      "sha256": "dc40e14ca61527ce4edc4a9528da1163632c3865c2fe29ae7e0106f4489702a1",
+      "bytes": 150419,
+      "previous": "ndash032-canvg.js"
+    }
+  ],
+  "preserve_previous_entry": true,
+  "benefits_baseline_sha256": "f9985f9a489246893a18181f02bbe338a815af0184a50c19c8435f642eab1f28",
+  "benefits_fixed_before_relink_sha256": "1088bf7260b450d1395bae2d8c88bee90c823a8475da8cc62bc2f103c40927c4",
+  "benefits_patches": [
+    {
+      "old": "(r==null?void 0:r.compContrib)*2",
+      "new": "(r==null?void 0:r.compContrib)*26/12"
+    },
+    {
+      "old": "\"Annual Employee\"",
+      "new": "\"Est. Annual Employee (26 checks)\""
+    },
+    {
+      "old": "\"Annual Company\"",
+      "new": "\"Est. Annual Company (26 checks)\""
+    },
+    {
+      "old": "\"Est. Mo. Cost:\"",
+      "new": "\"Est. Mo. Cost (26 checks/yr):\""
+    },
+    {
+      "old": "\"Est. Annual Cost:\"",
+      "new": "\"Est. Annual Cost (26 checks):\""
+    },
+    {
+      "old": "\"Annual Emp\"",
+      "new": "\"Est. Annual Emp (26 checks)\""
+    },
+    {
+      "old": "\"Annual Co\"",
+      "new": "\"Est. Annual Co (26 checks)\""
+    }
+  ],
+  "syntax": "PASS"
+}

@@ -93,7 +93,7 @@ export default function GustoKPICards({ kpis, loading }) {
     {
       label: 'Benefits Cost / Month',
       value: loading ? '—' : fmtCurrency(kpis?.benefitsCostMonth),
-      sub: 'Estimated from active enrollments',
+      sub: 'Active enrollments; estimate using 26 paychecks/year',
     },
     {
       label: 'Next Payroll',

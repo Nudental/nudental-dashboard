@@ -91,7 +91,7 @@ export function useGustoSummaryTotals(year) {
         const totalTaxes = runs?.reduce((s, r) => s + (parseFloat(r?.total_payable_tax) || 0), 0);
         const totalGross = runs?.reduce((s, r) => s + (parseFloat(r?.total_debit_amount) || 0), 0);
         const contractorSpend = Number.isFinite(contractorJson?.summary?.paidAmount) ? contractorJson.summary.paidAmount : null;
-        const benefitsCostMonth = benefits?.reduce((s, b) => s + (parseFloat(b?.company_contribution) || 0), 0);
+        const benefitsCostMonth = benefits?.reduce((s, b) => s + (parseFloat(b?.company_contribution) || 0), 0) * 26 / 12;
 
         setKpis({
           periodLabel,

@@ -24,7 +24,7 @@ export default function GustoBenefits({ isSuperAdmin }) {
   const [filterActive, setFilterActive] = useState('all');
 
   const handleExport = () => {
-    const headers = ['Employee','Plan','Employee/Paycheck','Company/Paycheck','Annual Employee','Annual Company','Active'];
+    const headers = ['Employee','Plan','Employee/Paycheck','Company/Paycheck','Est. Annual Employee (26 checks)','Est. Annual Company (26 checks)','Active'];
     const rows = filteredEnrollments?.map(e => [
       `${e?.gusto_employees?.first_name || ''} ${e?.gusto_employees?.last_name || ''}`?.trim(),
       e?.gusto_benefit_plans?.plan_name || e?.benefit_plan_id,
@@ -82,7 +82,7 @@ export default function GustoBenefits({ isSuperAdmin }) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {plans?.map(plan => {
           const stats = planStats?.[plan?.id] || { enrolled: 0, empDeduction: 0, compContrib: 0 };
-          const monthlyCompCost = stats?.compContrib * 2; // bi-weekly × 2 ≈ monthly
+          const monthlyCompCost = stats?.compContrib * 26 / 12; // Biweekly estimate: 26 paychecks per year.
           return (
             <div key={plan?.id} className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm flex flex-col gap-3">
               <div className="flex items-start justify-between gap-2">
@@ -104,8 +104,8 @@ export default function GustoBenefits({ isSuperAdmin }) {
                 <div><span className="text-gray-400">Enrolled:</span> <strong>{stats?.enrolled}</strong></div>
                 <div><span className="text-gray-400">Avg Emp/check:</span> <strong>{fmtCurrency(stats?.enrolled ? stats?.empDeduction / stats?.enrolled : 0)}</strong></div>
                 <div><span className="text-gray-400">Avg Co/check:</span> <strong>{fmtCurrency(stats?.enrolled ? stats?.compContrib / stats?.enrolled : 0)}</strong></div>
-                <div><span className="text-gray-400">Est. Mo. Cost:</span> <strong className="text-[#00B5CC]">{fmtCurrency(monthlyCompCost)}</strong></div>
-                <div className="col-span-2"><span className="text-gray-400">Est. Annual Cost:</span> <strong className="text-[#00B5CC]">{fmtCurrency(monthlyCompCost * 12)}</strong></div>
+                <div><span className="text-gray-400">Est. Mo. Cost (26 checks/yr):</span> <strong className="text-[#00B5CC]">{fmtCurrency(monthlyCompCost)}</strong></div>
+                <div className="col-span-2"><span className="text-gray-400">Est. Annual Cost (26 checks):</span> <strong className="text-[#00B5CC]">{fmtCurrency(monthlyCompCost * 12)}</strong></div>
               </div>
             </div>
           );
@@ -137,7 +137,7 @@ export default function GustoBenefits({ isSuperAdmin }) {
             <table className="min-w-full text-sm">
               <thead>
                 <tr className="bg-gray-50 border-b border-gray-200">
-                  {['Employee','Plan','Emp / Paycheck','Co / Paycheck','Annual Emp','Annual Co','Active']?.map(h => (
+                  {['Employee','Plan','Emp / Paycheck','Co / Paycheck','Est. Annual Emp (26 checks)','Est. Annual Co (26 checks)','Active']?.map(h => (
                     <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
