@@ -11,4 +11,4 @@ Five actual React component tests cover no matches, clearing, case-insensitive n
 Candidate asset index-6d3e6bafcf0c.js; SHA256 6d3e6bafcf0c7ede473c49ee521916a745fd2add0e6fde19fd5f96f6cd0626ec.
 Prior deployment 3761ea17-03b2-4ce6-8023-e5268b66131e; rollback /home/openclaw/.cache/nudashboard-audit-20260910/ndash005-dist.
 
-Production build, deployment and live verification recorded after execution. No records created or changed.
+Production build PASS (30.73 seconds). Deployment a8f61e94-1e4e-416a-8b5b-183fbd3091df succeeded. Live verification PASS: unmatched search keeps the input and shows zero provider rows; keyboard clearing restores Doctor rows; Barnegat search yields only Barnegat rows. Hygiene also retains the input with zero unmatched rows. Browser automation's empty-string fill did not clear the input, so clearing was verified with standard Select All/Backspace keyboard actions. No records created or changed.

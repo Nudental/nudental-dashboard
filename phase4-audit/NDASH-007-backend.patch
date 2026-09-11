@@ -1,0 +1,37 @@
+--- a/middleware/main_candidate.py
++++ b/middleware/main_candidate.py
+@@ -2607,3 +2607,3 @@
+ 
+-@app.get("/v2/expenses/filters", tags=["Expenses"])
++@app.get("/v2/expenses/filters", tags=["Expenses"], dependencies=[Depends(verify_api_key)])
+ def expense_filters():
+@@ -2648,3 +2648,3 @@
+ 
+-@app.get("/v2/expenses/summary", tags=["Expenses"])
++@app.get("/v2/expenses/summary", tags=["Expenses"], dependencies=[Depends(verify_api_key)])
+ def expense_summary(
+@@ -2825,3 +2825,3 @@
+ 
+-@app.get("/v2/expenses/lines", tags=["Expenses"])
++@app.get("/v2/expenses/lines", tags=["Expenses"], dependencies=[Depends(verify_api_key)])
+ def expense_lines(
+@@ -3001,3 +3001,3 @@
+ 
+-@app.get("/v2/expenses/breakdown", tags=["Expenses"])
++@app.get("/v2/expenses/breakdown", tags=["Expenses"], dependencies=[Depends(verify_api_key)])
+ def expense_breakdown(
+@@ -3101,3 +3101,3 @@
+ 
+-@app.get("/v2/expenses/amex", tags=["Expenses"])
++@app.get("/v2/expenses/amex", tags=["Expenses"], dependencies=[Depends(verify_api_key)])
+ def expense_amex(
+@@ -3202,3 +3202,3 @@
+ 
+-@app.get("/v2/expenses/payroll", tags=["Expenses"])
++@app.get("/v2/expenses/payroll", tags=["Expenses"], dependencies=[Depends(verify_api_key)])
+ def expense_payroll(
+@@ -3288,3 +3288,3 @@
+ 
+-@app.get("/v2/expenses/wf", tags=["Expenses"])
++@app.get("/v2/expenses/wf", tags=["Expenses"], dependencies=[Depends(verify_api_key)])
+ def wf_expenses(
