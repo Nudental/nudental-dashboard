@@ -1531,7 +1531,7 @@ export default function PayrollPage() {
       {error && (
         <div className="flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
           <Icon name="AlertTriangle" size={16} />
-          <span>Data may be partial: {error}. Showing available data from fallback sources.</span>
+          <span>{error}</span>
         </div>
       )}
       {/* Dentrix Source Warning Banner — shown when FastAPI returned no data */}
@@ -1542,7 +1542,7 @@ export default function PayrollPage() {
         </div>
       )}
       {/* KPI Summary Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4" style={{ display: activeDateRange?.startDate && activeDateRange?.endDate && !loading && !error ? undefined : 'none' }}>
         <PayrollKPICard
           label="Gross Production"
           value={fmtCurrencyShort(summary?.totalGrossProduction)}
