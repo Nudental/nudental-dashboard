@@ -1,0 +1,15 @@
+# NDASH-043 — Adjustment breakdown excludes reversals included in production
+
+Section: Financial Analytics / shared Dentrix adjustments summary. Severity: High. Status: reproduced; root cause verified; repair pending042deployment.
+
+Live applied2026-01-01–2026-06-30 All Offices: Production Summary net adjustments−2,014,095.08, but breakdown Write-Offs−2,254,408.55 plus Charge Adjustments24,048.66 gives−2,230,359.89. Difference216,264.81. Production gross3,771,417.41 and net1,757,322.33 match the source database. Collections insurance961,380.88 plus patient625,746.40 equals total1,587,127.28 and matches API/UI. These are aggregate comparisons only.
+
+Root cause: actual ascend_service.py SHA5ec86b9978241498193ddc88787de36a5c82b7532c8dde91db076a3f33cbf402. get_production_summary deliberately includes active PatientCreditAdjustmentCancellation and PatientChargeAdjustmentCancellation (documented VariantB existing production rule). get_adjustments_summary omits both while its comments claim consistency. It returns totalProductionAdjustments; frontend checks nonexistent totalAdjustments then correctly falls back to production.adjustments, mixing inconsistent breakdown components with the production total.
+
+Read-only SQLite aggregate verification (mode=ro, query_only): credit originals/rebills−2,254,408.55 and reversals+223,447.90; charge originals/rebills24,048.66 and reversals−7,183.09. Including reversals gives credit−2,030,960.65 + charge16,865.57 =−2,014,095.08, exactly the established net-production adjustment. Six canonical types, no individual transaction records retrieved. No business data changed.
+
+Smallest proposed repair: include each existing Cancellation type in its corresponding get_adjustments_summary aggregation, keeping insurance refunds separate and preserving the production formula, date/office filters, data and all configuration. Prove with isolated SQLite fixtures and actual method extraction; preserve full service before editing; deploy via existing candidate/live API service process only after validation. Do not substitute the older frontend source build or alter production totals.
+
+Tests:7isolated SQLite method tests PASS locally and on the existing source server;4fail against current code. Covers original/rebill/reversal netting, agreement with unchanged production formula, office/date/active filters, separate insurance refunds, retained reversal count and unavailable dataset. Five retained backend suites PASS (contractors, complete reader, runs, employee filters, expense guards). Candidate c0680f08958e51d8ada02837620ef5d89d77a2aad8c63ecb53519cda5d1b328f; original service preserved locally and in server ndash043-backend. main_candidate.py and production service remain unchanged at preparation. Read-only evidence helpers: phase4-financial-range-readonly.py and phase4-adjustment-aggregate-readonly.py; compact result files preserved on existing audit server.
+
+Repair scope: add the two existing cancellation types to their corresponding aggregation lists plus correct the stale comments. Backend patch and test retained in the private audit branch. Deployment/live verification pending.

@@ -1,0 +1,20 @@
+--- a/ascend_service.py
++++ b/ascend_service.py
+@@ -3194,13 +3194,13 @@
+             rows = _db_query(sql, params)
+             return float(rows[0]["total"]) if rows else 0.0, (rows[0]["cnt"] if rows else 0)
+ 
+-        # Production adjustment types — consistent with get_production_summary
+-        # Excludes cancellations and insurance refund adjustments
++        # Match the existing production rule: active reversals net their original type.
++        # Insurance refund adjustments remain separate.
+         credit_adj_amt, credit_adj_cnt = _sum_types([
+-            "PatientCreditAdjustment", "PatientCreditAdjustmentRebill"
++            "PatientCreditAdjustment", "PatientCreditAdjustmentRebill", "PatientCreditAdjustmentCancellation"
+         ])
+         charge_adj_amt, charge_adj_cnt = _sum_types([
+-            "PatientChargeAdjustment", "PatientChargeAdjustmentRebill"
++            "PatientChargeAdjustment", "PatientChargeAdjustmentRebill", "PatientChargeAdjustmentCancellation"
+         ])
+         # Total production adjustments (signed, no ABS)
+         total_prod_adj = credit_adj_amt + charge_adj_amt
