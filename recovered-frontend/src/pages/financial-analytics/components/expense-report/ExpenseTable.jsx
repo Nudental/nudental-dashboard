@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Icon from '../../../../components/AppIcon';
 import { SOURCE_TYPE_LABELS, classify3526Transaction, isWFMainMoneyOutCounted } from '../../../../services/expenseReportService';
 import { resolveAmexCard, isAmexSource } from '../../../../utils/amexCardMapping';
@@ -553,6 +553,8 @@ const ExpenseTable = ({ rows = [], loading = false, onExportCSV, isAmexMode = fa
   const [sortDir, setSortDir] = useState('desc');
   const [page, setPage] = useState(0);
   const PAGE_SIZE = 50;
+
+  useEffect(() => { setPage(0); }, [rows]);
 
   // Use AmEx-specific view labels when in AmEx mode
   const activeViews = isAmexMode ? AMEX_VIEWS : VIEWS;
