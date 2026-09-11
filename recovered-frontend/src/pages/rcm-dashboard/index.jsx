@@ -29,6 +29,15 @@ const STATUS_OPTIONS = [
   { value: 'denied', label: 'Denied' },
 ];
 
+const matchesRequestSearch = (batch, query) => {
+  const q = (query || '').trim().toLowerCase();
+  if (!q) return true;
+  const items = Array.isArray(batch?.request_items) ? batch.request_items : [];
+  return [batch?.office_id, batch?.requested_by_profile?.full_name,
+    ...items.flatMap(item => [item?.custom_item_name, item?.supply_items?.name])
+  ].some(value => typeof value === 'string' && value.toLowerCase().includes(q));
+};
+
 export default function RCMDashboard() {
   const [batches, setBatches] = useState([]);
   const [urgentRequests, setUrgentRequests] = useState([]);
@@ -106,11 +115,7 @@ export default function RCMDashboard() {
   }, [loadData]);
 
   // Filtered batches for search
-  const filteredBatches = batches?.filter(b => {
-    if (!searchQuery) return true;
-    const q = searchQuery?.toLowerCase();
-    return (b?.office_id?.toLowerCase()?.includes(q) || b?.requested_by_profile?.full_name?.toLowerCase()?.includes(q));
-  });
+  const filteredBatches = batches?.filter(batch => matchesRequestSearch(batch, searchQuery));
 
   // Split by department category
   const frontDeskBatches = filteredBatches?.filter(b => b?.department_category === 'Front Desk');

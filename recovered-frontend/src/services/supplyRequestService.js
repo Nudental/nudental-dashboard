@@ -262,7 +262,8 @@ export const supplyRequestService = {
     let query = supabase?.from('supply_request_batches')?.select(`
         *,
         requested_by_profile:user_profiles!supply_request_batches_requested_by_fkey(full_name),
-        reviewer_profile:user_profiles!supply_request_batches_reviewer_id_fkey(full_name)
+        reviewer_profile:user_profiles!supply_request_batches_reviewer_id_fkey(full_name),
+        request_items:supply_request_items(custom_item_name, supply_items(name))
       `)?.order('created_at', { ascending: false });
 
     if (filters?.officeId) query = query?.eq('office_id', filters?.officeId);

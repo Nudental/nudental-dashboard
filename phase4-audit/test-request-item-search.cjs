@@ -1,0 +1,12 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.resolve(__dirname,'../recovered-frontend'),parser=require(path.join(process.env.NDASH_PARSER_ROOT||root,'node_modules/@babel/parser'));
+const source=fs.readFileSync(path.join(root,'src/pages/rcm-dashboard/index.jsx'),'utf8'),ast=parser.parse(source,{sourceType:'module',plugins:['jsx']});
+const node=ast.program.body.find(n=>n.type==='VariableDeclaration'&&n.declarations[0].id.name==='matchesRequestSearch').declarations[0].init;
+const match=vm.runInNewContext('('+source.slice(node.start,node.end)+')');
+const batch={office_id:'QA Office',requested_by_profile:{full_name:'QA Requester'},request_items:[{supply_items:{name:'QA Rotary Files'}},{custom_item_name:'QA Custom Holder'}]};
+test('catalog item text finds its parent request',()=>assert.equal(match(batch,'Rotary'),true));
+test('custom item text finds its parent request',()=>assert.equal(match(batch,'custom holder'),true));
+test('existing office and requester searches still match',()=>{assert.equal(match(batch,'office'),true);assert.equal(match(batch,'requester'),true);});
+test('search is trimmed and case insensitive; blank retains all requests',()=>{assert.equal(match(batch,'  ROTARY FILES '),true);assert.equal(match(batch,'  '),true);});
+test('unrelated item and missing relationships cannot invent a match',()=>{assert.equal(match(batch,'unrelated'),false);assert.equal(match({request_items:[null,{supply_items:null}]},'Rotary'),false);});
+test('multiple matching items retain one parent row',()=>{const rows=[batch,{office_id:'Different'}].filter(b=>match(b,'QA'));assert.equal(rows.length,1);});
