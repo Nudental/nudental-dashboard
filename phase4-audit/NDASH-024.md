@@ -1,0 +1,9 @@
+# NDASH-024 — Gusto period selection displayed the wrong scope
+
+- Section: Payroll / Imported from Gusto / Overview. Severity: High.
+- Reproduced live: selecting All Time retains the current year's 20 runs and net pay instead of all 157 imported runs. Selecting 2025 changes amounts but still labels them YTD/current year. Monthly charts are descending, use the current month against the selected year, omit an end bound, and produce month 13 in December.
+- Root cause: `year || currentYear` erases the All Time value 0; static period labels; month arithmetic and unsorted `Object.values(...).slice(-12)`.
+- Fix: All Time omits start/end constraints; current YTD ends today and historical years end December 31. KPI/run-chart labels identify the selected period. Monthly query covers twelve calendar months ending that period, sorts chronologically, and identifies its end date. Four existing Gusto overview/hook components changed; financial fields and arithmetic preserved.
+- Read-only evidence: API and database agree on 157 imported runs, combined net pay 4,683,574.41; current year has 20 runs / 816,531.34, 2025 has 33 / 976,088.29. No pagination truncation in the current 157-row source (requested limit 1000). No source/business mutations.
+- Five isolated pre-fix tests fail; 80 retained frontend tests pass after repair. Actual deployed callback: five scenarios PASS, syntax PASS, exact byte reversal PASS. Production artifact candidate index-266a7d772466.js, SHA256 266a7d772466d189df597883b441c0eb2d7fb9cc0fa171a56e0b52a2a36f1b28. Final build/deployment/live verification pending.
+- Separate unresolved issues: contractor endpoint returns 404 and its chart plots payroll; off-cycle count is hardcoded zero despite imported off-cycle runs. These are not claimed fixed by this period correction.

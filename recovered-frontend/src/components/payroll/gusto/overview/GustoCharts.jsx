@@ -25,7 +25,7 @@ function formatMonthLabel(monthStr) {
   return `${getMonthName(parseInt(month))} '${year?.slice(2)}`;
 }
 
-export default function GustoCharts({ monthlyData, annualData, runsYTD, offCycleCount, loading }) {
+export default function GustoCharts({ monthlyData, annualData, runsYTD, offCycleCount, loading, periodLabel = 'Selected Period', monthlyPeriodEnd }) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -48,7 +48,7 @@ export default function GustoCharts({ monthlyData, annualData, runsYTD, offCycle
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Monthly Net Pay vs Taxes */}
-      <ChartCard title="Monthly Net Pay vs Taxes (Last 12 Months)">
+      <ChartCard title={`Monthly Net Pay vs Taxes (12 Months to ${monthlyPeriodEnd || 'Selected Date'})`}>
         {monthlyData?.length === 0 ? (
           <div className="h-48 flex items-center justify-center text-gray-400 text-sm">No data</div>
         ) : (
@@ -108,7 +108,7 @@ export default function GustoCharts({ monthlyData, annualData, runsYTD, offCycle
         )}
       </ChartCard>
       {/* Off-Cycle vs Regular Runs */}
-      <ChartCard title="Off-Cycle vs Regular Runs (YTD)">
+      <ChartCard title={`Off-Cycle vs Regular Runs (${periodLabel})`}>
         {(runsYTD || 0) === 0 ? (
           <div className="h-48 flex items-center justify-center text-gray-400 text-sm">No data</div>
         ) : (

@@ -58,6 +58,7 @@ export function GustoKPICard({ label, value, sub, loading }) {
 
 // ─── KPI Cards Grid ───────────────────────────────────────────────────────────
 export default function GustoKPICards({ kpis, loading }) {
+  const periodLabel = kpis?.periodLabel || 'Selected Period';
   const cards = [
     {
       label: 'Active Employees',
@@ -65,29 +66,29 @@ export default function GustoKPICards({ kpis, loading }) {
       sub: 'Non-terminated',
     },
     {
-      label: 'Net Pay YTD',
+      label: `Net Pay ${periodLabel}`,
       value: loading ? '—' : fmtCurrency(kpis?.totalNetPayYTD),
       sub: 'Gusto total_net_pay; excludes payroll taxes, benefits, and contractors',
     },
     {
-      label: 'Total Taxes YTD',
+      label: `Total Taxes ${periodLabel}`,
       value: loading ? '—' : fmtCurrency(kpis?.totalTaxesYTD),
-      sub: 'Payable tax, current year',
+      sub: `Payable tax, ${periodLabel}`,
     },
     {
-      label: 'Total Gross Cost YTD',
+      label: `Total Gross Cost ${periodLabel}`,
       value: loading ? '—' : fmtCurrency(kpis?.totalGrossCostYTD),
       sub: 'Net pay + taxes + deductions — Gusto bank debit',
     },
     {
-      label: 'Payroll Runs YTD',
+      label: `Payroll Runs ${periodLabel}`,
       value: loading ? '—' : (kpis?.payrollRunsYTD ?? 0)?.toLocaleString(),
-      sub: 'Current year',
+      sub: periodLabel,
     },
     {
-      label: 'Contractor Spend YTD',
+      label: `Contractor Spend ${periodLabel}`,
       value: loading ? '—' : fmtCurrency(kpis?.contractorSpendYTD),
-      sub: 'Current year',
+      sub: periodLabel,
     },
     {
       label: 'Benefits Cost / Month',

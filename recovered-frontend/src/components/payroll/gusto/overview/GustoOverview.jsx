@@ -50,6 +50,8 @@ export default function GustoOverview() {
         <>
           <GustoKPICards kpis={kpis} loading={loading} />
           <GustoCharts
+            periodLabel={kpis?.periodLabel}
+            monthlyPeriodEnd={kpis?.monthlyPeriodEnd}
             monthlyData={monthlyData}
             annualData={annualData}
             runsYTD={kpis?.payrollRunsYTD}

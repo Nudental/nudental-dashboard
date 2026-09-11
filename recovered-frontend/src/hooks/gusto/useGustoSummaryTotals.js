@@ -31,8 +31,12 @@ export function useGustoSummaryTotals(year) {
 
     const currentYear = year || new Date()?.getFullYear();
     const today = new Date()?.toISOString()?.split('T')?.[0];
-    const prevMonthNum = new Date()?.getMonth() + 2; // +2 because getMonth is 0-indexed and we want next month of last year
-    const last12Start = `${currentYear - 1}-${String(prevMonthNum)?.padStart(2, '0')}-01`;
+    const isCurrentYear = currentYear === new Date().getFullYear();
+    const periodEnd = year === 0 || isCurrentYear ? today : `${currentYear}-12-31`;
+    const periodParams = year === 0 ? {} : { startDate: `${currentYear}-01-01`, endDate: periodEnd };
+    const periodLabel = year === 0 ? 'All Time' : `${currentYear}${isCurrentYear ? ' YTD' : ''}`;
+    const chartEnd = new Date(`${periodEnd}T12:00:00Z`);
+    const last12Start = new Date(Date.UTC(chartEnd.getUTCFullYear(), chartEnd.getUTCMonth() - 11, 1)).toISOString().slice(0, 10);
 
     console.log('[useGustoSummaryTotals] Fetching for year:', currentYear, { today, last12Start });
 
@@ -41,15 +45,15 @@ export function useGustoSummaryTotals(year) {
       // [0] Active employees count from middleware
       apiFetch('/employees', { status: 'active', limit: 1 }),
       // [1] YTD payroll runs from middleware
-      apiFetch('/runs', { startDate: `${currentYear}-01-01`, endDate: `${currentYear}-12-31`, limit: 1000 }),
+      apiFetch('/runs', { ...periodParams, limit: 1000 }),
       // [2] YTD contractor spend — via middleware (replaces direct gusto_contractor_payments query)
-      apiFetch('/contractors', { startDate: `${currentYear}-01-01`, endDate: `${currentYear}-12-31`, limit: 1000 }),
+      apiFetch('/contractors', { ...periodParams, limit: 1000 }),
       // [3] Active benefit enrollments — via Supabase (gusto_employee_benefit_enrollments is not a blocked table)
       supabase?.from('gusto_employee_benefit_enrollments')?.select('company_contribution')?.eq('active', true),
       // [4] Next payroll from middleware
       apiFetch('/runs', { startDate: today, limit: 1, sort: 'check_date:asc' }),
       // [5] Last 12 months for monthly chart from middleware
-      apiFetch('/runs', { startDate: last12Start, limit: 1000, sort: 'check_date:asc' }),
+      apiFetch('/runs', { startDate: last12Start, endDate: periodEnd, limit: 1000, sort: 'check_date:asc' }),
       // [6] Annual data for bar chart from middleware
       apiFetch('/runs', { startDate: '2021-01-01', limit: 5000, sort: 'check_date:asc' }),
     ])
@@ -87,6 +91,8 @@ export function useGustoSummaryTotals(year) {
         const benefitsCostMonth = benefits?.reduce((s, b) => s + (parseFloat(b?.company_contribution) || 0), 0);
 
         setKpis({
+          periodLabel,
+          monthlyPeriodEnd: periodEnd,
           activeEmployees: empJson?.total || 0,
           totalNetPayYTD: totalNetPay,
           totalTaxesYTD: totalTaxes,
@@ -106,7 +112,7 @@ export function useGustoSummaryTotals(year) {
           monthMap[month].netPay += parseFloat(r?.total_net_pay) || 0;
           monthMap[month].taxes += parseFloat(r?.total_payable_tax) || 0;
         });
-        setMonthlyData(Object.values(monthMap)?.slice(-12));
+        setMonthlyData(Object.values(monthMap).sort((a, b) => a.month.localeCompare(b.month)).slice(-12));
 
         // Build annual chart data
         const yearMap = {};
