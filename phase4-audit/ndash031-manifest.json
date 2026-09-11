@@ -1,0 +1,95 @@
+{
+  "issue": "NDASH-031",
+  "previous_issue": "030-v3",
+  "expected_previous_deployment": "f0f51264-d4ee-4438-8683-491042545cd8",
+  "baseline_asset": "index-616ce871a6a1.js",
+  "baseline_sha256": "616ce871a6a1e1a9dc682d6f4a5c307dbd28799576ca1b3c511fab603e00651c",
+  "candidate_sha256": "4041253c50b0b63b5044916dd8b358b96d5a5e8ec15d06b75b84427e88f9d230",
+  "asset": "/assets/index-4041253c50b0.js",
+  "patches": [
+    {
+      "old": "GustoBenefits-crX-xJ9D.js",
+      "new": "ndash031-GustoBenefits.js"
+    },
+    {
+      "old": "GustoImportHistory-CZpAX6K_.js",
+      "new": "ndash031-GustoImportHistory.js"
+    },
+    {
+      "old": "GustoPaySchedules-DMiLCvjh.js",
+      "new": "ndash031-GustoPaySchedules.js"
+    },
+    {
+      "old": "GustoTimeAndAttendance-D6ciEYBm.js",
+      "new": "ndash031-GustoTimeAndAttendance.js"
+    },
+    {
+      "old": "index-CB5Q7i_D.js",
+      "new": "ndash031-date-fns.js"
+    },
+    {
+      "old": "index-D8fKh2We.js",
+      "new": "ndash031-help-manual.js"
+    },
+    {
+      "old": "index.es-BjX2U5zt.js",
+      "new": "ndash031-canvg.js"
+    },
+    {
+      "old": "purify.es-Csrj9YNg.js",
+      "new": "ndash031-purify.js"
+    }
+  ],
+  "added_assets": [
+    {
+      "name": "ndash031-GustoBenefits.js",
+      "sha256": "6704961b0e505a43aa4a81ebfceeefc18048142caaf1a623567aa755e4f00ec4",
+      "bytes": 11407,
+      "source": "GustoBenefits-zFD2F9Xj.js"
+    },
+    {
+      "name": "ndash031-GustoImportHistory.js",
+      "sha256": "cf29a55c4cb4e1f0fe3ac249c2c8af9355b6b6ee8a9b41bf9ff4dcf154409049",
+      "bytes": 4776,
+      "source": "GustoImportHistory-C3yY1MFA.js"
+    },
+    {
+      "name": "ndash031-GustoPaySchedules.js",
+      "sha256": "1f95b28af62677eb6fde4637e082b4f703e80a0ea9774b78e332ab1ceceff9f9",
+      "bytes": 4819,
+      "source": "GustoPaySchedules-DXmZW7Is.js"
+    },
+    {
+      "name": "ndash031-GustoTimeAndAttendance.js",
+      "sha256": "1068b2f86ee945ddd38f205eb6af2a9e0dbaf648c2015ced54e62220d641a53f",
+      "bytes": 38776,
+      "source": "GustoTimeAndAttendance-DmSEOg_g.js"
+    },
+    {
+      "name": "ndash031-date-fns.js",
+      "sha256": "1fa31cbc7f33d7c41bcd09009e512afaf1c89319800681a86c8036c14451ac18",
+      "bytes": 31653,
+      "source": "index-Dg6_C0-d.js"
+    },
+    {
+      "name": "ndash031-help-manual.js",
+      "sha256": "1fedffd0cb29d370860224c9969aefa1e9cd9ef167ad2bef8a6f355d59d64b4e",
+      "bytes": 122300,
+      "source": "index-DmeU2UKj.js"
+    },
+    {
+      "name": "ndash031-canvg.js",
+      "sha256": "36f9daf3d53895f38f9f8b57e10fa7eec17e1a434edb962fbccd6953be2067fb",
+      "bytes": 150419,
+      "source": "index.es-B1tA0DvY.js"
+    },
+    {
+      "name": "ndash031-purify.js",
+      "sha256": "105c3beaae6dff18789227ab6e7ef38bbbac7f9fc7c175490cd9ccc4b4980cd8",
+      "bytes": 29047,
+      "source": "purify.es-DDpmou9H.js"
+    }
+  ],
+  "compatible_main_exports": 119,
+  "source_build_unchanged": true
+}
