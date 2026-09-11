@@ -1,0 +1,8 @@
+# NDASH-021 — Viewing payroll could persist provider mappings automatically
+
+- Section: Payroll. Severity: High.
+- Root cause: the report getter calls `enrichPayrollRows`, whose unresolved-row enrichment launches mapping inserts/updates without an explicit write action. Confirmed in the deployed artifact; isolated regression reproduced one unexpected persistence call before editing. No unsafe live write was used for reproduction.
+- Fix: add the optional `persistMappings` enrichment flag (existing default path retained) and explicitly disable it for `fetchPayrollData`. Returned enriched rows, financial calculations, date offsets, and explicit mapping/approval actions remain unchanged. Two files, three targeted lines.
+- Tests: pre-fix isolated read-only test FAIL as expected; post-fix 67 frontend tests PASS; source production build PASS (34.49s); actual artifact guard/caller scenarios, syntax and exact reversal PASS.
+- Before-live-test metadata: all 37 current mapping records fingerprinted privately; both created/updated timestamp coverage is complete and newest timestamps are July 22, predating this audit. No evidence of mapping changes during earlier browsing. Only hashes/counts retained as comparison evidence.
+- Candidate asset `index-62277d7efd9b.js`, SHA256 `62277d7efd9b24769d7e5dc7e191b1851fdf31aca0492444d4e0a29676b3614a`. Previous `ndash020-dist` preserved. Deployment/live verification pending; do not open Payroll until the guarded asset is publicly confirmed.

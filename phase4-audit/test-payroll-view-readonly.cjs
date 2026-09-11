@@ -1,0 +1,9 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.resolve(__dirname,'../recovered-frontend'),parser=require(path.join(process.env.NDASH_PARSER_ROOT||root,'node_modules/@babel/parser'));
+const source=fs.readFileSync(path.join(root,'src/services/providerMappingService.js'),'utf8'),ast=parser.parse(source,{sourceType:'module'});
+const n=ast.program.body.find(n=>n.type==='ExportNamedDeclaration'&&n.declaration?.id?.name==='enrichPayrollRows').declaration;
+function harness(){const writes=[];const context={getAllProviderMasters:async()=>[],getAllPayrollMappings:async()=>[],resolveProviderMapping:row=>({displayName:row.providerName,canonicalType:'doctor',mappingStatus:'needs_review',rawName:row.providerName,rawOffice:'QA Office'}),payrollBucketType:()=> 'doctor',resolveOfficeFromRow:()=> 'QA Office',normalizeLabel:x=>x.toLowerCase(),normalizeOfficeName:x=>x,DEFAULT_NON_PROVIDER_LABELS:new Set(),upsertPayrollMapping:async row=>{writes.push(row);},console:{error(){}}};return {writes,enrich:vm.runInNewContext('('+source.slice(n.start,n.end)+')',context)};}
+const rows=[{providerName:'QA Provider',totalCollections:123.45}];
+test('read-only payroll enrichment never inserts or updates a mapping',async()=>{const h=harness(),r=await h.enrich(rows,{persistMappings:false});assert.equal(h.writes.length,0);assert.equal(r[0].totalCollections,123.45);assert.equal(r[0].displayName,'QA Provider');assert.equal(r[0].mappingStatus,'needs_review');});
+test('existing explicitly enabled persistence path remains available',async()=>{const h=harness();await h.enrich(rows,{persistMappings:true});assert.equal(h.writes.length,1);});
+test('empty payroll view causes no write',async()=>{const h=harness();await h.enrich([],{persistMappings:false});assert.equal(h.writes.length,0);});

@@ -554,7 +554,7 @@ export async function fetchPayrollData({ startDate, endDate, locationId, provide
     }
 
     // ── Enrich with canonical identity from Staff Management mapping layer ──
-    let enrichedRows = await enrichPayrollRows(sourceRows);
+    let enrichedRows = await enrichPayrollRows(sourceRows, { persistMappings: false });
 
     // ── Classify into doctor / hygienist / unknown using canonical type ──────
     const { doctors: rawDoctors, hygienists: rawHygienists, unknowns, placeholders, resolvedPlaceholders } = classifyEnrichedRows(enrichedRows);

@@ -880,7 +880,7 @@ export async function upsertPayrollMapping(resolvedRow) {
  * - rawName / rawOffice preserved for audit
  * - alreadyResolved (true if placeholder was previously marked non-provider by admin or is a default label)
  */
-export async function enrichPayrollRows(rawRows) {
+export async function enrichPayrollRows(rawRows, { persistMappings = true } = {}) {
   if (!rawRows?.length) return [];
 
   try {
@@ -976,7 +976,7 @@ export async function enrichPayrollRows(rawRows) {
 
     // Async: upsert mapping records for unresolved rows (fire-and-forget)
     const needsUpsert = enriched?.filter(r => r?.mappingStatus !== 'mapped' && r?.rawName);
-    if (needsUpsert?.length > 0) {
+    if (persistMappings && needsUpsert?.length > 0) {
       Promise.allSettled(needsUpsert?.map(r => upsertPayrollMapping(r)))?.catch(() => {});
     }
 
