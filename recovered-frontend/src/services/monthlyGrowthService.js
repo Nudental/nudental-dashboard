@@ -110,8 +110,8 @@ const aggregateDailyEntriesForMonth = async (offices, year, month) => {
  * FALLBACK: daily_entries (Manual/EOD) — only when MEA has no data for that period
  * Returns array of office objects with MoM growth + GROUP TOTAL row + dataSource flag
  */
-export const fetchMonthlyGrowth = async (selectedMonth, selectedYear) => {
-  const offices = await fetchAllOffices();
+export const fetchMonthlyGrowth = async (selectedMonth, selectedYear, officeFilter = 'all') => {
+  const offices = (await fetchAllOffices()).filter((office) => officeFilter === 'all' || office.id === officeFilter);
 
   const prevDate = subMonths(new Date(selectedYear, selectedMonth - 1, 1), 1);
   const prevMonth = prevDate?.getMonth() + 1;

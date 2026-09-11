@@ -184,7 +184,7 @@ const MonthlyGrowthTab = ({ selectedOfficeIds: propOfficeIds, selectedMonth: pro
     setLoading(true);
     try {
       const [growthResult, history, sparklineData] = await Promise.all([
-        fetchMonthlyGrowth(selectedMonth, selectedYear),
+        fetchMonthlyGrowth(selectedMonth, selectedYear, officeFilter),
         fetchMonthlyGrowthHistory(officeFilter, 12),
         fetchSparklineData(),
       ]);
