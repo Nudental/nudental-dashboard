@@ -12,4 +12,4 @@ Candidate asset: index-69f26cb396f0.js.
 SHA256: 69f26cb396f0ab489805382b67b0ac92f7b5a259970dd621d2fd7c02ff9100b1.
 Previous deployment/rollback: a997ce91-f82b-4220-946a-59106c11c4fb; /home/openclaw/.cache/nudashboard-audit-20260910/ndash001-dist-v2.
 
-Deployment and live verification pending at this commit. Monthly Growth's legacy data completeness is a separate investigation; this change does not claim to repair its zero metrics.
+Deployment ae03daae-5835-49e4-9777-425de5d5422e succeeded. Live verification PASS: August 2026 and Barnegat transfer to Monthly Growth; completed-August forecast shows actual net production $104,505 instead of September extrapolation. NDASH-001 retained. Monthly Growth's legacy data completeness and row filtering are separate investigations; this change does not claim to repair those metrics.

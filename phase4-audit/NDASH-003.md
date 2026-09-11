@@ -13,4 +13,4 @@ SHA256: 3c8881fa50caaf895f0abee0a5e4344c89c2921f5737e830d31a1b87c9e228e1.
 Previous deployment: ae03daae-5835-49e4-9777-425de5d5422e.
 Rollback directory: /home/openclaw/.cache/nudashboard-audit-20260910/ndash002-dist.
 
-Build, deployment and live verification recorded after execution. The separate legacy monthly-data discrepancy remains under investigation.
+Build PASS in 32.34 seconds. Deployment fed81b66-df3d-4257-8116-ccbc8587fddf succeeded. Live verification PASS: Barnegat and Brick each show only their own row, leaderboard/chart and scoped total; All Offices restores four rows and combined total. NDASH-001/002 retained. CSV action had no visible error, but file-save confirmation is still pending. The separate legacy monthly-data discrepancy remains under investigation.

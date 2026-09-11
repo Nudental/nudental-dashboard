@@ -774,6 +774,10 @@ export const fetchGoalVsActual = async ({ startYear, startMonth, endYear, endMon
       newPatientsGoal,
       collectionRateGoal,
       collectionRateActual,
+      collectionPct: collectionRateActual,
+      productionPct: productionGoal > 0 && netProduction !== null ? (netProduction / productionGoal) * 100 : null,
+      collectionsPct: collectionsGoal > 0 && totalCollections !== null ? (totalCollections / collectionsGoal) * 100 : null,
+      newPatientsPct: newPatientsGoal > 0 && newPatients !== null ? (newPatients / newPatientsGoal) * 100 : null,
       tarPct,
       // V729B: Expose failure context for UI
       goalsFailureType,

@@ -39,7 +39,7 @@ const MetricCell = ({ actual, goal, pct, formatActual, formatGoal }) => {
 };
 
 const BenchmarkCell = ({ value, benchmark, formatValue }) => {
-  const pct = benchmark > 0 && value !== null ? (value / benchmark) * 100 : null;
+  const pct = benchmark > 0 && Number.isFinite(value) ? (value / benchmark) * 100 : null;
   const cellClass = getCellClass(pct);
   return (
     <td className={`px-3 py-3 text-center ${cellClass}`}>
