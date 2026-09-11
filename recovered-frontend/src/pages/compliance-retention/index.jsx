@@ -127,6 +127,8 @@ const ComplianceRetention = () => {
   const [purgeHistory] = useState(loadPurgeHistory);
   const [auditStats, setAuditStats] = useState({});
   const [loadingStats, setLoadingStats] = useState(true);
+  const [totalRecords, setTotalRecords] = useState(null);
+  const [loadingTotal, setLoadingTotal] = useState(true);
   const [toast, setToast] = useState(null);
   // Scheduler state kept for UI display only; no real scheduler exists
   const [purgeSchedule] = useState({ enabled: false, frequency: 'weekly', time: '02:00' });
@@ -135,6 +137,26 @@ const ComplianceRetention = () => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 3500);
   };
+
+  // Count all visible audit resources, including those without a retention card.
+  useEffect(() => {
+    let cancelled = false;
+    const fetchTotalCount = async () => {
+      setLoadingTotal(true);
+      setTotalRecords(null);
+      try {
+        const { count, error } = await supabase.from('audit_logs').select('id', { count: 'exact', head: true });
+        if (error || !Number.isSafeInteger(count) || count < 0) throw new Error('Audit record count unavailable');
+        if (!cancelled) setTotalRecords(count);
+      } catch {
+        if (!cancelled) setTotalRecords(null);
+      } finally {
+        if (!cancelled) setLoadingTotal(false);
+      }
+    };
+    fetchTotalCount();
+    return () => { cancelled = true; };
+  }, []);
 
   // Load audit log stats per resource
   useEffect(() => {
@@ -203,7 +225,6 @@ const ComplianceRetention = () => {
   // Purge is disabled — no handlePurge function; no Supabase DELETE path is reachable.
 
   const overallStatus = getOverallCompliance();
-  const totalRecords = Object.values(auditStats)?.reduce((sum, s) => sum + (s?.count || 0), 0);
   // V490 — Restored compliance-style card labels
   const compliantCount = Object.keys(RESOURCE_LABELS)?.filter(r => getComplianceStatus(r, retentionRules?.[r] ?? 365) === 'compliant')?.length;
   const warningCount = Object.keys(RESOURCE_LABELS)?.filter(r => getComplianceStatus(r, retentionRules?.[r] ?? 365) === 'warning')?.length;
@@ -255,10 +276,10 @@ const ComplianceRetention = () => {
           {[
             {
               label: 'Total Audit Records',
-              value: loadingStats ? '…' : totalRecords?.toLocaleString(),
+              value: loadingTotal ? '…' : totalRecords === null ? '—' : totalRecords.toLocaleString(),
               icon: 'Database',
               color: 'bg-primary/10 text-primary',
-              helper: 'audit_logs count across all resource types',
+              helper: !loadingTotal && totalRecords === null ? 'Audit record count unavailable' : 'audit_logs count across all resource types',
             },
             {
               label: 'Compliant Resources',
