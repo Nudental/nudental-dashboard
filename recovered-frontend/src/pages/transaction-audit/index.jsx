@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { readCompleteAuditEntries, getAuditYearRange } from '../../services/auditReadService';
 import Breadcrumb from '../../components/layout/Breadcrumb';
 import Icon from '../../components/AppIcon';
 import { supabase } from '../../lib/supabase';
@@ -116,6 +117,9 @@ const TransactionAudit = () => {
 
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [entriesError, setEntriesError] = useState('');
+  const [yearsError, setYearsError] = useState('');
+  const entryRequest = useRef(0);
   const [providers, setProviders] = useState([]);
 
   // Dentrix Net Production state
@@ -165,34 +169,44 @@ const TransactionAudit = () => {
   // Fetch available years — scoped to accessible offices
   useEffect(() => {
     if (officesLoading || accessibleOfficeIds?.length === 0) return;
+    let active = true;
     const fetchYears = async () => {
-      let query = supabase?.from('daily_entries')?.select('entry_date')?.order('entry_date', { ascending: false });
-      // Scope to accessible offices for non-super-admin roles
-      if (!canSwitchOffice || accessibleOfficeIds?.length > 0) {
-        query = query?.in('office_id', accessibleOfficeIds);
-      }
-      const { data } = await query;
-      if (data) {
-        const years = [...new Set(data.map(r => new Date(r.entry_date).getFullYear()))]?.sort((a, b) => b - a);
+      setYearsError('');
+      try {
+        // Only two date values are needed to cover all historical calendar years.
+        const bounds = await Promise.all([true, false].map(ascending =>
+          supabase?.from('daily_entries')?.select('entry_date')?.in('office_id', accessibleOfficeIds)?.order('entry_date', { ascending })?.limit(1)
+        ));
+        if (bounds.some(result => !result || result.error || !Array.isArray(result.data))) throw new Error('Available audit years could not be loaded. Refresh to retry.');
+        const years = getAuditYearRange(bounds[0]?.data?.[0]?.entry_date, bounds[1]?.data?.[0]?.entry_date);
+        if (!active) return;
         setAvailableYears(years);
         if (years?.length && !years?.includes(selectedYear)) setSelectedYear(years?.[0]);
+      } catch (err) {
+        if (active) setYearsError(err?.message || 'Available audit years could not be loaded. Refresh to retry.');
       }
     };
     fetchYears();
+    return () => { active = false; };
   }, [accessibleOfficeIds, officesLoading, canSwitchOffice]);
 
   // Fetch entries — scoped to accessible offices
   const fetchEntries = useCallback(async () => {
     if (officesLoading || accessibleOfficeIds?.length === 0) return;
+    const request = ++entryRequest.current;
     setLoading(true);
+    setEntriesError('');
+    setEntries([]);
+    setProviders([]);
     try {
-      let query = supabase?.from('daily_entries')?.select(`
+      const data = await readCompleteAuditEntries((from, to) => {
+        let query = supabase?.from('daily_entries')?.select(`
           id, entry_date, provider_name, provider_type, production, collection,
           expense_category, expense_amount, new_patients, no_shows,
           treatment_presented, treatment_accepted, notes, status,
           submitted_by, created_at, updated_at, office_id,
           offices(name)
-        `)?.gte('entry_date', `${selectedYear}-01-01`)?.lte('entry_date', `${selectedYear}-12-31`)?.order('entry_date', { ascending: false });
+        `, { count: 'exact' })?.gte('entry_date', `${selectedYear}-01-01`)?.lte('entry_date', `${selectedYear}-12-31`)?.order('entry_date', { ascending: false })?.order('id', { ascending: true });
 
       // Always scope to accessible offices — this is the core access restriction
       query = query?.in('office_id', accessibleOfficeIds);
@@ -201,8 +215,9 @@ const TransactionAudit = () => {
       if (selectedOfficeId) query = query?.eq('office_id', selectedOfficeId);
       if (selectedStatus) query = query?.eq('status', selectedStatus);
 
-      const { data, error } = await query;
-      if (error) throw error;
+        return query?.range(from, to);
+      });
+      if (request !== entryRequest.current) return;
 
       const enriched = (data || [])?.map(e => ({
         ...e,
@@ -215,14 +230,15 @@ const TransactionAudit = () => {
       const provs = [...new Set(enriched.map(e => e.provider_name).filter(Boolean))]?.sort();
       setProviders(provs);
     } catch (err) {
-      console.warn('TransactionAudit fetch error:', err?.message);
+      if (request === entryRequest.current) setEntriesError(err?.message || 'Audit entries could not be loaded. Refresh to retry.');
     } finally {
-      setLoading(false);
+      if (request === entryRequest.current) setLoading(false);
     }
   }, [selectedYear, selectedOfficeId, selectedStatus, accessibleOfficeIds, officesLoading]);
 
   useEffect(() => {
     fetchEntries();
+    return () => { entryRequest.current += 1; };
   }, [fetchEntries]);
 
   // ── Fetch Dentrix Net Production ──────────────────────────────────────────
@@ -367,6 +383,7 @@ const TransactionAudit = () => {
   }, [filteredEntries]);
 
   const handleDownloadCSV = () => {
+    if (loading || entriesError || filteredEntries.length === 0) return;
     const lines = [];
     lines?.push('"Daily Entries Sync Audit Export"');
     lines?.push(`"Year: ${selectedYear}"`);
@@ -427,6 +444,7 @@ const TransactionAudit = () => {
             </div>
             <button
               onClick={handleDownloadCSV}
+              disabled={loading || Boolean(entriesError) || filteredEntries.length === 0}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-lg hover:bg-emerald-700 transition-colors"
             >
               <Icon name="Download" size={14} />
@@ -452,7 +470,7 @@ const TransactionAudit = () => {
                 </div>
                 <p className="text-xs text-muted-foreground font-medium">Total Entries</p>
               </div>
-              <p className="text-lg font-bold text-foreground">{summaryStats?.totalEntries?.toLocaleString()}</p>
+              <p className="text-lg font-bold text-foreground">{loading ? '…' : entriesError ? '—' : summaryStats?.totalEntries?.toLocaleString()}</p>
             </div>
 
             {/* Filtered Gross Production */}
@@ -463,7 +481,7 @@ const TransactionAudit = () => {
                 </div>
                 <p className="text-xs text-muted-foreground font-medium">Filtered Gross Production</p>
               </div>
-              <p className="text-lg font-bold text-foreground">{fmtCurrency(summaryStats?.totalProduction)}</p>
+              <p className="text-lg font-bold text-foreground">{loading ? '…' : entriesError ? '—' : fmtCurrency(summaryStats?.totalProduction)}</p>
               <p className="text-[10px] text-muted-foreground mt-1 leading-tight">
                 Source: daily_entries.production gross production field — not official Dentrix net production KPI
               </p>
@@ -499,7 +517,7 @@ const TransactionAudit = () => {
                 </div>
                 <p className="text-xs text-muted-foreground font-medium">Filtered Entry Collections</p>
               </div>
-              <p className="text-lg font-bold text-foreground">{fmtCurrency(summaryStats?.totalCollection)}</p>
+              <p className="text-lg font-bold text-foreground">{loading ? '…' : entriesError ? '—' : fmtCurrency(summaryStats?.totalCollection)}</p>
               <p className="text-[10px] text-muted-foreground mt-1 leading-tight">
                 Source: daily_entries.collection filtered rows — not official Dentrix collections KPI
               </p>
@@ -513,7 +531,7 @@ const TransactionAudit = () => {
                 </div>
                 <p className="text-xs text-muted-foreground font-medium">Filtered Entry Expenses</p>
               </div>
-              <p className="text-lg font-bold text-foreground">{fmtCurrency(summaryStats?.totalExpenses)}</p>
+              <p className="text-lg font-bold text-foreground">{loading ? '…' : entriesError ? '—' : fmtCurrency(summaryStats?.totalExpenses)}</p>
               <p className="text-[10px] text-muted-foreground mt-1 leading-tight">
                 Source: daily_entries.expense_amount — legacy EOD field. Not the official expense ledger.
               </p>
@@ -521,6 +539,7 @@ const TransactionAudit = () => {
           </div>
 
           {/* Filters */}
+          {yearsError && <p role="alert" className="text-sm text-red-600 mb-3">{yearsError}</p>}
           <div className="bg-card border border-border rounded-xl p-4 mb-5">
             <div className="flex flex-wrap items-center gap-3">
               {/* Year */}
@@ -632,6 +651,11 @@ const TransactionAudit = () => {
               <div className="flex items-center justify-center py-16">
                 <Icon name="Loader2" size={28} className="animate-spin text-indigo-500" />
                 <span className="ml-3 text-sm text-muted-foreground">Loading entries…</span>
+              </div>
+            ) : entriesError ? (
+              <div role="alert" className="p-6 text-sm text-red-600">
+                <p>{entriesError}</p>
+                <button onClick={fetchEntries} className="mt-3 underline">Retry loading entries</button>
               </div>
             ) : filteredEntries?.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
