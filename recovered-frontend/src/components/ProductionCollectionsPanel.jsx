@@ -30,6 +30,7 @@ const ProductionCollectionsPanel = ({
   className = '',
   periodLabel,
   onDataLoaded,
+  refreshKey = 0,
 }) => {
   const [production, setProduction] = useState(null);
   const [collections, setCollections] = useState(null);
@@ -99,7 +100,7 @@ const ProductionCollectionsPanel = ({
     } finally {
       setLoading(false);
     }
-  }, [mode, date, startDate, endDate, resolvedLocationId]);
+  }, [mode, date, startDate, endDate, resolvedLocationId, refreshKey]);
 
   useEffect(() => {
     fetchData();

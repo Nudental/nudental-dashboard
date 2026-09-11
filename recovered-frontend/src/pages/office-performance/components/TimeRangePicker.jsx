@@ -18,10 +18,10 @@ const TimeRangePicker = ({
     { value: 'last_week', label: 'Last Week' },
     { value: 'this_month', label: 'This Month' },
     { value: 'last_month', label: 'Last Month' },
-    { value: 'this_quarter', label: 'This Quarter (Q1 2026)' },
-    { value: 'last_quarter', label: 'Last Quarter (Q4 2025)' },
-    { value: 'this_year', label: 'This Year (2026)' },
-    { value: 'last_year', label: 'Last Year (2025)' },
+    { value: 'this_quarter', label: 'This Quarter' },
+    { value: 'last_quarter', label: 'Last Quarter' },
+    { value: 'this_year', label: 'This Year' },
+    { value: 'last_year', label: 'Last Year' },
     { value: 'custom', label: 'Custom Range' }
   ];
 

@@ -15,7 +15,7 @@ const getGoalLabel = (percentage) => {
   return { text: 'On Track', color: '#22c55e' };
 };
 
-const GoalDonutChart = ({ officeId, officeName = '', monthYear = null }) => {
+const GoalDonutChart = ({ officeId, officeName = '', monthYear = null, refreshKey = 0 }) => {
   const [achievement, setAchievement] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -26,7 +26,7 @@ const GoalDonutChart = ({ officeId, officeName = '', monthYear = null }) => {
       return;
     }
     loadAchievement();
-  }, [officeId, monthYear]);
+  }, [officeId, monthYear, refreshKey]);
 
   const loadAchievement = async () => {
     setLoading(true);

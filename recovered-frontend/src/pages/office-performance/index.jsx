@@ -761,7 +761,7 @@ const OfficePerformance = () => {
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-3">
-                <Button variant="outline" iconName="RefreshCw" iconSize={16}>
+                <Button variant="outline" iconName="RefreshCw" iconSize={16} loading={kpiLoading} onClick={() => setRefreshKey(key => key + 1)}>
                   Refresh Data
                 </Button>
                 <Button variant="default" iconName="Download" iconSize={16}>
@@ -774,6 +774,7 @@ const OfficePerformance = () => {
           {/* Goal Donut Chart — V280 behavior: separate production/collection goals */}
           {selectedOffice && (
             <GoalDonutChart
+              refreshKey={refreshKey}
               officeId={selectedOffice}
               officeName={selectedOfficeName}
               monthYear={(() => {
@@ -838,6 +839,7 @@ const OfficePerformance = () => {
           {/* Production & Collections Panel — 6 fields from middleware API */}
           {resolvedLocationId && (
           <ProductionCollectionsPanel
+            refreshKey={refreshKey}
             mode={isDailyRange ? 'daily' : 'monthly'}
             date={isDailyRange ? rangeStart : undefined}
             startDate={!isDailyRange ? rangeStart : undefined}
@@ -851,6 +853,7 @@ const OfficePerformance = () => {
 
           {/* V282: Dentrix-backed Year Comparison — replaces V281 amber notice */}
           <DentrixYearComparisonPanel
+            refreshKey={refreshKey}
             selectedOffice={selectedOffice}
             selectedOfficeName={selectedOfficeName}
             selectedRange={selectedRange}

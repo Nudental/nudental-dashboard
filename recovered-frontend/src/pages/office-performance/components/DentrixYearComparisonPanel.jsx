@@ -191,6 +191,7 @@ const DentrixYearComparisonPanel = ({
   selectedRange,
   rangeStart,
   rangeEnd,
+  refreshKey = 0,
 }) => {
   const [comparisonYears, setComparisonYears] = useState([currentYear, currentYear - 1]);
   const [yearData, setYearData] = useState({});
@@ -243,7 +244,7 @@ const DentrixYearComparisonPanel = ({
     setPartialWarning(hasAnyPartial);
     setAnyFailed(hasAnyFailed);
     setLoading(false);
-  }, [comparisonYears, selectedOffice, selectedRange, rangeStart, rangeEnd, locationId]);
+  }, [comparisonYears, selectedOffice, selectedRange, rangeStart, rangeEnd, locationId, refreshKey]);
 
   useEffect(() => {
     loadYearData();
