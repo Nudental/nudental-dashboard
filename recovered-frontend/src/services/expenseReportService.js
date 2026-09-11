@@ -1133,6 +1133,29 @@ function _applyFilters(query, {
 }
 
 // ── FETCH EXPENSE RECORDS (main table) ───────────────────────────────────────
+export async function readCompleteExpenseQuery(query, pageSize = 500) {
+  const rows = [], seen = new Set();
+  let expected = null;
+  do {
+    const result = await query.range(rows.length, rows.length + pageSize - 1);
+    if (result?.error) throw new Error('Expense transactions could not be loaded completely. Refresh to retry.');
+    const count = result?.count, page = result?.data;
+    if (!Number.isSafeInteger(count) || count < 0 || count > 50000 || !Array.isArray(page)) {
+      throw new Error('Unable to confirm all expense transactions. Narrow the date or office filter and retry.');
+    }
+    if (expected === null) expected = count;
+    if (count !== expected || page.length > pageSize || rows.length + page.length > expected || (!page.length && rows.length < expected)) {
+      throw new Error('Expense transactions changed or were incomplete. Refresh to retry.');
+    }
+    for (const row of page) {
+      if (!row?.id || seen.has(row.id)) throw new Error('Expense transactions were duplicated or incomplete. Refresh to retry.');
+      seen.add(row.id);
+      rows.push(row);
+    }
+  } while (rows.length < expected);
+  return { data: rows };
+}
+
 export async function fetchExpenseRecords({
   startDate,
   endDate,
@@ -1149,6 +1172,7 @@ export async function fetchExpenseRecords({
   limit = 500,
   offset = 0,
   postedOnly = false,
+  complete = false,
 } = {}) {
   // Determine if WF Banking source is requested
   const wfBankingRequested =
@@ -1182,7 +1206,7 @@ export async function fetchExpenseRecords({
       cardholder_name, cardholder_id, cardholder_role, card_last4, merchant_name,
       allocation_method, allocation_metadata, notes, created_by, approved_by, expense_status,
       is_recurring, created_at, updated_at
-    `)
+    `, complete ? { count: 'exact' } : undefined)
     ?.gte('expense_date', startDate)
     ?.lte('expense_date', endDate)
     // V290: postedOnly=true uses eq('posted') to exclude draft rows from verified expense totals.
@@ -1205,6 +1229,7 @@ export async function fetchExpenseRecords({
 
   if (statementPeriodStart) query = query?.gte('statement_period_start', statementPeriodStart);
   if (statementPeriodEnd) query = query?.lte('statement_period_end', statementPeriodEnd);
+  if (complete) query = query.order('id', { ascending: true });
 
   // Build WF Banking query (separate — filters by office_name, not office_id)
   let bankingQuery = null;
@@ -1218,7 +1243,7 @@ export async function fetchExpenseRecords({
         cardholder_name, cardholder_id, cardholder_role, card_last4, merchant_name,
         allocation_method, allocation_metadata, notes, created_by, approved_by, expense_status,
         is_recurring, created_at, updated_at
-      `)
+      `, complete ? { count: 'exact' } : undefined)
       ?.eq('source_tab', 'Banking')
       ?.gte('expense_date', startDate)
       ?.lte('expense_date', endDate)
@@ -1254,14 +1279,18 @@ export async function fetchExpenseRecords({
     // here would incorrectly exclude valid Banking rows.
     // ── END V305 PATCH ────────────────────────────────────────────────────────
 
-    bankingQuery = bq;
+    bankingQuery = complete ? bq.order('id', { ascending: true }) : bq;
   }
 
   const [mainRes, bankingRes] = await Promise.allSettled([
     // If banking-only is selected, skip the main query entirely (no AmEx/Gusto rows)
-    bankingOnlySelected ? Promise.resolve({ data: [] }) : query,
-    bankingQuery ? bankingQuery : Promise.resolve({ data: [] }),
+    bankingOnlySelected ? Promise.resolve({ data: [] }) : complete ? readCompleteExpenseQuery(query) : query,
+    bankingQuery ? (complete ? readCompleteExpenseQuery(bankingQuery) : bankingQuery) : Promise.resolve({ data: [] }),
   ]);
+
+  if (complete && (mainRes.status === 'rejected' || bankingRes.status === 'rejected')) {
+    throw new Error('Expense transactions could not be loaded completely. Narrow the date or office filter and refresh.');
+  }
 
   const mainRows = mainRes?.status === 'fulfilled' ? (mainRes?.value?.data || []) : [];
   const bankingRaw = bankingRes?.status === 'fulfilled' ? (bankingRes?.value?.data || []) : [];

@@ -312,6 +312,7 @@ const ExpenseReport = () => {
   // No widget has its own independent fetch.
   const [kpis, setKpis] = useState({});
   const [expenseRows, setExpenseRows] = useState([]);   // table + export
+  const [expenseRowsError, setExpenseRowsError] = useState(null);
   const [amexRows, setAmexRows] = useState([]);          // amex tab table + export (posted only)
   const [amexDraftRows, setAmexDraftRows] = useState([]); // V295: draft/pending Plaid rows — excluded from official totals
   const [monthlyTrend, setMonthlyTrend] = useState([]);  // trend chart
@@ -377,6 +378,8 @@ const ExpenseReport = () => {
   useEffect(() => {
     if (!userProfile || permLoading) return;
 
+    let cancelled = false;
+
     // Translate UI filter state → service params (single translation point)
     const p = buildServiceParams(appliedFilters);
 
@@ -385,6 +388,8 @@ const ExpenseReport = () => {
 
     const loadData = async () => {
       setLoading(true);
+      setExpenseRows([]);
+      setExpenseRowsError(null);
       try {
         // Fetch ALL data in parallel — every widget gets the same filtered dataset
         const [
@@ -413,6 +418,7 @@ const ExpenseReport = () => {
           }),
           // Expense table rows — all filter dimensions
           fetchExpenseRecords({
+            complete: true,
             startDate: p?.startDate,
             endDate: p?.endDate,
             officeIds: p?.officeIds,
@@ -511,6 +517,8 @@ const ExpenseReport = () => {
           }),
         ]);
 
+        if (cancelled) return;
+        setExpenseRowsError(rows.status === 'rejected' ? 'Expense transactions could not be loaded completely. Narrow the date or office filter and refresh.' : null);
         const resolvedKpis = kpiData?.status === 'fulfilled' ? kpiData?.value : {};
         const resolvedRows = rows?.status === 'fulfilled' ? rows?.value : [];
         const resolvedAmex = amex?.status === 'fulfilled' ? amex?.value : [];
@@ -546,7 +554,7 @@ const ExpenseReport = () => {
           endDate: p?.endDate,
           officeIds: p?.officeIds,
         })?.then(result => {
-          setDentrixDenominators({ ...result, loading: false });
+          if (!cancelled) setDentrixDenominators({ ...result, loading: false });
         });
 
         // Debug proof: log returned counts and totals
@@ -570,13 +578,15 @@ const ExpenseReport = () => {
         }
 
       } catch (err) {
+        if (!cancelled) setExpenseRowsError('Expense transactions could not be loaded completely. Refresh to retry.');
         console.warn('[ExpenseReport] load error:', err?.message);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     loadData();
+    return () => { cancelled = true; };
   // NOTE: activeTab is intentionally NOT in this dependency array.
   // All tabs share the same dataset — switching tabs never triggers a new fetch.
   // Only filter changes (appliedFilters) or manual refresh (refreshKey) trigger fetches.
@@ -598,7 +608,9 @@ const ExpenseReport = () => {
   // Export uses the SAME filtered dataset that is currently displayed
   // — expenseRows and amexRows are always from the last appliedFilters fetch
   const handleExportCSV = useCallback(() => {
+    if (loading || (activeTab !== 'amex' && expenseRowsError)) return;
     const rows = activeTab === 'amex' ? amexRows : expenseRows;
+    if (!rows?.length) return;
     const csv = formatExpensesForCSV(rows);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -607,7 +619,7 @@ const ExpenseReport = () => {
     a.download = `expense-report-all-${new Date()?.toISOString()?.slice(0, 10)}.csv`;
     a?.click();
     URL.revokeObjectURL(url);
-  }, [activeTab, amexRows, expenseRows]);
+  }, [activeTab, amexRows, expenseRows, loading, expenseRowsError]);
 
   const handleImportComplete = useCallback(() => {
     setRefreshKey(k => k + 1);
@@ -661,6 +673,7 @@ const ExpenseReport = () => {
               </button>
               <button
                 onClick={handleExportCSV}
+                disabled={loading || (activeTab !== 'amex' && !!expenseRowsError) || !(activeTab === 'amex' ? amexRows : expenseRows)?.length}
                 className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-muted transition-colors"
               >
                 <Icon name="Download" size={13} />
@@ -856,7 +869,10 @@ const ExpenseReport = () => {
               )}
 
               {/* Transactions Tab */}
-              {activeTab === 'transactions' && (
+              {activeTab === 'transactions' && expenseRowsError && (
+                <p role="alert" className="p-4 text-sm text-destructive border border-destructive/30 rounded-lg">{expenseRowsError}</p>
+              )}
+              {activeTab === 'transactions' && !expenseRowsError && (
                 <ExpenseTable
                   rows={expenseRows}
                   loading={loading}

@@ -650,6 +650,7 @@ const ExpenseTable = ({ rows = [], loading = false, onExportCSV, isAmexMode = fa
   );
 
   const handleExport = () => {
+    if (loading || !viewRows?.length) return;
     const viewLabel = activeViews?.find(v => v?.id === activeView)?.label || activeView;
     const csv = exportViewToCSV(viewRows, viewLabel);
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -720,6 +721,7 @@ const ExpenseTable = ({ rows = [], loading = false, onExportCSV, isAmexMode = fa
             <span className="text-sm font-semibold text-foreground">{fmt(viewTotal)}</span>
             <button
               onClick={handleExport}
+              disabled={loading || !viewRows?.length}
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-muted transition-colors"
             >
               <Icon name="Download" size={13} />
