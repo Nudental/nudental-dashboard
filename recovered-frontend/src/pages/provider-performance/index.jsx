@@ -24,6 +24,40 @@ const fmtPct = (v) => v != null ? `${parseFloat(v)?.toFixed(1)}%` : '—';
 
 const UNATTRIBUTED_ID = 'UNATTRIBUTED_OFFICE_LEVEL';
 
+// Merge disjoint office activity, keeping one row per provider (including unattributed).
+const mergeProviderOfficeResults = (results) => {
+  if (!results.length || results.some(result => !Array.isArray(result?.providers))) {
+    throw new Error('Provider data is unavailable for a selected office.');
+  }
+  const number = value => value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);
+  const sum = values => values.some(value => number(value) === null) ? null : values.reduce((total, value) => total + number(value), 0);
+  const providers = new Map();
+  for (const result of results) {
+    for (const provider of result.providers) {
+      const id = provider.providerId ?? provider.provider_id ?? provider.id;
+      if (!id) throw new Error('A provider identifier is missing from the selected office data.');
+      const existing = providers.get(id);
+      if (existing) {
+        existing.netProduction = sum([existing.netProduction, provider.netProduction]);
+        existing.collections = sum([existing.collections, provider.collections]);
+      } else {
+        providers.set(id, { ...provider, netProduction: number(provider.netProduction), collections: number(provider.collections) });
+      }
+    }
+  }
+  for (const provider of providers.values()) {
+    provider.collectionRate = provider.netProduction > 0 && provider.collections !== null
+      ? Math.round(provider.collections / provider.netProduction * 1000) / 10 : null;
+  }
+  const summary = {};
+  for (const field of ['grossProduction', 'netProduction', 'totalCollections', 'providerAttributedCollections', 'unattributedCollections', 'providerAttributedNetProduction', 'unattributedNetProduction']) {
+    summary[field] = sum(results.map(result => result[field] ?? result.summary?.[field]));
+  }
+  const reconciled = results.map(result => result.reconcilesToOfficeTotals ?? result.summary?.reconcilesToOfficeTotals);
+  summary.reconcilesToOfficeTotals = reconciled.every(value => value === true) ? true : reconciled.some(value => value === false) ? false : null;
+  return { providers: [...providers.values()], summary };
+};
+
 const ProviderPerformance = () => {
   const { userProfile } = useAuth();
   const navigate = useNavigate();
@@ -86,7 +120,7 @@ const ProviderPerformance = () => {
     setLoading(true);
     setError('');
     try {
-      // Determine locationId: use first selected office if exactly one
+      // Resolve every selected office; an unresolved selection must never become All Offices.
       const officeIds = isOfficeManager && userProfile?.office_id
         ? [userProfile?.office_id]
         : !officeFilter?.includes('all') && officeFilter?.length > 0
@@ -95,18 +129,17 @@ const ProviderPerformance = () => {
 
       // P0-6 FIX: resolve Dentrix locationId from Supabase office UUID
       // NEVER pass raw Supabase UUID as locationId to Ascend API
-      const dentrixLocationId = officeIds?.length === 1 ? getLocationIdByOfficeId(officeIds?.[0]) : null;
+      const dentrixLocationIds = [...new Set(officeIds.map(id => getLocationIdByOfficeId(id)))];
+      if (dentrixLocationIds.some(id => !id)) throw new Error('A selected office could not be resolved.');
 
       // Resolve the selected office display name for the Service Office column
-      // Only set when exactly one office is selected (not "All Offices")
-      const resolvedOfficeName = officeIds?.length === 1
-        ? getOfficeNameById(officeIds?.[0]) || null
-        : null;
+      const resolvedOfficeName = officeIds.map(id => getOfficeNameById(id)).filter(Boolean).join(', ') || null;
 
       // Fetch provider performance from Ascend API
-      const ascendData = await ascendApi
-        ?.getProviderPerformance(dateRange?.start, dateRange?.end, dentrixLocationId)
-        ?.catch(() => null);
+      const ascendData = await (dentrixLocationIds.length > 1
+        ? Promise.all(dentrixLocationIds.map(locationId => ascendApi.getProviderPerformance(dateRange?.start, dateRange?.end, locationId))).then(mergeProviderOfficeResults)
+        : ascendApi.getProviderPerformance(dateRange?.start, dateRange?.end, dentrixLocationIds[0] || null)
+      ).catch(() => null);
 
       // Capture top-level summary fields from the API response if present
       const summaryFields = ascendData && !Array.isArray(ascendData) ? {
@@ -183,6 +216,9 @@ const ProviderPerformance = () => {
       }
     } catch (err) {
       setError(err?.message || 'Failed to load performance data');
+      setPerformanceData([]);
+      setApiSummary(null);
+      setSelectedOfficeName(null);
     } finally {
       setLoading(false);
     }
