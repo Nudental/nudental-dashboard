@@ -93,3 +93,6 @@ Patient Portion079 closedPASS: same row expanded after Chargeasc/desc and office
 
 ### eAssist Reports / NDASH081 (2026-09-12)
 August63reports/2pages; Brick21. All rows initially show missing office/parser labels because APIoffice_canonical/parser_status were not normalized. NDASH081 fixes mapping only,355tests/build/Rocket808/compiled regression/livePASS. Allfirst50offices17Barnegat/17Brick/16Eatontown; allstatusmissing. Brick21correct,dates/numericfinancialbaseline unchanged; Missingfilter21/Success0. These are missing-report placeholders, not completed financial reports. No source email data exported or changed. Drawer header and seven sections render but fixed global header overlaps closebutton; clicks open profilemenu and drawer remains. Record NDASH082 and fix next after root-cause verification. Reload dismisses drawer safely. Fullreloadlabels/healthPASS.
+
+NDASH082 closedPASS: oneclassdrawerz50toexisting200aboveheader100. TwoactualXclicksclosefirstandsecondreports;DOMhit-testtrue/titlevisible. 355tests/build30.52/Rocket809/compiledexact081reversal/allpriorrepairsPASS. Deploymenta3d83b0b-1aa9-4f45-bd9b-71ba9c5f461d,index-b5fe7baae370.js;backend080unchanged,frontendAPI200/threeactive/errors0. Underlying50of63andmappedlabelsunchanged. No business writes.
+
