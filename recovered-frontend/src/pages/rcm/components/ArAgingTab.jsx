@@ -817,7 +817,7 @@ const ArAgingTab = ({ dateRange, officeId, refreshKey, offices }) => {
                       : paginated?.map((row, idx) => {
                         const bk = row?.aging_bucket;
                         return (
-                          <tr key={row?.id || idx} className="hover:bg-muted/50">
+                          <tr key={JSON.stringify([row?.id || idx, row?.office_id || row?.office_name || ''])} className="hover:bg-muted/50">
                             <td className="px-3 py-2.5 font-medium text-foreground whitespace-nowrap">
                               {row?.patient_name && row?.patient_name !== 'Unknown'
                                 ? row?.patient_name
