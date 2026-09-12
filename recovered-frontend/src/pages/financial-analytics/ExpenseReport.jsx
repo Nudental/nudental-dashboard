@@ -311,6 +311,7 @@ const ExpenseReport = () => {
   // They are ALL populated from the SAME fetch triggered by appliedFilters.
   // No widget has its own independent fetch.
   const [kpis, setKpis] = useState({});
+  const [overviewError, setOverviewError] = useState(null);
   const [expenseRows, setExpenseRows] = useState([]);   // table + export
   const [expenseRowsError, setExpenseRowsError] = useState(null);
   const [amexRows, setAmexRows] = useState([]);          // amex tab table + export (posted only)
@@ -391,6 +392,11 @@ const ExpenseReport = () => {
       setLoading(true);
       setExpenseRows([]);
       setExpenseRowsError(null);
+      setOverviewError(null);
+      setKpis({});
+      setMonthlyTrend([]);
+      setByCategory([]);
+      setByOffice([]);
       setAmexRows([]);
       setAmexRowsError(null);
       try {
@@ -523,6 +529,7 @@ const ExpenseReport = () => {
         if (cancelled) return;
         setExpenseRowsError(rows.status === 'rejected' ? 'Expense transactions could not be loaded completely. Narrow the date or office filter and refresh.' : null);
         setAmexRowsError(amex.status === 'rejected' ? 'Posted AmEx transactions could not be loaded completely. Narrow the date or office filter and refresh.' : null);
+        setOverviewError([kpiData, trend, cats, offices].some(result => result.status === 'rejected') ? 'Expense overview could not be loaded completely. Refresh to retry.' : null);
         const resolvedKpis = kpiData?.status === 'fulfilled' ? kpiData?.value : {};
         const resolvedRows = rows?.status === 'fulfilled' ? rows?.value : [];
         const resolvedAmex = amex?.status === 'fulfilled' ? amex?.value : [];
@@ -582,7 +589,10 @@ const ExpenseReport = () => {
         }
 
       } catch (err) {
-        if (!cancelled) setExpenseRowsError('Expense transactions could not be loaded completely. Refresh to retry.');
+        if (!cancelled) {
+          setExpenseRowsError('Expense transactions could not be loaded completely. Refresh to retry.');
+          setOverviewError('Expense overview could not be loaded completely. Refresh to retry.');
+        }
         if (!cancelled) setAmexRowsError('Posted AmEx transactions could not be loaded completely. Refresh to retry.');
         console.warn('[ExpenseReport] load error:', err?.message);
       } finally {
@@ -811,7 +821,9 @@ const ExpenseReport = () => {
             {/* Main Content */}
             <div className="flex-1 min-w-0 space-y-6">
               {/* Overview Tab */}
-              {activeTab === 'overview' && (
+              {activeTab === 'overview' && loading && <p className="p-4 text-sm text-muted-foreground">Loading expense overview…</p>}
+              {activeTab === 'overview' && !loading && overviewError && <p role="alert" className="p-4 text-sm text-destructive border border-destructive/30 rounded-lg">{overviewError}</p>}
+              {activeTab === 'overview' && !loading && !overviewError && (
                 <>
                   {/* Manual entries summary banner */}
                   {(kpis?.manualEntryCount > 0) && (

@@ -1345,6 +1345,7 @@ export async function fetchExpenseKPIs({
   // All other KPI buckets (payroll, WF direct, categories) continue to use row data.
   const [expRowsResult, summaryResult] = await Promise.allSettled([
     fetchExpenseRecords({
+    complete: true,
       startDate,
       endDate,
       officeIds,
@@ -1372,6 +1373,7 @@ export async function fetchExpenseKPIs({
       : Promise.resolve({ amex: null, payroll: null, wfDirect: null, error: 'filters_active' }),
   ]);
 
+  if (expRowsResult.status === 'rejected') throw new Error('Expense overview could not be loaded completely. Refresh to retry.');
   const expRows = expRowsResult?.status === 'fulfilled' ? expRowsResult?.value : [];
   const summary = summaryResult?.status === 'fulfilled' ? summaryResult?.value : { amex: null, payroll: null, wfDirect: null, error: 'allSettled_rejected' };
 
@@ -2223,6 +2225,7 @@ export async function fetchExpensesByOffice({
   // Reuse fetchExpenseRecords — same dual-query path ensures Banking rows are included
   // V295: postedOnly:true to match fetchExpenseKPIs — draft rows must not feed verified charts
   const data = await fetchExpenseRecords({
+    complete: true,
     startDate,
     endDate,
     officeIds,
@@ -2372,6 +2375,7 @@ export async function fetchExpensesByCategory({
   // Reuse fetchExpenseRecords — same dual-query path ensures Banking rows are included
   // V295: postedOnly:true to match fetchExpenseKPIs — draft rows must not feed verified charts
   const data = await fetchExpenseRecords({
+    complete: true,
     startDate,
     endDate,
     officeIds,
@@ -2475,6 +2479,7 @@ export async function fetchMonthlyExpenseTrend({
   // Reuse fetchExpenseRecords — same dual-query path ensures Banking rows are included
   // V295: postedOnly:true to match fetchExpenseKPIs — draft rows must not feed verified charts
   const data = await fetchExpenseRecords({
+    complete: true,
     startDate: rangeStart,
     endDate: rangeEnd,
     officeIds,
