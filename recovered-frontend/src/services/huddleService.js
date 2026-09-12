@@ -294,7 +294,7 @@ export const huddleService = {
 
   // Analytics: get huddles for date range
   async getHuddlesForAnalytics(officeId, startDate, endDate) {
-    let query = supabase?.from('huddles')?.select('*, huddle_provider_blocks(*), huddle_checklist_items(*)')?.gte('huddle_date', startDate)?.lte('huddle_date', endDate)?.order('huddle_date', { ascending: true });
+    let query = supabase?.from('huddles')?.select('*, offices(name), huddle_provider_blocks(*), huddle_checklist_items(*)')?.gte('huddle_date', startDate)?.lte('huddle_date', endDate)?.order('huddle_date', { ascending: true });
 
     if (officeId) {
       query = query?.eq('office_id', officeId);
