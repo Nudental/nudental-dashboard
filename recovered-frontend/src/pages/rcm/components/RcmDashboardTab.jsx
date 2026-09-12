@@ -1381,10 +1381,13 @@ const CollectionsSection = ({ dateRange, officeId, refreshKey, onPosTabLink, onR
               value={collectionPct !== null ? formatPercentOrNA(collectionPct) : 'N/A'}
               subLabel={
                 collectionPct !== null
-                  ? 'Collections ÷ Net Production' :'N/A — net production or collections not available'
+                  ? 'Collections ÷ Net Production'
+                  : mtdProduction === 0 && mtdCollections !== null
+                    ? 'N/A — net production is zero'
+                    : 'N/A — net production or collections not available'
               }
               color={collectionPct !== null ? 'bg-teal-600' : 'bg-slate-400'}
-              warning={collectionPct === null ? 'Source not wired or net_production field unavailable' : undefined}
+              warning={collectionPct === null && (mtdProduction !== 0 || mtdCollections === null) ? 'Source not wired or net_production field unavailable' : undefined}
             />
           </>
         )}
