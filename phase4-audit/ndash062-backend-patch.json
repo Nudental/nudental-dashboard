@@ -1,0 +1,21 @@
+{
+  "issue": "NDASH-062",
+  "before_main_sha256": "64bb98858a7fa661a535c189f0520b312cbf55800849f0e2ac776b6c0bc3a1a5",
+  "before_function_sha256": "7b967bded2911478015abf83f09b337a8cf39d999027f635dc73d2d73b942995",
+  "after_function_sha256": "cbcdbde2a6fae26bf8be2e42b438db60ee8fe315a5ac9803a2e36aa05d7f6aeb",
+  "patches": [
+    {
+      "old": "if days_out <= 29:",
+      "new": "if days_out <= 30:"
+    },
+    {
+      "old": "elif days_out <= 59:",
+      "new": "elif days_out <= 60:"
+    },
+    {
+      "old": "elif days_out <= 89:",
+      "new": "elif days_out <= 90:"
+    }
+  ],
+  "scope": "rcm_ar_aging inclusive 30/60/90 thresholds only"
+}

@@ -198,9 +198,9 @@ const normalizeRow = (raw, officeName) => {
   const daysOut       = parseInt(raw?.days_outstanding ?? raw?.daysOutstanding ?? 0, 10) || 0;
 
   const agingBucket = raw?.aging_bucket || raw?.agingBucket || (
-    daysOut >= 90 ? '90+' :
-    daysOut >= 60 ? '61-90' :
-    daysOut >= 30 ? '31-60' : 'Current'
+    daysOut > 90 ? '90+' :
+    daysOut > 60 ? '61-90' :
+    daysOut > 30 ? '31-60' : 'Current'
   );
 
   const normalized = {
@@ -1627,7 +1627,7 @@ const PatientStatementsTab = ({ dateRange, officeId, refreshKey }) => {
     return allRows?.filter(r => {
       switch (activeChip) {
         case 'over90':
-          return (r?.days_outstanding || 0) >= 90;
+          return (r?.days_outstanding || 0) > 90;
         case 'insurance': {
           const cs = String(r?.collection_status || '')?.toUpperCase();
           return ACTIVE_INSURANCE_STATUSES?.some(s => cs?.includes(s));
