@@ -1,0 +1,9 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');const root=path.join(__dirname,'../recovered-frontend'),parser=require(path.join(process.env.NDASH_PARSER_ROOT||root,'node_modules/@babel/parser'));
+const parent=fs.readFileSync(path.join(root,'src/pages/reports/index.jsx'),'utf8'),child=fs.readFileSync(path.join(root,'src/pages/reports/components/PeriodComparisonView.jsx'),'utf8');let attr,effective,param;function walk(n,visit){if(!n||typeof n!=='object')return;visit(n);for(const v of Object.values(n))if(v&&typeof v==='object')Array.isArray(v)?v.forEach(x=>walk(x,visit)):walk(v,visit)}
+walk(parser.parse(parent,{sourceType:'module',plugins:['jsx']}),n=>{if(n.type==='JSXOpeningElement'&&n.name.name==='PeriodComparisonView'){assert(!attr);attr=n.attributes.find(a=>a.value?.expression?.name==='scopedOfficeFilter').name.name}});
+walk(parser.parse(child,{sourceType:'module',plugins:['jsx']}),n=>{if(n.type==='VariableDeclarator'&&n.id.name==='PeriodComparisonView')param=n.init.params[0].properties.find(p=>p.value.name==='officeFilterProp').key.name;if(n.type==='VariableDeclarator'&&n.id.name==='effectiveOfficeFilter')effective=child.slice(n.init.start,n.init.end)});assert(attr&&param&&effective);
+const resolve=scope=>vm.runInNewContext(effective,{officeFilterProp:{[attr]:scope}[param],officeFilterLocal:'all'});
+test('Reports Barnegat selection reaches the existing comparison office scope',()=>assert.equal(resolve(['qa-barnegat']),'qa-barnegat'));
+test('Reports Brick selection reaches the comparison rather than all offices',()=>assert.equal(resolve(['qa-brick']),'qa-brick'));
+test('office-manager single-office scope survives the parent-child prop contract',()=>assert.equal(resolve(['qa-assigned-office']),'qa-assigned-office'));
+test('all-offices selection retains the existing local default',()=>assert.equal(resolve(['all']),'all'));

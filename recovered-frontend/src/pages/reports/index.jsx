@@ -441,7 +441,7 @@ const Reports = () => {
               {activeTab === 'period_comparison' && (isSuperAdmin || hasPermission(TAB_PERMISSION_MAP?.period_comparison)) && (
                 <>
                   <SourceBanner text="Source: Dentrix/FastAPI production and collections + Finance Expense Report protected expense totals. Manual/EOD sources (revenue_entries, daily_entries) are not used for official Period Comparison values." />
-                  <PeriodComparisonView officeFilterProp={scopedOfficeFilter} />
+                  <PeriodComparisonView officeFilter={scopedOfficeFilter} />
                 </>
               )}
               {activeTab === 'revenue_by_provider' && (isSuperAdmin || hasPermission(TAB_PERMISSION_MAP?.revenue_by_provider)) && (
