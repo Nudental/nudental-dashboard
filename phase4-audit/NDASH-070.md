@@ -1,6 +1,6 @@
 # NDASH-070 — Documentation queue omits existing notes
 
-Section: RCM Adjustment / Missing Documentation. Severity: Medium. Status: tested candidate; not yet deployed.
+Section: RCM Adjustment / Missing Documentation. Severity: Medium. Status: repaired, deployed, live verification PASS.
 
 Reproduced on frontend 069 / backend 067: default August queue has 200 loaded items. Missing Note selects all 200, while only 166 loaded rows carry Missing Note and the full-scope summary has 172. All 200 rows show No note found. The queue clearly advertises its 200-item cap; the cap is separate from this defect.
 
@@ -17,3 +17,5 @@ Deployment plan: existing candidate 8002 then live 8001 with automatic rollback.
 Separate observation for follow-up: the Large Adjustment and Late-Posted chips return zero despite corresponding loaded API flag counts 192 and 18. Do not combine that issue into this backend change.
 
 Candidate investigation: two checks rolled back before the live API restart. The first expected 34 notes by complementing 166 missing-note flags; this was an invalid test assumption. Named diagnostics found 33 actual notes. A bounded read of the normalized main Adjustment pages independently confirms every queue identity: 33 existing notes, 166 explicit missing-note flags, and 167 items matching the existing flag-or-no-note UI rule. Deployment now compares every projected note against that existing normalized response and still requires all other response fields to remain identical. No accounting/flag logic was changed. Both failed-attempt records are preserved.
+
+Live closure: existing candidate8002 and live8001 pass. Backend SHA dec9768c7d981725d965c1c0fff6f47de8ec8c10ca41fd2ef14a80434a6a0f4a. All 200 projected notes exactly match normalized main Adjustment records; all other bounded response fields remain identical. Live UI shows 33 existing notes, Missing Note gives167 (166 explicit flags plus one unflagged record with no note), Clear restores200. Full reload preserves33 notes. All-adjustments1235/-341447.87 unchanged; retained financial/claims/POS/aging checks PASS. Frontend069 unchanged, no alerts/captured errors, no business writes. Previous backend067 snapshot and both rejected candidate attempts remain recoverable.
