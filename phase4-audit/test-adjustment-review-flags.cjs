@@ -1,0 +1,13 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),path=require('path'),vm=require('vm');
+const root=path.join(__dirname,'../recovered-frontend'),deps=process.env.NDASH_PARSER_ROOT||root,parser=require(path.join(deps,'node_modules/@babel/parser'));
+const s=fs.readFileSync(path.join(root,'src/pages/rcm/components/AdjustmentTab.jsx'),'utf8'),tree=parser.parse(s,{sourceType:'module',plugins:['jsx']});const predicates={};
+function walk(n){if(!n||typeof n!=='object')return;if(n.type==='VariableDeclarator'&&n.id?.name==='DiscountWriteOffPanel')find(n.init,'discount');if(n.type==='VariableDeclarator'&&n.id?.name==='DocumentationQueuePanel')find(n.init,'documentation');for(const v of Object.values(n))if(v&&typeof v==='object')Array.isArray(v)?v.forEach(walk):walk(v)}
+function find(n,kind){if(!n||typeof n!=='object')return;if(['CallExpression','OptionalCallExpression'].includes(n.type)&&n.callee?.property?.name==='filter'&&n.arguments[0]?.type==='ArrowFunctionExpression'){const code=s.slice(n.arguments[0].start,n.arguments[0].end);if(code.includes(kind==='discount'?'review_flag_labels':'triggered_flag_labels')){assert(!predicates[kind]);predicates[kind]=code;}}for(const v of Object.values(n))if(v&&typeof v==='object')Array.isArray(v)?v.forEach(x=>find(x,kind)):find(v,kind)}walk(tree);assert(predicates.discount&&predicates.documentation);
+function accepts(kind,flag,row){const scope={search:'',filterPatient:'',filterOffice:'',filterStaff:'',filterCategory:'',filterPriority:'',filterDocStatus:'',filterFlag:flag,activeChips:new Set([flag])};return vm.runInNewContext('('+predicates[kind]+')',scope)(row)}
+for(const kind of ['discount','documentation']){
+ const fields=kind==='discount'?['review_flags','review_flag_labels']:['triggered_flags','triggered_flag_labels'];
+ for(const [flag,label] of [['large_adjustment','Large Adjustment (>= $500)'],['late_posted','Late-Posted (> 7 days)']])test(kind+' matches canonical '+flag+' despite display qualifiers',()=>assert.equal(accepts(kind,flag,{[fields[0]]:[flag],[fields[1]]:[label],note:'QA fixture note'}),true));
+ test(kind+' rejects unrelated canonical flags',()=>assert.equal(accepts(kind,'large_adjustment',{[fields[0]]:['missing_note'],[fields[1]]:['Missing Note'],note:'QA fixture'}),false));
+ test(kind+' retains plain-label fallback for legacy rows',()=>assert.equal(accepts(kind,'late_posted',{[fields[1]]:['Late-Posted'],note:'QA fixture'}),true));
+ test(kind+' keeps an explicit empty canonical list authoritative',()=>assert.equal(accepts(kind,'large_adjustment',{[fields[0]]:[],[fields[1]]:['Large Adjustment'],note:'QA fixture'}),false));
+}

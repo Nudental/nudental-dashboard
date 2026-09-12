@@ -551,7 +551,7 @@ const DiscountWriteOffPanel = ({ queue, summary }) => {
     if (filterPriority && String(r?.review_priority)?.toLowerCase() !== filterPriority?.toLowerCase()) return false;
     if (filterDocStatus && r?.documentation_status !== filterDocStatus) return false;
     if (filterFlag) {
-      const flags = r?.review_flag_labels || r?.review_flags || [];
+      const flags = r?.review_flags || r?.review_flag_labels || [];
       const flagKeys = Array.isArray(flags) ? flags?.map(f => String(f)?.toLowerCase()?.replace(/[\s-]/g, '_')) : [];
       if (!flagKeys?.includes(filterFlag)) return false;
     }
@@ -1406,7 +1406,7 @@ const DocumentationQueuePanel = ({ queue, summary }) => {
 
   // Client-side filter by active chips
   const filteredItems = activeChips?.size === 0 ? items : items?.filter(item => {
-    const flags = item?.triggered_flag_labels || item?.triggered_flags || item?.review_flag_labels || [];
+    const flags = item?.triggered_flags || item?.triggered_flag_labels || item?.review_flag_labels || [];
     const flagKeys = Array.isArray(flags) ? flags?.map(f => String(f)?.toLowerCase()?.replace(/[\s-]/g, '_')) : [];
     // Also check approval_evidence_status for evidence_missing chip
     const evidenceStatus = String(item?.approval_evidence_status || '')?.toLowerCase();
