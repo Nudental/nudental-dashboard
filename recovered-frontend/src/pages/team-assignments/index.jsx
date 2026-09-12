@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Breadcrumb from '../../components/layout/Breadcrumb';
 import Icon from '../../components/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
@@ -15,6 +15,7 @@ import useHomeNavigation from '../../hooks/useHomeNavigation';
 import { useRbacGuard, AccessDenied } from '../../hooks/useRbacGuard';
 
 const TeamAssignmentsContent = () => {
+  const taskRequestGeneration = useRef(0);
   const { userProfile, user } = useAuth();
   const navigate = useNavigate();
   const goHome = useHomeNavigation();
@@ -78,6 +79,8 @@ const TeamAssignmentsContent = () => {
 
   // Load tasks with RBAC-aware scoping
   const loadTasks = useCallback(async () => {
+    const generation = ++taskRequestGeneration.current;
+    const isCurrent = () => generation === taskRequestGeneration.current;
     if (!userProfile || !user?.id) {
       setLoading(false);
       return;
@@ -113,6 +116,7 @@ const TeamAssignmentsContent = () => {
       }
 
       const data = await actionItemsService?.getActionItems(params);
+      if (!isCurrent()) return;
       setTasks(data || []);
 
       const allForCounts = await actionItemsService?.getActionItems(
@@ -122,6 +126,7 @@ const TeamAssignmentsContent = () => {
           ? { officeId: userProfile?.office_id }
           : { assignedOwnerId: user?.id }
       );
+      if (!isCurrent()) return;
       const myCount = allForCounts?.filter(t => t?.assigned_owner_id === user?.id)?.length || 0;
       const overdueCount = allForCounts?.filter(t => t?.task_status !== 'completed' && t?.due_date && t?.due_date < today)?.length || 0;
       const completedCount = allForCounts?.filter(t => t?.task_status === 'completed')?.length || 0;
@@ -135,14 +140,15 @@ const TeamAssignmentsContent = () => {
         myTasks: myCount,
       });
     } catch (err) {
-      setError(err?.message || 'Failed to load tasks');
+      if (isCurrent()) setError(err?.message || 'Failed to load tasks');
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   }, [userProfile, user?.id, filters, isAdmin, isRegional, isOfficeManager, canManage]);
 
   useEffect(() => {
     loadTasks();
+    return () => { taskRequestGeneration.current += 1; };
   }, [loadTasks]);
 
   // Real-time subscription for action_items
