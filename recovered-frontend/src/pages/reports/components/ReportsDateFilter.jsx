@@ -10,7 +10,7 @@ const PRESETS = [
   { label: 'Q4 2026', value: 'q4_2026' },
   { label: 'YTD 2026', value: 'ytd_2026' },
   { label: 'Full Year 2025', value: 'fy_2025' },
-  { label: 'Custom Range', value: 'custom' },
+  { label: 'Custom Range (unavailable)', value: 'custom', disabled: true },
 ];
 
 const ReportsDateFilter = ({ value, onChange }) => {
@@ -42,8 +42,9 @@ const ReportsDateFilter = ({ value, onChange }) => {
           {PRESETS?.map(preset => (
             <button
               key={preset?.value}
+              disabled={preset?.disabled}
               onClick={() => { onChange(preset?.value); setOpen(false); }}
-              className={`w-full text-left px-4 py-2 text-sm transition-smooth hover:bg-muted/50 ${
+              className={`w-full text-left px-4 py-2 text-sm transition-smooth hover:bg-muted/50 disabled:opacity-50 disabled:cursor-not-allowed ${
                 value === preset?.value ? 'text-primary font-medium bg-primary/5' : 'text-foreground'
               }`}
             >
