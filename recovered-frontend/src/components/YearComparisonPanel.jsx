@@ -263,9 +263,9 @@ const YearComparisonPanel = ({ officeIds = [], title = 'Year-over-Year Compariso
                             <th className="text-right px-3 py-2 font-semibold text-[10px] uppercase" style={{ color: getYearColor(year) }}>
                               {year}
                             </th>
-                            {idx > 0 && (
+                            {idx < sortedYears.length - 1 && (
                               <th className="text-center px-2 py-2 font-semibold text-muted-foreground text-[10px] uppercase">
-                                vs {sortedYears?.[idx - 1]}
+                                vs {sortedYears?.[idx + 1]}
                               </th>
                             )}
                           </React.Fragment>
@@ -287,7 +287,7 @@ const YearComparisonPanel = ({ officeIds = [], title = 'Year-over-Year Compariso
                                 <td className="px-3 py-2 text-right font-semibold text-foreground">
                                   {formatComparisonValue(row?.values?.[year], row?.format)}
                                 </td>
-                                {idx > 0 && (
+                                {idx < sortedYears.length - 1 && (
                                   <td className="px-2 py-2 text-center">
                                     {pct !== null ? (
                                       <span className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-semibold ${
