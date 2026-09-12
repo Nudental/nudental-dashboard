@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
 import { fetchClaimSubmissions, fmtCurrency, fmtDate, downloadCsv, rowsToCsv } from '../../../services/rcmService';
 
@@ -178,6 +178,7 @@ const Within24hBadge = ({ value }) => {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const ClaimSubmissionsTab = ({ dateRange, officeId, refreshKey }) => {
+  const requestGeneration = useRef(0);
   const [rows, setRows] = useState([]);
   const [summary, setSummary] = useState({});
   const [pagination, setPagination] = useState({});
@@ -199,9 +200,14 @@ const ClaimSubmissionsTab = ({ dateRange, officeId, refreshKey }) => {
 
   // ── Load ──────────────────────────────────────────────────────────────────
   const load = useCallback(async (pg = 1) => {
+    const generation = ++requestGeneration.current;
     try {
       setLoading(true);
       setError(null);
+      setRows([]);
+      setSummary({});
+      setPagination({});
+      setFreshness({});
       const result = await fetchClaimSubmissions({
         start: dateRange?.start,
         end: dateRange?.end,
@@ -212,10 +218,9 @@ const ClaimSubmissionsTab = ({ dateRange, officeId, refreshKey }) => {
         page: pg,
         pageSize,
       });
+      if (generation !== requestGeneration.current) return;
       setRows(result?.rows || []);
-      if (result?.summary && Object.keys(result?.summary)?.length > 0) {
-        setSummary(result?.summary);
-      }
+      setSummary(result?.summary || {});
       setPagination(result?.pagination || {});
       setFreshness({
         lastSyncedAt: result?.claimSourceLastSyncedAt,
@@ -228,14 +233,16 @@ const ClaimSubmissionsTab = ({ dateRange, officeId, refreshKey }) => {
       });
       setPage(pg);
     } catch (e) {
+      if (generation !== requestGeneration.current) return;
       setError(e?.message || 'Failed to load claim submissions');
     } finally {
-      setLoading(false);
+      if (generation === requestGeneration.current) setLoading(false);
     }
   }, [dateRange?.start, dateRange?.end, dateBasis, officeId, statusFilter, payorFilter, pageSize]);
 
   useEffect(() => {
     load(1);
+    return () => { requestGeneration.current += 1; };
   }, [load, refreshKey]);
 
   // Client-side search on current page
