@@ -135,6 +135,8 @@ const RcmModule = () => {
   }, []);
 
   const dateRange = useMemo(() => buildRcmDateRange(datePreset, customStart, customEnd), [datePreset, customStart, customEnd]);
+  const dateRangeInvalid = Boolean(dateRange?.start && dateRange?.end && dateRange.start > dateRange.end &&
+    ['claims', 'statements', 'pos', 'adjustment', 'dashboard', 'ar_aging', 'refund', 'patient_portion_recon', 'eassist_reports'].includes(activeTab));
 
   const handleRefresh = () => setRefreshKey(k => k + 1);
 
@@ -289,7 +291,11 @@ const RcmModule = () => {
         )}
 
         {/* Tab Content */}
-        <div>
+        {dateRangeInvalid ? (
+          <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+            Choose an end date on or after the start date.
+          </div>
+        ) : <div>
           {activeTab === 'claims' && (isSuperAdmin || hasPermission(TAB_PERMISSION_MAP?.claims)) && (
             <ClaimSubmissionsTab
               dateRange={dateRange}
@@ -390,7 +396,7 @@ const RcmModule = () => {
               refreshKey={refreshKey}
             />
           )}
-        </div>
+        </div>}
       </main>
     </div>
   );
