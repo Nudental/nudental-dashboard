@@ -397,6 +397,8 @@ const ExpenseReport = () => {
       setMonthlyTrend([]);
       setByCategory([]);
       setByOffice([]);
+      setAmexByCardholder([]);
+      setAmexByMerchant([]);
       setAmexRows([]);
       setAmexRowsError(null);
       try {
@@ -529,7 +531,7 @@ const ExpenseReport = () => {
         if (cancelled) return;
         setExpenseRowsError(rows.status === 'rejected' ? 'Expense transactions could not be loaded completely. Narrow the date or office filter and refresh.' : null);
         setAmexRowsError(amex.status === 'rejected' ? 'Posted AmEx transactions could not be loaded completely. Narrow the date or office filter and refresh.' : null);
-        setOverviewError([kpiData, trend, cats, offices].some(result => result.status === 'rejected') ? 'Expense overview could not be loaded completely. Refresh to retry.' : null);
+        setOverviewError([kpiData, trend, cats, offices, cardholders, merchants].some(result => result.status === 'rejected') ? 'Expense overview could not be loaded completely. Refresh to retry.' : null);
         const resolvedKpis = kpiData?.status === 'fulfilled' ? kpiData?.value : {};
         const resolvedRows = rows?.status === 'fulfilled' ? rows?.value : [];
         const resolvedAmex = amex?.status === 'fulfilled' ? amex?.value : [];

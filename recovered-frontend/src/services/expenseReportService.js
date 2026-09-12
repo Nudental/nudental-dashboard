@@ -2742,10 +2742,14 @@ export async function fetchAmexByCardholder({
   cardholderName = null,
   merchantName = null,
 } = {}) {
+  const requestedSources = (sourceTypes || []).filter(value => value && value !== 'All Sources');
+  const amexSources = ['amex_api', 'amex_statement_import'].filter(value => !requestedSources.length || requestedSources.includes(value));
+  if (!amexSources.length) return [];
+
   let query = supabase
     ?.from('expenses')
-    ?.select('cardholder_name, cardholder_role, card_last4, amount, office_name, department_name')
-    ?.in('source_type', ['amex_api', 'amex_statement_import'])
+    ?.select("id, expense_date, cardholder_name, cardholder_role, card_last4, amount, office_name, department_name", { count: 'exact' })
+    ?.in('source_type', amexSources)
     ?.gte('expense_date', startDate)
     ?.lte('expense_date', endDate)
     ?.neq('expense_status', 'archived');
@@ -2761,8 +2765,8 @@ export async function fetchAmexByCardholder({
     merchantName,
   });
 
-  const { data, error } = await query;
-  if (error) return [];
+  const { data } = await readCompleteExpenseQuery(query.order('expense_date', { ascending: false }).order('id', { ascending: true }));
+  
 
   const byCardholder = {};
   (data || [])?.forEach(r => {
@@ -2801,10 +2805,14 @@ export async function fetchAmexByMerchant({
   cardholderName = null,
   merchantName = null,
 } = {}) {
+  const requestedSources = (sourceTypes || []).filter(value => value && value !== 'All Sources');
+  const amexSources = ['amex_api', 'amex_statement_import'].filter(value => !requestedSources.length || requestedSources.includes(value));
+  if (!amexSources.length) return [];
+
   let query = supabase
     ?.from('expenses')
-    ?.select('merchant_name, amount')
-    ?.in('source_type', ['amex_api', 'amex_statement_import'])
+    ?.select("id, expense_date, merchant_name, amount", { count: 'exact' })
+    ?.in('source_type', amexSources)
     ?.gte('expense_date', startDate)
     ?.lte('expense_date', endDate)
     ?.neq('expense_status', 'archived');
@@ -2820,8 +2828,8 @@ export async function fetchAmexByMerchant({
     merchantName,
   });
 
-  const { data, error } = await query;
-  if (error) return [];
+  const { data } = await readCompleteExpenseQuery(query.order('expense_date', { ascending: false }).order('id', { ascending: true }));
+  
 
   const byMerchant = {};
   (data || [])?.forEach(r => {
