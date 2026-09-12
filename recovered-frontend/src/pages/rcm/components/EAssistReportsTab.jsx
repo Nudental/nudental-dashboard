@@ -296,7 +296,7 @@ const IngestStatusPanel = ({ status, loading, error }) => {
       {latestRun && (
         <div className="mb-4 text-xs text-muted-foreground">
           <span className="font-medium text-foreground">Latest Run:</span>{' '}
-          {fmtDate(latestRun?.run_at || latestRun?.runAt)}{' '}
+          {fmtDate(latestRun?.run_at || latestRun?.runAt || latestRun?.run_started_at)}{' '}
           {latestRun?.status && (
             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-1 ${latestRun?.status === 'success' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
               {latestRun?.status}
@@ -311,7 +311,7 @@ const IngestStatusPanel = ({ status, loading, error }) => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             {EASSIST_OFFICES?.map((office) => {
               const info = latestByOffice?.[office] || latestByOffice?.[office?.toLowerCase()];
-              const isMissing = !info || info?.missing || info?.confidence === 0;
+              const isMissing = !info || info?.missing || info?.parser_status === 'missing' || (info?.confidence ?? info?.parser_confidence) === 0;
               const isConflict = info?.conflict;
               return (
                 <div key={office} className={`rounded-lg border px-3 py-2 text-xs ${isMissing ? 'border-amber-200 bg-amber-50' : isConflict ? 'border-orange-200 bg-orange-50' : 'border-green-200 bg-green-50'}`}>

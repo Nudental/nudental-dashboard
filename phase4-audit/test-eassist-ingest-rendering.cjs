@@ -1,0 +1,12 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.join(__dirname,'../recovered-frontend'),parser=require(path.join(process.env.NDASH_PARSER_ROOT||root,'node_modules/@babel/parser')),s=fs.readFileSync(path.join(root,'src/pages/rcm/components/EAssistReportsTab.jsx'),'utf8'),ast=parser.parse(s,{sourceType:'module',plugins:['jsx']});let component,missing,date;
+for(const n of ast.program.body)if(n.type==='VariableDeclaration')for(const d of n.declarations)if(d.id.name==='IngestStatusPanel')component=d.init;assert(component);
+function walk(n){if(!n||typeof n!=='object')return;if(n.type==='VariableDeclarator'&&n.id.name==='isMissing')missing=s.slice(n.init.start,n.init.end);if(n.type==='CallExpression'&&n.callee.name==='fmtDate'&&s.slice(n.start,n.end).includes('latestRun'))date=s.slice(n.arguments[0].start,n.arguments[0].end);for(const v of Object.values(n))if(v&&typeof v==='object')Array.isArray(v)?v.forEach(walk):walk(v)}walk(component);assert(missing&&date);
+const isMissing=info=>vm.runInNewContext(missing,{info}),runDate=latestRun=>vm.runInNewContext(date,{latestRun});
+test('canonical zero-confidence missing report is not shown green',()=>assert.equal(isMissing({parser_status:'missing',parser_confidence:0}),true));
+test('canonical missing status is honored even when confidence is nonzero',()=>assert.equal(isMissing({parser_status:'missing',parser_confidence:.8}),true));
+test('actual ingestion start timestamp supplies the run date',()=>assert.equal(runDate({run_started_at:'2026-09-10T12:00:00Z'}),'2026-09-10T12:00:00Z'));
+test('absent office and existing missing flag remain missing',()=>{assert.equal(isMissing(null),true);assert.equal(isMissing({missing:true}),true);});
+test('existing confidence retains precedence',()=>{assert.equal(isMissing({confidence:0,parser_confidence:.9}),true);assert.equal(isMissing({confidence:.9,parser_confidence:0,parser_status:'success'}),false);});
+test('healthy canonical report is not mislabeled missing',()=>assert.equal(isMissing({parser_status:'success',parser_confidence:.95}),false));
+test('existing run-date fields retain precedence',()=>{assert.equal(runDate({run_at:'legacy-a',runAt:'legacy-b',run_started_at:'canonical'}),'legacy-a');assert.equal(runDate({runAt:'legacy-b',run_started_at:'canonical'}),'legacy-b');});
