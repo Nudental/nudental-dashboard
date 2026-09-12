@@ -346,6 +346,7 @@ const RcmModule = () => {
           )}
           {activeTab === 'dashboard' && (isSuperAdmin || hasPermission(TAB_PERMISSION_MAP?.dashboard)) && (
             <RcmDashboardTab
+              key={`${selectedOfficeId || 'all'}:${dateRange?.start}:${dateRange?.end}:${refreshKey}`}
               dateRange={dateRange}
               officeId={selectedOfficeId}
               refreshKey={refreshKey}

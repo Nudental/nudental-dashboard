@@ -1,0 +1,10 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.join(__dirname,'../recovered-frontend'),deps=process.env.NDASH_PARSER_ROOT||root,parser=require(path.join(deps,'node_modules/@babel/parser')),React=require(path.join(deps,'node_modules/react')),s=fs.readFileSync(path.join(root,'src/pages/rcm/index.jsx'),'utf8'),ast=parser.parse(s,{sourceType:'module',plugins:['jsx']});let element;
+function walk(n){if(!n||typeof n!=='object')return;if(n.type==='JSXOpeningElement'&&n.name.name==='RcmDashboardTab'){assert(!element);element=n}for(const v of Object.values(n))if(v&&typeof v==='object')Array.isArray(v)?v.forEach(walk):walk(v)}walk(ast);assert(element);const keyAttr=element.attributes.find(a=>a.name?.name==='key'),key=keyAttr?s.slice(keyAttr.value.expression.start,keyAttr.value.expression.end):'undefined';
+const baseline={selectedOfficeId:'',dateRange:{start:'2026-08-01',end:'2026-08-31'},refreshKey:0};function identity(changes={}){const ctx={...baseline,...changes};return React.createElement('qa-dashboard',{key:vm.runInNewContext(key,ctx)}).key}
+test('office change cannot share React state with pending all-office requests',()=>assert.notEqual(identity(),identity({selectedOfficeId:'qa-office'})));
+test('new range start creates independent Dashboard request state',()=>assert.notEqual(identity(),identity({dateRange:{...baseline.dateRange,start:'2026-08-02'}})));
+test('new range end creates independent Dashboard request state',()=>assert.notEqual(identity(),identity({dateRange:{...baseline.dateRange,end:'2026-08-30'}})));
+test('refresh cannot receive results from the previous Dashboard request batch',()=>assert.notEqual(identity(),identity({refreshKey:1})));
+test('equivalent scope objects retain React identity',()=>assert.equal(identity(),identity({dateRange:{...baseline.dateRange}})));
+test('callbacks and ordinary same-scope rerenders do not remount Dashboard',()=>assert.equal(identity(),identity({onTabChange:()=>{},offices:[{id:'qa-office'}]})));
