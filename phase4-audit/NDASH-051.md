@@ -1,6 +1,6 @@
 # NDASH-051 — AmEx Detail publishes totals from a capped 1,000-row fallback
 
-Section: Expense Report / AmEx Detail. Severity: High. Status: reproduced again after refresh; source repair tested; deployment and live verification pending.
+Section: Expense Report / AmEx Detail. Severity: High. Status: repaired, deployed, live verification PASS.
 
 This Year / All Offices displays exactly 1,000 posted AmEx transactions, 14 cards, gross charges $309,335, credits $7,270, and net $302,066 (rounded UI). Exact source count is 1,565 posted rows in both the frontend's source_type scope and backend's source_tab scope; zero frontend-scope posted rows are marked superseded. The existing API, called read-only with correct date parameters and limit=1, reports 1,565, 15 cards, gross 522,364.23, refunds 10,165.46, net 512,198.77. No transaction body was displayed or exported.
 
@@ -9,3 +9,10 @@ Root: the frontend's first request uses startDate/endDate and expects an array o
 Safe repair scope: exact-count pagination for the same posted AmEx fallback predicates and fields; stable date/id ordering; use retained complete-reader safeguards; expose source failure and disable incomplete AmEx display/export. Keep API/provider configuration, normal database permissions, business data, default KPI paths, and unrelated chart calculations unchanged. The separate primary API adapter mismatch is documented; changing its contract is not required to recover the existing fallback correctly.
 
 Implemented in expenseReportService.js and ExpenseReport.jsx. Seven new/extended focused checks PASS: full 1,565-row synthetic ledger and aggregate, preserved source/date/office/other filters, fallback failure, supported prior API-array response, blocked failed export, and loading/error display. Retained transaction loader tests were updated only for the new AmEx error setter/dependency. Full frontend suite 221 PASS; production source build PASS (39.35 seconds). Rocket version 782 completed. Candidate only; no actual production artifact, deployment, or live PASS yet.
+
+
+LIVE DEPLOYMENT CLOSURE — PASS; supersedes earlier candidate-only status. Reproduced on050:1000posted/14cards/gross309335/credits7270/net302066. Refreshed HEAD/API checks for Jan1-Sep12 still1565posted,15cards,gross522364.23/refunds10165.46/net512198.77;frontend/api scopesagreeand superseded0. Barnegat exact sourcecount271. API key used privately under existing read-only approval; no transaction contents output.
+
+Deployment8989acf2-1d03-4ba8-82d3-b0a1aa0f303d; /assets/index-09f5cc45923a.js; SHA09f5cc45923a9ed4bf6a1786f24b2c95aa2602aec29d944a559354425aabe386. Previous050 and all repaired graphs preserved. Actual compiled tests PASS:1565syntheticpostedrows,15syntheticcards,aggregate arithmetic, all fallbackpredicates/filters, sourceerrorpropagation, old APIarraypathunchanged, parentloading/error/cleanup/exportguards, transactioncompletecall and050tablepreserved, fullreversal and7relinks. Latest source221tests/build PASS.
+
+LivePASS:1565posted/15cards/gross522364/credits10165/net512199(rounded;matches512198.77source). Loadinghidescardsanddisablesheaderexport. Barnegat271matchesHEAD; unmatchedmerchantcompletedwith0transactions/ andbothexportsdisabled. Reset/refreshreturns1565/15cards/net512199/AllOffices/merchantempty. Transactions still3926(1280+853+35+1758), firstpage1-50of1280. No alerts/browsererrors. No exports, provider/configurationchanges, orbusiness-data writes. PrimaryAPI contractmismatch remains documented because the existing fallback is now correct; no accounting classifications or Overview totals were reinterpreted.
