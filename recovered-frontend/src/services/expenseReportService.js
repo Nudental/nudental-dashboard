@@ -3120,6 +3120,38 @@ export async function fetchAmexRawForReview({ batchId = null, needsReview = null
 }
 
 // ── FETCH AMEX SYNC LOGS ──────────────────────────────────────────────────────
+// Read bounded administrative audit pages without hiding records after the first page.
+export async function fetchExpenseAuditPage(view, page = 0) {
+  if (!['unmatched', 'sync_logs'].includes(view) || !Number.isSafeInteger(page) || page < 0) {
+    throw new Error('Invalid expense audit page.');
+  }
+  const pageSize = view === 'unmatched' ? 100 : 20;
+  const offset = page * pageSize;
+  if (!Number.isSafeInteger(offset + pageSize)) throw new Error('Invalid expense audit page.');
+  let query;
+  if (view === 'unmatched') {
+    query = supabase.from('expenses')
+      .select('id, expense_date, amount, category_name, source_type, office_name, department_name, cardholder_name, merchant_name', { count: 'exact' })
+      .or('office_id.is.null,department_id.is.null')
+      .neq('expense_status', 'archived')
+      .order('expense_date', { ascending: false });
+  } else {
+    query = supabase.from('amex_sync_logs')
+      .select('id, sync_type, status, records_fetched, records_imported, duplicates_skipped, errors, started_at, completed_at', { count: 'exact' })
+      .order('started_at', { ascending: false });
+  }
+  const { data, count, error } = await query.order('id', { ascending: true }).range(offset, offset + pageSize - 1);
+  if (error || !Number.isSafeInteger(count) || count < 0 || !Array.isArray(data)) {
+    throw new Error('Expense audit records could not be loaded. Please retry.');
+  }
+  const expected = Math.min(pageSize, Math.max(0, count - offset));
+  const ids = new Set(data.map(row => row?.id));
+  if (data.length !== expected || ids.size !== data.length || data.some(row => !row?.id)) {
+    throw new Error('Expense audit page was incomplete. Please retry.');
+  }
+  return { data, count, page, pageSize };
+}
+
 export async function fetchAmexSyncLogs(limit = 20) {
   const { data, error } = await supabase
     ?.from('amex_sync_logs')

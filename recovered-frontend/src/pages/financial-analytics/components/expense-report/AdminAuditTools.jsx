@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Icon from '../../../../components/AppIcon';
 import {
   fetchImportBatches,
   fetchAmexRawForReview,
-  fetchUnmatchedExpenses,
-  fetchAmexSyncLogs,
+  fetchExpenseAuditPage,
 } from '../../../../services/expenseReportService';
 
 const fmt = (n) => {
@@ -28,31 +27,62 @@ const AdminAuditTools = () => {
   const [syncLogs, setSyncLogs] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const [page, setPage] = useState(0);
+  const [pageData, setPageData] = useState(null);
+  const [loadError, setLoadError] = useState('');
+  const requestGeneration = useRef(0);
+
   useEffect(() => {
     loadData();
-  }, [activeTab]);
+    return () => { requestGeneration.current += 1; };
+  }, [activeTab, page]);
 
   const loadData = async () => {
+    const request = ++requestGeneration.current;
     setLoading(true);
+    setLoadError('');
+    setPageData(null);
     try {
-      if (activeTab === 'import_log') {
+      if (activeTab === 'unmatched' || activeTab === 'sync_logs') {
+        const result = await fetchExpenseAuditPage(activeTab, page);
+        if (request !== requestGeneration.current) return;
+        if (page > 0 && result.data.length === 0) {
+          requestGeneration.current += 1;
+          setPage(0);
+          return;
+        }
+        setPageData(result);
+        if (activeTab === 'unmatched') setUnmatchedExpenses(result.data);
+        else setSyncLogs(result.data);
+      } else if (activeTab === 'import_log') {
         const batches = await fetchImportBatches({ limit: 30 });
-        setImportBatches(batches);
-      } else if (activeTab === 'unmatched') {
-        const unmatched = await fetchUnmatchedExpenses();
-        setUnmatchedExpenses(unmatched);
+        if (request === requestGeneration.current) setImportBatches(batches);
       } else if (activeTab === 'review') {
         const items = await fetchAmexRawForReview({ needsReview: true });
-        setReviewItems(items);
-      } else if (activeTab === 'sync_logs') {
-        const logs = await fetchAmexSyncLogs(20);
-        setSyncLogs(logs);
+        if (request === requestGeneration.current) setReviewItems(items);
       }
     } catch (err) {
-      console.warn('[AdminAuditTools] load error:', err?.message);
+      if (request === requestGeneration.current) setLoadError('Audit records could not be loaded completely. Please retry.');
     } finally {
-      setLoading(false);
+      if (request === requestGeneration.current) setLoading(false);
     }
+  };
+
+  const changeView = (view) => {
+    if (view === activeTab) return;
+    requestGeneration.current += 1;
+    setLoading(true);
+    setLoadError('');
+    setPageData(null);
+    setPage(0);
+    setActiveTab(view);
+  };
+
+  const changePage = (nextPage) => {
+    requestGeneration.current += 1;
+    setLoading(true);
+    setPageData(null);
+    setPage(nextPage);
   };
 
   const TABS = [
@@ -73,7 +103,7 @@ const AdminAuditTools = () => {
         {TABS?.map(tab => (
           <button
             key={tab?.id}
-            onClick={() => setActiveTab(tab?.id)}
+            onClick={() => changeView(tab?.id)}
             className={`flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-t-lg whitespace-nowrap transition-colors ${
               activeTab === tab?.id
                 ? 'bg-primary/10 text-primary border-b-2 border-primary' :'text-muted-foreground hover:text-foreground'
@@ -93,8 +123,22 @@ const AdminAuditTools = () => {
             </svg>
             Loading…
           </div>
+        ) : loadError ? (
+          <div role="alert" className="p-3 text-sm text-destructive border border-destructive/30 rounded-lg">
+            {loadError}
+            <button onClick={loadData} className="ml-3 underline">Retry</button>
+          </div>
         ) : (
           <>
+            {pageData && (activeTab === 'unmatched' || activeTab === 'sync_logs') && (
+              <div className="flex items-center justify-between gap-3 mb-3 text-xs">
+                <span>Showing {pageData.count ? page * pageData.pageSize + 1 : 0}–{Math.min((page + 1) * pageData.pageSize, pageData.count)} of {pageData.count.toLocaleString()}</span>
+                <div className="flex gap-2">
+                  <button onClick={() => changePage(page - 1)} disabled={page === 0} className="px-3 py-1 border rounded disabled:opacity-50">Previous</button>
+                  <button onClick={() => changePage(page + 1)} disabled={(page + 1) * pageData.pageSize >= pageData.count} className="px-3 py-1 border rounded disabled:opacity-50">Next</button>
+                </div>
+              </div>
+            )}
             {/* Import Log */}
             {activeTab === 'import_log' && (
               <div className="overflow-x-auto">
@@ -147,7 +191,7 @@ const AdminAuditTools = () => {
                   <>
                     <div className="flex items-center gap-2 p-3 bg-warning/10 border border-warning/20 rounded-lg text-xs text-warning mb-3">
                       <Icon name="AlertTriangle" size={13} />
-                      {unmatchedExpenses?.length} expense records are missing office or department assignment.
+                      {pageData?.count?.toLocaleString()} expense records are missing office or department assignment.
                     </div>
                     <div className="overflow-x-auto">
                       <table className="w-full text-xs">
