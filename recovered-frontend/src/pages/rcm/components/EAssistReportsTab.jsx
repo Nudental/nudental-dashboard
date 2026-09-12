@@ -121,7 +121,7 @@ const SectionHeader = ({ title, icon }) => (
 const DetailDrawer = ({ row, onClose }) => {
   if (!row) return null;
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
+    <div className="fixed inset-0 z-[200] flex justify-end">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
       <div className="relative bg-card border-l border-border w-full max-w-2xl h-full overflow-y-auto shadow-2xl z-10">
         <div className="sticky top-0 bg-card border-b border-border px-5 py-4 flex items-center justify-between z-10">
