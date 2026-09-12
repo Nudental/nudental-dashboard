@@ -558,7 +558,7 @@ const todayStr = () => {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const DailyComparisonTab = ({ officeId, offices }) => {
-  const [selectedDate, setSelectedDate] = useState('2026-05-08');
+  const [selectedDate, setSelectedDate] = useState(todayStr);
   const [comparisonMode, setComparisonMode] = useState('daily');
   const [comparisonYears, setComparisonYears] = useState(3);
   const [activeYoyMetric, setActiveYoyMetric] = useState('production');
