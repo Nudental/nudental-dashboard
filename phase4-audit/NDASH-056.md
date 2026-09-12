@@ -2,6 +2,8 @@
 
 Section: Expense Report / Overview. Status: repaired, deployed, live verification PASS.
 
+Severity: High — incomplete or incorrectly filtered financial summaries.
+
 Reproduced on release 055: This Year / All Offices / WF Main Money-Out still shows eight positive bars in both AmEx summaries. The two services ignore requested sourceTypes. Their unpaginated query returns 1,000 of 1,703 non-archived AmEx records (1,565 posted and 138 draft), silently omitting later rows.
 
 Small fix: fetchAmexByCardholder and fetchAmexByMerchant intersect the selected sources with the two existing AmEx sources, return an empty result without querying when excluded, and use the retained complete-query reader with exact counts and stable date/id ordering. Query errors propagate. ExpenseReport clears stale AmEx arrays and includes both services in its existing overview error guard. Existing status predicate, signed amounts, grouping, office/card mapping, and top-20/top-8 presentation remain unchanged. Draft accounting is not reinterpreted.
