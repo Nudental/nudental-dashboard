@@ -8,6 +8,23 @@ const fmt = (val) =>
     ? `$${Number(val)?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
     : '—';
 
+const readScopedMonthlySummary = async (api, start, end, selectedLocations, fallbackLocation) => {
+  const ids = selectedLocations === undefined ? [fallbackLocation] : [...new Set(selectedLocations)];
+  if (!ids.length || (!(ids.length === 1 && ids[0] === null) && ids.some(id => typeof id !== 'string' || !id))) {
+    throw new Error('Production and collections are unavailable for a selected office.');
+  }
+  const results = await Promise.all(ids.map(id => Promise.all([
+    api.getProduction(start, end, id), api.getCollections(start, end, id),
+  ])));
+  if (results.length === 1) return results[0];
+  const sum = values => values.some(value => value == null || value === '' || !Number.isFinite(Number(value)))
+    ? null : values.reduce((total, value) => total + Number(value), 0);
+  return [
+    Object.fromEntries(['grossProduction','adjustments','netProduction'].map(field => [field, sum(results.map(result => result[0]?.[field]))])),
+    Object.fromEntries(['insuranceCollections','patientCollections','totalCollections'].map(field => [field, sum(results.map(result => result[1]?.[field]))])),
+  ];
+};
+
 /**
  * Displays the 6 production/collections fields from the middleware API.
  *
@@ -17,6 +34,7 @@ const fmt = (val) =>
  *   startDate: string (YYYY-MM-DD) — required for monthly mode
  *   endDate: string (YYYY-MM-DD) — required for monthly mode
  *   locationId: string | null — Dentrix Ascend locationId (null = all offices)
+ *   locationIds: optional selected location list for monthly combined-office reports
  *   officeId: string | null — Supabase office UUID (auto-resolves locationId if provided)
  *   className: string — optional extra wrapper class
  */
@@ -26,6 +44,7 @@ const ProductionCollectionsPanel = ({
   startDate,
   endDate,
   locationId: locationIdProp,
+  locationIds,
   officeId,
   className = '',
   periodLabel,
@@ -47,13 +66,16 @@ const ProductionCollectionsPanel = ({
 
   const prefix = periodLabel != null ? periodLabel : (mode === 'daily' ? 'Daily' : 'Monthly');
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (isCurrent = () => true) => {
     setLoading(true);
     setError(null);
+    setProduction(null);
+    setCollections(null);
     try {
       if (mode === 'daily') {
         const effectiveDate = date || format(new Date(), 'yyyy-MM-dd');
         const data = await ascendApi?.getDailySummary(effectiveDate, resolvedLocationId);
+        if (!isCurrent()) return;
         setProduction({
           grossProduction: data?.grossProduction ?? data?.production?.gross ?? null,
           adjustments: data?.adjustments ?? data?.production?.adjustments ?? null,
@@ -69,10 +91,8 @@ const ProductionCollectionsPanel = ({
           startDate ||
           format(new Date(new Date().getFullYear(), new Date().getMonth(), 1), 'yyyy-MM-dd');
         const effectiveEnd = endDate || format(new Date(), 'yyyy-MM-dd');
-        const [prodData, collData] = await Promise.all([
-          ascendApi?.getProduction(effectiveStart, effectiveEnd, resolvedLocationId),
-          ascendApi?.getCollections(effectiveStart, effectiveEnd, resolvedLocationId),
-        ]);
+        const [prodData, collData] = await readScopedMonthlySummary(ascendApi, effectiveStart, effectiveEnd, locationIds, resolvedLocationId);
+        if (!isCurrent()) return;
         const prodState = {
           grossProduction: prodData?.grossProduction ?? null,
           adjustments: prodData?.adjustments ?? null,
@@ -95,15 +115,18 @@ const ProductionCollectionsPanel = ({
         }
       }
     } catch (err) {
+      if (!isCurrent()) return;
       console.warn('[ProductionCollectionsPanel] fetch error:', err?.message);
       setError(err?.message || 'Failed to load data');
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
-  }, [mode, date, startDate, endDate, resolvedLocationId, refreshKey]);
+  }, [mode, date, startDate, endDate, resolvedLocationId, refreshKey, JSON.stringify(locationIds)]);
 
   useEffect(() => {
-    fetchData();
+    let cancelled = false;
+    fetchData(() => !cancelled);
+    return () => { cancelled = true; };
   }, [fetchData]);
 
   if (loading) {

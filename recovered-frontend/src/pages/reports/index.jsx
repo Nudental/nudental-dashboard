@@ -208,6 +208,8 @@ const Reports = () => {
   const reportLocationId = (!scopedOfficeFilter || scopedOfficeFilter?.includes('all') || scopedOfficeFilter?.length !== 1)
     ? null
     : getLocationIdByOfficeId(scopedOfficeFilter?.[0]) || null;
+  const reportLocationIds = !scopedOfficeFilter?.length || scopedOfficeFilter.includes('all')
+    ? [null] : [...new Set(scopedOfficeFilter.map(id => getLocationIdByOfficeId(id) || ''))];
 
   // ── Callback: ProductionCollectionsPanel lifts netProduction + totalCollections ──
   const handleProductionCollectionsData = useCallback((data) => {
@@ -260,7 +262,7 @@ const Reports = () => {
   useEffect(() => {
     setKpiNetProduction(null);
     setKpiTotalCollections(null);
-  }, [reportStart, reportEnd, reportLocationId]);
+  }, [reportStart, reportEnd, JSON.stringify(reportLocationIds)]);
 
   // ── Derived: Est. Net Profit ──────────────────────────────────────────────
   const kpiEstNetProfit = (() => {
@@ -378,7 +380,8 @@ const Reports = () => {
             mode="monthly"
             startDate={reportStart}
             endDate={reportEnd}
-            locationIdProp={reportLocationId}
+            locationId={reportLocationId}
+            locationIds={reportLocationIds}
             date={reportStart}
             officeId={scopedOfficeFilter?.includes('all') ? null : scopedOfficeFilter?.[0]}
             className="mb-6"
