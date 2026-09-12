@@ -191,6 +191,7 @@ const PLMonthlyTable = ({ officeFilter, dateFilter }) => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const requestVersion = React.useRef(0);
 
   useEffect(() => {
     setSelectedYear(parseDateFilter(dateFilter)?.year || currentYear);
@@ -202,6 +203,8 @@ const PLMonthlyTable = ({ officeFilter, dateFilter }) => {
   }
 
   const fetchData = useCallback(async () => {
+    const version = ++requestVersion.current;
+    const isCurrent = () => version === requestVersion.current;
     setLoading(true);
     setError(null);
     try {
@@ -322,6 +325,7 @@ const PLMonthlyTable = ({ officeFilter, dateFilter }) => {
         })
       );
 
+      if (!isCurrent()) return;
       const result = monthResults?.map((r, i) => {
         if (r?.status === 'fulfilled') return r?.value;
         return { month: displayMonths?.[i], hasData: false };
@@ -329,15 +333,17 @@ const PLMonthlyTable = ({ officeFilter, dateFilter }) => {
 
       setRows(result);
     } catch (err) {
+      if (!isCurrent()) return;
       console.error('PLMonthlyTable fetch error:', err);
       setError(err?.message || 'Failed to load P&L data');
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   }, [selectedYear, officeFilter, dateFilter]);
 
   useEffect(() => {
     fetchData();
+    return () => { requestVersion.current += 1; };
   }, [fetchData]);
 
   const dataRows = rows?.filter((r) => r?.hasData);
