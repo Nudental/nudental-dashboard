@@ -16,7 +16,7 @@ const fmt = (v) =>
   new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 })?.format(v || 0);
 
 const CHART_FIELDS = [
-  { key: 'production_total', label: 'Production' },
+  { key: 'net_production', label: 'Net Production (MEA)' },
   { key: 'collections_total', label: 'Collections' },
   { key: 'expenses_total', label: 'Expenses' },
   { key: 'new_patients', label: 'New Patients', format: 'number' },
@@ -64,7 +64,7 @@ const YearComparisonPanel = ({ officeIds = [], title = 'Year-over-Year Compariso
 
   const [yearDataMap, setYearDataMap] = useState({});
   const [loading, setLoading] = useState(false);
-  const [activeField, setActiveField] = useState('production_total');
+  const [activeField, setActiveField] = useState('net_production');
   const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {

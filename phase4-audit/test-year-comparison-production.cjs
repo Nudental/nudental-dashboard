@@ -1,0 +1,12 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),path=require('path'),vm=require('vm');
+const root=path.join(__dirname,'../recovered-frontend/src');
+const source=fs.readFileSync(path.join(root,'services/yearComparisonService.js'),'utf8');
+const panel=fs.readFileSync(path.join(root,'components/YearComparisonPanel.jsx'),'utf8');
+const chartFields=vm.runInNewContext(panel.match(/const CHART_FIELDS = (\[[\s\S]*?\]);/)[1]);
+const defaultField=panel.match(/\[activeField, setActiveField\] = useState\('([^']+)'\)/)[1];
+const fn=source.slice(source.indexOf('export const buildMonthlyComparisonData = '),source.indexOf('/**\r\n * Calculate % change')>0?source.indexOf('/**\r\n * Calculate % change'):source.indexOf('/**\n * Calculate % change'));
+const monthly=vm.runInNewContext(fn.replace('export const buildMonthlyComparisonData = ','var monthly = ')+';monthly',{MONTH_NAMES_SHORT:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']});
+const data={2025:[{report_month:1,net_production:90,production_total:150,collections_total:70},{report_month:1,net_production:40,production_total:80,collections_total:20},{report_month:2,net_production:0,production_total:100,collections_total:25}]};
+test('initial production chart uses the same net-production measure as the annual card',()=>{assert.equal(monthly(data,defaultField)[0][2025],130);assert.equal(monthly(data,defaultField)[1][2025],0,'Never substitute gross production for a stored zero net amount');});
+test('production selector explicitly names and selects net production',()=>{const field=chartFields.find(f=>/Production/.test(f.label));assert.equal(field.key,'net_production');assert.match(field.label,/Net Production/);assert.equal(monthly(data,field.key)[0][2025],130);});
+test('collections and missing-month behavior remain unchanged',()=>{const field=chartFields.find(f=>f.label==='Collections');assert.equal(monthly(data,field.key)[0][2025],90);assert.equal(monthly(data,field.key)[2][2025],null);assert.equal(chartFields.length,6);});

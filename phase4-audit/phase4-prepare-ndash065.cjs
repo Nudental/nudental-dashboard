@@ -1,0 +1,15 @@
+const fs=require('fs'),path=require('path'),assert=require('assert/strict'),parser=require('./phase4/rocket-source/node_modules/@babel/parser'),traverse=require('./phase4/rocket-source/node_modules/@babel/traverse').default;
+const meta=JSON.parse(fs.readFileSync(path.join(__dirname,'phase4-ndash064-manifest.json'))),s=fs.readFileSync(path.join(__dirname,'phase4/ndash064-assets',path.basename(meta.asset)),'utf8');
+let fields,production,component,state;
+const property=(node,key)=>node.properties?.find(p=>p.key?.name===key||p.key?.value===key)?.value;
+traverse(parser.parse(s,{sourceType:'module'}),{ArrayExpression(p){const items=p.node.elements;if(items.length===6&&items.every(n=>n?.type==='ObjectExpression')&&['production_total','collections_total','expenses_total','new_patients','hygiene_prod','doctor_prod'].every(k=>items.some(n=>property(n,'key')?.value===k))){assert(!fields);fields=p.node;production=items.find(n=>property(n,'key')?.value==='production_total');}},CallExpression(p){if(p.node.arguments.length===1&&p.node.arguments[0]?.value==='production_total'&&(p.node.callee.property?.name==='useState'||p.node.callee.name==='useState')){const owner=p.getFunctionParent();if(!owner||!s.slice(owner.node.start,owner.node.end).includes('Year-over-Year Comparison'))return;assert(!state);state=p.node.arguments[0];component=owner.node;}}});
+assert(fields&&production&&component&&state);assert(s.slice(component.start,component.end).includes('Net Production (MEA)'));
+const fieldBefore=s.slice(fields.start,fields.end),key=property(production,'key'),label=property(production,'label');assert(label.value==='Production');
+function patch(text,start,edits){for(const e of edits.sort((a,b)=>b.node.start-a.node.start))text=text.slice(0,e.node.start-start)+e.value+text.slice(e.node.end-start);return text;}
+const fieldAfter=patch(fieldBefore,fields.start,[{node:key,value:'"net_production"'},{node:label,value:'"Net Production (MEA)"'}]);
+const componentBefore=s.slice(component.start,component.end),componentAfter=patch(componentBefore,component.start,[{node:state,value:'"net_production"'}]);
+parser.parse('('+componentAfter+')');parser.parse('('+fieldAfter+')');
+for(const [name,text] of Object.entries({'fields-before':fieldBefore,'fields-after':fieldAfter,'component-before':componentBefore,'component-after':componentAfter}))fs.writeFileSync(path.join(__dirname,'phase4-ndash065-'+name+'.js'),text);
+fs.writeFileSync(path.join(__dirname,'phase4-ndash065-patch-evidence.json'),JSON.stringify({fieldKey:'net_production',label:'Net Production (MEA)',defaultBefore:state.value,defaultAfter:'net_production',componentBytes:componentBefore.length,changedStringLiterals:3}));
+console.log(JSON.stringify({fieldsBytes:fieldBefore.length,componentBytes:componentBefore.length,changedStringLiterals:3}));
+require('./phase4-version-graph.cjs')({issue:'065',previous:'064',deployment:'e6ab7483-1e42-4ee3-b85b-35156270e56a',target:'ndash064-GustoTimeAndAttendance.js',targetPatches:[],mainPatches:[{old:fieldBefore,new:fieldAfter},{old:componentBefore,new:componentAfter}]});
