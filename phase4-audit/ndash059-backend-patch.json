@@ -1,0 +1,17 @@
+{
+  "issue": "NDASH-059",
+  "before_main_sha256": "18f3000e310ec982bfa53b5e5cc345e79f883e9e4a3fc192fd0e5b0a7c14bde9",
+  "before_function_sha256": "5ac324564f2ce570a4f3438bcabb150b5721d351f4895226ede7bdfc9b825347",
+  "after_function_sha256": "4f73e1f27d54ffc3cf8d728fea89ced46193e9cb3fa0ea5a4047ddfd0b9f18b7",
+  "patches": [
+    {
+      "old": "    status_raw_filters = []\n    if status:\n        for s in status.split(\",\"):\n            s = s.strip()\n            if s in _CS_REVERSE_STATUS:\n                status_raw_filters.extend(_CS_REVERSE_STATUS[s])",
+      "new": "    status_raw_filters = []\n    include_unknown_status = False\n    if status:\n        for s in status.split(\",\"):\n            s = s.strip()\n            if s == \"unknown\":\n                include_unknown_status = True\n            elif s in _CS_REVERSE_STATUS:\n                status_raw_filters.extend(_CS_REVERSE_STATUS[s])"
+    },
+    {
+      "old": "    if status_raw_filters:\n        placeholders = \",\".join(\"?\" for _ in status_raw_filters)\n        where_parts.append(f\"json_extract(ic.raw, '$.claimState') IN ({placeholders})\")\n        params.extend(status_raw_filters)",
+      "new": "    if status_raw_filters or include_unknown_status:\n        status_parts = []\n        if status_raw_filters:\n            placeholders = \",\".join(\"?\" for _ in status_raw_filters)\n            status_parts.append(f\"json_extract(ic.raw, '$.claimState') IN ({placeholders})\")\n            params.extend(status_raw_filters)\n        if include_unknown_status:\n            known_states = list(_CS_STATUS_MAP)\n            placeholders = \",\".join(\"?\" for _ in known_states)\n            status_parts.append(\n                \"(json_extract(ic.raw, '$.claimState') IS NULL OR \"\n                f\"json_extract(ic.raw, '$.claimState') NOT IN ({placeholders}))\"\n            )\n            params.extend(known_states)\n        where_parts.append(\"(\" + \" OR \".join(status_parts) + \")\")"
+    }
+  ],
+  "scope": "rcm_claim_submissions unknown status condition only"
+}
