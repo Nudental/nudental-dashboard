@@ -550,6 +550,11 @@ const EAssistReportsTab = ({ officeId, dateRange, refreshKey }) => {
           <Icon name="Building2" size={24} className="text-muted-foreground mx-auto mb-2" />
           <p className="text-sm font-medium text-foreground">eAssist reports are not expected for Staten Island.</p>
           <p className="text-xs text-muted-foreground mt-1">eAssist handles Barnegat, Brick, and Eatontown only.</p>
+          <button
+            type="button"
+            onClick={() => setOfficeFilter('all')}
+            className="mt-3 px-3 py-1.5 text-sm font-medium border border-border rounded-lg hover:bg-muted transition-colors"
+          >Show all eAssist offices</button>
         </div>
       )}
       {!showStatenIslandMsg && (
