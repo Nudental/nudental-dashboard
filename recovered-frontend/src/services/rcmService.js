@@ -99,7 +99,11 @@ export const fetchEAssistDailyReports = async (params = {}) => {
       ok: true,
     });
     return {
-      data: raw?.data || [],
+      data: (raw?.data || []).map(row => ({
+        ...row,
+        office: row?.office || row?.office_canonical,
+        parse_status: row?.parse_status || row?.parseStatus || row?.parser_status,
+      })),
       summary: raw?.summary || {},
       pagination: raw?.pagination || {},
       metadata: raw?.metadata || {},
