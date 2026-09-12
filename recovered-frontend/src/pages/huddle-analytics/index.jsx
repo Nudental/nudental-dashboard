@@ -22,7 +22,7 @@ const DATE_PRESETS = [
 const getDateRange = (days) => {
   const end = new Date();
   const start = new Date();
-  start?.setDate(start?.getDate() - days);
+  start?.setUTCDate(start?.getUTCDate() - (days - 1));
   return {
     start: start?.toISOString()?.split('T')?.[0],
     end: end?.toISOString()?.split('T')?.[0],
