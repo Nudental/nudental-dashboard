@@ -1,0 +1,7 @@
+# Reports additional live coverage
+
+Partial read-only pass on frontend100. Financial Reports loads, YTD2026 P&L nine monthly rows. Monthly table profit = collections minus expenses; collection-rate and margin calculations agree within displayed rounding. All seven cells present. Scope the Month-header table only when checking these formulas; Treatment Plan Completion also renders unrelated office/provider tables below.
+
+Last Month selects Aug2026 and one P&L month row. Reports office filter Barnegat retains selection when switching tabs. Goal Achievement Leaderboard loads one office row without warning. Period Comparison mounts with Jan2026 versus Feb2026 and executes read-only comparison successfully,14table rows/no source warnings, but drops the parent office scope: report selector Barnegat, child All Offices and result caption All Offices. Reproduced after tab remount; assigned101, currently deploying one-prop fix.
+
+Still to verify:101liveoffice scope; comparison date editing/result caption consistency and validation; multi-office behavior; remaining report tabs/sections and custom range behavior. Do not call unverified source concerns confirmed defects. No exports, provider sync, financial writes or real records changed during this pass. Retained013–015 export tests are earlier evidence, not repeated here.
