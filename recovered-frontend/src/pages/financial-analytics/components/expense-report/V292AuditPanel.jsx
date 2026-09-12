@@ -1,11 +1,11 @@
 /**
  * V292AuditPanel — READ-ONLY live classification audit for office-to-3526 funding transfers.
  * This component runs live Supabase queries A, B, C, D and displays results.
- * DO NOT PATCH. DO NOT CHANGE DATA. READ-ONLY AUDIT ONLY.
+ * Data stays read-only; complete bounded queries and detail pagination protect audit accuracy.
  */
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { supabase } from '../../../../lib/supabase';
-import { isWFDirectOperatingExpense, isInternalFundingTransfer } from '../../../../services/expenseReportService';
+import { isWFDirectOperatingExpense, isInternalFundingTransfer, readCompleteExpenseQuery } from '../../../../services/expenseReportService';
 
 // ── DATE RANGES ───────────────────────────────────────────────────────────────
 function getDateRanges() {
@@ -107,29 +107,36 @@ export default function V292AuditPanel() {
   const [queryD, setQueryD] = useState(null);
   const [error, setError] = useState(null);
 
+  const requestGeneration = useRef(0);
+  const [detailPages, setDetailPages] = useState({});
+
   useEffect(() => {
     runAllQueries();
+    return () => { requestGeneration.current += 1; };
   }, []);
 
   async function runAllQueries() {
+    const request = ++requestGeneration.current;
     try {
       setLoading(true);
+      setError(null);
+      setDetailPages({});
       const ranges = getDateRanges();
       await Promise.all([
-        runQueryA(ranges),
-        runQueryB(ranges),
-        runQueryC(ranges),
-        runQueryD(ranges),
+        runQueryA(ranges, request),
+        runQueryB(ranges, request),
+        runQueryC(ranges, request),
+        runQueryD(ranges, request),
       ]);
     } catch (err) {
-      setError(err?.message || 'Query failed');
+      if (request === requestGeneration.current) setError('Transfer audit could not be loaded completely. Please retry.');
     } finally {
-      setLoading(false);
+      if (request === requestGeneration.current) setLoading(false);
     }
   }
 
   // ── QUERY A: Sending-side transfers OUT from ...6093/...8124/...7975 to ...3526 ──
-  async function runQueryA(ranges) {
+  async function runQueryA(ranges, request) {
     const results = {};
 
     for (const [label, start, end] of [
@@ -137,11 +144,11 @@ export default function V292AuditPanel() {
       ['This Year', ranges?.thisYearStart, ranges?.thisYearEnd],
       ['Last 12 Months', ranges?.last12Start, ranges?.last12End],
     ]) {
-      const { data, error: qErr } = await supabase?.from('expenses')?.select(`
+      const { data, error: qErr } = await readCompleteExpenseQuery(supabase?.from('expenses')?.select(`
           id, expense_date, posted_date, amount, source_type, source_tab,
           expense_status, office_id, office_name, card_last4, merchant_name,
           vendor_name, notes, category_name, allocation_metadata
-        `)?.eq('source_tab', 'Banking')?.in('card_last4', OFFICE_ACCOUNTS)?.gte('expense_date', start)?.lte('expense_date', end)?.order('expense_date', { ascending: false })?.limit(200);
+        `, { count: 'exact' })?.eq('source_tab', 'Banking')?.in('card_last4', OFFICE_ACCOUNTS)?.gte('expense_date', start)?.lte('expense_date', end)?.order('expense_date', { ascending: false })?.order('id', { ascending: true }));
 
       if (qErr) { results[label] = { error: qErr?.message }; continue; }
 
@@ -179,11 +186,11 @@ export default function V292AuditPanel() {
       };
     }
 
-    setQueryA(results);
+    if (request === requestGeneration.current) setQueryA(results);
   }
 
   // ── QUERY B: Receiving-side deposits INTO ...3526 from office accounts ──
-  async function runQueryB(ranges) {
+  async function runQueryB(ranges, request) {
     const results = {};
 
     for (const [label, start, end] of [
@@ -191,11 +198,11 @@ export default function V292AuditPanel() {
       ['This Year', ranges?.thisYearStart, ranges?.thisYearEnd],
       ['Last 12 Months', ranges?.last12Start, ranges?.last12End],
     ]) {
-      const { data, error: qErr } = await supabase?.from('expenses')?.select(`
+      const { data, error: qErr } = await readCompleteExpenseQuery(supabase?.from('expenses')?.select(`
           id, expense_date, posted_date, amount, source_type, source_tab,
           expense_status, office_id, office_name, card_last4, merchant_name,
           vendor_name, notes, category_name, allocation_metadata
-        `)?.eq('source_tab', 'Banking')?.eq('card_last4', '3526')?.gte('expense_date', start)?.lte('expense_date', end)?.order('expense_date', { ascending: false })?.limit(200);
+        `, { count: 'exact' })?.eq('source_tab', 'Banking')?.eq('card_last4', '3526')?.gte('expense_date', start)?.lte('expense_date', end)?.order('expense_date', { ascending: false })?.order('id', { ascending: true }));
 
       if (qErr) { results[label] = { error: qErr?.message }; continue; }
 
@@ -232,22 +239,22 @@ export default function V292AuditPanel() {
       };
     }
 
-    setQueryB(results);
+    if (request === requestGeneration.current) setQueryB(results);
   }
 
   // ── QUERY C: Unclassified risky WF Banking rows ──
-  async function runQueryC(ranges) {
+  async function runQueryC(ranges, request) {
     const results = {};
 
     for (const [label, start, end] of [
       ['Last Month', ranges?.lastMonthStart, ranges?.lastMonthEnd],
       ['This Year', ranges?.thisYearStart, ranges?.thisYearEnd],
     ]) {
-      const { data, error: qErr } = await supabase?.from('expenses')?.select(`
+      const { data, error: qErr } = await readCompleteExpenseQuery(supabase?.from('expenses')?.select(`
           id, expense_date, posted_date, amount, source_type, source_tab,
           expense_status, office_id, office_name, card_last4, merchant_name,
           vendor_name, notes, category_name, allocation_metadata
-        `)?.eq('source_tab', 'Banking')?.in('card_last4', MAIN_ACCOUNTS)?.eq('expense_status', 'posted')?.gte('expense_date', start)?.lte('expense_date', end)?.order('expense_date', { ascending: false })?.limit(500);
+        `, { count: 'exact' })?.eq('source_tab', 'Banking')?.in('card_last4', MAIN_ACCOUNTS)?.eq('expense_status', 'posted')?.gte('expense_date', start)?.lte('expense_date', end)?.order('expense_date', { ascending: false })?.order('id', { ascending: true }));
 
       if (qErr) { results[label] = { error: qErr?.message }; continue; }
 
@@ -329,21 +336,21 @@ export default function V292AuditPanel() {
       };
     }
 
-    setQueryC(results);
+    if (request === requestGeneration.current) setQueryC(results);
   }
 
   // ── QUERY D: Excluded transfer totals by classification ──
-  async function runQueryD(ranges) {
+  async function runQueryD(ranges, request) {
     const results = {};
 
     for (const [label, start, end] of [
       ['Last Month', ranges?.lastMonthStart, ranges?.lastMonthEnd],
       ['This Year', ranges?.thisYearStart, ranges?.thisYearEnd],
     ]) {
-      const { data, error: qErr } = await supabase?.from('expenses')?.select(`
+      const { data, error: qErr } = await readCompleteExpenseQuery(supabase?.from('expenses')?.select(`
           id, expense_date, amount, source_tab, card_last4, office_name,
           merchant_name, vendor_name, notes, category_name, allocation_metadata, expense_status
-        `)?.eq('source_tab', 'Banking')?.in('card_last4', MAIN_ACCOUNTS)?.gte('expense_date', start)?.lte('expense_date', end)?.limit(2000);
+        `, { count: 'exact' })?.eq('source_tab', 'Banking')?.in('card_last4', MAIN_ACCOUNTS)?.gte('expense_date', start)?.lte('expense_date', end)?.order('expense_date', { ascending: false })?.order('id', { ascending: true }));
 
       if (qErr) { results[label] = { error: qErr?.message }; continue; }
 
@@ -385,8 +392,21 @@ export default function V292AuditPanel() {
       };
     }
 
-    setQueryD(results);
+    if (request === requestGeneration.current) setQueryD(results);
   }
+
+  const renderDetailPager = (key, count) => {
+    const page = detailPages[key] || 0;
+    return (
+      <div className="flex items-center justify-between gap-3 my-2 text-xs">
+        <span>Showing {count ? page * 50 + 1 : 0}–{Math.min((page + 1) * 50, count)} of {count.toLocaleString()} transfer candidates</span>
+        <div className="flex gap-2">
+          <button disabled={page === 0} onClick={() => setDetailPages(current => ({ ...current, [key]: page - 1 }))} className="px-3 py-1 border rounded disabled:opacity-50">Previous</button>
+          <button disabled={(page + 1) * 50 >= count} onClick={() => setDetailPages(current => ({ ...current, [key]: page + 1 }))} className="px-3 py-1 border rounded disabled:opacity-50">Next</button>
+        </div>
+      </div>
+    );
+  };
 
   // ── RENDER ────────────────────────────────────────────────────────────────
   const fmt = (n) => typeof n === 'number' ? `$${n?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : 'N/A';
@@ -407,7 +427,8 @@ export default function V292AuditPanel() {
   if (error) {
     return (
       <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
-        <p className="text-red-800 font-semibold">Audit query error: {error}</p>
+        <p role="alert" className="text-red-800 font-semibold">Audit query error: {error}</p>
+        <button onClick={runAllQueries} className="mt-2 underline">Retry</button>
       </div>
     );
   }
@@ -445,6 +466,7 @@ export default function V292AuditPanel() {
                     <p className="text-green-700 text-sm bg-green-50 p-2 rounded">✅ No keyword-matching transfer candidates found for {period}.</p>
                   ) : (
                     <div className="overflow-x-auto">
+                      {renderDetailPager(`A:${period}`, data.rows.length)}
                       <table className="min-w-full text-xs border-collapse">
                         <thead>
                           <tr className="bg-gray-100">
@@ -464,7 +486,7 @@ export default function V292AuditPanel() {
                           </tr>
                         </thead>
                         <tbody>
-                          {data?.rows?.map((r, i) => (
+                          {data?.rows?.slice((detailPages[`A:${period}`] || 0) * 50, ((detailPages[`A:${period}`] || 0) + 1) * 50)?.map((r, i) => (
                             <tr key={r?.id || i} className={r?.feedsTotalExpenses ? 'bg-red-50' : 'bg-green-50'}>
                               <td className="border px-2 py-1">{fmtDate(r?.expense_date)}</td>
                               <td className="border px-2 py-1 font-mono">{r?.amount}</td>
@@ -517,6 +539,7 @@ export default function V292AuditPanel() {
                     <p className="text-green-700 text-sm bg-green-50 p-2 rounded">✅ No keyword-matching receiving-side deposit candidates found for {period}.</p>
                   ) : (
                     <div className="overflow-x-auto">
+                      {renderDetailPager(`B:${period}`, data.rows.length)}
                       <table className="min-w-full text-xs border-collapse">
                         <thead>
                           <tr className="bg-gray-100">
@@ -536,7 +559,7 @@ export default function V292AuditPanel() {
                           </tr>
                         </thead>
                         <tbody>
-                          {data?.rows?.map((r, i) => (
+                          {data?.rows?.slice((detailPages[`B:${period}`] || 0) * 50, ((detailPages[`B:${period}`] || 0) + 1) * 50)?.map((r, i) => (
                             <tr key={r?.id || i} className={r?.feedsTotalExpenses ? 'bg-red-50' : 'bg-green-50'}>
                               <td className="border px-2 py-1">{fmtDate(r?.expense_date)}</td>
                               <td className="border px-2 py-1 font-mono">{r?.amount}</td>
