@@ -32,3 +32,6 @@ NDASH094CLOSEDPASS:quoted/escapedInsuranceORsearch. Livepunctuation(comma,parent
 
 Insurance continued:AssignedToMe2/uncheck2;futureFrom2030-01-02empty0/pastTo2000-02-01empty0/Clear2. Browser date fill alone needs nativeArrowkey to dispatchReactchange; not classified asappdefect. Existingcompletedrequestdetail8sectionheadings/audit15actionentriesrenders. X initiallyhitglobalheaderaccountmenu;095two-lineoverlaygroupfixdeployed/livePASS. X/backdropclose/reopen/audit/search/refresh/healthPASS. No PDF,email,verification,upload,cancel or patient writes. Legacy fallback next.
 
+
+096legacydead-endUIrepairclosedPASS: retiredRocketiframe404twice, explicitunavailablenoticeandpermission-gatednativebuttonsdeployed/liveverified/reloadPASS. Externallegacyformnotrestored. Insuranceproductionwrite/externaldelivery/alternate-roletestsremainuntested. No temporary or businessrecordscreated.
+

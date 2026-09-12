@@ -12,3 +12,6 @@ Three focused synthetic render/navigation/permission tests fail before; all419 t
 
 Rocket821 confirmed exact legacy-branch notice/buttons/canSubmit scope. Actualcompiled permission/navigation/noiframe/full095reversal/priorrepairs/7relinksPASS. Candidateindex-ffe64bdb518f.js. Deployment pending.
 
+
+CLOSED PASS. Deploymente8e3c33c-3955-4a67-836c-03d5dece7388/index-ffe64bdb518f.js. Livebaseline2;Legacyunavailablenotice/noiframe/OpenQueue2/OpenNewRequestnativeform(patient/insurance/officeblank,normalrequesterstaffprefillonly);noSubmit. Reloadnotice/linksretained;drawerX/searchcomma0/Clear2/errors0. Root/nativeInsurance/API200/3services/backend085/worker093unchanged.095rollbackretained. No records created or changed. External legacy emailform remains unavailable, explicitly disclosed.
+
