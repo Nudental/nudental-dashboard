@@ -1,6 +1,6 @@
 # NDASH-068 — Adjustment breakdowns omit their monetary amounts
 
-Section: RCM Adjustment Summary. Severity: Medium. Status: tested candidate; live verification pending.
+Section: RCM Adjustment Summary. Severity: Medium. Status: repaired, deployed, live verification PASS.
 
 Reproduced on065 inAugustAll: ByAdjustmentCategory10rows/OLT12rows/Office4rows showcounts butzero currencycells. SelectedProfessionalCourtesy repeats: totalcard-90.00/2records, threebreakdowns1roweach butnocurrency. Boundedread-onlyAPIprobe confirms eachgroup signed_amount=-90.00 andno amountproperty. Rowidentities/names/notes notoutput. Staffgroup hasabs_amountonly; reviewflags/latebuckets havecounts only.
 
@@ -9,3 +9,5 @@ Exactrootcause: genericBreakdownTabledefaults amountField to amount, while those
 ActualJSXtests fail3casesbefore, passafter;301source tests/build30.27sPASS. Actualdeployed17208byteSummarycomponent changes3props; existing4077bytehelperunchanged. Actualcompiled testsnegative/positive/zero/missingvalues/genericamountPASS; V8moduleparse/fullreversal/priorrepairs/sevenrelinksPASS. Rocket797completedmatching3props.
 
 Candidateindex-a15faebf5226.js builtfromverified065deployment8afdd341-91fb-4509-9727-76d98c62b03e. Blocked066tablepatch explicitlyexcluded andassertedabsent. Private sourcebuildstillcontainsseparatepending066; neverreleasefullrecoveredbuild. Backend067SHAf37a12859a418ce4600212cde671ed9acc12680e36dbdd880d0a234627355a51mustremainunchanged. Priorreleasepreserved; no financialwrites/exports/sync.
+
+Liveclosure: deploymenta8a2fe4d-db23-4df0-a7f2-8233b238753f/index-a15faebf5226.js SHAa15faebf5226aaf23dcc9fdf336e217d97e1ce25dcc72c48a4cad2ae1f4c91fe. NormalstartupPASS. AllCategoriescategory10/OLT12/office4currencycells; eachsum-341447.87, same1235recordtotal. Staff/reviewflag/latebucketgroupsremaincount-only. ProfessionalCourtesy2records/-90.00andthreegroups-90.00afterexplicitRefresh. Oneintermediatecategoryreadstillshowedpriortotals; separatefiltertimingbehaviornotyetconfirmeddefect. Fullreload/reopenAllCategoriesallthreeamountsumsandcountsPASS/alerts0/errors0. Backend067SHAunchanged; no businesswrites.066excluded/blocked,065rollbackretained.
