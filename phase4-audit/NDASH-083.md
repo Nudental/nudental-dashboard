@@ -1,6 +1,6 @@
 # NDASH-083 — eAssist summary cards change with pagination
 
-Section: RCM / eAssist Reports. Status: candidate verified; release pending.
+Section: RCM / eAssist Reports. Status: repaired, deployed, live verification PASS.
 
 Reproduced on frontend082/backend080: August63 reports, all marked missing. Page1/50 shows Missing50 and Latest08/31; finalpage2/13 shows Missing13 and Latest08/07 while TotalReports remains63. Change page size10 yields Missing10 and Latest08/26 on settledpage2/7, again with Total63. Report rows are placeholders; no emails or business data changed.
 
@@ -11,3 +11,7 @@ Seven actual-route tests use synthetic HTTP/config fixtures. Six failures before
 Read-only preflight PASS: current backend080/frontend082/service043 unchanged; All63missing, Brick21, Success0; API summary fields absent as diagnosed. Age0All207/age30Staten12 and single-office daily repair retained. Existing write-on-start flags disabled, cache warm-up read-only, missing-key401. Release requires candidate8002 then live8001 comparisons; frontend082 stays unchanged.
 
 Additional observation, not yet repaired: changing from page2/50 to page size10 settled onpage2 despite the frontend page-reset effect. Possible overlapping-request race in loadReports; reproduce again after083 is closed before editing.
+
+Deployment PASS: candidate8002 then live8001 preserve all original report-page numeric/date/row aggregates and pagination; full summaries identical across pages/sizes, All63missing/latest08/31/confidence0, Brick21missing, Success0 with unavailable latest/confidence. Prior080minimum-age and076office aggregates and missing-key401 retained. Frontend082 unchanged; full080snapshot retained.
+
+Live PASS: original50/13 pages bothMissing63/latest08/31,10/3 pages likewiseMissing63/latest08/31. Brick21total/missing; Success explicitempty with total0/missing0/latest—. Fullreload/reopen50of63,Missing63/latest08/31/confidence0%. Alerts/errors0, frontend/API200, three services active. No business-data/configuration changes. BackendSHA1a5d9e0cfc27650a36e585e92962696e412af5e0b612258fe40d52190793108c. One additional bounded three-field aggregate query serves the current63-row range; larger ranges are paged500 at a time. Very large historical ranges could add response latency; no performance issue established for the tested range.

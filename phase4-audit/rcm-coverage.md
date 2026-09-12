@@ -96,3 +96,6 @@ August63reports/2pages; Brick21. All rows initially show missing office/parser l
 
 NDASH082 closedPASS: oneclassdrawerz50toexisting200aboveheader100. TwoactualXclicksclosefirstandsecondreports;DOMhit-testtrue/titlevisible. 355tests/build30.52/Rocket809/compiledexact081reversal/allpriorrepairsPASS. Deploymenta3d83b0b-1aa9-4f45-bd9b-71ba9c5f461d,index-b5fe7baae370.js;backend080unchanged,frontendAPI200/threeactive/errors0. Underlying50of63andmappedlabelsunchanged. No business writes.
 
+
+NDASH083 closedPASS: eAssist summaries now fullsame-filter range using3fieldprojection/status/confidence/date only,500rowbatches. BeforeMissing50→13/latestAug31→Aug7acrosspages; now63/Aug31on50/13and10/3pages. Brick21/Success0/latest—;fullreload50of63/Missing63/Aug31/conf0. Sevennewactual-routetests/sixfailbefore/twelveretainedbackend suitesPASS. Candidate8002/live8001PASS;080age076officeaggregatechecksand401retained. Backend083SHA1a5d9e0cfc27650a36e585e92962696e412af5e0b612258fe40d52190793108c;080snapshotretained/frontend082unchanged. No business writes. RemainingeAssistdatevalidation/ingestionstatus/globaloffice/possiblepageresetrace.
+
