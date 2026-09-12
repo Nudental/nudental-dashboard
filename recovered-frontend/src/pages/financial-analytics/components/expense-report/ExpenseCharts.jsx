@@ -46,20 +46,8 @@ const ExpenseCharts = ({ monthlyTrend = [], byCategory = [], byOffice = [], byDe
     [byOffice]
   );
 
-  // Build WF Direct Operating Expense chart segment if present
-  const wfBankingSegment = useMemo(() =>
-    wfBankingExpense > 0 ? [{ name: 'WF Direct Operating Expense', value: wfBankingExpense }] : [],
-    [wfBankingExpense]
-  );
-
-  // Merge WF Direct Operating Expense into category data for the pie chart
-  const categoryDataWithWF = useMemo(() => {
-    if (wfBankingSegment?.length === 0) return categoryData;
-    // Avoid duplicating if already present
-    const hasWF = categoryData?.some(d => d?.name?.toLowerCase()?.includes('wells fargo') || d?.name?.toLowerCase()?.includes('banking') || d?.name?.toLowerCase()?.includes('money-out') || d?.name?.toLowerCase()?.includes('direct operating'));
-    if (hasWF) return categoryData;
-    return [...categoryData, ...wfBankingSegment];
-  }, [categoryData, wfBankingSegment]);
+  // Category totals already include Banking expenses; do not append the bank total again.
+  const categoryDataWithWF = categoryData;
 
   const cardholderData = useMemo(() =>
     amexByCardholder?.slice(0, 8)?.map(r => ({ name: r?.cardholder?.split(' ')?.[0] || 'Unknown', total: r?.total })),
