@@ -1,0 +1,93 @@
+{
+  "issue": "NDASH-063",
+  "previous_issue": "062",
+  "expected_previous_deployment": "35c01111-7296-4752-b2c3-70dfdd2ba22b",
+  "baseline_asset": "index-3d951b3386b2.js",
+  "baseline_sha256": "3d951b3386b2fa323ac72ba9a3c9186b763a813502a6b796ad90913af9bdb1db",
+  "candidate_sha256": "837cd5742a88f4dc4375ca2a4049face2c10b48c4e17636c12b0217f7b61657b",
+  "asset": "/assets/index-837cd5742a88.js",
+  "patches": [
+    {
+      "old": "(e,t,a)=>{var d,i,r,m,p,l,u,x,g,f,A,y,h,b;const o=new Date,s=o==null?void 0:o.getFullYear(),c=o==null?void 0:o.getMonth();switch(e){case\"this_month\":{const j=new Date(s,c,1),T=new Date(s,c+1,0);return{start:(d=j==null?void 0:j.toISOString())==null?void 0:d.slice(0,10),end:(i=T==null?void 0:T.toISOString())==null?void 0:i.slice(0,10)}}case\"last_month\":{const j=new Date(s,c-1,1),T=new Date(s,c,0);return{start:(r=j==null?void 0:j.toISOString())==null?void 0:r.slice(0,10),end:(m=T==null?void 0:T.toISOString())==null?void 0:m.slice(0,10)}}case\"this_quarter\":{const j=Math.floor(c/3),T=new Date(s,j*3,1),B=new Date(s,j*3+3,0);return{start:(p=T==null?void 0:T.toISOString())==null?void 0:p.slice(0,10),end:(l=B==null?void 0:B.toISOString())==null?void 0:l.slice(0,10)}}case\"q1\":return{start:`${s}-01-01`,end:`${s}-03-31`};case\"q2\":return{start:`${s}-04-01`,end:`${s}-06-30`};case\"q3\":return{start:`${s}-07-01`,end:`${s}-09-30`};case\"q4\":return{start:`${s}-10-01`,end:`${s}-12-31`};case\"ytd\":{const j=new Date(s,0,1),T=new Date(s,c+1,0);return{start:(u=j==null?void 0:j.toISOString())==null?void 0:u.slice(0,10),end:(x=T==null?void 0:T.toISOString())==null?void 0:x.slice(0,10)}}case\"custom\":return{start:t||((f=(g=new Date(s,c,1))==null?void 0:g.toISOString())==null?void 0:f.slice(0,10)),end:a||((y=(A=new Date)==null?void 0:A.toISOString())==null?void 0:y.slice(0,10))};default:{const j=new Date(s,c-1,1),T=new Date(s,c,0);return{start:(h=j==null?void 0:j.toISOString())==null?void 0:h.slice(0,10),end:(b=T==null?void 0:T.toISOString())==null?void 0:b.slice(0,10)}}}}",
+      "new": "(e,t,a)=>{var d,i,r,m,p,l,u,x,g,f,A,y,h,b;const o=new Date,s=o==null?void 0:o.getFullYear(),c=o==null?void 0:o.getMonth();switch(e){case\"this_month\":{const j=new Date(s,c,1),T=new Date(s,c+1,0);return{start:(d=j==null?void 0:j.toISOString())==null?void 0:d.slice(0,10),end:(i=T==null?void 0:T.toISOString())==null?void 0:i.slice(0,10)}}case\"last_month\":{const j=new Date(s,c-1,1),T=new Date(s,c,0);return{start:(r=j==null?void 0:j.toISOString())==null?void 0:r.slice(0,10),end:(m=T==null?void 0:T.toISOString())==null?void 0:m.slice(0,10)}}case\"this_quarter\":{const j=Math.floor(c/3),T=new Date(s,j*3,1),B=new Date(s,j*3+3,0);return{start:(p=T==null?void 0:T.toISOString())==null?void 0:p.slice(0,10),end:(l=B==null?void 0:B.toISOString())==null?void 0:l.slice(0,10)}}case\"q1\":return{start:`${s}-01-01`,end:`${s}-03-31`};case\"q2\":return{start:`${s}-04-01`,end:`${s}-06-30`};case\"q3\":return{start:`${s}-07-01`,end:`${s}-09-30`};case\"q4\":return{start:`${s}-10-01`,end:`${s}-12-31`};case\"ytd\":{const j=new Date(s,0,1),T=new Date(s,c,o.getDate());return{start:(u=j==null?void 0:j.toISOString())==null?void 0:u.slice(0,10),end:(x=T==null?void 0:T.toISOString())==null?void 0:x.slice(0,10)}}case\"custom\":return{start:t||((f=(g=new Date(s,c,1))==null?void 0:g.toISOString())==null?void 0:f.slice(0,10)),end:a||((y=(A=new Date)==null?void 0:A.toISOString())==null?void 0:y.slice(0,10))};default:{const j=new Date(s,c-1,1),T=new Date(s,c,0);return{start:(h=j==null?void 0:j.toISOString())==null?void 0:h.slice(0,10),end:(b=T==null?void 0:T.toISOString())==null?void 0:b.slice(0,10)}}}}"
+    },
+    {
+      "old": "ndash062-GustoBenefits.js",
+      "new": "ndash063-GustoBenefits.js"
+    },
+    {
+      "old": "ndash062-GustoImportHistory.js",
+      "new": "ndash063-GustoImportHistory.js"
+    },
+    {
+      "old": "ndash062-GustoPaySchedules.js",
+      "new": "ndash063-GustoPaySchedules.js"
+    },
+    {
+      "old": "ndash062-GustoTimeAndAttendance.js",
+      "new": "ndash063-GustoTimeAndAttendance.js"
+    },
+    {
+      "old": "ndash062-date-fns.js",
+      "new": "ndash063-date-fns.js"
+    },
+    {
+      "old": "ndash062-help-manual.js",
+      "new": "ndash063-help-manual.js"
+    },
+    {
+      "old": "ndash062-canvg.js",
+      "new": "ndash063-canvg.js"
+    }
+  ],
+  "added_assets": [
+    {
+      "name": "ndash063-GustoBenefits.js",
+      "sha256": "b04aea07271d430e1e954c8961a1a0fe268137ca937538244ad16c539d5607e3",
+      "bytes": 11506,
+      "previous": "ndash062-GustoBenefits.js"
+    },
+    {
+      "name": "ndash063-GustoImportHistory.js",
+      "sha256": "20ce64cac9261834007f5bd0293f5f9780079081bb9df393ca126b3929841eb1",
+      "bytes": 4776,
+      "previous": "ndash062-GustoImportHistory.js"
+    },
+    {
+      "name": "ndash063-GustoPaySchedules.js",
+      "sha256": "a6210c09c4ef9b2b9e800fcb801bab444d57a88928b2b8c74f2a62c2ec36456b",
+      "bytes": 4819,
+      "previous": "ndash062-GustoPaySchedules.js"
+    },
+    {
+      "name": "ndash063-GustoTimeAndAttendance.js",
+      "sha256": "ace20452a4c1bef7434ff424215d5fe339dfe042b90215c9a5c4df6c3dbe0d4a",
+      "bytes": 39931,
+      "previous": "ndash062-GustoTimeAndAttendance.js"
+    },
+    {
+      "name": "ndash063-date-fns.js",
+      "sha256": "a7d12cf180935fd16f323300e9c8f79c212280cd8985d3660ca0c26fd1633ad6",
+      "bytes": 31653,
+      "previous": "ndash062-date-fns.js"
+    },
+    {
+      "name": "ndash063-help-manual.js",
+      "sha256": "f998ee3637733fab3707c9f28129ce3f775708e9d84c15931a6a63c066f25e5d",
+      "bytes": 122300,
+      "previous": "ndash062-help-manual.js"
+    },
+    {
+      "name": "ndash063-canvg.js",
+      "sha256": "eba095246f0e36e733fe1172d35909492268ed12884a86428410bb2bd406298c",
+      "bytes": 150419,
+      "previous": "ndash062-canvg.js"
+    }
+  ],
+  "preserve_previous_entry": true,
+  "target_previous": "ndash062-GustoTimeAndAttendance.js",
+  "target_baseline_sha256": "80d6574cf1cfc38c7301fa77946e19b252d1877b7ea68ea881fca9f6d849acac",
+  "target_fixed_before_relink_sha256": "80d6574cf1cfc38c7301fa77946e19b252d1877b7ea68ea881fca9f6d849acac",
+  "target_patches": [],
+  "syntax": "PASS"
+}

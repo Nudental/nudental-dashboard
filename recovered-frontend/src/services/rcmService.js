@@ -203,7 +203,7 @@ export const buildRcmDateRange = (preset, customStart, customEnd) => {
     }
     case 'ytd': {
       const s = new Date(y, 0, 1);
-      const e = new Date(y, m + 1, 0);
+      const e = new Date(y, m, now.getDate());
       return { start: s?.toISOString()?.slice(0, 10), end: e?.toISOString()?.slice(0, 10) };
     }
     case 'custom':
