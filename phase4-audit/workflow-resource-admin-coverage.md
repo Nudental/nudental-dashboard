@@ -35,3 +35,6 @@ Insurance continued:AssignedToMe2/uncheck2;futureFrom2030-01-02empty0/pastTo2000
 
 096legacydead-endUIrepairclosedPASS: retiredRocketiframe404twice, explicitunavailablenoticeandpermission-gatednativebuttonsdeployed/liveverified/reloadPASS. Externallegacyformnotrestored. Insuranceproductionwrite/externaldelivery/alternate-roletestsremainuntested. No temporary or businessrecordscreated.
 
+
+097mainInsurancenoticecorrectedtoaccuratelydescribeexistingauthorizedemail/uploadactions, source/Rocket/build419tests/compiled/deploy/livePASS. No externalactionexecuted. Insurance representative read-only controls covered; positivewrites/PDF/externaldelivery/ordinaryrole remainuntested. NextTasks/EODQueue/ApprovalsQueue thenResources/Admin. EODparentauto-savesbrowserdraftonmount; avoidoverwritingrealuserdraft, isolatebeforewriteaudit.
+
