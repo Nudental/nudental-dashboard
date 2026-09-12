@@ -1869,28 +1869,28 @@ const AdjustmentTab = ({ dateRange, officeId, refreshKey }) => {
           <input
             type="checkbox"
             checked={includeVoided}
-            onChange={e => { setIncludeVoided(e?.target?.checked); load(1); }}
+            onChange={e => { setIncludeVoided(e?.target?.checked); }}
             className="rounded"
           />
           Include Voided
         </label>
         <select
           value={adjustmentCategory}
-          onChange={e => { setAdjustmentCategory(e?.target?.value); load(1); }}
+          onChange={e => { setAdjustmentCategory(e?.target?.value); }}
           className="text-sm border border-border rounded-lg px-2 py-1.5 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
         >
           {ADJUSTMENT_CATEGORY_OPTIONS?.map(o => <option key={o?.value} value={o?.value}>{o?.label}</option>)}
         </select>
         <select
           value={reviewFlag}
-          onChange={e => { setReviewFlag(e?.target?.value); load(1); }}
+          onChange={e => { setReviewFlag(e?.target?.value); }}
           className="text-sm border border-border rounded-lg px-2 py-1.5 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
         >
           {REVIEW_FLAG_OPTIONS?.map(o => <option key={o?.value} value={o?.value}>{o?.label}</option>)}
         </select>
         <select
           value={pageSize}
-          onChange={e => { setPageSize(Number(e?.target?.value)); load(1); }}
+          onChange={e => { setPageSize(Number(e?.target?.value)); }}
           className="text-sm border border-border rounded-lg px-2 py-1.5 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
         >
           {PAGE_SIZE_OPTIONS?.map(s => <option key={s} value={s}>{s} / page</option>)}
