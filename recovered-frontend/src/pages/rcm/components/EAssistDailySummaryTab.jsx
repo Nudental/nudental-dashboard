@@ -143,7 +143,7 @@ const EAssistDailySummaryTab = ({ defaultOfficeId = '', defaultDate = null }) =>
           <input
             type="date"
             value={selectedDate}
-            onChange={e => setSelectedDate(e?.target?.value)}
+            onChange={e => { if (e?.target?.value && e?.target?.validity?.valid) setSelectedDate(e.target.value); }}
             max={today}
             className="text-sm border border-border rounded-lg px-3 py-1.5 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
           />
