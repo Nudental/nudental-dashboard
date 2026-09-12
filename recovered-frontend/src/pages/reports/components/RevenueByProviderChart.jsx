@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ascendApi } from '../../../services/ascendApi';
 import Icon from '../../../components/AppIcon';
+import { LOCATION_ID_MAP, OFFICE_MAP } from '../../../constants/offices';
 import { format, startOfMonth, subMonths, endOfMonth, startOfQuarter, subQuarters } from 'date-fns';
 
 const fmtCurrency = (v) =>
@@ -78,6 +79,40 @@ function getDateRange(df) {
   return { start: `${year}-01-01`, end: format(now, 'yyyy-MM-dd') };
 }
 
+const readReportProviderScope = async (api, start, end, selected, locationId, locations, offices) => {
+  const ids = [...new Set((selected || []).filter(id => id && id !== 'all'))];
+  if (!ids.length || selected?.includes('all')) return api.getProviderPerformance(start, end, locationId || null);
+  if (ids.some(id => !locations[id])) throw new Error('Provider data is unavailable for a selected office.');
+  if (ids.length === 1) return api.getProviderPerformance(start, end, locations[ids[0]]);
+  const results = await Promise.all(ids.map(id => api.getProviderPerformance(start, end, locations[id])));
+  const fields = {
+    grossProduction: ['gross_production'], netProduction: ['net_production'],
+    adjustments: ['production_adjustments'], patientCollections: ['patient_collections'],
+    insuranceCollections: ['insurance_collections'], collections: ['total_collections'],
+  };
+  const number = value => value == null || value === '' || !Number.isFinite(Number(value)) ? null : Number(value);
+  const merged = new Map();
+  results.forEach((result, index) => {
+    const rows = Array.isArray(result) ? result : result?.providers ?? result?.data;
+    if (!Array.isArray(rows)) throw new Error('Provider data is unavailable for a selected office.');
+    rows.forEach(row => {
+      const id = row?.providerId ?? row?.provider_id ?? row?.id;
+      if (!id) throw new Error('A provider identifier is missing from selected office data.');
+      const values = Object.fromEntries(Object.entries(fields).map(([field, aliases]) => [field, number(row[field] ?? row[aliases[0]])]));
+      const existing = merged.get(id);
+      if (existing) {
+        for (const field of Object.keys(fields)) existing[field] = existing[field] == null || values[field] == null ? null : existing[field] + values[field];
+      } else merged.set(id, { ...row, ...values, scopeNames: new Set() });
+      const combined = merged.get(id);
+      if (values.netProduction || values.collections) combined.scopeNames.add(offices[ids[index]]?.name || 'Selected office');
+    });
+  });
+  return { providers: [...merged.values()].map(({ scopeNames, ...row }) => ({ ...row,
+    officeName: [...scopeNames].join(', '),
+    collectionRate: row.netProduction > 0 && row.collections != null ? row.collections / row.netProduction * 100 : null,
+  })) };
+};
+
 const RevenueByProviderChart = ({ dateFilter = 'ytd_2026', officeFilter = ['all'], locationId = null }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -93,11 +128,7 @@ const RevenueByProviderChart = ({ dateFilter = 'ytd_2026', officeFilter = ['all'
     try {
       const { start, end } = getDateRange(dateFilter);
 
-      // Resolve locationId: use prop if provided, else derive from officeFilter
-      // For all-office, pass null (no locationId param)
-      const resolvedLocationId = locationId || null;
-
-      const data = await ascendApi?.getProviderPerformance(start, end, resolvedLocationId);
+      const data = await readReportProviderScope(ascendApi, start, end, officeFilter, locationId, LOCATION_ID_MAP, OFFICE_MAP);
 
       // Normalize response — endpoint may return array or { data: [...], providers: [...] }
       let rawProviders = [];
@@ -131,7 +162,7 @@ const RevenueByProviderChart = ({ dateFilter = 'ytd_2026', officeFilter = ['all'
     } finally {
       setLoading(false);
     }
-  }, [dateFilter, locationId]);
+  }, [dateFilter, locationId, officeFilter?.join(',')]);
 
   useEffect(() => {
     fetchProviderPerformance();
