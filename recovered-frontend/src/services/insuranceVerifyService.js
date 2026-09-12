@@ -47,9 +47,9 @@ export const fetchVerificationRequests = async (filters = {}) => {
     query = query?.lt('requested_at', to?.toISOString());
   }
   if (filters?.search?.trim()) {
-    const s = filters?.search?.trim();
+    const s = filters?.search?.trim()?.replace(/\\/g, '\\\\')?.replace(/"/g, '\\"');
     query = query?.or(
-      `patient_first_name.ilike.%${s}%,patient_last_name.ilike.%${s}%,patient_name.ilike.%${s}%,insurance_company_name.ilike.%${s}%,member_id.ilike.%${s}%`
+      `patient_first_name.ilike."%${s}%",patient_last_name.ilike."%${s}%",patient_name.ilike."%${s}%",insurance_company_name.ilike."%${s}%",member_id.ilike."%${s}%"`
     );
   }
 
