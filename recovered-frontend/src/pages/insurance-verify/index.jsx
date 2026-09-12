@@ -115,7 +115,7 @@ export default function InsuranceVerify() {
               Requests are saved in Nu Dashboard. Click a request row to open the detail drawer, then use
               <strong> Start Verification</strong> / <strong>Continue Verification</strong> / <strong>View Completed Verification</strong> to open the online breakdown form.
               Completed verifications can be <strong>downloaded as PDF</strong> from the form view or the detail drawer.
-              No emails are sent. No Dentrix upload.
+              Email delivery and Dentrix uploads are separate actions available to authorized users.
             </p>
           </div>
         </div>
