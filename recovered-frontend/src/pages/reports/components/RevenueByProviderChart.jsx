@@ -119,8 +119,11 @@ const RevenueByProviderChart = ({ dateFilter = 'ytd_2026', officeFilter = ['all'
   const [providers, setProviders] = useState([]);
   const [drillProvider, setDrillProvider] = useState(null);
   const [viewMode, setViewMode] = useState('chart'); // 'chart' | 'table'
+  const requestVersion = React.useRef(0);
 
   const fetchProviderPerformance = useCallback(async () => {
+    const version = ++requestVersion.current;
+    const isCurrent = () => version === requestVersion.current;
     setLoading(true);
     setError(null);
     setProviders([]);
@@ -129,6 +132,7 @@ const RevenueByProviderChart = ({ dateFilter = 'ytd_2026', officeFilter = ['all'
       const { start, end } = getDateRange(dateFilter);
 
       const data = await readReportProviderScope(ascendApi, start, end, officeFilter, locationId, LOCATION_ID_MAP, OFFICE_MAP);
+      if (!isCurrent()) return;
 
       // Normalize response — endpoint may return array or { data: [...], providers: [...] }
       let rawProviders = [];
@@ -157,15 +161,17 @@ const RevenueByProviderChart = ({ dateFilter = 'ytd_2026', officeFilter = ['all'
 
       setProviders(mapped);
     } catch (err) {
+      if (!isCurrent()) return;
       console.warn('[RevenueByProviderChart] provider-performance fetch error:', err?.message);
       setError(err?.message || 'Failed to load provider performance data');
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   }, [dateFilter, locationId, officeFilter?.join(',')]);
 
   useEffect(() => {
     fetchProviderPerformance();
+    return () => { requestVersion.current += 1; };
   }, [fetchProviderPerformance]);
 
   const chartData = providers?.slice(0, 15)?.map((p) => ({
