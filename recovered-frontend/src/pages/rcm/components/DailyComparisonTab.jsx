@@ -533,7 +533,7 @@ const resolveWithAliases = (row, fields) => {
   return null;
 };
 
-const DeltaBadge = ({ delta, deltaPct, direction }) => {
+const DeltaBadge = ({ delta, deltaPct, direction, format = 'currency' }) => {
   if (delta == null && deltaPct == null) return <span className="text-muted-foreground text-xs">N/A</span>;
   const safeDeltaPct = safeNum(deltaPct);
   const safeDelta = safeNum(delta);
@@ -545,7 +545,7 @@ const DeltaBadge = ({ delta, deltaPct, direction }) => {
       isUp ? 'text-emerald-700 bg-emerald-50' : isDown ? 'text-red-600 bg-red-50' : 'text-muted-foreground bg-muted/40'
     }`}>
       {isUp ? '↑' : isDown ? '↓' : '—'}
-      {safeDeltaPct != null ? fmtDelta(safeDeltaPct) : (safeDelta != null ? fmtCurrency(safeDelta) : '')}
+      {safeDeltaPct != null ? fmtDelta(safeDeltaPct) : (safeDelta != null ? formatValue(safeDelta, format) : '')}
     </span>
   );
 };
@@ -1184,7 +1184,7 @@ const DailyComparisonTab = ({ officeId, offices }) => {
                                 {curr != null ? (
                                   <div className="flex flex-col items-end gap-0.5">
                                     <span className="text-foreground font-medium">{formatValue(curr, metric?.format)}</span>
-                                    <DeltaBadge delta={delta} deltaPct={deltaPct} direction={direction} />
+                                    <DeltaBadge delta={delta} deltaPct={deltaPct} direction={direction} format={metric?.format} />
                                   </div>
                                 ) : (
                                   <span className="text-muted-foreground">N/A</span>
@@ -1276,7 +1276,7 @@ const DailyComparisonTab = ({ officeId, offices }) => {
                               {prior != null ? (
                                 <div className="flex flex-col items-end gap-0.5">
                                   <span className="text-foreground font-medium">{formatValue(prior, metric?.format)}</span>
-                                  <DeltaBadge delta={priorDelta?.delta} deltaPct={priorDelta?.deltaPct} direction={priorDelta?.direction} />
+                                  <DeltaBadge delta={priorDelta?.delta} deltaPct={priorDelta?.deltaPct} direction={priorDelta?.direction} format={metric?.format} />
                                 </div>
                               ) : (
                                 <span className="text-muted-foreground">N/A</span>
@@ -1286,7 +1286,7 @@ const DailyComparisonTab = ({ officeId, offices }) => {
                               {lastYr != null ? (
                                 <div className="flex flex-col items-end gap-0.5">
                                   <span className="text-foreground font-medium">{formatValue(lastYr, metric?.format)}</span>
-                                  <DeltaBadge delta={lastYrDelta?.delta} deltaPct={lastYrDelta?.deltaPct} direction={lastYrDelta?.direction} />
+                                  <DeltaBadge delta={lastYrDelta?.delta} deltaPct={lastYrDelta?.deltaPct} direction={lastYrDelta?.direction} format={metric?.format} />
                                 </div>
                               ) : (
                                 <span className="text-muted-foreground">N/A</span>

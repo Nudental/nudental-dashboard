@@ -1,0 +1,12 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),path=require('path'),vm=require('vm');
+const root=path.join(__dirname,'../recovered-frontend'),deps=process.env.NDASH_PARSER_ROOT||root,parser=require(path.join(deps,'node_modules/@babel/parser')),esbuild=require(path.join(deps,'node_modules/esbuild'));
+const source=fs.readFileSync(path.join(root,'src/pages/rcm/components/DailyComparisonTab.jsx'),'utf8'),names=['safeNum','fmtCurrency','fmtCurrencyAbs','fmtNum','fmtPct','fmtDelta','formatValue','DeltaBadge'],decls={},calls=[];
+function walk(n){if(!n||typeof n!=='object')return;if(n.type==='VariableDeclarator'&&names.includes(n.id?.name))decls[n.id.name]='const '+source.slice(n.start,n.end)+';';if(n.type==='JSXElement'&&n.openingElement.name?.name==='DeltaBadge')calls.push(source.slice(n.start,n.end));for(const v of Object.values(n))if(v&&typeof v==='object')Array.isArray(v)?v.forEach(walk):walk(v)}
+walk(parser.parse(source,{sourceType:'module',plugins:['jsx']}));assert.equal(calls.length,3);assert(names.every(n=>decls[n]));
+const program=names.map(n=>decls[n]).join('\n');
+function render(call,format='number',delta=0,deltaPct=null,direction='flat'){const ctx={module:{exports:null},Intl,Number,Math,Array,metric:{format},delta,deltaPct,direction,priorDelta:{delta,deltaPct,direction},lastYrDelta:{delta,deltaPct,direction},h:(tag,props,...children)=>typeof tag==='function'?tag({...props,children}):children.flat(Infinity).filter(x=>x!=null&&x!==false).join('')};vm.runInNewContext(esbuild.transformSync(program+'\nmodule.exports='+call,{loader:'jsx',jsxFactory:'h',format:'cjs'}).code,ctx);return ctx.module.exports}
+for(let i=0;i<calls.length;i++)test(['Daily comparison','MTD prior-month comparison','MTD prior-year comparison'][i]+' shows count deltas in count units',()=>{assert.equal(render(calls[i]),'—0');assert.equal(render(calls[i],'number',12,null,'up'),'↑12')});
+test('Money comparison deltas retain currency formatting',()=>assert.equal(render(calls[0],'currency',-50,null,'down'),'↓-$50'));
+test('Defined percentage deltas retain priority and formatting',()=>assert.equal(render(calls[0],'number',5,50,'up'),'↑+50.0%'));
+test('Unavailable comparison deltas remain unavailable',()=>assert.equal(render(calls[0],'number',null,null),'N/A'));
+test('Existing callers without a unit keep the monetary fallback',()=>assert.equal(render('<DeltaBadge delta={0} />'),'—$0'));
