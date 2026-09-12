@@ -1,6 +1,6 @@
 # NDASH-058 — Late claim responses overwrite the active filters
 
-Section: RCM / Claim Submissions. Severity: High. Status: candidate tested; deployment/live checks pending.
+Section: RCM / Claim Submissions. Severity: High. Status: repaired, deployed, live verification PASS.
 
 Reproduced on 057: after rapid date-basis/office/status changes, visible August / Barnegat / Service Date / Unsent / empty Payor controls showed the all-office 1,011-claim total. Explicit Apply with identical controls restored383, with every visible row Barnegat/Unsent. Earlier payor clearing left5 claims until the next read. Independent API/source evidence confirms Barnegat total444 and Unsent383. This is a response-order problem, not a financial data correction.
 
@@ -9,3 +9,5 @@ Root cause: every overlapping load callback updates rows, summary, pagination, f
 Tests: 270 source tests PASS; production build PASS (30.65 seconds). Deferred-request tests cover reversed success order, obsolete errors, loading while a newer request remains pending, current failure, cleanup, and empty summary. Actual compiled component Swt passes the same behavior checks. Full reversal to057, preserved prior repairs and seven dependency relinks PASS. Rocket789complete.
 
 Candidate asset index-86af3cdb8684.js. Exact prior-deployment guard 5a830349-02a8-4c78-9ffe-96aeb31f07ef; retain prior057 graph. No patient, financial or claim writes, exports, sync or configuration changes.
+
+Live closure: deployment3bcd97e5-baf7-4952-8271-d712d3d097b1, assetSHA86af3cdb8684a13afcddf0d2973ff26ec5c00d96b1c23fddea78e40d87880ea4. Rapid date-basis/office/status sequence now yields383 Barnegat Unsent claims, with all50 visible rows matching both filters. Rapid no-match→x→blank payor input retains383. RestoreAllOffices returns1011. Lastpage21 shows11 distinct rows and Next disabled. Refresh returns50 rows, default filters, total1011, no alerts/browser errors. Old057 retained; no data writes.

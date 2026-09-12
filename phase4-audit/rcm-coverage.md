@@ -8,6 +8,8 @@ Claims: August 2026 / All Offices UI 1,011 equals API summary and SQLite active 
 
 Read-only source probe: work/phase4-rcm-claims-readonly.py; private remote rcm-claims-readonly-result.json. Empty payor synthetic search returns API zero. No identifiers or raw record bodies saved.
 
-Remaining Claims checks: empty payor UI, status/date basis, explicitly current-page search/sort, refresh, visible all-office last page. Existing search and export correctly label current-page scope; do not misreport them as full-result controls. No export performed. Ordinary-user access testing still requires an available safe role session.
+Further Claims checks: empty payor UI zero matches API; Submitted Date131 matches independent SQLite raw/calendar-day counts (no end-day timestamp loss in current August data). Current-page search/sort remain to test. NDASH058 request race reproduced and repaired/live verified: rapid filters and payor clearing preserve correct383 BarnegatUnsent; all-office1011restored; finalpage11distinctrows/Nextdisabled; refresh50rows/1011/errors0. Existing search/export correctly label current-page scope. No export performed. Ordinary-user access testing still requires an available safe role session.
+
+Next investigation: Unknown status option. Read-only API status=unknown returns1011 despite SQLite unknown-state count0 for active August service dates. Existing reverse map omits unknown and silently applies no status condition. Reproduce this option live on058 before editing. Evidence helper phase4-rcm-status-readonly.py; no patient details output.
 
 Other RCM tabs not yet verified. Inspect mount side effects before opening; do not trigger contact/outreach writes or any financial operations. Known historical procedure/source coverage limitation remains; no backfill authorized.
