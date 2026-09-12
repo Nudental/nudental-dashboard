@@ -14,11 +14,10 @@ import { useRealtimeSubscription } from '../../hooks/useRealtimeSubscription';
 import useHomeNavigation from '../../hooks/useHomeNavigation';
 import { useRbacGuard, AccessDenied } from '../../hooks/useRbacGuard';
 
-const TeamAssignments = () => {
+const TeamAssignmentsContent = () => {
   const { userProfile, user } = useAuth();
   const navigate = useNavigate();
   const goHome = useHomeNavigation();
-  const { canAccess, loading: rbacLoading } = useRbacGuard();
   const [viewMode, setViewMode] = useState('kanban');
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -51,12 +50,6 @@ const TeamAssignments = () => {
   const canManage = canManageTasks(userRole);
   const canCreate = canCreateTasks(userRole);
   const officeSelectAllowed = canSelectOfficeRole(userRole);
-
-  // ─── RBAC page guard ──────────────────────────────────────────────────────
-  if (rbacLoading) return null;
-  if (!canAccess('workflow.tasks.view')) {
-    return <AccessDenied title="Team Assignments" message="You don't have permission to access Team Assignments. Contact your administrator." />;
-  }
 
   const breadcrumbItems = [
     { label: 'Dashboard', path: '/executive-overview' },
@@ -420,6 +413,15 @@ const TeamAssignments = () => {
       )}
     </div>
   );
+};
+
+const TeamAssignments = () => {
+  const { canAccess, loading: rbacLoading } = useRbacGuard();
+  if (rbacLoading) return null;
+  if (!canAccess('workflow.tasks.view')) {
+    return <AccessDenied title="Team Assignments" message="You don't have permission to access Team Assignments. Contact your administrator." />;
+  }
+  return <TeamAssignmentsContent />;
 };
 
 export default TeamAssignments;
