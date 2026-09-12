@@ -99,3 +99,6 @@ NDASH082 closedPASS: oneclassdrawerz50toexisting200aboveheader100. TwoactualXcli
 
 NDASH083 closedPASS: eAssist summaries now fullsame-filter range using3fieldprojection/status/confidence/date only,500rowbatches. BeforeMissing50→13/latestAug31→Aug7acrosspages; now63/Aug31on50/13and10/3pages. Brick21/Success0/latest—;fullreload50of63/Missing63/Aug31/conf0. Sevennewactual-routetests/sixfailbefore/twelveretainedbackend suitesPASS. Candidate8002/live8001PASS;080age076officeaggregatechecksand401retained. Backend083SHA1a5d9e0cfc27650a36e585e92962696e412af5e0b612258fe40d52190793108c;080snapshotretained/frontend082unchanged. No business writes. RemainingeAssistdatevalidation/ingestionstatus/globaloffice/possiblepageresetrace.
 
+
+NDASH084 closedPASS: localStatenchoicehiditsownpicker/controlswithnoexit,reproducedtwice. AddedoneShow all eAssist offices→onlyexistingofficeSetter(all).355tests/build29.93/Rocket810/compiledcallback/exact082reversalPASS. Live2cyclesrecover50of63andMissing/Pending/size10withAugboundsretained;drawerclose082andsummary083retained. Defaultsrestored/errors0/healthPASS. Deployment9a74995f-27a9-41ba-8066-5e4f76dc52e9,index-97f3a1761001.js;backend083unchanged. Page-sizeracefollowupsresetcorrectlytwice; no speculativechange.
+
