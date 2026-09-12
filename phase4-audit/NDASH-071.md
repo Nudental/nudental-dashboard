@@ -1,6 +1,6 @@
 # NDASH-071 — Review filters compare display labels instead of canonical flags
 
-Section: RCM Adjustment / Discount-Write-Off and Missing Documentation queues. Severity: Medium. Status: tested; deployment pending.
+Section: RCM Adjustment / Discount-Write-Off and Missing Documentation queues. Severity: Medium. Status: repaired, deployed, live verification PASS.
 
 Reproduced on frontend069 after backend070: Large Adjustment and Late-Posted return zero in both queues. The current API has documentation counts192/18 and Discount-Write-Off counts185/20 for those canonical flags. Display labels include qualifiers: Large Adjustment (>= $500), Late-Posted (> 7 days).
 
@@ -11,3 +11,5 @@ Smallest fix: swap precedence in exactly two const flags expressions in Adjustme
 Tests: after correcting the harness to recognize optional-call AST nodes, 6 actual-source regressions fail before and all10 pass after, covering qualified labels, unrelated flags, legacy labels and explicit empty canonical lists. Full315 frontend tests pass; production source build37.90s PASS. Actual compiled filter predicates1269/1134bytes have the same before/after behavior. Full reversal to069, prior repairs, seven dependency relinks, and parser checks PASS. Rocket799 matches the two changes. Blocked042/066 remain excluded; the whole recovered frontend is not released.
 
 Candidate asset index-95ef528758a8.js, based on a39ed8d3-7637-45dd-a10f-a09999c3044b. Backend070 SHA dec9768c7d981725d965c1c0fff6f47de8ec8c10ca41fd2ef14a80434a6a0f4a must remain unchanged. Verify each queue against its own API counts, clear/reset, existing notes and full reload after deployment.
+
+Live closure: deployment5657233a-defd-4e55-a484-bcfb5c8b1224 / index-95ef528758a8.js / SHA95ef528758a80976cfbd032e1ca63eb2c33573b690dd3363da1a7df080ea83f6. Documentation Large192/Late18/MissingNote167; Discount-Write-Off Large185/Late20/MissingNote169. Both resets200. Full reload repeatsLarge192, keeps33existingnotes and ProfessionalCourtesy2/-90. No alerts/captured errors; backend070 unchanged. One immediate post-reload locator timed out before navigation finished; the subsequent settled page rendered normally with the correct asset. Existing069 release retained for rollback. No business writes/exports.
