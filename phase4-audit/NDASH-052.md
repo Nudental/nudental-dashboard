@@ -1,6 +1,6 @@
 # NDASH-052 — Expense Admin Tools hides records beyond the first page
 
-Section: Expense Report / Admin Tools / Unmatched Records and Sync Logs. Status: candidate verified; deployment and live verification pending.
+Section: Expense Report / Admin Tools / Unmatched Records and Sync Logs. Status: repaired, deployed, live verification PASS.
 
 Reproduced on release051 before editing: Unmatched Records renders100 rows and claims100 missing assignments, although the exact source HEAD count is15,077. Sync Logs renders20 rows although578 exist. Neither has page controls. Import Log0 and Needs Review55 agree with exact source counts. No record content was copied into evidence.
 
@@ -9,3 +9,5 @@ Root cause: fetchUnmatchedExpenses uses limit100; fetchAmexSyncLogs uses limit20
 Small repair: add fetchExpenseAuditPage in expenseReportService.js; bounded100/20-row pages, exact counts, stable date/id ordering, original predicates and only rendered fields plus id. Reject query errors, missing/invalid counts, duplicate/missing ids, and incomplete pages. AdminAuditTools.jsx shows exact totals, Previous/Next, retryable errors, resets on view change and missing last page, and ignores superseded results. Legacy helper interfaces, Import Log and Needs Review behavior remain. No data writes, import/sync execution, credentials, permissions, deployment configuration, payroll dates, or accounting changes.
 
 Verification:10 focused synthetic tests; all231 source tests PASS; production source build PASS26.50s. Actual compiled component tests PASS: first/middle/last/empty pages,15077/578 totals, bounded query scope/order, error and identity validation, paging buttons, loading/retry, late response protection and disappearing last page. Full artifact reversal to051 and seven dependency relinks PASS;049/050/051 components byte-identical. Rocket version783 completed. Only this component changes in the actual production artifact.
+
+Deployment37106f77-213d-4f76-8ac3-2be1915625a1; asset index-a10357be2c04.js; SHA a10357be2c04ef0aee00868bb266df9e9d5b28ef93c477f1601f041871b09623. Prior051 and older release graphs retained. Live PASS: Unmatched exact15,077,100 rows/page, first1–100/second101–200; Previous returns identical first-page rows. Sync Logs exact578,20 rows/page, first1–20/second21–40. Rapid Unmatched→Sync switching yields current Sync first page. Import Log still0 and Needs Review55; no pager leaks to those views. Refresh retains repaired totals and asset. Transactions still3926 with1–50of1280,50 visible rows. Zero visible alerts/browser errors. Last-page boundary and source-failure paths verified synthetically without forcing production errors. No records created, changed, exported, or deleted; no cleanup needed.
