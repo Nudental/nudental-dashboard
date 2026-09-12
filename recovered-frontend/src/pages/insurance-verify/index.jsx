@@ -171,23 +171,15 @@ export default function InsuranceVerify() {
                 <div>
                   <p className="font-semibold">Legacy request form</p>
                   <p className="text-amber-700 text-xs mt-0.5">
-                    Use only as fallback until the native workflow is fully verified.
-                    Submissions here send an email notification but do not create a queue record in Nu Dashboard.
-                    Prefer the <strong>New Request</strong> tab for all new submissions.
+                    The legacy form is currently unavailable. Use the native request screens below.
                   </p>
                 </div>
               </div>
-              <div
-                className="rounded-xl border border-border overflow-hidden"
-                style={{ height: 'calc(100vh - 320px)', minHeight: '500px' }}
-              >
-                <iframe
-                  ref={iframeRef}
-                  src={LEGACY_IFRAME_URL}
-                  title="Legacy Insurance Verification Form"
-                  style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
-                  allow="fullscreen"
-                />
+              <div className="flex gap-3">
+                <button onClick={() => setActiveTab('queue')} className="px-4 py-2 rounded-lg border border-border text-sm">Open Request Queue</button>
+                {canSubmit && (
+                  <button onClick={() => setActiveTab('new')} className="px-4 py-2 rounded-lg border border-border text-sm">Open New Request</button>
+                )}
               </div>
             </div>
           )}
