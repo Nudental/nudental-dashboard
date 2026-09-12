@@ -213,6 +213,7 @@ const GuarantorReconciliationTab = ({ dateRange, officeId, refreshKey }) => {
     try {
       setLoading(true);
       setError(null);
+      setExpandedRows(new Set());
       const result = await fetchGuarantorReconciliation({
         startDate: dateRange?.start,
         endDate: dateRange?.end,
@@ -279,10 +280,10 @@ const GuarantorReconciliationTab = ({ dateRange, officeId, refreshKey }) => {
     else { setSortKey(key); setSortDir('asc'); }
   };
 
-  const toggleRow = (idx) => {
+  const toggleRow = (row) => {
     setExpandedRows(prev => {
       const next = new Set(prev);
-      next?.has(idx) ? next?.delete(idx) : next?.add(idx);
+      next?.has(row) ? next?.delete(row) : next?.add(row);
       return next;
     });
   };
@@ -595,7 +596,7 @@ const GuarantorReconciliationTab = ({ dateRange, officeId, refreshKey }) => {
                 </tr>
               )}
               {sorted?.map((row, idx) => {
-                const isExpanded = expandedRows?.has(idx);
+                const isExpanded = expandedRows?.has(row);
                 return (
                   <React.Fragment key={idx}>
                     <tr
@@ -604,7 +605,7 @@ const GuarantorReconciliationTab = ({ dateRange, officeId, refreshKey }) => {
                       {/* Expand toggle */}
                       <td className="px-2 py-2 text-center">
                         <button
-                          onClick={() => toggleRow(idx)}
+                          onClick={() => toggleRow(row)}
                           className="text-muted-foreground hover:text-foreground transition-colors"
                           title={isExpanded ? 'Collapse' : 'Expand details'}
                         >
