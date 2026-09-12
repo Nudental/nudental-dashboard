@@ -117,6 +117,7 @@ const PeriodComparisonView = ({ officeFilter: officeFilterProp }) => {
   const [loading, setLoading] = useState(false);
   const [comparisonData, setComparisonData] = useState(null);
   const [warnings, setWarnings] = useState([]);
+  const [validationError, setValidationError] = useState(null);
 
   // Determine effective office scope:
   // If the Reports page passes a scoped officeFilter (office manager), use it.
@@ -236,6 +237,14 @@ const PeriodComparisonView = ({ officeFilter: officeFilterProp }) => {
   };
 
   const handleCompare = useCallback(async () => {
+    const invalidPeriod = [periodA, periodB].findIndex(period => !period?.start || !period?.end || period.start > period.end);
+    if (invalidPeriod !== -1) {
+      setValidationError(`Period ${invalidPeriod === 0 ? 'A' : 'B'}: choose both dates with the start on or before the end.`);
+      setComparisonData(null);
+      setWarnings([]);
+      return;
+    }
+    setValidationError(null);
     setLoading(true);
     setComparisonData(null);
     setWarnings([]);
@@ -462,6 +471,7 @@ const PeriodComparisonView = ({ officeFilter: officeFilterProp }) => {
         </div>
       </div>
       {/* Non-blocking warnings */}
+      {validationError && <div role="alert" className="px-3 py-2 text-sm text-destructive border border-destructive/30 rounded-md">{validationError}</div>}
       {warnings?.length > 0 && (
         <div className="space-y-1">
           {warnings?.map((w, i) => (
