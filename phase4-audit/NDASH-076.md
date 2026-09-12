@@ -1,6 +1,6 @@
 # NDASH-076 — Single-office Daily Comparison breakdown is missing
 
-Section: RCM / Daily Comparison / By Office. Severity: Medium. Status: isolated candidate and API preflight pass; release pending.
+Section: RCM / Daily Comparison / By Office. Severity: Medium. Status: repaired, deployed, live verification PASS.
 
 Reproduction: on frontend075, All Offices for2026-09-11 shows four office rows. Select Staten Island and By Office says “No by-office data available.” Daily still shows that office's gross production$6,443, net production$4,102 and collections$4,421. Returning to By Office reproduces the empty state again.
 
@@ -15,3 +15,7 @@ Tests: actual office-building block with synthetic aggregates reproduces two fai
 Release plan: compare aggregate APIs before any write; verify the candidate on the existing8002 service, then restart the existing8001 service. Preserve startup write flags, existing read-only cache warming, service configuration and rollback state. No rejected patient-detail route is used. After release, verify Staten Island's single row, All Offices, refresh, full reload and earlier Daily/MTD display repairs live.
 
 API preflight PASS: All Offices returns4 rows, filtered daily/MTD by_office is null, and the filtered daily metrics exactly match Staten Island's populated All Offices row. Current frontend075 and source070 are unchanged; startup write flags remain disabled. The preflight harness initially assumed empty sections were arrays; corrected null normalization. A separate status-only probe confirmed the default client is denied403 at the public gateway while the ordinary browser header reaches the existing missing-key401 response; the check now uses the same browser header as retained API tests. No authentication behavior or production source changed during preflight.
+
+Deployment and closure: candidate8002 and production8001 both pass aggregate verification. Backend is now cbf327b030944d576fbc568d4ff3044ec8e79c9ac2013e53f5f04d898e66f0ab. All four office rows and daily/MTD/provider aggregate fields are unchanged; each filtered daily/MTD response now contains only the selected office. Missing-key401 remains intact. Frontend075 is unchanged.
+
+Live PASS: Sep11 Staten Island shows exactly one row with gross$6,443/net$4,102/collections$4,421. Component refresh preserves it. Full reload, reopen Daily Comparison, select Sep11 and All Offices returns the original four rows; a settled Staten selection returns one. Current-date defaultSep12 and Daily/MTD count units remain correct; alerts/errors0. During overlapping office requests, an older All Offices response briefly settled under Staten Island; this is a separate frontend request-order observation tracked for NDASH-077, not a reversal of the backend repair. No business records, configuration, credentials, or deployment settings changed; backend070 snapshot preserved.
