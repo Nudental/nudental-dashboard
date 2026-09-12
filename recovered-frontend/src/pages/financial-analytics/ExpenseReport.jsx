@@ -473,6 +473,8 @@ const ExpenseReport = () => {
             sourceTypes: p?.sourceTypes,
             paymentSources: p?.paymentSources,
             statuses: p?.statuses,
+            cardholderName: p?.cardholderName,
+            merchantName: p?.merchantName,
           }),
           // By category — all filter dimensions
           fetchExpensesByCategory({

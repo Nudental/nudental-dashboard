@@ -2472,6 +2472,8 @@ export async function fetchMonthlyExpenseTrend({
   sourceTypes = [],
   paymentSources = [],
   statuses = [],
+  cardholderName = null,
+  merchantName = null,
 } = {}) {
   const rangeStart = startDate || `${year}-01-01`;
   const rangeEnd = endDate || `${year}-12-31`;
@@ -2491,6 +2493,8 @@ export async function fetchMonthlyExpenseTrend({
     limit: 2000,
     offset: 0,
     postedOnly: true,
+    cardholderName,
+    merchantName,
   });
 
   // V295: Fetch gusto_expense_facts using same logic as fetchExpenseKPIs
