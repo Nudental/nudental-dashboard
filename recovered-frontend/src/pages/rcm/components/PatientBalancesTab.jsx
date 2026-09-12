@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
 import { fetchPatientBalances } from '../../../services/rcmService';
 import { fmtDate } from '../../../services/rcmService';
@@ -56,6 +56,7 @@ const ScorecardCard = ({ label, value, icon, colorClass = 'text-foreground', sub
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const PatientBalancesTab = ({ officeId, refreshKey }) => {
+  const requestGeneration = useRef(0);
   // ── State ──────────────────────────────────────────────────────────────────
   const [data, setData] = useState([]);
   const [scorecard, setScorecard] = useState({});
@@ -78,6 +79,11 @@ const PatientBalancesTab = ({ officeId, refreshKey }) => {
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
   const fetchData = useCallback(async (currentPage = 1) => {
+    const request = ++requestGeneration.current;
+    setData([]);
+    setScorecard({});
+    setMeta({});
+    setSourceMeta(null);
     setLoading(true);
     setError(null);
     try {
@@ -93,18 +99,20 @@ const PatientBalancesTab = ({ officeId, refreshKey }) => {
       if (search?.trim()) params.search = search?.trim();
 
       const result = await fetchPatientBalances(params);
+      if (request !== requestGeneration.current) return;
       setData(result?.data || []);
       setScorecard(result?.scorecard || {});
       setMeta(result?.meta || {});
       setSourceMeta(result?.sourceMeta || null);
     } catch (err) {
+      if (request !== requestGeneration.current) return;
       console.error('[PatientBalancesTab] fetch error:', err);
       setError(err?.message || 'Failed to load patient balances.');
       setData([]);
       setScorecard({});
       setMeta({});
     } finally {
-      setLoading(false);
+      if (request === requestGeneration.current) setLoading(false);
     }
   }, [officeId, balanceType, includeZeroBalances, pageSize, agingBucket, minBalance, search]);
 
@@ -112,6 +120,7 @@ const PatientBalancesTab = ({ officeId, refreshKey }) => {
   useEffect(() => {
     setPage(1);
     fetchData(1);
+    return () => { requestGeneration.current += 1; };
   }, [officeId, balanceType, includeZeroBalances, pageSize, agingBucket, minBalance, search, refreshKey]);
 
   // Page change only
