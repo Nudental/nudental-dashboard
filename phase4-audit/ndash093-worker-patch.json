@@ -1,0 +1,11 @@
+{
+  "issue": "NDASH-093",
+  "worker": "nudental-manual",
+  "previous_version": "22f696b1-3eeb-48d3-89b5-879bc0438e53",
+  "recovery_version_url": "https://22f696b1-nudental-manual.4z86tyfd2g.workers.dev",
+  "route_unchanged": "nudashboard.com/insurance-verify*",
+  "condition": "url.pathname === \"/insurance-verify\"",
+  "before": "return new Response(null, { status: 302, headers: { \"Location\": \"https://insurance-verification-request-mxb2g01.public.builtwithrocket.new\" } });",
+  "after": "return fetch(request);",
+  "scope": "One existing exact-path branch; preserve the request, origin, DNS, bindings, other worker handlers and all credentials."
+}
