@@ -11,3 +11,9 @@ Fix: this component resolves/deduplicates all selected locations using the exist
 Seven synthetic cases:6 failures before; all464regressionsPASS after. Production source buildPASS34.52s. Rocket831 requested/verification pending. Compiled artifact/deployment/live verification pending;104 recovery preserved.
 
 Rocket831 confirms scoped file only. Actual compiled callback testsPASS for selected locations, merged totals/rate, single/all paths, unknown/malformed/missingID/partial failures. Canonical compiled office maps validated. Full reverse to104, all retained repairs and7dependency relinksPASS. Candidate index-4d6d2e73f46e.js. Deployment/live pending.
+
+## Closure — PASS
+
+Source3b8c023. Deployment0fbfc3c9-a30b-4f1c-98e4-caebb8628c11; assetindex-4d6d2e73f46e.js, SHA4d6d2e73f46edbff8c964786c97d03d008815964728fba0639ae19a036629b3d. Recovery104 retained. Existing process only; no backend/config/business changes.
+
+Live August1-31 comparison: All18, Barnegat9, Brick6, combined13provider rows. Every displayed rounded net/collections aggregate matches independent read-only API verification signatures; combined differs from All. Combined activity labels show only Barnegat/Brick, chart top13 equals table13; tab remount preserves combined results; All restoration matches baseline. Fresh release loaded; browser newerrors0. Frontend/API200, three servicesactive, backend085 unchanged. Full audit remains incomplete.
