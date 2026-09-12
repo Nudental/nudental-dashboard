@@ -59,7 +59,7 @@ def verify_aging(base):
   assert abs(sum(float(row[k] or 0) for k in keys)-float(row['balance'] or 0))<0.005
  return {'rows':len(rows),'total_balance':round(sum(float(r['balance']) for r in rows),2),'buckets':{k:round(v,2) for k,v in totals.items()},'all_other_fields_unchanged':True,'inclusive_boundaries':True}
 
-record={'issue':'NDASH-062','stage':'validated','before':hashlib.sha256(before).hexdigest(),'after':hashlib.sha256(after).hexdigest(),'business_data_changes':False,'configuration_changes':False,'existing_read_only_cache_warming_preserved':True};state=root/'ndash062-deployment-result.json';temporary=folder/'.main_candidate.ndash062.tmp';assert not temporary.exists();mode=stat.S_IMODE(source.stat().st_mode)
+record={'issue':'NDASH-062','stage':'validated','before':hashlib.sha256(before).hexdigest(),'after':hashlib.sha256(after).hexdigest(),'business_data_changes':False,'configuration_changes':False,'existing_read_only_cache_warming_preserved':True};state=root/'ndash062-backend-deployment-result.json';temporary=folder/'.main_candidate.ndash062.tmp';assert not temporary.exists();mode=stat.S_IMODE(source.stat().st_mode)
 def save():state.write_text(json.dumps(record,indent=2));state.chmod(0o600)
 def write(data):
  assert not temporary.exists()

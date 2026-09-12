@@ -1,6 +1,6 @@
 # NDASH-062 — Aging boundaries disagree with the labeled intervals
 
-Section: RCM / Patient AR Follow-Up and legacy AR Aging API. Severity: High. Status: tested; deployment/live verification pending.
+Section: RCM / Patient AR Follow-Up and legacy AR Aging API. Severity: High. Status: repaired, deployed, live verification PASS.
 
 Reproduced on061: five visible rows show30d/b30 while the summary labels are Current0–30 and31–60. API August has10 exactly30-day balances totaling4907.13, all assignedb30. Total balance53862.72; old current15486.10/b3038376.62. Expected inclusive thresholds move only4907.13 into Current, preserving the total and all ledger inputs. No60/90 boundary records occur in this live August dataset.
 
@@ -11,3 +11,5 @@ Recovery: current backendSHA64bb98858a7fa661a535c189f0520b312cbf55800849f0e2ac77
 Tests: three backend boundary failures reproduced before/six testsPASS after (adjacent days, conservation, date basis). Two frontend failures reproduced before/all284source testsPASS after; build30.71sPASS. Retained10claim-status tests, five backend suites and adjustment reversalsPASS. Actual compiled normalizationFwt and component$wt Over90 predicate testsPASS; all other fields and prior patient-office identity preserved. Full frontend reversal/7relinksPASS. Initial local packaging syntax guard caught a removed parenthesis before any frontend upload; generator corrected and syntax/regression checks rerunPASS. Rocket792complete.
 
 Release plan: existing candidate8002/live8001 backend process, retain source snapshot and verify all non-bucket row fields and production/collections summaries unchanged. Then guarded frontend release from061. No business data writes, exports, sync or configuration changes.
+
+Live closure: backend candidate/live APIs bothPASS112rows/53862.72 total, current20393.23/b3033469.49; all other row fields and production/collections/claim checks unchanged. Frontend deployment35c01111-7296-4752-b2c3-70dfdd2ba22b, SHA3d951b3386b2fa323ac72ba9a3c9186b763a813502a6b796ad90913af9bdb1db. Five visible30d rows nowcurrent; cards agree with API; Over90 empty forAugust; double sort still30rows; refreshsame112/totals/correctboundary/errors0. Backend and frontend deployment results preserved in separate private files. No financial data or configuration changed.
