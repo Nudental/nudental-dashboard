@@ -79,14 +79,19 @@ def documentation(base):
  data=read(base,'/v2/rcm/adjustments-review?startDate=2026-08-01&endDate=2026-08-31&page=1&pageSize=1',max_bytes=2097152)
  return {k:data[k] for k in ['data','pagination','summary','review_queues']}
 documentation_baseline=documentation('https://api.nudashboard.com')
+derive_reference=__import__('runpy').run_path(str(root/'phase4-documentation-note-reference.py'))['derive_reference']
+note_reference,note_counts=derive_reference('https://api.nudashboard.com',read)
 assert len(documentation_baseline['review_queues']['documentation_reviews'])==200
 assert all('note' not in row for row in documentation_baseline['review_queues']['documentation_reviews'])
 def verify_documentation(base):
  data=documentation(base);docs=data['review_queues']['documentation_reviews']
  assert all('note' in row for row in docs),'Note projection still missing'
  counts={'rows':len(docs),'with_note':sum(bool(row['note']) for row in docs),'missing_note_flags':sum('missing_note' in row['triggered_flags'] for row in docs)}
- assert counts=={'rows':200,'with_note':34,'missing_note_flags':166}
- for row in docs:row.pop('note')
+ record['documentation_counts']=counts;save()
+ assert counts=={k:note_counts[k] for k in counts},'Documentation aggregate counts differ'
+ for row in docs:
+  assert row['note']==note_reference[str(row['adjustment_id'])],'Note differs from normalized main Adjustment response'
+  row.pop('note')
  assert data==documentation_baseline,'Unexpected change outside added note field'
  return {**counts,'all_other_response_fields_unchanged':True}
 
@@ -107,24 +112,35 @@ def ready(base):
   time.sleep(0.5)
  raise RuntimeError('API readiness timeout')
 def verify(base):
+ record['check_in_progress']='claims';save()
  for k,v in cases.items():assert claims(base,v)==baseline[k],k+' changed unexpectedly'
  assert claims(base,{'status':'unknown'})['total_claims']==0
  assert claims(base,{'status':'unknown,unsent'})==baseline['unsent']
+ record['check_in_progress']='financial';save()
  for endpoint,fields in financial.items():
   data=read(base,'/v2/'+endpoint+'/summary?startDate=2026-08-01&endDate=2026-08-31');assert {k:data[k] for k in fields}==fields,endpoint+' changed'
+ record['check_in_progress']='POS';save()
  for label,extra in pos_cases.items():assert pos(base,extra)==pos_baseline[label],'Authorized POS data changed: '+label
  assert pos_access_status(base)==401 and pos_access_status(base,True)==401,'POS unauthorized access not rejected'
- return {'documentation':verify_documentation(base),'aging':verify_aging(base),'unknown_zero':True,'mixed_status_union':True,'known_filters_unchanged':True,'production_collections_unchanged':True,'pos_authorized_data_unchanged':True,'pos_missing_and_invalid_key_rejected':True}
+ record['check_in_progress']='documentation';save()
+ doc_result=verify_documentation(base)
+ record['check_in_progress']='aging';save()
+ return {'documentation':doc_result,'aging':verify_aging(base),'unknown_zero':True,'mixed_status_union':True,'known_filters_unchanged':True,'production_collections_unchanged':True,'pos_authorized_data_unchanged':True,'pos_missing_and_invalid_key_rejected':True}
+if state.exists():
+ attempt=1
+ while state.with_name(state.stem+'-attempt'+str(attempt)+'.json').exists():attempt+=1
+ assert attempt<10
+ backup=state.with_name(state.stem+'-attempt'+str(attempt)+'.json');backup.write_bytes(state.read_bytes());backup.chmod(0o600)
 live_restarted=False;save()
 try:
  write(after);record['stage']='candidate_source_written';save();restart(services[0]);ready('http://127.0.0.1:8002');record['candidate_checks']=verify('http://127.0.0.1:8002');record['stage']='candidate_pass';save()
  assert source.read_bytes()==after and hashlib.sha256((folder/'ascend_service.py').read_bytes()).hexdigest()==service_hash
  live_restarted=True;restart(services[1]);ready('http://127.0.0.1:8001');ready('https://api.nudashboard.com');record['production_checks']=verify('https://api.nudashboard.com');record.update(stage='deployed',result='PASS',browser_verification='PENDING');save();print(json.dumps(record))
 except Exception as error:
- record.update(failed_stage=record['stage'],error_type=type(error).__name__)
+ record.update(failed_stage=record['stage'],error_type=type(error).__name__,failed_check=record.get('check_in_progress','precheck'))
  if source.read_bytes()==after:
   write(before);restart(services[0])
   if live_restarted:restart(services[1]);ready('http://127.0.0.1:8001')
   record.update(stage='rolled_back',result='FAIL')
  else:record.update(stage='external_source_changed',result='FAIL')
- save();print(json.dumps({k:record[k] for k in ['issue','result','stage','failed_stage','error_type']}));raise SystemExit(1)
+ save();print(json.dumps({k:record[k] for k in ['issue','result','stage','failed_stage','error_type','failed_check']}));raise SystemExit(1)

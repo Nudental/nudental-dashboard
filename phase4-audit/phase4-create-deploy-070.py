@@ -8,14 +8,18 @@ extra='''def documentation(base):
  data=read(base,'/v2/rcm/adjustments-review?startDate=2026-08-01&endDate=2026-08-31&page=1&pageSize=1',max_bytes=2097152)
  return {k:data[k] for k in ['data','pagination','summary','review_queues']}
 documentation_baseline=documentation('https://api.nudashboard.com')
+derive_reference=__import__('runpy').run_path(str(root/'phase4-documentation-note-reference.py'))['derive_reference']
+note_reference,note_counts=derive_reference('https://api.nudashboard.com',read)
 assert len(documentation_baseline['review_queues']['documentation_reviews'])==200
 assert all('note' not in row for row in documentation_baseline['review_queues']['documentation_reviews'])
 def verify_documentation(base):
  data=documentation(base);docs=data['review_queues']['documentation_reviews']
  assert all('note' in row for row in docs),'Note projection still missing'
  counts={'rows':len(docs),'with_note':sum(bool(row['note']) for row in docs),'missing_note_flags':sum('missing_note' in row['triggered_flags'] for row in docs)}
- assert counts=={'rows':200,'with_note':34,'missing_note_flags':166}
- for row in docs:row.pop('note')
+ assert counts=={k:note_counts[k] for k in counts}
+ for row in docs:
+  assert row['note']==note_reference[str(row['adjustment_id'])],'Note differs from normalized main Adjustment response'
+  row.pop('note')
  assert data==documentation_baseline,'Unexpected change outside added note field'
  return {**counts,'all_other_response_fields_unchanged':True}
 
