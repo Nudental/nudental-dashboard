@@ -204,7 +204,7 @@ const normalizeRow = (raw, officeName) => {
   );
 
   const normalized = {
-    _id:                  raw?.patient_id || raw?.patientId || raw?.id || crypto.randomUUID(),
+    _id:                  JSON.stringify([raw?.patient_id || raw?.patientId || raw?.id || crypto.randomUUID(), raw?.location_id || raw?.locationId || raw?.office_id || raw?.officeId || officeName || '']),
     patient_name:         raw?.patient_name || raw?.patientName || '—',
     patient_id:           raw?.patient_id || raw?.patientId || '—',
     chart_number:         raw?.chart_number || raw?.chartNumber || raw?.patient_id || raw?.patientId || '—',

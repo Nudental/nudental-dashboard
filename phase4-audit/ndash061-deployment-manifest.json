@@ -1,0 +1,93 @@
+{
+  "issue": "NDASH-061",
+  "previous_issue": "060",
+  "expected_previous_deployment": "2fa13056-854b-46fc-963e-870f04f076be",
+  "baseline_asset": "index-f223db137ed0.js",
+  "baseline_sha256": "f223db137ed0b565fd4cccda5cb05950651ac953b55e32e43b4fa16e2cdd769e",
+  "candidate_sha256": "0eed4ce4bc514f30a3a972e324a8ceb6489ef299cac3a726a817aed25eb8602a",
+  "asset": "/assets/index-0eed4ce4bc51.js",
+  "patches": [
+    {
+      "old": "(e,t)=>{const a=parseFloat((e==null?void 0:e.balance)??(e==null?void 0:e.patientBalance)??(e==null?void 0:e.outstanding_balance)??0)||0,o=parseFloat((e==null?void 0:e.bucket_current)??(e==null?void 0:e.bucketCurrent)??0)||0,s=parseFloat((e==null?void 0:e.bucket_30)??(e==null?void 0:e.bucket30)??0)||0,c=parseFloat((e==null?void 0:e.bucket_60)??(e==null?void 0:e.bucket60)??0)||0,d=parseFloat((e==null?void 0:e.bucket_90)??(e==null?void 0:e.bucket90)??0)||0,i=parseInt((e==null?void 0:e.days_outstanding)??(e==null?void 0:e.daysOutstanding)??0,10)||0,r=(e==null?void 0:e.aging_bucket)||(e==null?void 0:e.agingBucket)||(i>=90?\"90+\":i>=60?\"61-90\":i>=30?\"31-60\":\"Current\"),m={_id:(e==null?void 0:e.patient_id)||(e==null?void 0:e.patientId)||(e==null?void 0:e.id)||crypto.randomUUID(),patient_name:(e==null?void 0:e.patient_name)||(e==null?void 0:e.patientName)||\"—\",patient_id:(e==null?void 0:e.patient_id)||(e==null?void 0:e.patientId)||\"—\",chart_number:(e==null?void 0:e.chart_number)||(e==null?void 0:e.chartNumber)||(e==null?void 0:e.patient_id)||(e==null?void 0:e.patientId)||\"—\",office_name:(e==null?void 0:e.office_name)||(e==null?void 0:e.officeName)||t||\"—\",office_id:(e==null?void 0:e.office_id)||(e==null?void 0:e.officeId)||null,location_id:(e==null?void 0:e.location_id)||(e==null?void 0:e.locationId)||null,balance:a,aging_bucket:r,bucket_current:o,bucket_30:s,bucket_60:c,bucket_90:d,days_outstanding:i,last_payment_date:(e==null?void 0:e.last_payment_date)||(e==null?void 0:e.lastPaymentDate)||null,last_payment_amount:parseFloat((e==null?void 0:e.last_payment_amount)??(e==null?void 0:e.lastPaymentAmount)??0)||0,provider_name:(e==null?void 0:e.provider_name)||(e==null?void 0:e.providerName)||\"—\",provider_id:(e==null?void 0:e.provider_id)||(e==null?void 0:e.providerId)||null,payor_name:(e==null?void 0:e.payor_name)||(e==null?void 0:e.payorName)||(e==null?void 0:e.payer_name)||null,plan_name:(e==null?void 0:e.plan_name)||(e==null?void 0:e.planName)||null,collection_status:(e==null?void 0:e.collection_status)||(e==null?void 0:e.collectionStatus)||null,claim_followup_action:(e==null?void 0:e.claim_followup_action)||(e==null?void 0:e.claimFollowupAction)||null,claim_id:(e==null?void 0:e.claim_id)||(e==null?void 0:e.claimId)||null,charges:parseFloat((e==null?void 0:e.charges)??0)||0,payments:parseFloat((e==null?void 0:e.payments)??0)||0,insurance_paid:parseFloat((e==null?void 0:e.insurance_paid)??(e==null?void 0:e.insurancePaid)??0)||0,adjustments:parseFloat((e==null?void 0:e.adjustments)??0)||0,mobile_phone:(e==null?void 0:e.mobile_phone)||(e==null?void 0:e.mobilePhone)||null,email:(e==null?void 0:e.email)||null,contact_preference:(e==null?void 0:e.contact_preference)||(e==null?void 0:e.contactPreference)||null,patient_status:(e==null?void 0:e.patient_status)||(e==null?void 0:e.patientStatus)||null,primary_guarantor_id:(e==null?void 0:e.primary_guarantor_id)||(e==null?void 0:e.primaryGuarantorId)||null,is_self_guarantor:(e==null?void 0:e.is_self_guarantor)??(e==null?void 0:e.isSelfGuarantor)??null,has_mobile_phone:(e==null?void 0:e.has_mobile_phone)??(e==null?void 0:e.hasMobilePhone)??(!!(e!=null&&e.mobile_phone)||!!(e!=null&&e.mobilePhone)),has_email:(e==null?void 0:e.has_email)??(e==null?void 0:e.hasEmail)??!!(e!=null&&e.email),last_contacted_at:null,last_contact_method:null,last_contact_outcome:null,last_contact_note:null,contacted_by_name:null,next_followup_date:null,is_resolved:!1,attempt_count:0,dentrix_statement_count:0,dentrix_last_statement_date:null,dentrix_last_delivery_method:null,dentrix_last_statement_type:null,dentrix_last_patient_portion:null,dentrix_last_please_pay:null,dentrix_delivery_methods:null,dentrix_statement_ids:null,dentrix_document_ids:null,outreach_anchor_date:null,days_since_last_outreach:null,payment_after_outreach:!1,still_open_after_outreach:!1,followup_due:!1,needs_second_attempt:!1,outcome_status:\"Not Contacted\"};return m.contact_readiness=Iwt(m),m}",
+      "new": "(e,t)=>{const a=parseFloat((e==null?void 0:e.balance)??(e==null?void 0:e.patientBalance)??(e==null?void 0:e.outstanding_balance)??0)||0,o=parseFloat((e==null?void 0:e.bucket_current)??(e==null?void 0:e.bucketCurrent)??0)||0,s=parseFloat((e==null?void 0:e.bucket_30)??(e==null?void 0:e.bucket30)??0)||0,c=parseFloat((e==null?void 0:e.bucket_60)??(e==null?void 0:e.bucket60)??0)||0,d=parseFloat((e==null?void 0:e.bucket_90)??(e==null?void 0:e.bucket90)??0)||0,i=parseInt((e==null?void 0:e.days_outstanding)??(e==null?void 0:e.daysOutstanding)??0,10)||0,r=(e==null?void 0:e.aging_bucket)||(e==null?void 0:e.agingBucket)||(i>=90?\"90+\":i>=60?\"61-90\":i>=30?\"31-60\":\"Current\"),m={_id:JSON.stringify([(e==null?void 0:e.patient_id)||(e==null?void 0:e.patientId)||(e==null?void 0:e.id)||crypto.randomUUID(),e?.location_id||e?.locationId||e?.office_id||e?.officeId||t||\"\"]),patient_name:(e==null?void 0:e.patient_name)||(e==null?void 0:e.patientName)||\"—\",patient_id:(e==null?void 0:e.patient_id)||(e==null?void 0:e.patientId)||\"—\",chart_number:(e==null?void 0:e.chart_number)||(e==null?void 0:e.chartNumber)||(e==null?void 0:e.patient_id)||(e==null?void 0:e.patientId)||\"—\",office_name:(e==null?void 0:e.office_name)||(e==null?void 0:e.officeName)||t||\"—\",office_id:(e==null?void 0:e.office_id)||(e==null?void 0:e.officeId)||null,location_id:(e==null?void 0:e.location_id)||(e==null?void 0:e.locationId)||null,balance:a,aging_bucket:r,bucket_current:o,bucket_30:s,bucket_60:c,bucket_90:d,days_outstanding:i,last_payment_date:(e==null?void 0:e.last_payment_date)||(e==null?void 0:e.lastPaymentDate)||null,last_payment_amount:parseFloat((e==null?void 0:e.last_payment_amount)??(e==null?void 0:e.lastPaymentAmount)??0)||0,provider_name:(e==null?void 0:e.provider_name)||(e==null?void 0:e.providerName)||\"—\",provider_id:(e==null?void 0:e.provider_id)||(e==null?void 0:e.providerId)||null,payor_name:(e==null?void 0:e.payor_name)||(e==null?void 0:e.payorName)||(e==null?void 0:e.payer_name)||null,plan_name:(e==null?void 0:e.plan_name)||(e==null?void 0:e.planName)||null,collection_status:(e==null?void 0:e.collection_status)||(e==null?void 0:e.collectionStatus)||null,claim_followup_action:(e==null?void 0:e.claim_followup_action)||(e==null?void 0:e.claimFollowupAction)||null,claim_id:(e==null?void 0:e.claim_id)||(e==null?void 0:e.claimId)||null,charges:parseFloat((e==null?void 0:e.charges)??0)||0,payments:parseFloat((e==null?void 0:e.payments)??0)||0,insurance_paid:parseFloat((e==null?void 0:e.insurance_paid)??(e==null?void 0:e.insurancePaid)??0)||0,adjustments:parseFloat((e==null?void 0:e.adjustments)??0)||0,mobile_phone:(e==null?void 0:e.mobile_phone)||(e==null?void 0:e.mobilePhone)||null,email:(e==null?void 0:e.email)||null,contact_preference:(e==null?void 0:e.contact_preference)||(e==null?void 0:e.contactPreference)||null,patient_status:(e==null?void 0:e.patient_status)||(e==null?void 0:e.patientStatus)||null,primary_guarantor_id:(e==null?void 0:e.primary_guarantor_id)||(e==null?void 0:e.primaryGuarantorId)||null,is_self_guarantor:(e==null?void 0:e.is_self_guarantor)??(e==null?void 0:e.isSelfGuarantor)??null,has_mobile_phone:(e==null?void 0:e.has_mobile_phone)??(e==null?void 0:e.hasMobilePhone)??(!!(e!=null&&e.mobile_phone)||!!(e!=null&&e.mobilePhone)),has_email:(e==null?void 0:e.has_email)??(e==null?void 0:e.hasEmail)??!!(e!=null&&e.email),last_contacted_at:null,last_contact_method:null,last_contact_outcome:null,last_contact_note:null,contacted_by_name:null,next_followup_date:null,is_resolved:!1,attempt_count:0,dentrix_statement_count:0,dentrix_last_statement_date:null,dentrix_last_delivery_method:null,dentrix_last_statement_type:null,dentrix_last_patient_portion:null,dentrix_last_please_pay:null,dentrix_delivery_methods:null,dentrix_statement_ids:null,dentrix_document_ids:null,outreach_anchor_date:null,days_since_last_outreach:null,payment_after_outreach:!1,still_open_after_outreach:!1,followup_due:!1,needs_second_attempt:!1,outcome_status:\"Not Contacted\"};return m.contact_readiness=Iwt(m),m}"
+    },
+    {
+      "old": "ndash060-GustoBenefits.js",
+      "new": "ndash061-GustoBenefits.js"
+    },
+    {
+      "old": "ndash060-GustoImportHistory.js",
+      "new": "ndash061-GustoImportHistory.js"
+    },
+    {
+      "old": "ndash060-GustoPaySchedules.js",
+      "new": "ndash061-GustoPaySchedules.js"
+    },
+    {
+      "old": "ndash060-GustoTimeAndAttendance.js",
+      "new": "ndash061-GustoTimeAndAttendance.js"
+    },
+    {
+      "old": "ndash060-date-fns.js",
+      "new": "ndash061-date-fns.js"
+    },
+    {
+      "old": "ndash060-help-manual.js",
+      "new": "ndash061-help-manual.js"
+    },
+    {
+      "old": "ndash060-canvg.js",
+      "new": "ndash061-canvg.js"
+    }
+  ],
+  "added_assets": [
+    {
+      "name": "ndash061-GustoBenefits.js",
+      "sha256": "8b67bb301eb5b5efae1853c72115e884c47813f31f7e5d7d519e3e02c0a47fc3",
+      "bytes": 11506,
+      "previous": "ndash060-GustoBenefits.js"
+    },
+    {
+      "name": "ndash061-GustoImportHistory.js",
+      "sha256": "a834d8554e6ec11edcda413a2fec50970fdfcc27de4f8214c6378e4ad7c4f271",
+      "bytes": 4776,
+      "previous": "ndash060-GustoImportHistory.js"
+    },
+    {
+      "name": "ndash061-GustoPaySchedules.js",
+      "sha256": "6e0b7bd1f99a57e622fa292c86288b4466058cd0078d91b897fccda5335ba5d4",
+      "bytes": 4819,
+      "previous": "ndash060-GustoPaySchedules.js"
+    },
+    {
+      "name": "ndash061-GustoTimeAndAttendance.js",
+      "sha256": "b82a819f26de7cd20e01cd28cba0746656541a55322cd95e27f7fa69c6e29643",
+      "bytes": 39931,
+      "previous": "ndash060-GustoTimeAndAttendance.js"
+    },
+    {
+      "name": "ndash061-date-fns.js",
+      "sha256": "7dcec20d3b94a8058fa6de98211aaeabf6b5f57962c39fc127f7c59e68d03eda",
+      "bytes": 31653,
+      "previous": "ndash060-date-fns.js"
+    },
+    {
+      "name": "ndash061-help-manual.js",
+      "sha256": "2587080d3e66da33930697c32e2ba1c7758bc852b5aaf1622d26601dbc5e356e",
+      "bytes": 122300,
+      "previous": "ndash060-help-manual.js"
+    },
+    {
+      "name": "ndash061-canvg.js",
+      "sha256": "848c91c8d40d95e48bb3af8ed61d1aba93b0e21327608a55504276c8c8d567a2",
+      "bytes": 150419,
+      "previous": "ndash060-canvg.js"
+    }
+  ],
+  "preserve_previous_entry": true,
+  "target_previous": "ndash060-GustoTimeAndAttendance.js",
+  "target_baseline_sha256": "be263eea07d9697a60598b11e34992b674be78ef49573bdfd94054f8bed0d792",
+  "target_fixed_before_relink_sha256": "be263eea07d9697a60598b11e34992b674be78ef49573bdfd94054f8bed0d792",
+  "target_patches": [],
+  "syntax": "PASS"
+}
