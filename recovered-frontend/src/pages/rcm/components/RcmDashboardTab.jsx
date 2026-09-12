@@ -1730,7 +1730,7 @@ const DataSourceStatusSection = ({ refreshKey, onEassistTabLink, onDentrixTabLin
   // Build missing reports subLabel — list office names if count > 0
   const eMissingSubLabel = (() => {
     if (eMissing === null) return eConflicts !== null ? `${formatNumberOrNA(eConflicts)} conflicts` : undefined;
-    if (eMissing === 0) return 'All expected offices reported (Barnegat, Brick, Eatontown)';
+    if (eMissing === 0) return `No missing reports recorded${coverageObj?.lastBusinessDay ? ` for ${formatDateOrNA(coverageObj.lastBusinessDay)}` : ''}; receipt not confirmed.`;
     if (missingOfficeNames?.length > 0) return `Missing: ${missingOfficeNames?.join(', ')}`;
     return `${eMissing} office(s) missing — expected: Barnegat, Brick, Eatontown`;
   })();
@@ -1844,7 +1844,7 @@ const DataSourceStatusSection = ({ refreshKey, onEassistTabLink, onDentrixTabLin
                 label="Missing Reports"
                 value={eMissing !== null ? String(eMissing) : 'N/A'}
                 subLabel={eMissingSubLabel}
-                color={eMissing !== null && eMissing > 0 ? 'bg-red-500' : 'bg-green-500'}
+                color={eMissing !== null && eMissing > 0 ? 'bg-red-500' : 'bg-slate-500'}
                 warning={eMissing === null ? (eassistHasNestedObjects ? 'Nested keys present — see audit panel. This is a frontend mapping issue, not a backend gap.' : 'missing_reports field not found in /v2/eassist/ingest/status response') : undefined}
                 auditPanel={
                   <FieldAuditPanel
