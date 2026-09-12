@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Icon from '../../components/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
 import { getAccessibleOffices } from '../../services/dashboardService';
@@ -37,6 +37,7 @@ const HuddleAnalytics = () => {
   const [selectedOfficeId, setSelectedOfficeId] = useState('');
   const [selectedPreset, setSelectedPreset] = useState(30);
   const [analyticsData, setAnalyticsData] = useState([]);
+  const requestGeneration = useRef(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -64,20 +65,23 @@ const HuddleAnalytics = () => {
   useEffect(() => {
     if (!userProfile) return;
     loadAnalytics();
+    return () => { requestGeneration.current += 1; };
   }, [selectedOfficeId, selectedPreset, userProfile]);
 
   const loadAnalytics = async () => {
+    const generation = ++requestGeneration.current;
     setLoading(true);
     setError(null);
+    setAnalyticsData([]);
     try {
       const { start, end } = getDateRange(selectedPreset);
       const officeId = isSuperAdmin && !selectedOfficeId ? null : selectedOfficeId;
       const data = await huddleService?.getHuddlesForAnalytics(officeId, start, end);
-      setAnalyticsData(data);
+      if (generation === requestGeneration.current) setAnalyticsData(data);
     } catch (err) {
-      setError(err?.message || 'Failed to load analytics');
+      if (generation === requestGeneration.current) setError(err?.message || 'Failed to load analytics');
     } finally {
-      setLoading(false);
+      if (generation === requestGeneration.current) setLoading(false);
     }
   };
 

@@ -7,3 +7,13 @@ In progress. Dashboard production only. No real patient, staff, payroll, invento
 Source inspection before navigating: DailyMorningHuddle defaults to Today and its mount effect calls getOrCreateHuddleForDate. When absent, the service inserts a huddle, provider blocks, checklist items and an audit log for a real office/date. Therefore simply opening the Today page may create operational records. Do not use that page as a read-only audit entry, or change its date/auto-save fields. This is an existing design limitation for production-safe testing, not a reproduced software defect. Direct /huddle-history and /huddle-analytics routes exist and permit separate read-only coverage; not yet live-tested in this checkpoint.
 
 Insurance defaults to Request Queue. New Request, Legacy Form, verification draft/complete/cancel paths are separate actions. Inspect nested queue/detail read effects before opening or testing them. No new request has been created.
+
+## Huddle History live read-only pass — in progress
+Default566records/Page1of29; firsttwo pages20each/date-descending, page1Sep12–Sep8four offices5each/20uniqueoffice-days, page2Sep7–Sep2. Pendingbanner34→Submitted34/Page1of2(20)/Page2of2(14,Nextdisabled), allvisibleSubmitted. Officefiltersresetpage: Barnegat16,Barnegat+Brick16,Brick0explicitNoHuddles;Eatontown18,Staten0;subsetsreconcile34. ClearAllrestores566/Page1of29. ExistingEatontownsubmitteddetailOverviewhasnoeditablefields;Checklist100%=10/10and100%=9/9, noeditablefields; Audit81entries(actioncountscreate1/edit79/submit1)renders, noidentity/reasontextemitted. Closebuttonworks. NoUnlock/Print/Export orrecordwrites. Unlockedfilter/datefilters/reload/analytics remain next.
+
+
+Historycontinued: Unlocked2/Draft530(20Draftfirstpage/Page1of27), Submitted34; totals566. ExactSep12startonly4, inclusiveStartEndSep12fouruniqueoffices/datesallSep12. ExactSep13future0/explicitNoHuddles/controlsremain/spinners0. ClearAllresetsdates/status/offices; fullreloadbaselineverificationnext. Submitted detailChecklist/Audit/close alreadyPASS; no print/export/unlock/save/submit executed. Ordinary-role permissions andwritepersistence remain unavailable inproduction-safe scope.
+
+
+HistoryreloadPASS:566/20rows/Page1of29/datesblank/errors0. No huddle created or changed. Analyticsinitialmount nowunderinvestigation: defaultLast30Days/selectedBarnegat shows104huddles withchartAug13–Sep12. Source loads initialall-office request beforedefaultoffice resolves andhasno generationguard; possiblelateallresponse. Datehelperalso subtractsdays theninclusiveend, potentiallydaycount+1. Neithernewdefecteditedyet; firstrepeatselectedperiod/officewithsettledresults.
+
