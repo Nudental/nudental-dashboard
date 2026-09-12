@@ -1,6 +1,6 @@
 # NDASH-077 — Late Daily Comparison responses overwrite the selected office
 
-Section: RCM / Daily Comparison. Severity: High. Status: tested candidate; deployment pending.
+Section: RCM / Daily Comparison. Severity: High. Status: repaired, deployed, live verification PASS.
 
 Reproduced twice on frontend075/backend076: with Sep11 populated, change All Offices then Staten Island before the first response completes. The selected office remains Staten Island, but the settled By Office table has all four offices. A settled refresh correctly returns Staten Island alone. No records were changed.
 
@@ -12,4 +12,4 @@ Tests: seven targeted deferred-response tests reproduce five failures before rep
 
 Release verification: six scoped AST edits to the actual075 component. Actual compiled callback tests reproduce the old response failure and verify reversed success, obsolete errors/loading, cleanup, current errors, empty results and unchanged request parameters. Entire entry reverses exactly to075; prior repairs and seven dependency relinks pass. Blocked042/066 are excluded. Candidate index-99daf5b4f158.js; backend076 and the old075 release remain preserved.
 
-Live verification pending: repeat All→Staten and another office overlap, ensure only the latest office remains after requests settle; reverse to All, refresh, reload and confirm earlier date/unit/breakdown repairs. No business writes or exports are part of this test.
+Live closure PASS: deployment66d011b4-3748-4b01-984b-c9f8e4473d7d, entry index-99daf5b4f158.js, SHA99daf5b4f158293fa7dabb31cf20689b57e44dcef319f026da6f4ebd4c2696cc. All→Staten retains exactly one correct row; All→Barnegat retains one correct row and component refresh preserves it. Staten→All settles with exactly the four office rows. Full reload opens normally, defaults toSep12, preserves count units and loads the populated Sep11 All Offices comparison. Some report requests take tens of seconds; a premature wait deadline or reload during loading was not counted as success. Final settled checks all pass. Alerts/errors0; frontend/API200; three existing services active;5173MiB server memory available. Backend076 unchanged,075 rollback preserved. No business writes or exports.
