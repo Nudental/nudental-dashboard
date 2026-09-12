@@ -382,7 +382,7 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canCa
   const officeEmailTo = verification?.office_email_to;
 
   return (
-    <>
+    <div style={{ position: 'relative', zIndex: 210 }}>
       {/* Backdrop — darkened solid overlay, no blur */}
       <div className="fixed inset-0 z-40 bg-black/70" onClick={onClose} />
       {/* Drawer — fully opaque, strong shadow and border */}
@@ -775,6 +775,6 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canCa
         onCancel={() => { setShowConfirmModal(false); setConfirmedPatient(null); }}
         onClose={handleConfirmModalClose}
       />
-    </>
+    </div>
   );
 }
