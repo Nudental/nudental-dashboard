@@ -397,9 +397,9 @@ const AdjustmentSummaryPanel = ({ summary }) => {
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <BreakdownTable title="By Adjustment Category" data={byCategory} labelField="display_label" />
-          <BreakdownTable title="By OLT Type" data={byOlt} labelField="display_label" />
-          <BreakdownTable title="By Office" data={byOffice} labelField="display_label" />
+          <BreakdownTable title="By Adjustment Category" data={byCategory} labelField="display_label" amountField="signed_amount" />
+          <BreakdownTable title="By OLT Type" data={byOlt} labelField="display_label" amountField="signed_amount" />
+          <BreakdownTable title="By Office" data={byOffice} labelField="display_label" amountField="signed_amount" />
           <BreakdownTable title="By Staff Entered By" data={byUser} labelField="display_label" />
           <BreakdownTable title="By Review Flag" data={byFlag} labelField="display_label" />
           <BreakdownTable title="By Late-Posted Bucket" data={byLateBucket} labelField="display_label" />
