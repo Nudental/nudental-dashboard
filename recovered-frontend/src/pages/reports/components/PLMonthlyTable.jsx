@@ -175,6 +175,14 @@ const getExpenseScopeSupport = (activeOffices) => {
   };
 };
 
+const readPLScopeMetric = async (method, field, start, end, locationIds) => {
+  const results = await Promise.all(locationIds.map(id => method(start, end, id)));
+  if (results.length === 1) return results[0];
+  const values = results.map(result => result?.[field]);
+  return { [field]: values.some(value => value == null || value === '' || !Number.isFinite(Number(value)))
+    ? null : values.reduce((total, value) => total + Number(value), 0) };
+};
+
 const PLMonthlyTable = ({ officeFilter, dateFilter }) => {
   const currentYear = new Date()?.getFullYear();
 
@@ -213,10 +221,11 @@ const PLMonthlyTable = ({ officeFilter, dateFilter }) => {
         ? officeFilter?.filter((o) => o && o !== 'all')
         : [];
 
-      // Resolve locationId for Ascend API (single office only)
-      const locationId = activeOffices?.length === 1
-        ? (getLocationIdByOfficeId(activeOffices?.[0]) || null)
-        : null;
+      const locationIds = activeOffices.length
+        ? [...new Set(activeOffices.map(id => getLocationIdByOfficeId(id)))] : [null];
+      if (activeOffices.length && locationIds.some(id => !id)) {
+        throw new Error('P&L data is unavailable for a selected office.');
+      }
 
       // Check if this office scope is supported by the Finance protected source
       const scopeSupport = getExpenseScopeSupport(activeOffices);
@@ -244,8 +253,8 @@ const PLMonthlyTable = ({ officeFilter, dateFilter }) => {
           });
 
           const [prodResult, collResult, expResult] = await Promise.allSettled([
-            ascendApi?.getProduction(start, end, locationId),
-            ascendApi?.getCollections(start, end, locationId),
+            readPLScopeMetric(ascendApi?.getProduction, 'netProduction', start, end, locationIds),
+            readPLScopeMetric(ascendApi?.getCollections, 'totalCollections', start, end, locationIds),
             // Use fetchExpenseKPIs — the EXACT same function Finance → Expense Report uses.
             // Only call if scope is supported; otherwise skip to preserve guardrail.
             scopeSupport?.supported
