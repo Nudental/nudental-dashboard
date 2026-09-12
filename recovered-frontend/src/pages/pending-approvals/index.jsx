@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import Breadcrumb from '../../components/layout/Breadcrumb';
@@ -162,8 +162,50 @@ const buildApiSyncedGroups = (entries) => {
   return Array.from(groupMap?.values());
 };
 
+const readCompleteEodQuery = async (query, isCurrent = () => true, pageSize = 500) => {
+  const rows = [], seen = new Set();
+  let expected = null;
+  do {
+    if (!isCurrent()) return null;
+    const result = await query.range(rows.length, rows.length + pageSize - 1);
+    if (!isCurrent()) return null;
+    if (result?.error) throw new Error('EOD entries could not be loaded completely. Refresh to retry.');
+    const count = result?.count, page = result?.data;
+    if (!Number.isSafeInteger(count) || count < 0 || count > 50000 || !Array.isArray(page)) {
+      throw new Error('Unable to confirm all EOD entries. Narrow the date or office filter and retry.');
+    }
+    if (expected === null) expected = count;
+    if (count !== expected || page.length > pageSize || rows.length + page.length > expected || (!page.length && rows.length < expected)) {
+      throw new Error('EOD entries changed or were incomplete. Refresh to retry.');
+    }
+    for (const row of page) {
+      if (!row?.id || seen.has(row.id)) throw new Error('EOD entries were duplicated or incomplete. Refresh to retry.');
+      seen.add(row.id);
+      rows.push(row);
+    }
+  } while (rows.length < expected);
+  return rows;
+};
+
+const getEodPage = (entries, requestedPage, pageSize = 25) => {
+  const manual = entries.filter(entry => !isApiSyncedRow(entry));
+  const groups = buildApiSyncedGroups(entries);
+  const pageCount = Math.max(1, Math.ceil((manual.length + groups.length) / pageSize));
+  const page = Math.min(pageCount, Math.max(1, requestedPage || 1));
+  const start = (page - 1) * pageSize, end = start + pageSize;
+  return {
+    page, pageCount,
+    manualEntries: manual.slice(start, end),
+    apiSyncedGroups: groups.slice(Math.max(0, start - manual.length), Math.max(0, end - manual.length)),
+  };
+};
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 const PendingApprovalsPage = () => {
+  const entriesGeneration = useRef(0);
+  const countsGeneration = useRef(0);
+  const [displayPage, setDisplayPage] = useState(1);
+  const [loadError, setLoadError] = useState(null);
   const navigate = useNavigate();
   const { userProfile } = useAuth();
   const { success, error: toastError } = useToast();
@@ -220,6 +262,7 @@ const PendingApprovalsPage = () => {
   // Uses Supabase count queries per status so counts are never capped by the
   // active status filter or the 1000-row default list limit.
   const fetchFullCounts = useCallback(async () => {
+    const generation = ++countsGeneration.current;
     setCountsLoading(true);
     try {
       // Build shared base filters (office + date only — NOT status)
@@ -266,6 +309,7 @@ const PendingApprovalsPage = () => {
         ),
       ]);
 
+      if (generation !== countsGeneration.current) return;
       setFullCounts({
         pending:           pendingRes?.count ?? 0,
         approved:          approvedRes?.count ?? 0,
@@ -274,15 +318,19 @@ const PendingApprovalsPage = () => {
         api_synced:        apiSyncedRes?.count ?? 0,
       });
     } catch (err) {
-      console.warn('[eod-queue] Failed to fetch full counts:', err?.message);
+      if (generation === countsGeneration.current) console.warn('[eod-queue] Failed to fetch full counts:', err?.message);
     } finally {
-      setCountsLoading(false);
+      if (generation === countsGeneration.current) setCountsLoading(false);
     }
   }, [filterOffice, filterDate]);
 
   // ─── Fetch entries (filtered by active status card) ─────────────────────────
   const fetchEntries = useCallback(async () => {
+    const generation = ++entriesGeneration.current;
+    const isCurrent = () => generation === entriesGeneration.current;
     setLoading(true);
+    setLoadError(null);
+    setEntries([]);
     try {
       let query = supabase
         ?.from('daily_entries')
@@ -299,8 +347,9 @@ const PendingApprovalsPage = () => {
           edited_by, edited_at, edited_by_name, edit_reason,
           reapproval_note, reapproved_by, reapproved_at, reapproved_by_name,
           offices(name)
-        `)
-        ?.order('submitted_at', { ascending: false, nullsFirst: false });
+        `, { count: 'exact' })
+        ?.order('submitted_at', { ascending: false, nullsFirst: false })
+        ?.order('id', { ascending: true });
 
       if (filterStatus === 'pending') {
         query = query?.in('status', ['pending', 'pending_review'])
@@ -323,14 +372,16 @@ const PendingApprovalsPage = () => {
       if (filterOffice !== 'all') query = query?.eq('office_id', filterOffice);
       if (filterDate) query = query?.eq('entry_date', filterDate);
 
-      const { data, error } = await query;
-      if (error) throw error;
-      setEntries(data || []);
+      const data = await readCompleteEodQuery(query, isCurrent);
+      if (!isCurrent() || data === null) return;
+      setEntries(data);
     } catch (err) {
+      if (!isCurrent()) return;
+      setLoadError(err?.message || 'Could not load EOD entries.');
       console.error('Failed to fetch EOD entries:', err);
       toastError('Load Failed', err?.message || 'Could not load EOD entries.');
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   }, [filterStatus, filterOffice, filterDate]);
 
@@ -347,7 +398,13 @@ const PendingApprovalsPage = () => {
   useEffect(() => {
     fetchEntries();
     fetchFullCounts();
+    return () => { entriesGeneration.current += 1; countsGeneration.current += 1; };
   }, [fetchEntries, fetchFullCounts]);
+
+  useEffect(() => {
+    setDisplayPage(1);
+    setSelectedIds([]);
+  }, [filterStatus, filterOffice, filterDate, searchQuery]);
 
   useEffect(() => {
     let channel;
@@ -697,17 +754,16 @@ const PendingApprovalsPage = () => {
     );
   });
 
-  // Selectable IDs exclude API-synced rows (they don't need human approval)
-  const selectableIds = filteredEntries
+  const pageView = getEodPage(filteredEntries, displayPage);
+  const { manualEntries, apiSyncedGroups } = pageView;
+
+  // Only visible manual rows can be selected for approval.
+  const selectableIds = manualEntries
     ?.filter(e =>
       !isApiSyncedRow(e) &&
       (PENDING_STATUSES?.includes(e?.status) || e?.status === 'pending_reapproval')
     )
     ?.map(e => e?.id);
-
-  // Separate manual and API-synced rows for rendering
-  const manualEntries = filteredEntries?.filter(e => !isApiSyncedRow(e));
-  const apiSyncedGroups = buildApiSyncedGroups(filteredEntries);
 
   if (!canApprove) {
     return (
@@ -897,6 +953,8 @@ const PendingApprovalsPage = () => {
           <div className="flex items-center justify-center py-16">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
+        ) : loadError ? (
+          <div role="alert" className="p-5 text-sm text-destructive">{loadError}</div>
         ) : filteredEntries?.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
             <Icon name="Inbox" size={40} className="mb-3 opacity-40" />
@@ -1101,6 +1159,15 @@ const PendingApprovalsPage = () => {
           </div>
         )}
       </div>
+      {!loading && !loadError && filteredEntries.length > 0 && (
+        <div className="flex items-center justify-between gap-3 mt-4 text-sm">
+          <span>{filteredEntries.length.toLocaleString()} entries · Page {pageView.page} of {pageView.pageCount}</span>
+          <div className="flex gap-2">
+            <button disabled={pageView.page <= 1} onClick={() => { setSelectedIds([]); setDisplayPage(pageView.page - 1); }} className="px-3 py-2 rounded-lg border border-border disabled:opacity-50">Previous page</button>
+            <button disabled={pageView.page >= pageView.pageCount} onClick={() => { setSelectedIds([]); setDisplayPage(pageView.page + 1); }} className="px-3 py-2 rounded-lg border border-border disabled:opacity-50">Next page</button>
+          </div>
+        </div>
+      )}
       {/* ─── Review / Approve / Reject Modal ─────────────────────────────────── */}
       {reviewEntry && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4" role="dialog" aria-modal="true">
