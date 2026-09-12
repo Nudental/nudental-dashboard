@@ -244,7 +244,7 @@ const PeriodComparisonView = ({ officeFilter: officeFilterProp }) => {
         fetchPeriodData(periodA?.start, periodA?.end),
         fetchPeriodData(periodB?.start, periodB?.end),
       ]);
-      setComparisonData({ a: dataA, b: dataB });
+      setComparisonData({ a: dataA, b: dataB, periodA: { ...periodA }, periodB: { ...periodB }, office: effectiveOfficeFilter });
       const allWarnings = [
         ...(dataA?.errors || [])?.map(e => `Period A — ${e}`),
         ...(dataB?.errors || [])?.map(e => `Period B — ${e}`),
@@ -485,9 +485,9 @@ const PeriodComparisonView = ({ officeFilter: officeFilterProp }) => {
           <div className="px-4 py-3 border-b border-border bg-muted/30">
             <h3 className="text-sm font-semibold text-foreground">Comparison Results</h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Period A: {periodA?.start} → {periodA?.end} &nbsp;|&nbsp; Period B: {periodB?.start} → {periodB?.end}
-              {effectiveOfficeFilter !== 'all'
-                ? ` | Office: ${OFFICE_MAP?.[effectiveOfficeFilter]?.name || effectiveOfficeFilter}`
+              Period A: {comparisonData?.periodA?.start} → {comparisonData?.periodA?.end} &nbsp;|&nbsp; Period B: {comparisonData?.periodB?.start} → {comparisonData?.periodB?.end}
+              {comparisonData?.office !== 'all'
+                ? ` | Office: ${OFFICE_MAP?.[comparisonData?.office]?.name || comparisonData?.office}`
                 : ' | All Offices'}
             </p>
           </div>
