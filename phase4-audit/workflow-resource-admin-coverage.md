@@ -21,3 +21,5 @@ HistoryreloadPASS:566/20rows/Page1of29/datesblank/errors0. No huddle created or 
 NDASH090 CLOSED PASS: scoped Analytics request-generation repair deployed f6e39727-05b1-4546-bb4f-969a442989d3. Initial/rapid/Refresh Barnegat26; All30=104; rapid60-to7=28; restoreBar30=26; stale charts cleared while loading; errors0; frontend/API200 and three services active. Date helper unchanged and separately under investigation. No business writes.
 
 NDASH091 CLOSED PASS: inclusive preset boundary corrected;Last30Aug14–Sep12/Bar25/All100,Last7Sep6–Sep12querywithSep6noexistinghuddle/Bar6/All24. Rapidperiod/office/Refresh,stalechartclear,errors0,healthPASS. NextAnalyticschartlabels:BarnegatshowsgenericOffice;checkingAllscopebeforeclassifying.
+
+NDASH092CLOSEDPASS: Analyticsquerynowincludesexistingoffices(name) relation. Fourdistinctoffice labels andsingleBarlabel,unchangedAll100/Bar25,Refresh/rapid/errors0/healthPASS. Current30dayrecordsallzeroNewPts/collections;positiveMTDaggregationnotyetverified.
