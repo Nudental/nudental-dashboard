@@ -570,8 +570,11 @@ const DailyComparisonTab = ({ officeId, offices }) => {
   const [activeSection, setActiveSection] = useState('daily');
 
   const extFetchRef = useRef({ date: null, officeId: null, years: null });
+  const requestGeneration = useRef(0);
 
   const fetchData = useCallback(async () => {
+    const request = ++requestGeneration.current;
+    setData(null);
     setLoading(true);
     setError(null);
     try {
@@ -581,12 +584,14 @@ const DailyComparisonTab = ({ officeId, offices }) => {
         comparisonMode,
         comparisonYears,
       });
+      if (request !== requestGeneration.current) return;
       setData(result);
     } catch (err) {
+      if (request !== requestGeneration.current) return;
       setError(err?.message || 'Failed to load daily comparison data');
       setData(null);
     } finally {
-      setLoading(false);
+      if (request === requestGeneration.current) setLoading(false);
     }
   }, [selectedDate, officeId, comparisonMode, comparisonYears]);
 
@@ -612,6 +617,7 @@ const DailyComparisonTab = ({ officeId, offices }) => {
 
   useEffect(() => {
     fetchData();
+    return () => { requestGeneration.current += 1; };
   }, [fetchData]);
 
   useEffect(() => {
