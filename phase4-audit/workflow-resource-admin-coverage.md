@@ -41,3 +41,6 @@ Insurance continued:AssignedToMe2/uncheck2;futureFrom2030-01-02empty0/pastTo2000
 
 Tasks098crashrepaired/livePASS. Baseline2completed/0overdue/0inprogress;Kanban3emptycolumns/Completed2;Table2statusCompleted;Overduefilterempty/Completed2/Allrestore. NewTaskemptydescription/date validationblocksSubmit,Cancelcloses,total2preserved. No task creation/status/assignment/comment/notificationwrites. Remainingoffice/priority/assignee/myfilters/sort/reload andEODQueue/ApprovalsQueue/Resources/Admin. Browserdevlogspersistsoldentries;filtertimestampsfromtasks098FreshStart fornewerrors0.
 
+
+Tasksfilters/sortcovered:OfficeBrick0/Bar2,High0/Medium2,existingassigneduser1(expected1)/MyTasks0,All2;Tasksortasc/descPASS. RapidOffice099raceconfirmedandfixed;source428/build/Rocket/compiled/deploy/livePASS. Taskrepresentativereadonly/blankvalidationcomplete. Positivecreate/edit/status/assignment/comments/auditwrites andordinaryrolelive remainuntested(noisolatedDashboardwriteenv). NextEODQueue/ApprovalsQueue/Resources/Admin;EODauto-draft/HuddleTodayauto-create requireisolation.
+
