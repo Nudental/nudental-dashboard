@@ -1,6 +1,6 @@
 # NDASH-067 — POS collection endpoint omits the existing API-key dependency
 
-Section: RCM Point of Service Collection. Severity: High. Status: tested candidate; deployment and live verification pending.
+Section: RCM Point of Service Collection. Severity: High. Status: repaired, deployed, live verification PASS.
 
 Reproduction: public GET/v2/rcm/pos-collections with an empty2999-01-01 period returns200 both withoutX-API-Key and with an explicitly invalid synthetic key. Response bodies were not loaded. Existing authorizedAugustread-only probe/UI/source agree280events/108440.41/243unique patients; Barnegat93/43965.66 andStaten8/8095.26. No businesswrites.
 
@@ -11,3 +11,5 @@ Preservation: currentmain_candidateSHA8117c4026155dccb1e08d9db5e0978df2972c5b9f7
 Tests: actualdecorator+actualverify_api_key tested withFastAPITestClient, synthetickey andinertpaymenthandler. Before2unauthorizedtestsFAIL; aftermissingkey401/invalidkey401/validkey200andhandlerinvokedonlyforvalidkeyPASS(3tests). Retainedaging6,claimstatus10,fiveGusto/expensebackend suites andadjustmentreversalsPASS. Initialupload-helperexecutionusedsystemPython withoutFastAPI; no installation attempted; preparedsuite ranusingexistingapplicationvenv successfully. Production unchanged duringpreparation.
 
 Deploymentmustuseexistingcandidate8002thenlive8001, withrollbackandmigration/backgroundsync/AMQPSguards. Existingreadonlycacheprewarm preserved. Verifyunauthorizedempty-period401andreal-keyauthorizedsummary/rowsunchanged; claims/production/collections/agingregressions. Frontendmustremain065after066rollback. No publicpush.
+
+Live closure: candidate8002 andproduction8001PASS; currentbackendSHAf37a12859a418ce4600212cde671ed9acc12680e36dbdd880d0a234627355a51. Repeatpublicemptyfutureperiodmissing/invalidkeyboth401. AuthorizedAll/Barnegat/StatenPOSsummaryandfirst-row-signatures exactmatchpredeployment; retainedclaims/production/collections/agingPASS. Contemporaryagingbaseline111rows/53743.97(current20274.48/b3033469.49), exactlypreserved; earlieraudit112wasnotforcedback. UIRefreshAll280/108440.41/243patients/avg387.29/100rows; fullreload/reopen280/100; Staten8/8095.26/8rows;Allrestored. Noalerts/errors. Frontend065unchanged; priorbackend062snapshotretained. No businesswrites/config/credentialchanges.
