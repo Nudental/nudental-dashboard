@@ -1,6 +1,6 @@
 # NDASH-059 — Unknown claim status silently selects every status
 
-Section: RCM / Claim Submissions. Severity: High. Status: candidate verified; deployment/live verification pending.
+Section: RCM / Claim Submissions. Severity: High. Status: repaired, deployed, live verification PASS.
 
 Reproduced on live058: August / All Offices / Unknown shows1,011 claims and50 visible rows, none labeled Unknown. API status=unknown also returns1,011 while read-only SQLite has0 unknown states for the same active service dates. The reverse status map has no Unknown member; the endpoint therefore adds no status condition.
 
@@ -13,3 +13,7 @@ Verification:10 isolated SQLite tests PASS locally and on the server;5 failures 
 Candidate mainSHA64bb98858a7fa661a535c189f0520b312cbf55800849f0e2ac776b6c0bc3a1a5. Candidate service8002 must pass before existing production service8001 is restarted. Preserve all earlier snapshots. No claims, financial records, configuration or provider sync modified.
 
 Preparation checkpoint: the first release attempt stopped before source changes because an extra audit guard required cache warming to be disabled. Inspection confirms the existing warmer issues only two read-only GETs for aging/patient-balance caches; results are cached in memory. Existing OAuth token reuse/refresh and cache reads are preserved. The guard now validates those exact GET targets while still requiring migrations, background data sync and streaming consumer to be disabled. No environment/configuration change was made or requested.
+
+Deployment PASS: candidate8002 then live8001 checks confirm Unknown0, mixedUnknown+Unsent875, unchanged known/all/Barnegat claim summaries and unchanged August production/collections. Current mainSHA64bb98858a7fa661a535c189f0520b312cbf55800849f0e2ac776b6c0bc3a1a5; source rollback retained. Frontend058 unchanged.
+
+Live browser PASS: repeat original Unknown selection/Apply now shows0 and empty table/page1of1; Unsent875 with all visible statuses matching. Created Date1011 and pageSize25 work. Refresh returns ServiceDate/AllStatuses/AllOffices/50rows/1011, no alerts/browser errors. No business writes, exports or provider sync.
