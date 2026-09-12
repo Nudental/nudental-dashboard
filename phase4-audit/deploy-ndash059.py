@@ -16,8 +16,14 @@ for name in services:
  for line in (folder/'.env').read_text().splitlines():
   if '=' in line and not line.lstrip().startswith('#'):
    k,v=line.split('=',1);env.setdefault(k.strip(),v.strip().strip(chr(34)).strip(chr(39)))
- for flag in ['ENABLE_MIGRATIONS','ENABLE_BACKGROUND_SYNC','ENABLE_AMQPS_CONSUMER','ENABLE_CACHE_PREWARM']:
+ for flag in ['ENABLE_MIGRATIONS','ENABLE_BACKGROUND_SYNC','ENABLE_AMQPS_CONSUMER']:
   assert env.get(flag,'false').lower() in ('false','0','no','off',''),flag+' prevents safe audit restart'
+ # Preserve the existing read-only cache warmer; it is distinct from data sync.
+ assert env.get('ENABLE_CACHE_PREWARM','false').lower() in ('false','0','no','off','','true','1','yes','on')
+prewarm=next(n for n in ast.parse(before).body if isinstance(n,ast.FunctionDef) and n.name=='_prewarm_caches_thread')
+calls=[n for n in ast.walk(prewarm) if isinstance(n,ast.Call) and isinstance(n.func,ast.Attribute) and isinstance(n.func.value,ast.Name) and n.func.value.id=='_pw_req']
+assert len(calls)==2 and all(n.func.attr=='get' for n in calls)
+assert {''.join(v.value for v in n.args[0].values if isinstance(v,ast.Constant)) for n in calls}=={'/v2/rcm/ar-aging-official','/v2/rcm/patient-balances?pageSize=1'}
 key=next(ast.literal_eval(n.value.args[1]) for n in ast.parse(before).body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='NUDASHBOARD_API_KEY' for t in n.targets))
 base_params={'startDate':'2026-08-01','endDate':'2026-08-31','dateBasis':'serviceDate','page':1,'pageSize':1}
 def read(base,path):
@@ -32,7 +38,7 @@ baseline={k:claims('https://api.nudashboard.com',v) for k,v in cases.items()}
 financial={}
 for endpoint,fields in [('production',['grossProduction','netProduction','adjustments','procedureCount']),('collections',['totalCollections','patientCollections','insuranceCollections'])]:
  data=read('https://api.nudashboard.com','/v2/'+endpoint+'/summary?startDate=2026-08-01&endDate=2026-08-31');financial[endpoint]={k:data[k] for k in fields}
-record={'issue':'NDASH-059','stage':'validated','before':hashlib.sha256(before).hexdigest(),'after':hashlib.sha256(after).hexdigest(),'business_data_changes':False,'configuration_changes':False};state=root/'ndash059-deployment-result.json';temporary=folder/'.main_candidate.ndash059.tmp';assert not temporary.exists();mode=stat.S_IMODE(source.stat().st_mode)
+record={'issue':'NDASH-059','stage':'validated','before':hashlib.sha256(before).hexdigest(),'after':hashlib.sha256(after).hexdigest(),'business_data_changes':False,'configuration_changes':False,'existing_read_only_cache_warming_preserved':True};state=root/'ndash059-deployment-result.json';temporary=folder/'.main_candidate.ndash059.tmp';assert not temporary.exists();mode=stat.S_IMODE(source.stat().st_mode)
 def save():state.write_text(json.dumps(record,indent=2));state.chmod(0o600)
 def write(data):
  assert not temporary.exists()
