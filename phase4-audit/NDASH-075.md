@@ -1,6 +1,6 @@
 # NDASH-075 — Count comparison changes are formatted as money
 
-Section: RCM / Daily Comparison and shared MTD delta badges. Severity: Low. Status: candidate verified; live release pending.
+Section: RCM / Daily Comparison and shared MTD delta badges. Severity: Low. Status: repaired, deployed, live verification PASS.
 
 Reproduction twice before editing on074, selected2026-09-12: the New Patients, Completed Appts and Claims Submitted rows show a same-weekday comparison of0 and a delta badge of—$0. The monetary Gross Production row correctly shows$0/—$0. Normal MTD -> Daily navigation reproduces all three incorrect count units.
 
@@ -14,3 +14,5 @@ Live plan: all three count rows lose the dollar sign, monetary fallback and perc
 
 
 Candidate: /assets/index-cfb58e8e9684.js / SHA cfb58e8e968417ed9a6696948f3e45430d95a5d06ec577826dfe699a0465c75c, based on565a5cc1-7644-4734-9364-655442f7253e.
+
+Live closure: deployment07f9235c-d6d5-4cb8-bbe6-443d23dd1e0c / index-cfb58e8e9684.js. NewPatients/CompletedAppts/ClaimsSubmitted zero badgesnow—0; GrossProduction remains—$0; percentageexample—100% remains correctlyshown as down100.0%. BothMTDcountcomparisoncolumns haveproperunits/percentages. MTDgross230436.40/net125812.11/adjustments-104624.29,insurance10607.30+patient53580.15=collections64187.45,ratio51.0%,newpatients67/completed375/claims12/refunds3805.27/writeoffsabs108796.49matchAPIandUIrounding. FullreloadTodaySep12 preserved; returnMTD->DailyrepeatscountPASS. Backend070unchanged, alerts/capturederrors0. No business-data writes or exports. Prior074release retained.
