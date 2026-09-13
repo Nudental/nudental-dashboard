@@ -109,7 +109,7 @@ const GoalsManagement = () => {
             ))}
           </select>
           <span className="text-xs text-muted-foreground">
-            Set monthly collection targets for each office
+            Set monthly production goals for each office
           </span>
         </div>
       </div>
@@ -140,7 +140,7 @@ const GoalsManagement = () => {
         <div className="bg-card border border-border rounded-lg overflow-hidden">
           <div className="px-4 py-3 bg-muted/50 border-b border-border">
             <h3 className="text-sm font-semibold text-foreground">
-              Monthly Collection Targets — {formatMonthLabel(selectedMonth)}
+              Monthly Production Goals — {formatMonthLabel(selectedMonth)}
             </h3>
           </div>
           <div className="divide-y divide-border">

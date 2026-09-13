@@ -63,7 +63,7 @@ const SECTIONS = [
     label: 'Set Goals',
     icon: 'Target',
     group: 'Goals',
-    description: 'Monthly collection targets per office',
+    description: 'Monthly production goals per office',
   },
   {
     id: 'service-category-goals',
