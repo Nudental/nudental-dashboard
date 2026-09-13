@@ -232,7 +232,9 @@ const CancellationsTab = ({ dateRange, officeIds, offices }) => {
                       {r?.office_id ? (officeMap?.[r?.office_id] || resolveOfficeName(r?.office_id)) : 'All Offices'}
                     </td>
                     <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
-                      {monthLabel(r?.report_year, r?.report_month)}
+                      {dateRange?.startYear === r?.report_year && dateRange?.startMonth === r?.report_month
+                        ? monthLabel(r?.report_year, r?.report_month)
+                        : `${monthLabel(dateRange?.startYear, dateRange?.startMonth)} – ${monthLabel(r?.report_year, r?.report_month)}`}
                     </td>
                     <td className="px-3 py-2">{displayNum(r?.no_shows)}</td>
                     <td className="px-3 py-2">{displayNum(r?.broken_appointments)}</td>

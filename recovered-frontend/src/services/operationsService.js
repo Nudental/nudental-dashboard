@@ -42,6 +42,8 @@ export const buildDateRange = (preset) => {
       const endM = q * 3;
       return { startYear: year, startMonth: startM, endYear: year, endMonth: endM };
     }
+    case 'ytd':
+      return { startYear: year, startMonth: 1, endYear: year, endMonth: month };
     case 'this_year':
       return { startYear: year, startMonth: 1, endYear: year, endMonth: 12 };
     default:
