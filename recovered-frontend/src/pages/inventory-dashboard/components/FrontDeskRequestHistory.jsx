@@ -47,7 +47,7 @@ const fmtDate = (v) => {
 const fmtMonth = (v) => {
   if (!v) return '—';
   const s = String(v)?.slice(0, 7);
-  try { return new Date(s + '-01')?.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); }
+  try { return new Date(s + '-01T00:00:00')?.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }); }
   catch (_) { return s; }
 };
 
