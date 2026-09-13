@@ -1,0 +1,13 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const parser=require(path.join(process.env.NDASH_PARSER_ROOT,'node_modules/@babel/parser')),traverse=require(path.join(process.env.NDASH_PARSER_ROOT,'node_modules/@babel/traverse')).default;
+const source=fs.readFileSync(path.join(__dirname,'../recovered-frontend/src/pages/sync-dashboard/index.jsx'),'utf8');let callback;
+traverse(parser.parse(source,{sourceType:'module',plugins:['jsx']}),{VariableDeclarator(p){if(p.node.id.name==='filteredJobs')callback=p.node.init.arguments[0]}});assert(callback);
+const predicate=(status,scope='all')=>Function('jobStatusFilter','jobSourceFilter','return ('+source.slice(callback.start,callback.end)+')')(status,scope);
+const jobs=[{status:'success',freshness_status:'fresh',source_system:'qa-a'},{status:'completed',freshness:'fresh',source_system:'qa-b'},{status:'success',freshness_status:'stale',source_system:'qa-a'},{status:'running',freshness_status:'running',is_manual_only:true,source_system:'qa-b'},{status:'warning',freshness_status:'fresh',source_system:'qa-a'},{status:'not_instrumented',freshness_status:'unknown',source_system:'qa-a'}];
+test('Healthy selects successful fresh jobs only',()=>assert.deepEqual(jobs.filter(predicate('healthy')),jobs.slice(0,2)));
+test('Manual Only uses configured manual flag while preserving run status',()=>assert.deepEqual(jobs.filter(predicate('manual_only')),[jobs[3]]));
+test('Healthy retains selected source scope',()=>assert.deepEqual(jobs.filter(predicate('healthy','qa-a')),[jobs[0]]));
+test('Manual Only retains selected source scope',()=>assert.deepEqual(jobs.filter(predicate('manual_only','qa-a')),[]));
+test('All, ordinary status and freshness filters remain intact',()=>{assert.equal(jobs.filter(predicate('all')).length,6);assert.deepEqual(jobs.filter(predicate('stale')),[jobs[2]]);assert.deepEqual(jobs.filter(predicate('success')),[jobs[0],jobs[2]]);assert.deepEqual(jobs.filter(predicate('unknown')),[jobs[5]])});
+test('Missing state and nonboolean manual flag do not invent matches',()=>{for(const job of [{},{status:'success'}, {status:'failed',freshness_status:'fresh'}, {is_manual_only:'false'}]){assert.equal(predicate('healthy')(job),false);assert.equal(predicate('manual_only')(job),false)}});
+test('Legacy literal manual and healthy status matches remain supported',()=>{assert.equal(predicate('manual_only')({status:'manual_only'}),true);assert.equal(predicate('healthy')({status:'healthy'}),true)});

@@ -406,6 +406,9 @@ export default function SyncDashboard() {
   const filteredJobs = jobs?.filter(job => {
     const sourceMatch = jobSourceFilter === 'all' || job?.source_system === jobSourceFilter;
     const statusMatch = jobStatusFilter === 'all'
+      || (jobStatusFilter === 'healthy' && ['success', 'completed'].includes(job?.status)
+        && (job?.freshness_status || job?.freshness) === 'fresh')
+      || (jobStatusFilter === 'manual_only' && job?.is_manual_only === true)
       || job?.status === jobStatusFilter
       || job?.freshness_status === jobStatusFilter
       || job?.freshness === jobStatusFilter;
