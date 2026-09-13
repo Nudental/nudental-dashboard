@@ -102,6 +102,7 @@ const COLUMNS = {
 
 const SupplyReportsTab = ({ isAdmin, isRCM, monthFilter, officeFilterProp }) => {
   const printRef = useRef(null);
+  const requestIdRef = useRef(0);
 
   // Derive initial date bounds from page-level monthFilter
   const initBounds = getMonthBounds(monthFilter || new Date()?.toISOString()?.slice(0, 7));
@@ -134,6 +135,7 @@ const SupplyReportsTab = ({ isAdmin, isRCM, monthFilter, officeFilterProp }) => 
   }, [officeFilterProp]);
 
   const loadReport = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
     setError('');
     try {
@@ -221,15 +223,20 @@ const SupplyReportsTab = ({ isAdmin, isRCM, monthFilter, officeFilterProp }) => 
         default:
           result = [];
       }
+      if (requestId !== requestIdRef.current) return;
       setData(result);
     } catch (e) {
+      if (requestId !== requestIdRef.current) return;
       setError(e?.message || 'Failed to load report');
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   }, [reportType, officeFilter, dateFrom, dateTo]);
 
-  useEffect(() => { loadReport(); }, [loadReport]);
+  useEffect(() => {
+    loadReport();
+    return () => { requestIdRef.current += 1; };
+  }, [loadReport]);
 
   // ── CSV export — filtered rows only ────────────────────────────────────────
   const exportCSV = () => {
