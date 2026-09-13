@@ -34,13 +34,13 @@ const fmt = (val) => (val == null || val === '' ? '—' : val);
 const fmtDate = (val) => {
   if (!val) return '—';
   try {
-    return new Date(val)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return new Date(typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val) ? val + 'T00:00:00' : val)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   } catch { return val; }
 };
 const fmtMonth = (val) => {
   if (!val) return '—';
   try {
-    const d = new Date(val + (val?.length === 7 ? '-01' : ''));
+    const d = new Date(val + (val?.length === 7 ? '-01T00:00:00' : val?.length === 10 ? 'T00:00:00' : ''));
     return d?.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   } catch { return val; }
 };
