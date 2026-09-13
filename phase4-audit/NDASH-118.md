@@ -9,3 +9,5 @@ Root cause: getSubsForDept filters only subsection/item names, even when the dep
 Five focused regressions: three fail before, all pass after. All533 retained/new frontend tests PASS. Production build34.30s PASS. Rocket844 confirms the two-helper repair. Scoped current-live artifact checks/deployment/live verification pending.
 
 Actual deployed helpers reproduce both failures; repaired helpers pass parent/case/item/category/no-match/clear fixtures. Full reverse117 and seven dependency relinks PASS. Tooling distinguishes desktop/mobile copies and the optimized positive conditional return; application changes stay limited to the two desktop search helpers. Candidateindex-239ef530b1b2.js.
+
+CLOSED PASS: source1d33cfe; deployment5e9e4b2e-8013-4233-8afd-10d601a2df68; index-239ef530b1b2.js SHA239ef530b1b26a6ad64f58649ded80acf1aef9a3b71abdbee3c7c7ae77d763dc. Freshlive mixedcaseHygiene3subsections/6+13+7items;Prophylaxis13rendereditems;FrontDesk0/BackStaff13;item-only1;unmatched0/clear16departments. Newbrowsererrors0,frontendAPI200,three services active,backend113 unchanged. No businesswrites/testrecords.
