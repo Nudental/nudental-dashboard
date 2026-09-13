@@ -12,3 +12,5 @@ Scope: Finance / Production & Adjustments and Collections only.
 - Status: ready locally; no upload/deployment performed. Specific approval is required because the earlier automatic review rejected042 when the recorded approval named041.
 
 Reproduced on current live157: both Production & Adjustments and Collections show01/01/2026–12/31/2026 controls alongside Month-to-Date/Monthly/MTD captions. The repair labels the selected range accurately and retains current-day UTC behavior. No dates, financial values, source queries, configuration or business records are modified. Earlier128 review files remain recoverable; this current candidate supersedes their release applicability.
+
+2026-09-13: user explicitly approved NDASH-042 publication through the existing server/production path. Current candidate upload/preparation authorized; original publication blocker resolved. Live verification remains required before closure.
