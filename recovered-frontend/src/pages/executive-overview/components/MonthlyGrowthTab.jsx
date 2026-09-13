@@ -591,7 +591,7 @@ const MonthlyGrowthTab = ({ selectedOfficeIds: propOfficeIds, selectedMonth: pro
                         />
                         <Tooltip
                           formatter={(v) => [fmtCurrency(v), 'Production']}
-                          labelFormatter={(l) => l}
+                          labelFormatter={(_label, payload) => payload?.[0]?.payload?.month || 'Month unavailable'}
                           contentStyle={{ fontSize: 10 }}
                           label=""
                           show={true}
