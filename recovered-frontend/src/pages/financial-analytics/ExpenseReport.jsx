@@ -312,6 +312,9 @@ const ExpenseReport = () => {
   // No widget has its own independent fetch.
   const [kpis, setKpis] = useState({});
   const [overviewError, setOverviewError] = useState(null);
+  const overviewDisplayError = (appliedFilters?.department && appliedFilters.department !== 'All') || (appliedFilters?.category && appliedFilters.category !== 'All')
+    ? 'The combined expense overview does not support Department or Category filters across all sources. Reset those filters to view the overview, or use Transactions for filtered records.'
+    : overviewError;
   const [expenseRows, setExpenseRows] = useState([]);   // table + export
   const [expenseRowsError, setExpenseRowsError] = useState(null);
   const [amexRows, setAmexRows] = useState([]);          // amex tab table + export (posted only)
@@ -826,8 +829,8 @@ const ExpenseReport = () => {
             <div className="flex-1 min-w-0 space-y-6">
               {/* Overview Tab */}
               {activeTab === 'overview' && loading && <p className="p-4 text-sm text-muted-foreground">Loading expense overview…</p>}
-              {activeTab === 'overview' && !loading && overviewError && <p role="alert" className="p-4 text-sm text-destructive border border-destructive/30 rounded-lg">{overviewError}</p>}
-              {activeTab === 'overview' && !loading && !overviewError && (
+              {activeTab === 'overview' && !loading && overviewDisplayError && <p role="alert" className="p-4 text-sm text-destructive border border-destructive/30 rounded-lg">{overviewDisplayError}</p>}
+              {activeTab === 'overview' && !loading && !overviewDisplayError && (
                 <>
                   {/* Manual entries summary banner */}
                   {(kpis?.manualEntryCount > 0) && (
