@@ -1,0 +1,8 @@
+# NDASH-111 — Import Audit producer/reader status mismatch
+
+Section: Import Audit / summary consumers. Severity: Medium. Reproduced twice on110: All has300records,265rawsuccess/35rawpartial. Selecting Success returns No audit entries found. Existing middleware writes success/partial/failed/nodata; Rocket writers use Success/Partial Success/Failed/No Data Returned. Reader exact equality and summary classification recognize only the latter. Stored rows remain unchanged.
+
+Fix only src/services/dentrixIngestionService.js: canonical aliases on read-side status filter, normalize reader output and the summary's two input arrays. Preserve unknown statuses, fields, other filters/date windows/limits/calculations, and all writers. Seven synthetic cases5failbefore;all504regressionsPASS. Build/Rocket/compiled/deployment/livepending.
+
+Other separate observations: Set Goals collection-heading vs production-input mismatch remains unassigned; its prior potential111 label is superseded by this confirmed functional repair. Audit Trail2261exactrecords vs200UIcap confirmed. Sync API200/empty arrays queries missing public.sync_log (PGRST205); alternate current source investigation pending. No source records/log content retrieved for those checks. Initial count probe's incorrect browser UA caused Supabase401; corrected to normal server request, existing credential unchanged. No production writes.
+BuildPASS33.08s/Rocket837PASS. Actualcompiled oldstatusmismatch reproduced;aliases/summary/unknownstatus/otherfilters/queryfailurePASS. Exactfullreverse110andallpriorrepairs/sevenrelinksPASS. Candidateindex-33e4560dcc9c.js. Deployment/livepending. Subsequentread-onlysourceinspectionfound sync_logger.py writes sync_job_runs (potentialcurrent Sync source; investigate after111).

@@ -706,6 +706,20 @@ export const retryFailedImports = async ({
 
 // ─── Fetch Audit Log ──────────────────────────────────────────────────────────
 
+const IMPORT_STATUS_ALIASES = {
+  Success: ['Success', 'success'],
+  'Partial Success': ['Partial Success', 'partial'],
+  'No Data Returned': ['No Data Returned', 'nodata'],
+  Failed: ['Failed', 'failed'],
+  Skipped: ['Skipped', 'skipped'],
+};
+
+const normalizeImportAuditRow = (row) => {
+  const status = Object.keys(IMPORT_STATUS_ALIASES)
+    .find(label => IMPORT_STATUS_ALIASES[label].includes(row?.status));
+  return status ? { ...row, status } : row;
+};
+
 export const fetchImportAuditLog = async ({
   officeId = null,
   endpointKey = null,
@@ -719,14 +733,14 @@ export const fetchImportAuditLog = async ({
 
   if (officeId) query = query?.eq('office_id', officeId);
   if (endpointKey) query = query?.eq('endpoint_key', endpointKey);
-  if (status && status !== 'all') query = query?.eq('status', status);
+  if (status && status !== 'all') query = query?.in('status', Object.values(IMPORT_STATUS_ALIASES).find(aliases => aliases.includes(status)) || [status]);
   if (syncType && syncType !== 'all') query = query?.eq('sync_type', syncType);
   if (dateFrom) query = query?.gte('started_at', dateFrom);
   if (dateTo) query = query?.lte('started_at', dateTo + 'T23:59:59Z');
 
   const { data, error } = await query;
   if (error) throw error;
-  return data || [];
+  return (data || []).map(normalizeImportAuditRow);
 };
 
 // ─── Fetch Import Summary (admin card) ───────────────────────────────────────
@@ -741,8 +755,8 @@ export const fetchImportSummary = async () => {
     supabase?.from('import_audit_log')?.select('office_id, office_name, endpoint_key, status, started_at')?.order('started_at', { ascending: false })?.limit(500),
   ]);
 
-  const todayEntries = allTodayRes?.data || [];
-  const allEntries = endpointsRes?.data || [];
+  const todayEntries = (allTodayRes?.data || []).map(normalizeImportAuditRow);
+  const allEntries = (endpointsRes?.data || []).map(normalizeImportAuditRow);
 
   // Last sync per office
   const lastSyncByOffice = {};
