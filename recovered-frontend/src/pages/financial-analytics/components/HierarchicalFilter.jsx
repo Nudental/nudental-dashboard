@@ -38,10 +38,11 @@ const HierarchicalFilter = ({ onFilterChange, appliedOffices, appliedDateRange, 
   const startDate = appliedDateRange?.start || format(new Date(new Date().getFullYear(), 0, 1), 'yyyy-MM-dd');
   const endDate = appliedDateRange?.end || format(new Date(new Date().getFullYear(), 11, 31), 'yyyy-MM-dd');
 
-  // Resolve locationId: only pass when a single specific office is selected
+  // Preserve the complete selected office scope for the existing options API.
   const locationId = useMemo(() => {
-    if (!appliedOffices || appliedOffices?.length !== 1 || appliedOffices?.[0] === 'all') return null;
-    return getLocationIdByOfficeId(appliedOffices?.[0]);
+    if (!appliedOffices?.length || appliedOffices.includes('all')) return null;
+    const ids = [...new Set(appliedOffices)];
+    return ids.map(id => getLocationIdByOfficeId(id) || id).join(',');
   }, [appliedOffices?.join(',')]);
 
   // Fetch filter options from the verified FastAPI endpoint

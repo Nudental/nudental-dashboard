@@ -1,0 +1,9 @@
+# NDASH-144 — Drill-down options show all-office values for multiple offices
+
+Severity: High. Status: reproduced and tested; release verification pending.
+
+Live143 Jan1–Jun30: Eatontown+Staten Island and Barnegat+Brick both show the same12 payment amounts as All Offices in Drill-Down Filters. Full displayed payment-group fingerprint1fad9e4e and displayed credit-card amount fingerprinta18efc70 persist after repeat Apply, while the main chart correctly changes to its office scope. Independent read-only filter-options responses confirm that a18efc70 is All, while Barnegat should be da36da99, Barnegat+Brick22ad0f18, and Eatontown+Staten2315fdd9 at the UI's existing whole-dollar precision. No raw financial amounts are retained here.
+
+Root cause: HierarchicalFilter's locationId memo returns null for every selection with length other than1. The existing options endpoint interprets null as All. Smallest fix: one memo deduplicates explicit office IDs, resolves each existing location ID, and joins with commas; empty/All retains null. Unknown nonempty IDs remain nonempty for the existing API422 rejection. NDASH-131 already supports the complete location set and distinct counts, so no backend changes or summation are introduced. Dates, formatting, mapping gates, unsupported-summary-filter warnings and NDASH-143 callbacks are preserved.
+
+Verification: six actual-source regression failures reproduced before editing. All730 frontend tests PASS after the fix, including eight new scope/lookup cases. Production build36.07s PASS. Actual compiled memo passes pair/single/four-office/duplicate/unknown/All cases; one changed region plus seven dependency relinks reverses exactly to143 and preserves all prior modules. Rocket version873 completed the same one-file fix and built successfully. Business/configuration/provider data remain unchanged; no test records created. Deployment and live verification pending.

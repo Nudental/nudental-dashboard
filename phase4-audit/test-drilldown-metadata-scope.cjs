@@ -1,0 +1,13 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),path=require('path'),vm=require('vm'),parser=require(path.join(process.env.NDASH_PARSER_ROOT,'node_modules/@babel/parser'));
+const source=fs.readFileSync(path.join(__dirname,'../recovered-frontend/src/pages/financial-analytics/components/HierarchicalFilter.jsx'),'utf8'),ast=parser.parse(source,{sourceType:'module',plugins:['jsx']});
+function find(n,name){if(!n||typeof n!=='object')return;if(n.type==='VariableDeclarator'&&n.id.name===name)return n;for(const v of Object.values(n)){for(const c of Array.isArray(v)?v:[v]){const found=find(c,name);if(found)return found}}}
+const memo=find(ast,'locationId').init.arguments[0],fetch=find(ast,'fetchFilterOptions').init.arguments[0],locations={one:'1001',two:'1002',three:'1003',four:'1004'};
+function resolve(appliedOffices){return vm.runInNewContext('('+source.slice(memo.start,memo.end)+')',{appliedOffices,getLocationIdByOfficeId:id=>Object.hasOwn(locations,id)?locations[id]:null})()}
+test('drill-down options retain both selected office locations',()=>assert.equal(resolve(['one','two']),'1001,1002'));
+test('drill-down options retain all four explicit offices',()=>assert.equal(resolve(['one','two','three','four']),'1001,1002,1003,1004'));
+test('drill-down options preserve single-office behavior',()=>assert.equal(resolve(['one']),'1001'));
+test('All and empty selections retain the existing unscoped behavior',()=>{for(const offices of [undefined,[],['all'],['one','all']])assert.equal(resolve(offices),null)});
+test('duplicate offices do not duplicate the requested locations',()=>assert.equal(resolve(['one','two','one']),'1001,1002'));
+test('unknown nonempty office IDs are passed for API rejection rather than broadened to All',()=>assert.equal(resolve(['missing']),'missing'));
+test('an invalid office in a pair cannot silently reduce the selected scope',()=>assert.equal(resolve(['one','missing']),'1001,missing'));
+test('the actual filter lookup receives the complete scope and unchanged dates',async()=>{const calls=[],state={},locationId=resolve(['one','two']);await vm.runInNewContext('('+source.slice(fetch.start,fetch.end)+')',{locationId,startDate:'2026-01-01',endDate:'2026-06-30',ascendApi:{getFinancialFilterOptions:async(...args)=>{calls.push(args);return{paymentMethods:[]}}},setLoadingOptions:v=>state.loading=v,setOptionsError:v=>state.error=v,setFilterOptions:v=>state.data=v,console:{warn(){}}})();assert.deepEqual(calls,[['2026-01-01','2026-06-30','1001,1002']]);assert.equal(state.loading,false);assert.equal(state.error,null);assert.ok(state.data)});
