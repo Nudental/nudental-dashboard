@@ -74,6 +74,20 @@ const formatIsoDisplay = (iso) => {
   return `${m}/${d}/${y}`;
 };
 
+const requireFinancialReports = (production, collections, detailed = false) => {
+  const total = collections?.totalCollections ?? collections?.total_collections;
+  const values = [production?.netProduction, total];
+  if (detailed) values.push(
+    production?.grossProduction,
+    production?.adjustments ?? production?.writeOffs,
+    collections?.patientCollections ?? collections?.patient_collections,
+    collections?.insuranceCollections ?? collections?.insurance_collections,
+  );
+  if (production?.error || collections?.error || values.some(value => typeof value !== 'number' || !Number.isFinite(value))) {
+    throw new Error('Verified financial data is unavailable for this selection.');
+  }
+};
+
 // ── ComparativePanel ─────────────────────────────────────────────────────────
 const ComparativePanel = ({ appliedDateRange, appliedOffices }) => {
   const [loading, setLoading] = useState(false);
@@ -83,7 +97,13 @@ const ComparativePanel = ({ appliedDateRange, appliedOffices }) => {
   const [prevPeriod, setPrevPeriod] = useState(null);
 
   useEffect(() => {
-    if (!appliedDateRange?.start || !appliedDateRange?.end) return;
+    let active = true;
+    setCurrentData(null);
+    setPreviousData(null);
+    setPrevPeriod(null);
+    setError(null);
+    setLoading(false);
+    if (!appliedDateRange?.start || !appliedDateRange?.end) return () => { active = false; };
 
     const fetchBoth = async () => {
       setLoading(true);
@@ -101,11 +121,14 @@ const ComparativePanel = ({ appliedDateRange, appliedOffices }) => {
         setPrevPeriod({ prevStart, prevEnd });
 
         const [curProd, curColl, prevProd, prevColl] = await Promise.all([
-          fetchFinancialReportForOffices('getProduction', appliedDateRange?.start, appliedDateRange?.end, appliedOffices)?.catch(() => null),
-          fetchFinancialReportForOffices('getCollections', appliedDateRange?.start, appliedDateRange?.end, appliedOffices)?.catch(() => null),
-          fetchFinancialReportForOffices('getProduction', prevStart, prevEnd, appliedOffices)?.catch(() => null),
-          fetchFinancialReportForOffices('getCollections', prevStart, prevEnd, appliedOffices)?.catch(() => null),
+          fetchFinancialReportForOffices('getProduction', appliedDateRange?.start, appliedDateRange?.end, appliedOffices),
+          fetchFinancialReportForOffices('getCollections', appliedDateRange?.start, appliedDateRange?.end, appliedOffices),
+          fetchFinancialReportForOffices('getProduction', prevStart, prevEnd, appliedOffices),
+          fetchFinancialReportForOffices('getCollections', prevStart, prevEnd, appliedOffices),
         ]);
+        if (!active) return;
+        requireFinancialReports(curProd, curColl, true);
+        requireFinancialReports(prevProd, prevColl, true);
 
         const buildRow = (prod, coll) => {
           const grossProduction = prod?.grossProduction ?? 0;
@@ -121,13 +144,14 @@ const ComparativePanel = ({ appliedDateRange, appliedOffices }) => {
         setCurrentData(buildRow(curProd, curColl));
         setPreviousData(buildRow(prevProd, prevColl));
       } catch (err) {
-        setError(err?.message || 'Failed to load comparison data.');
+        if (active) setError(err?.message || 'Failed to load comparison data.');
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
     fetchBoth();
+    return () => { active = false; };
   }, [appliedDateRange?.start, appliedDateRange?.end, appliedOffices?.join?.(',')]);
 
   const metrics = [
@@ -232,7 +256,11 @@ const ForecastingPanel = ({ appliedDateRange, appliedOffices }) => {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    if (!appliedDateRange?.start || !appliedDateRange?.end) return;
+    let active = true;
+    setData(null);
+    setError(null);
+    setLoading(false);
+    if (!appliedDateRange?.start || !appliedDateRange?.end) return () => { active = false; };
 
     const fetchCurrent = async () => {
       setLoading(true);
@@ -244,9 +272,11 @@ const ForecastingPanel = ({ appliedDateRange, appliedOffices }) => {
             : null;
 
         const [prod, coll] = await Promise.all([
-          fetchFinancialReportForOffices('getProduction', appliedDateRange?.start, appliedDateRange?.end, appliedOffices)?.catch(() => null),
-          fetchFinancialReportForOffices('getCollections', appliedDateRange?.start, appliedDateRange?.end, appliedOffices)?.catch(() => null),
+          fetchFinancialReportForOffices('getProduction', appliedDateRange?.start, appliedDateRange?.end, appliedOffices),
+          fetchFinancialReportForOffices('getCollections', appliedDateRange?.start, appliedDateRange?.end, appliedOffices),
         ]);
+        if (!active) return;
+        requireFinancialReports(prod, coll);
 
         const netProduction = prod?.netProduction ?? 0;
         const totalCollections = coll?.totalCollections ?? coll?.total_collections ?? 0;
@@ -269,13 +299,14 @@ const ForecastingPanel = ({ appliedDateRange, appliedOffices }) => {
           monthDays,
         });
       } catch (err) {
-        setError(err?.message || 'Failed to load forecasting data.');
+        if (active) setError(err?.message || 'Failed to load forecasting data.');
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
     fetchCurrent();
+    return () => { active = false; };
   }, [appliedDateRange?.start, appliedDateRange?.end, appliedOffices?.join?.(',')]);
 
   const multiMonth = appliedDateRange?.start && appliedDateRange?.end && !isSameMonth(appliedDateRange?.start, appliedDateRange?.end);
