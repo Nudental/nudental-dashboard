@@ -6,4 +6,4 @@ The user was notified and an asynchronous request to check/restore usable credit
 
 The current recovered repository, compiler, deployment server and live Dashboard remain accessible. User authorization covers these paths independently, so safe repairs and live verification continue. Track all subsequent changes here for eventual Rocket synchronization. Preserve the existing workspace; do not create a replacement project.
 
-Pending Rocket update: NDASH-143, the two office-commit callbacks in HierarchicalFilter.jsx and Financial Analytics index.jsx. Source tests, build and scoped artifact pass; deployment/live verification tracked in its issue document.
+Resolved September13: the user reported credits added. The pending NDASH-143 request was resubmitted once after confirming the composer was idle. Rocket changed only the two requested callback files, built successfully, and completed version872. No pending Rocket synchronization remains through143. Deployment/live verification is tracked in the issue document.
