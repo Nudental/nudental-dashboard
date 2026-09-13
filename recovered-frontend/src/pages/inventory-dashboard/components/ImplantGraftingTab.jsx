@@ -775,25 +775,8 @@ const BoneTissueEmbedded = () => {
     if (activeTab === 'settings') loadBtCategories();
   }, [activeTab, loadBtCategories]);
 
-  const handleAddBtCategory = async () => {
-    const trimmed = newCategoryName?.trim();
-    if (!trimmed) return;
-    if (btCategories?.some(c => c?.name?.toLowerCase() === trimmed?.toLowerCase())) {
-      setBtError('Category already exists');
-      return;
-    }
-    setAddingCategory(true);
-    setBtError('');
-    try {
-      setBtCategories(prev => [...prev, { name: trimmed, isBuiltIn: false }]?.sort((a, b) => a?.name?.localeCompare(b?.name)));
-      setNewCategoryName('');
-      setBtSuccess(`Category "${trimmed}" added successfully`);
-      setTimeout(() => setBtSuccess(''), 3000);
-    } catch (err) {
-      setBtError(err?.message || 'Failed to add category');
-    } finally {
-      setAddingCategory(false);
-    }
+  const handleAddBtCategory = () => {
+    setBtError('Custom category creation is unavailable. No category was saved.');
   };
 
   useEffect(() => {
@@ -1073,7 +1056,7 @@ const BoneTissueEmbedded = () => {
           <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 flex items-start gap-3">
             <Icon name="Info" size={14} className="text-blue-600 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-blue-800">
-              These settings are shared with <strong>Implant &amp; Grafting → Settings → Bone &amp; Tissue Categories</strong>. Changes made here are reflected there and vice versa.
+              Categories shown here include built-in types and types found in existing inventory. Custom category creation is unavailable.
             </p>
           </div>
 
@@ -1081,7 +1064,7 @@ const BoneTissueEmbedded = () => {
           <div className="rounded-xl border border-border bg-card p-5 space-y-4">
             <div>
               <h4 className="text-sm font-bold text-foreground">Bone &amp; Tissue Categories</h4>
-              <p className="text-xs text-muted-foreground mt-0.5">Manage the category types used for Bone, Tissue, Membrane, and PRF inventory entries.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">View the category types used for Bone, Tissue, Membrane, and PRF inventory entries.</p>
             </div>
 
             {btError && (
@@ -1102,6 +1085,7 @@ const BoneTissueEmbedded = () => {
                 <input
                   type="text"
                   placeholder="New category name (e.g. Allograft)"
+                  disabled
                   value={newCategoryName}
                   onChange={e => setNewCategoryName(e?.target?.value)}
                   onKeyDown={e => e?.key === 'Enter' && handleAddBtCategory()}
@@ -1109,7 +1093,7 @@ const BoneTissueEmbedded = () => {
                 />
                 <button
                   onClick={handleAddBtCategory}
-                  disabled={addingCategory || !newCategoryName?.trim()}
+                  disabled
                   className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50"
                 >
                   <Icon name="Plus" size={14} />
