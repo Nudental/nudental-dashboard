@@ -314,7 +314,9 @@ const ExpenseReport = () => {
   const [overviewError, setOverviewError] = useState(null);
   const overviewDisplayError = (appliedFilters?.department && appliedFilters.department !== 'All') || (appliedFilters?.category && appliedFilters.category !== 'All')
     ? 'The combined expense overview does not support Department or Category filters across all sources. Reset those filters to view the overview, or use Transactions for filtered records.'
-    : overviewError;
+    : (appliedFilters?.paymentSource && appliedFilters.paymentSource !== 'All') || appliedFilters?.status === 'draft'
+      ? 'The combined expense overview does not support Payment Source filters or Draft status across all sources. Reset those filters to view the overview, or use Transactions for filtered records.'
+      : overviewError;
   const [expenseRows, setExpenseRows] = useState([]);   // table + export
   const [expenseRowsError, setExpenseRowsError] = useState(null);
   const [amexRows, setAmexRows] = useState([]);          // amex tab table + export (posted only)
