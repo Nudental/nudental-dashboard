@@ -733,6 +733,7 @@ const ImportAuditPage = () => {
             <option value="manual">Manual</option>
             <option value="scheduled">Scheduled</option>
             <option value="incremental">Incremental</option>
+            <option value="streaming">Streaming</option>
           </select>
 
           {/* Date from */}
