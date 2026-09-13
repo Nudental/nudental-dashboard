@@ -10,6 +10,11 @@ Production uses a direct Cloudflare Pages upload to `nudashboard`, deployment `e
 
 The complete production artifact and middleware source/configuration are retained in the owner-only server snapshot `/home/openclaw/.cache/nudashboard-audit-20260910/baseline-20260910T123502Z`. Private configuration and compiled assets containing runtime values must not be committed here.
 
-Do not deploy this repository's root app or the whole recovered frontend over production. Release only reviewed repairs after proving their effect against the preserved production artifact, retaining rollback and live verification. No production deployment has occurred in Phase 4 at this checkpoint.
+Do not deploy this repository's root app or the whole recovered frontend over production. Release only reviewed repairs after proving their effect against the preserved production artifact, retaining rollback and live verification. The original recovery checkpoint preceded all Phase4 repair deployments. Current Phase4 repair deployments and source limitations are recorded in PHASE4-COMPLETION-REPORT.md.
 
 The existing GitHub repository is public. This local audit branch is not authorization to publish private runtime configuration or recovered backend credentials.
+
+
+## Final Phase 4 state
+
+All157 numbered repairs are deployed and live-verified to their targeted scope. See PHASE4-COMPLETION-REPORT.md, PHASE4-ISSUE-REGISTER.csv and PHASE4-FINAL-DATA-CHECK.md for final results and residual limits. GitHub main is unchanged; complete recovered-source equivalence and a new reproducible canonical main are not claimed.

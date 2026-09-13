@@ -1,6 +1,6 @@
 # NDASH-066 — Year comparison percentage columns refer to the wrong years
 
-Section: shared Year Comparison panel, reproduced in RCM. Severity: Medium. Status: live verification FAIL; rolled back; temporarily blocked pending startup diagnosis.
+Section: shared Year Comparison panel, reproduced in RCM. Severity: Medium. Current status: deployed and live verification PASS on 2026-09-13. Earlier failed-release and rollback statements below are historical evidence.
 
 Reproduction on065:2026/2025/2024 table headings put changes after older years, yielding Net Production cells999777/6580370/+6.2%/6194896/% under headings2026/2025/vs2026/2024/vs2025. Reset/reselect2025+2024 reproduces a bare% with headingsMetric/2025/2024/vs2025, concealing the valid+6.2%change.
 
@@ -12,5 +12,19 @@ Releasea61dd0cd-5082-4108-8d90-0611ca17691f served correctnewasset but authentic
 
 2026-09-12 revisit after092: HuddleAnalytics Barnegat2026/2025/2024 reproduces headingsMetric/2026/2025/vs2026/2024/vs2025; productionrow405606/2504897/+8.8%/2301834/%. Reset2026+2025 repeatsbare% withwrongolder-yearcolumn. This is existing066, not a new issue. Currentcompiledtable retainsoldidx>0/idx-1; privatecandidate source retainscorrectidx<last/idx+1. Earlierauthenticatedblank-screenrootcause remainsunestablished. No redeployment attempted. Temporaryduplicate093source/testedits reverted exactly; original066tests preserved. Additionalmissing-changeguardtest preserved only in work/phase4-duplicate066-additional-tests.cjs for future diagnosis.092production unchanged.
 
-## Current blocker revisit —2026-09-13
+## Historical blocker revisit —2026-09-13
 Current private preview remains at /otp-challenge with Verify Your Identity. Six email-code fields are visible; no code or credential was read. Original candidate syntax, three-expression scope, versioned dependency checks and rollback evidence are retained. Authenticated startup failure remains undiagnosed; no066 production redeployment attempted. The user has been asked to complete the private preview verification directly. Other audit work continued through157 and approved042 publication. Single required action: finish the private preview email verification and report that it opens. Do not share codes in chat.
+
+## Final live closure — 2026-09-13
+
+User completed preview verification. Authenticated Executive Overview and RCM then rendered normally; the preview table passed two- and three-year checks. Explicit preview reload eventually routed to its existing OTP challenge. The exact historical blank-screen cause remains unproven; no authentication repair is claimed. It did not recur after settled authenticated rendering.
+
+Current production reproduced the original wrong columns again. Applied only the reviewed three table expressions to current042-v3, retaining all repairs through157. Release `4f583195-5bef-4c51-9e45-de3cc73819d1`, entry `index-0230990f6d6c.js`, SHA256 `0230990f6d6c765c9b9b80b24c50e2ca1d4b9c6b828701622500841a20da01e8`. Previous042 deployment `5abc436a-8bbb-4dcb-99db-6504de25ef7c` and its complete graph remain recoverable.
+
+837 frontend tests PASS; source build PASS32.39s. Actual compiled table cases, sorted-year binding, syntax, complete reversal to042 and seven dependent modules PASS. Rocket confirmed the three expressions already present; no unrelated edits requested. Exact live asset and unchanged backend148 hashes PASS; frontend/API200 and three services active.
+
+Live RCM: three-year headings `Metric / 2026 / vs 2025 / 2025 / vs 2024 / 2024`, 12 rows and20 available comparisons correct; two-year headings `Metric / 2025 / vs 2024 / 2024`, 12 rows and10 comparisons correct. Annual values unchanged; no bare-percent cells. Single-year hiding, clearing all selections, root startup, and shared Huddle Analytics comparison PASS. Initial reload settled around39 seconds with no captured new browser errors; retain the performance observation. RCM/Huddle year selections cleared.
+
+Retained042 Collections labels, dates and numeric/chart/table fingerprints PASS. Retained157 category pie and all five Expense charts unchanged. Nine of18 Expense headline fingerprints differ from the earlier baseline and repeat after Reset. A current read-only summary request confirms the displayed WF figure; API AmEx/total still differ from displayed composite/fallback figures. Accounting source authority remains unresolved; see `PHASE4-FINAL-DATA-CHECK.md`. Do not claim every Expense figure unchanged or independently certified. Complete artifact reversal proves066 did not change Expense code or source requests.
+
+No business-data writes, exports, provider sync, credential/configuration changes or external delivery in this closure. All157 numbered repairs have targeted live verification; source/data/write-test limitations remain explicit.

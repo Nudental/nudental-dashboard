@@ -1,0 +1,158 @@
+﻿issue,title,severity,severity_basis,verification,file
+001,NDASH-001 — Executive Overview comparison direction,High,closing triage,LIVE PASS,NDASH-001.md
+002,NDASH-002 — Executive subviews ignore selected date and location,High,closing triage,LIVE PASS,NDASH-002.md
+003,NDASH-003 — Monthly Growth office selector does not filter rows or totals,High,closing triage,LIVE PASS,NDASH-003.md
+004,NDASH-004 — Monthly Growth uses obsolete financial history,High,recorded,LIVE PASS,NDASH-004.md
+005,NDASH-005 — KPI office goal progress missing and benchmark displays NaN,Medium,closing triage,LIVE PASS,NDASH-005.md
+006,NDASH-006 — Unmatched provider search removes the search control,Medium,closing triage,LIVE PASS,NDASH-006.md
+007,NDASH-007 — Expense endpoints omit the existing API access guard,Critical,recorded,LIVE PASS,NDASH-007.md
+008,NDASH-008 — Total A/R aging percentage uses insurance denominator,High,recorded,LIVE PASS,NDASH-008.md
+009,NDASH-009 — Selected offices ignored by Operations A/R snapshots,High,recorded,LIVE PASS,NDASH-009.md
+010,NDASH-010 — Actual production mislabeled as scheduled production,Medium,recorded,LIVE PASS,NDASH-010.md
+011,NDASH-011 — Office Performance relative-date preset labels are stale,Low,recorded,LIVE PASS,NDASH-011-012.md
+012,NDASH-012 — Office Performance refresh control does not trigger refresh,Medium,recorded,LIVE PASS,NDASH-011-012.md
+013,NDASH-013 — Office Performance exports were inactive,Medium,recorded,LIVE PASS,NDASH-013.md
+014,NDASH-014 — P&L export discards office and partial-month scope,High,recorded,LIVE PASS,NDASH-014.md
+015,NDASH-015 — Provider export used primary-office filtering on all-office amounts,High,recorded,LIVE PASS,NDASH-015.md
+016,NDASH-016 — Provider Performance multi-office selection became All Offices,High,recorded,LIVE PASS,NDASH-016.md
+017,NDASH-017 — Provider-type headline totals ignored the selected types,High,closing triage,LIVE PASS,NDASH-017.md
+018,NDASH-018 — Fabricated provider categories and ineffective controls,High,closing triage,LIVE PASS,NDASH-018.md
+019,NDASH-019 — Regional Manager item search never matched item names,Medium,closing triage,LIVE PASS,NDASH-019.md
+020,NDASH-020 — Regional Manager Items column was a fixed placeholder,Medium,closing triage,LIVE PASS,NDASH-020.md
+021,NDASH-021 — Viewing payroll could persist provider mappings automatically,High,recorded,LIVE PASS,NDASH-021.md
+022,NDASH-022 — An undated placeholder appeared as a real payroll run,High,recorded,LIVE PASS,NDASH-022.md
+023,NDASH-023 — Incomplete dates and late responses left payroll figures in the wrong view,High,recorded,LIVE PASS,NDASH-023.md
+024,NDASH-024 — Gusto period selection displayed the wrong scope,High,recorded,LIVE PASS,NDASH-024.md
+025,NDASH-025 — Gusto classified every payroll run as regular,Medium,recorded,LIVE PASS,NDASH-025.md
+026,NDASH-026 — Imported employee detail and filters ignored their requested scope,High,recorded,LIVE PASS,NDASH-026.md
+027,NDASH-027 — Employee filters left the list on an empty later page,Medium,recorded,LIVE PASS,NDASH-027.md
+028,NDASH-028 — Imported payroll run filters and order were ignored,High,recorded,LIVE PASS,NDASH-028.md
+029,NDASH-029 — Late run responses and retained pages could contradict filters,High,recorded,LIVE PASS,NDASH-029.md
+030,NDASH-030 — Contractor source disconnected and displays used misleading substitutes,High,recorded,LIVE PASS,NDASH-030.md
+031,NDASH-031 — Missing separately loaded application files,High,recorded,LIVE PASS,NDASH-031.md
+032,NDASH-032 — Benefits CSV ignores selected filters,Medium,recorded,LIVE PASS,NDASH-032.md
+033,NDASH-033 — Inconsistent benefit monthly and annual estimates,Medium,recorded,LIVE PASS,NDASH-033.md
+034,NDASH-034 — Attendance reads stop at1000 rows,High,recorded,LIVE PASS,NDASH-034.md
+035,NDASH-035 — Attendance employee filters use names as IDs,High,closing triage,LIVE PASS,NDASH-035.md
+036,NDASH-036 — Attendance labels misstate coverage and availability,Medium,recorded,LIVE PASS,NDASH-036.md
+037,NDASH-037 — Time Off Balances year selector does not filter,Medium,recorded,LIVE PASS,NDASH-037.md
+038,NDASH-038 — Hours Summary scope label and empty export,Low,recorded,LIVE PASS,NDASH-038.md
+039,NDASH-039 — Comparison requests without required period dates,Medium,recorded,LIVE PASS,NDASH-039.md
+040,NDASH-040 — Unsupported expense and profit trend series,High,recorded,LIVE PASS,NDASH-040.md
+041,NDASH-041 — Trend ignores selected ending date,Medium,recorded,LIVE PASS,NDASH-041.md
+042,NDASH-042 — Selected-range metrics labeled as monthly totals,Medium,recorded,LIVE PASS,NDASH-042.md
+043,NDASH-043 — Adjustment breakdown excludes reversals included in production,High,recorded,LIVE PASS,NDASH-043.md
+044,NDASH-044 — Unreconciled benchmarks display zero deltas and OK,High,recorded,LIVE PASS,NDASH-044.md
+045,NDASH-045 — Transaction Audit truncates entries and available years,High,recorded,LIVE PASS,NDASH-045.md
+046,NDASH-046 — Late report preview enables export after filters change,Medium,recorded,LIVE PASS,NDASH-046.md
+047,NDASH-047 — Retention total omits unlisted audit resources,Medium,recorded,LIVE PASS,NDASH-047.md
+048,NDASH-048 — Incomplete custom expense dates silently query year to date,Medium,recorded,LIVE PASS,NDASH-048.md
+049,NDASH-049 — Expense transaction table silently truncates both source queries,High,recorded,LIVE PASS,NDASH-049.md
+050,NDASH-050 — Expense table keeps an out-of-range page after filters change,Medium,recorded,LIVE PASS,NDASH-050.md
+051,"NDASH-051 — AmEx Detail publishes totals from a capped 1,000-row fallback",High,recorded,LIVE PASS,NDASH-051.md
+052,NDASH-052 — Expense Admin Tools hides records beyond the first page,Medium,closing triage,LIVE PASS,NDASH-052.md
+053,NDASH-053 — Transfer audit totals and classifications use capped input rows,High,closing triage,LIVE PASS,NDASH-053.md
+054,NDASH-054 — Expense Overview calculates from incomplete expense-row inputs,High,closing triage,LIVE PASS,NDASH-054.md
+055,NDASH-055 — Expense category pie adds Banking expenses twice,High,closing triage,LIVE PASS,NDASH-055.md
+056,NDASH-056 — Incomplete AmEx summaries ignore the source filter,High,recorded,LIVE PASS,NDASH-056.md
+057,NDASH-057 — Monthly expense trend ignores merchant and cardholder searches,High,recorded,LIVE PASS,NDASH-057.md
+058,NDASH-058 — Late claim responses overwrite the active filters,High,recorded,LIVE PASS,NDASH-058.md
+059,NDASH-059 — Unknown claim status silently selects every status,High,recorded,LIVE PASS,NDASH-059.md
+060,NDASH-060 — Late Patient Balances responses overwrite the selected office,High,recorded,LIVE PASS,NDASH-060.md
+061,NDASH-061 — AR Follow-Up rows collide across offices,High,recorded,LIVE PASS,NDASH-061.md
+062,NDASH-062 — Aging boundaries disagree with the labeled intervals,High,recorded,LIVE PASS,NDASH-062.md
+063,NDASH-063 — Shared RCM YTD range includes the rest of the current month,Medium,recorded,LIVE PASS,NDASH-063.md
+064,NDASH-064 — Reversed custom dates mount an apparently valid empty report,Medium,recorded,LIVE PASS,NDASH-064.md
+065,NDASH-065 — Year comparison chart uses a different production measure from its KPI,Medium,recorded,LIVE PASS,NDASH-065.md
+066,NDASH-066 — Year comparison percentage columns refer to the wrong years,Medium,recorded,LIVE PASS,NDASH-066.md
+067,NDASH-067 — POS collection endpoint omits the existing API-key dependency,High,recorded,LIVE PASS,NDASH-067.md
+068,NDASH-068 — Adjustment breakdowns omit their monetary amounts,Medium,recorded,LIVE PASS,NDASH-068.md
+069,NDASH-069 — Adjustment filters can display the previous selection's results,Medium,recorded,LIVE PASS,NDASH-069.md
+070,NDASH-070 — Documentation queue omits existing notes,Medium,recorded,LIVE PASS,NDASH-070.md
+071,NDASH-071 — Review filters compare display labels instead of canonical flags,Medium,recorded,LIVE PASS,NDASH-071.md
+072,NDASH-072 — Command Center patient-portion options are ignored,Medium,recorded,LIVE PASS,NDASH-072.md
+073,NDASH-073 — AR Aging sorting duplicates a visible row,Medium,recorded,LIVE PASS,NDASH-073.md
+074,NDASH-074 — Daily Comparison opens an obsolete fixed date,Medium,recorded,LIVE PASS,NDASH-074.md
+075,NDASH-075 — Count comparison changes are formatted as money,Low,recorded,LIVE PASS,NDASH-075.md
+076,NDASH-076 — Single-office Daily Comparison breakdown is missing,Medium,recorded,LIVE PASS,NDASH-076.md
+077,NDASH-077 — Late Daily Comparison responses overwrite the selected office,High,recorded,LIVE PASS,NDASH-077.md
+078,NDASH-078 — Clearing the Dentrix Daily Summary date creates an invalid report range,Medium,recorded,LIVE PASS,NDASH-078.md
+079,NDASH-079 — Sorting Patient Portion moves an open drill-down to a different row,High,recorded,LIVE PASS,NDASH-079.md
+080,NDASH-080 — Patient Portion minimum age does not filter results,Medium,closing triage,LIVE PASS,NDASH-080.md
+081,NDASH-081 — eAssist report office and parse status display blank,Medium,closing triage,LIVE PASS,NDASH-081.md
+082,NDASH-082 — Fixed header intercepts eAssist detail close button,Medium,closing triage,LIVE PASS,NDASH-082.md
+083,NDASH-083 — eAssist summary cards change with pagination,High,closing triage,LIVE PASS,NDASH-083.md
+084,NDASH-084 — Selecting Staten Island hides the office picker without recovery,Medium,closing triage,LIVE PASS,NDASH-084.md
+085,NDASH-085 — Ingestion status discards valid paginated responses,Medium,closing triage,LIVE PASS,NDASH-085.md
+086,NDASH-086 — Ingestion metadata shows blank run date and false-green reports,High,closing triage,LIVE PASS,NDASH-086.md
+087,NDASH-087 — Zero missing-report records incorrectly claims confirmed receipt,High,closing triage,LIVE PASS,NDASH-087.md
+088,NDASH-088 — Dashboard retains results from a previous office,High,closing triage,LIVE PASS,NDASH-088.md
+089,NDASH-089 — Valid zero denominator mislabeled as unavailable data,Medium,closing triage,LIVE PASS,NDASH-089.md
+090,NDASH-090 — Huddle Analytics displays obsolete office results,High,closing triage,LIVE PASS,NDASH-090.md
+091,NDASH-091 — Analytics date presets include an extra day,High,closing triage,LIVE PASS,NDASH-091.md
+092,NDASH-092 — Analytics office rows all have the same generic label,Medium,closing triage,LIVE PASS,NDASH-092.md
+093,NDASH-093 — Direct Insurance URL redirects to a retired site,Medium,recorded,LIVE PASS,NDASH-093.md
+094,NDASH-094 — Insurance search punctuation breaks the request query,Medium,recorded,LIVE PASS,NDASH-094.md
+095,NDASH-095 — Insurance drawer close button is underneath the header,Medium,recorded,LIVE PASS,NDASH-095.md
+096,NDASH-096 — Legacy Insurance fallback leads to a retired site,Medium,recorded,LIVE PASS,NDASH-096.md
+097,NDASH-097 — Insurance notice incorrectly denies email and Dentrix actions,Medium,recorded,LIVE PASS,NDASH-097.md
+098,NDASH-098 — Tasks crashes when permissions finish loading,High,recorded,LIVE PASS,NDASH-098.md
+099,NDASH-099 — Older Task requests overwrite the selected office,Medium,recorded,LIVE PASS,NDASH-099.md
+100,NDASH-100 — EOD API-synced list silently stops at1000 records,High,recorded,LIVE PASS,NDASH-100.md
+101,NDASH-101 — Reports comparison drops the selected office,High,closing triage,LIVE PASS,NDASH-101.md
+102,NDASH-102 — Comparison form edits relabel old financial results,High,closing triage,LIVE PASS,NDASH-102.md
+103,NDASH-103 — Reversed comparison periods become false zero results,High,closing triage,LIVE PASS,NDASH-103.md
+104,NDASH-104 — Unimplemented Custom Range silently runs fixed periods,High,closing triage,LIVE PASS,NDASH-104.md
+105,NDASH-105 — Reports provider view ignores combined offices,High,recorded,LIVE PASS,NDASH-105.md
+106,NDASH-106 — Combined Reports summaries remain at the first office,High,recorded,LIVE PASS,NDASH-106.md
+107,NDASH-107 — Obsolete provider responses overwrite current filters,High,recorded,LIVE PASS,NDASH-107.md
+108,NDASH-108 — Combined-office P&L metrics become All Offices,High,recorded,LIVE PASS,NDASH-108.md
+109,NDASH-109 — Late P&L responses overwrite selected scope,High,recorded,LIVE PASS,NDASH-109.md
+110,NDASH-110 — Unsupported notification delivery health,Medium,recorded,LIVE PASS,NDASH-110.md
+111,NDASH-111 — Import Audit producer/reader status mismatch,Medium,recorded,LIVE PASS,NDASH-111.md
+112,NDASH-112 — Settings Audit Trail history silently capped at200,High,recorded,LIVE PASS,NDASH-112.md
+113,NDASH-113 — Sync status reads obsolete source tables,High,recorded,LIVE PASS,NDASH-113.md
+114,NDASH-114 — Healthy and Manual Only Sync filters hide matching jobs,Medium,recorded,LIVE PASS,NDASH-114.md
+115,NDASH-115 — Set Goals mislabels production goals as collection targets,Low,recorded,LIVE PASS,NDASH-115.md
+116,NDASH-116 — Allocation filters retain an invalid table page,Medium,recorded,LIVE PASS,NDASH-116.md
+117,NDASH-117 — Category creation reports a save that never occurs,Medium,recorded,LIVE PASS,NDASH-117.md
+118,NDASH-118 — Catalog parent search hides matching children,Medium,recorded,LIVE PASS,NDASH-118.md
+119,NDASH-119 — Clinical Supply shows disconnected header filters,Medium,recorded,LIVE PASS,NDASH-119.md
+120,NDASH-120 — Selected-office status table includes unrelated zero rows,Medium,recorded,LIVE PASS,NDASH-120.md
+121,NDASH-121 — Supply report date-only values shift one day backward,Medium,recorded,LIVE PASS,NDASH-121.md
+122,NDASH-122 — Older supply report responses overwrite current filters,Medium,recorded,LIVE PASS,NDASH-122.md
+123,NDASH-123 — Front Desk history displays the preceding month,Medium,recorded,LIVE PASS,NDASH-123.md
+124,NDASH-124 — Amazon order dates and month labels shift backward,Medium,recorded,LIVE PASS,NDASH-124.md
+125,NDASH-125 — Unsaved request cart shows the preceding month,Medium,recorded,LIVE PASS,NDASH-125.md
+126,NDASH-126 — Admin benchmark table invents zero differences for missing values,High,recorded,LIVE PASS,NDASH-126.md
+127,NDASH-127 — Streaming imports cannot be selected in the Sync Type filter,Medium,recorded,LIVE PASS,NDASH-127.md
+128,NDASH-128 — Monthly Growth sparkline tooltip shows a point index,Low,recorded,LIVE PASS,NDASH-128.md
+129,NDASH-129 — Combined-office financial headlines use all-office totals,High,recorded,LIVE PASS,NDASH-129.md
+130,NDASH-130 — Financial subtab Apply silently drops additional offices,High,recorded,LIVE PASS,NDASH-130.md
+131,NDASH-131 — Selected-office payment breakdown shows all offices,High,recorded,LIVE PASS,NDASH-131.md
+132,NDASH-132 — Daily financial summary envelope read as zero,High,recorded,LIVE PASS,NDASH-132-financial-daily-envelope.md
+133,NDASH-133 — Analytics modes widen selected offices to All Offices,High,recorded,LIVE PASS,NDASH-133-analytics-office-scope.md
+134,NDASH-134 — Analytics chart controls overlap the neighboring panel,Medium,recorded,LIVE PASS,NDASH-134-chart-control-overlap.md
+135,NDASH-135 — Scatter Plot has no connected data,Medium,recorded,LIVE PASS,NDASH-135-scatter-data-connection.md
+136,NDASH-136 — Daily target plotted against monthly totals and incorrect office scope,High,recorded,LIVE PASS,NDASH-136-financial-goal-context.md
+137,NDASH-137 — Comparison and Forecast turn failed reads into zero financial totals,High,recorded,LIVE PASS,NDASH-137-comparison-forecast-availability.md
+138,NDASH-138 — Statistical Summary widens multiple selected offices to All,High,recorded,LIVE PASS,NDASH-138-statistical-summary-office-scope.md
+139,NDASH-139 — Revenue Pivot reports failed requests as complete zero/partial totals,High,recorded,LIVE PASS,NDASH-139-pivot-financial-availability.md
+140,NDASH-140 — Revenue Breakdown labels All-office totals as one selected office,High,recorded,LIVE PASS,NDASH-140-revenue-breakdown-office-scope.md
+141,NDASH-141 — Failed Revenue Breakdown reads appear as verified zeroes,High,recorded,LIVE PASS,NDASH-141-revenue-breakdown-availability.md
+142,NDASH-142 — Failed monthly reads become zero financial trend points,High,recorded,LIVE PASS,NDASH-142-financial-trend-availability.md
+143,NDASH-143 — Multiple drill-down offices do not update financial results,High,recorded,LIVE PASS,NDASH-143-drilldown-office-commit.md
+144,NDASH-144 — Drill-down options show all-office values for multiple offices,High,recorded,LIVE PASS,NDASH-144-drilldown-metadata-office-scope.md
+145,NDASH-145 — Operations Payors claim summary discards multiple offices,High,recorded,LIVE PASS,NDASH-145-payor-claim-office-scope.md
+146,NDASH-146 — Performance trends collapse selected offices into All,High,recorded,LIVE PASS,NDASH-146-performance-trend-office-scope.md
+147,NDASH-147 — Year comparison drops minus signs from counts and percentages,Medium,recorded,LIVE PASS,NDASH-147-office-comparison-negative-sign.md
+148,NDASH-148 — Operations Trends selected-office scope,High,recorded,LIVE PASS,NDASH-148-operations-trends-office-scope.md
+149,NDASH-149 — Operations YTD range and cancellation period,High,recorded,LIVE PASS,NDASH-149-operations-ytd-period.md
+150,NDASH-150 — Operations custom calendar-month scope,High,recorded,LIVE PASS,NDASH-150-operations-custom-months.md
+151,NDASH-151 — Operations grouping capability,Medium,recorded,LIVE PASS,NDASH-151-operations-grouping-capability.md
+152,NDASH-152 — Provider detail selection and report scope,Medium,recorded,LIVE PASS,NDASH-152-provider-detail-identity.md
+153,NDASH-153 — Marketing multi-office spending scope,High,recorded,LIVE PASS,NDASH-153-marketing-office-scope.md
+154,NDASH-154 — Marketing credit field readback,Medium,recorded,LIVE PASS,NDASH-154-marketing-credit-readback.md
+155,NDASH-155 — Combined Expense Overview filter capability,High,recorded,LIVE PASS,NDASH-155-expense-overview-filter-capability.md
+156,NDASH-156 — Expense Overview Payment Source / Draft capability,High,recorded,LIVE PASS,NDASH-156-expense-payment-status-capability.md
+157,NDASH-157 — Expense category pie completeness,Medium,recorded,LIVE PASS,NDASH-157-expense-category-completeness.md
