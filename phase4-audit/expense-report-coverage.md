@@ -26,3 +26,5 @@ Combined Overview Department/Category filters were reproduced as misleading: glo
 Follow-up NDASH-155/156: unsupported applied Department, Category, Payment Source and Draft selections now replace combined Overview figures with a clear limitation and Transactions alternative. Live default18cards/5charts preserved exactly; supported Source Gusto Payroll and Posted controls unchanged. Transactions still accessible, pending edits do not affect applied results, reset and browser-error checks PASS. These capability guards do not certify default source accounting or implement missing combined-source allocation.
 
 NDASH-157: category pie no longer discards included rows after the top ten. Positive Remaining categories3% verified; all18KPIs and four other charts preserved exactly, Gusto three-category case unchanged, reset/refresh PASS. Source accounting unchanged.
+
+Final compact-label readback check on157: all eight cardholder bars and eight merchant bars have visible, distinct tooltip labels; no duplicate identity was reproduced. Two merchant labels remain intentionally compact. No new defect inferred from compact chart labels alone.
