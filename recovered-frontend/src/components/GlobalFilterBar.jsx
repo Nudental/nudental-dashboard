@@ -284,7 +284,7 @@ export const VIEW_BY_OPTIONS = [
   { value: 'provider_type', label: 'Provider Type', wired: true },
 ];
 
-const ViewByDropdown = ({ value, onChange }) => {
+const ViewByDropdown = ({ value, onChange, allowProviderType = true }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -294,7 +294,7 @@ const ViewByDropdown = ({ value, onChange }) => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const current = VIEW_BY_OPTIONS?.find(o => o?.value === value);
+  const current = VIEW_BY_OPTIONS?.find(o => o?.value === (allowProviderType ? value : 'location'));
 
   return (
     <div className="relative" ref={ref}>
@@ -313,8 +313,9 @@ const ViewByDropdown = ({ value, onChange }) => {
             {VIEW_BY_OPTIONS?.map(o => (
               <button
                 key={o?.value}
+                disabled={!allowProviderType && o?.value === 'provider_type'}
                 onClick={() => { onChange(o?.value); setOpen(false); }}
-                className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors ${
+                className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                   value === o?.value
                     ? 'text-primary font-semibold bg-primary/5 hover:bg-primary/10' :'text-foreground hover:bg-muted'
                 }`}
@@ -326,7 +327,8 @@ const ViewByDropdown = ({ value, onChange }) => {
             ))}
             <div className="px-3 py-2 border-t border-border mt-1">
               <p className="text-xs text-muted-foreground">
-                <span className="font-semibold text-foreground">Location</span> and <span className="font-semibold text-foreground">Provider Type</span> are wired to Dentrix data.
+                {allowProviderType ? <><span className="font-semibold text-foreground">Location</span> and <span className="font-semibold text-foreground">Provider Type</span> are wired to Dentrix data.</>
+                  : 'This view supports Location grouping. Provider Type grouping is unavailable here.'}
               </p>
             </div>
           </div>
@@ -578,7 +580,7 @@ const buildSafeFilters = ({
  *     (no badge, no "CDT wiring pending", no "Coming Soon")
  *     Service Category is handled inside the Specialty tab only.
  */
-const GlobalFilterBar = ({ offices = [], filters = {}, onFiltersChange, disableLineOfBusiness = false }) => {
+const GlobalFilterBar = ({ offices = [], filters = {}, onFiltersChange, disableLineOfBusiness = false, allowProviderType = true }) => {
   // V241: safe extraction with defaults
   const safeOffices = Array.isArray(offices) ? offices : [];
 
@@ -587,7 +589,7 @@ const GlobalFilterBar = ({ offices = [], filters = {}, onFiltersChange, disableL
   // lineOfBusiness: normalize scalar → array
   const rawLOB = filters?.lineOfBusiness;
   const lineOfBusiness = Array.isArray(rawLOB) ? rawLOB : (typeof rawLOB === 'string' && rawLOB ? [rawLOB] : []);
-  const viewBy = filters?.viewBy || 'location';
+  const viewBy = allowProviderType ? (filters?.viewBy || 'location') : 'location';
   const customStartDate = filters?.customStartDate || null;
   const customEndDate = filters?.customEndDate || null;
 
@@ -660,6 +662,7 @@ const GlobalFilterBar = ({ offices = [], filters = {}, onFiltersChange, disableL
   }, [pendingDate, pendingLOB, pendingViewBy, pendingCustomStart, pendingCustomEnd, onFiltersChange]);
 
   const handleViewByChange = useCallback((val) => {
+    val = allowProviderType ? val : 'location';
     setPendingViewBy(val);
     setDirty(false);
     onFiltersChange?.(buildSafeFilters({
@@ -670,7 +673,7 @@ const GlobalFilterBar = ({ offices = [], filters = {}, onFiltersChange, disableL
       customStartDate: pendingCustomStart,
       customEndDate: pendingCustomEnd,
     }));
-  }, [pendingDate, pendingOffices, pendingLOB, pendingCustomStart, pendingCustomEnd, onFiltersChange]);
+  }, [pendingDate, pendingOffices, pendingLOB, pendingCustomStart, pendingCustomEnd, onFiltersChange, allowProviderType]);
 
   const handleUpdate = () => {
     onFiltersChange?.(buildSafeFilters({
@@ -704,7 +707,7 @@ const GlobalFilterBar = ({ offices = [], filters = {}, onFiltersChange, disableL
         datePreset: presetFilters?.datePreset || 'last_month',
         selectedOfficeIds: presetFilters?.selectedOfficeIds || [],
         lineOfBusiness: presetFilters?.lineOfBusiness || [],
-        viewBy: presetFilters?.viewBy || 'location',
+        viewBy: allowProviderType ? (presetFilters?.viewBy || 'location') : 'location',
         customStartDate: presetFilters?.customStartDate || null,
         customEndDate: presetFilters?.customEndDate || null,
       });
@@ -719,7 +722,7 @@ const GlobalFilterBar = ({ offices = [], filters = {}, onFiltersChange, disableL
     } catch (e) {
       console.warn('[GlobalFilterBar] handleLoadPreset error:', e);
     }
-  }, [onFiltersChange]);
+  }, [onFiltersChange, allowProviderType]);
 
   return (
     <div className="flex flex-wrap items-center gap-2 p-3 bg-card border border-border rounded-xl shadow-sm">
@@ -747,6 +750,7 @@ const GlobalFilterBar = ({ offices = [], filters = {}, onFiltersChange, disableL
       )}
       {/* View By — Location and Provider Type only. Month removed. */}
       <ViewByDropdown
+        allowProviderType={allowProviderType}
         value={pendingViewBy}
         onChange={handleViewByChange}
       />

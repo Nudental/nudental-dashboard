@@ -236,6 +236,7 @@ const OperationsCenter = () => {
           {/* Global Filter Bar */}
           <div className="mt-3">
             <GlobalFilterBar
+              allowProviderType={false}
               offices={offices}
               filters={globalFilters}
               onFiltersChange={(newFilters) => {
