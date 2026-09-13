@@ -1,0 +1,9 @@
+# NDASH-113 — Sync status reads obsolete source tables
+
+Twice reproduced live112: Job Status has no data and API Endpoint Health is empty. Current deployed085 route queries nonexistent sync_log and api_endpoint_health; helper swallows read failures as empty arrays. Current logger writes sync_job_runs. Schema-only investigation found existing sync_job_latest, sync_jobs and api_endpoint_registry. Exact-count checks:29 distinct latest-view jobs,10 endpoints;41525 run records were counted only, not scanned or exported.
+
+Narrow replacement of admin_sync_dashboard only: bounded exact-count reads of the existing latest-run view and endpoint registry; preserve effective status/freshness instead of inventing fixed48-hour freshness; map latest duration/row-count/log source to existing UI fields; derive summary from actual states; preserve unknowns; fail502 on incomplete/invalid/source-error reads. Legacy data_sync_logs remains in its existing UI reader. No execution, migration, configuration, business-data or frontend changes. Latest success/failure timestamps reflect the latest observed run only; historical last-success across earlier runs is not synthesized.
+
+Fourteen synthetic actual-route tests: existing source9failures/4empty-row errors, candidate14PASS. Fourteen retained backend suitesPASS. Entire backend source reversal and syntaxPASS. All512frontend regressionsPASS; frontend112build reused unchanged. CandidateSHA10e1f72631267b44bbcd9d4f7d7d03330ab914bcd3a06e1bb9fd0fedccf552b0. Complete085snapshot preserved privately; no secret-bearing whole source committed.
+
+Rocket checkpoint submission rejected by automatic approval review because it contained nonpublic architecture/counts; unsent draft removed. No Rocket/frontend change required for this backend-only repair. Deployment and live verification pending; release uses existing candidate8002 then live8001 with source/hash/configuration guards and rollback.
