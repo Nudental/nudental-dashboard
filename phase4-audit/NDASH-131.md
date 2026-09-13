@@ -1,6 +1,6 @@
 # NDASH-131 — Selected-office payment breakdown shows all offices
 
-Severity: High. Status: reproduced twice on130; source candidate under verification, no deployment.
+Severity: High. Status: CLOSED — API and frontend deployed and live verified PASS.
 
 Apply Jan1–Jun30,2026 and Barnegat+Brick in Financial Analytics / Collections. Correct repaired headline totals and combined selector identify the pair, but all13 Payment Source Breakdown rows remain byte-equivalent to All Offices (visible table fingerprint34482b01). Reproduced after unchanged Apply;130 correctly preserves both offices, while the breakdown still uses All. Independent existing scoped read-only API comparisons confirm all eight available payment categories have different selected-pair count/amount totals; electronic transfer is explicitly unavailable.
 
@@ -15,3 +15,9 @@ Local tests:8 isolated synthetic SQLite backend tests PASS, including reproduced
 Release verification now PASS: all16 remote backend suites (new financial scope plus retained Sync, ingest, eAssist summary, AR/claims/access/documentation, payroll/Gusto, expenses and adjustment tests). Complete backend reversal preserves every byte outside the financial reader. Candidate full API main SHA256 c4727850ff8317aca61a234f9727cd1e43575eec515d462c009eedeb0e8976ba; new function SHA256 a5d8ff434ceb58662737e9ed4bcc571bf7bf55849d460fa774441995dc26eb0e. Running production still unchanged.
 
 Rocket859 one-file frontend correction complete. Actual compiled frontend scope/all/single/duplicate/unknown/error/stale-response fixtures PASS; full reversal equals130 and preserves all seven modules. Candidate index-f189c14f1b18.js. Both releases still pending. Deploy API via existing candidate/live services first, verify compatibility and scoped output, then publish the scoped frontend over130; do not publish the whole recovered build.
+
+Deployment complete: source6ec15fc. Existing API candidate8002 and live8001 each passed entire All/single financial-response parity, selected count/amount/card-type comparisons, distinct deposit counts against independent read-only SQLite aggregates, duplicate IDs, invalid scope422, missing-key401, and unchanged production/collection aggregates. API main now c4727850ff8317aca61a234f9727cd1e43575eec515d462c009eedeb0e8976ba; old113 source retained. Startup write flags remained disabled; existing read-only cache warming preserved.
+
+Frontend deployment5fc321ec-401b-43f3-ae14-d362e9bce488; index-f189c14f1b18.js SHA256 f189c14f1b18c7f120e271661dfd444de932b0ff37f914d69273d9b06631c17b. Prior130 deployment71e5ee01-b8f3-45b0-b2ef-051d3eb8401c and all old assets retained.
+
+Live PASS: all13 payment-table rows match independently read API values for All Offices, Barnegat and Barnegat+Brick, including counts, amounts, all four nested card types, both distinct-deposit counts and disabled/unavailable electronic-transfer state. Compact UI/API table fingerprints All397a1380 / Barnegat97675f9c / paire70b94a6. Pair unchanged Apply repeats the corrected result;130's combined selector retains both offices;129 production/adjustment/net and all three collection headlines keep their expected source fingerprints. Fresh errors0; frontend/API200; three services active. No production business writes, credentials/configuration changes or business/test records to clean up. Synthetic test database cleanup passed.
