@@ -1,6 +1,6 @@
 # NDASH-129 — Combined-office financial headlines use all-office totals
 
-Severity: High. Status: source and release artifact verified; deployment pending.
+Severity: High. Status: CLOSED — deployed and live verified PASS.
 
 On128 select only Barnegat and Brick in Financial Analytics using the custom multi-office menu, apply January1–June30,2026, then open Collections. The applied caption names both offices and its office chart shows exactly those two. Insurance, Patient and Total Collections nevertheless match the All Offices baseline exactly. Repeated after restoring All and reapplying the two offices, with a fresh Collections component mount. The local single-office picker displays only Barnegat despite the applied two-office caption; this is additional scope-display evidence, not proof of the values by itself.
 
@@ -14,4 +14,8 @@ Files: recovered-frontend/src/services/dentrixNormalizedService.js; financial-an
 
 Verification:12 focused tests PASS; all598 retained frontend tests PASS; production build38.65s PASS; Rocket version857 reports the targeted three-file repair/build successful. Actual compiled candidate tests pass selected-only requests, signed values, exact rate, duplicate prevention, missing/failure paths and both view request-order/error guards. Full candidate reversal matches current128 byte-for-byte, including all seven dependent modules. Candidate index-be9d723e9ed7.js; deployment/live verification pending. This is a scoped patch over128, not publication of the whole recovered build.
 
-Do not deploy separately prepared042-v2 over a later release without rebasing and retesting it. Its specific publication approval is still pending. No129 production change has yet been performed.
+Deployment:1711acfc-7a7e-49cc-b6ee-81fd06aa183b, index-be9d723e9ed7.js, SHA256 be9d723e9ed7187f9ac08bdf5942976009c149328823a9920131ba77cfe3d152. Source1b01abb. Previous128 deployment49a929fd-f926-4b17-b9a1-e6cde0e8ea86 and assets retained.
+
+Live PASS: Jan1–Jun30,2026 / Barnegat+Brick gross, adjustments, net and all three collection headlines match independently read selected-office API aggregates. All Offices and single Barnegat each preserve all six expected headline values. Pair reapply/refresh and component remount reproduce the corrected collection values. Fresh Overview loads; all30 August Monthly Growth financial/patient cells retain their verified fingerprints; tooltip remains May. Fresh browser errors0; frontend and API HTTP200; three existing services active; backend113 source unchanged. No business writes/test records, credentials, configuration or backend changes.
+
+Limits: the separate payment-method breakdown and local single-office selector still need scope repair. Current-day summary returns nested data, so this check does not certify its existing flat-field readers; audit separately. Do not publish042-v2 now:129 supersedes its128 baseline. Specific042 publication approval and066 private preview sign-in remain pending; neither blocked change was included.
