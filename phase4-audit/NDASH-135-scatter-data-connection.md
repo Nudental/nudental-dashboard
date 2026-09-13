@@ -1,6 +1,6 @@
 # NDASH-135 — Scatter Plot has no connected data
 
-Severity: Medium. Status: reproduced; source repair under verification.
+Severity: Medium. Status: repaired, deployed and live verified PASS.
 
 After134 made ordinary clicks work, Scatter Plot was activated twice on live134 and rendered zero marks without a notice. Switching to Line and Bar produced the existing financial series. Root cause: ChartVisualization uses a permanently empty `scatterData` array; no reader supplies marketing amounts.
 
@@ -10,6 +10,11 @@ Targeted change: request existing marketing totals only while Scatter is selecte
 
 Files: dentrixNormalizedService.js (scoped reader); ascendApi.js (existing-endpoint method); financial-analytics/index.jsx (period/source metadata on existing trend points); ChartVisualization.jsx (Scatter state/render).
 
-Tests/build/Rocket/scoped artifact/deployment/live verification: pending. No business-data changes.
+No business-data changes.
 
 Pre-release: 645 frontend tests PASS, including13new source/queue/date/scope/error/race tests. Production build38.30s. Rocket863implemented four-file change;864restored existing summary-card visibility as requested (only target-line legend hidden inScatter). Scoped compiled reader/effect tests PASS; nine targeted regions, full reversal134 and seven retained dependency modules PASS. No backend/API configuration changes.
+
+
+Release: source43efe70; deployment92015d14-7f46-4a90-9900-f055c6273ef3; index-0ba3b9822cd0.js SHA0ba3b9822cd0ad6a8993002e12686b1323f337db1a04bc0c5cf2b8fe0c2cb490. Exact published asset verified; backend131 unchanged, all three services active. Previous134 release and assets retained; blocked042/066 excluded.
+
+Live PASS: fresh browser loaded135. All/Barnegat/Barnegat+Brick each rendered12monthly points, June26 tooltip X/Y matched independent source fingerprints (All bbbdb9d5/8fc4d894; Bar9b92f011/1b24b61c; pair093e0883/afd0ac40). PairJune1-15 matched820529f7/13b3295d, proving exact partial-period handling. Existing summary cards remained; Line24dots and Bar24rectangles rendered;134toolbar bounds/hit-test retained; no new browser errors. Error/cancellation/no-partial-result paths verified by source and actual compiled controlled tests; no production outage induced. No provider sync, business-data writes or credentials/configuration changes.
