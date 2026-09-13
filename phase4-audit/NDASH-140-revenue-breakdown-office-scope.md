@@ -1,9 +1,11 @@
 # NDASH-140 — Revenue Breakdown labels All-office totals as one selected office
 
-Severity: High. Status: reproduced; repair under verification.
+Severity: High. Status: CLOSED PASS.
 
 Repeated live139 Jan1-Jun30,2026 Barnegat+Brick: Revenue Breakdown displays All netf3439488/collections832fcb70 and a single Office Breakdown row labeled Barnegat with those same All totals. Adjacent repaired Statistical Summary correctly shows the selected pair. Independent source comparisons confirm the mismatch. Original test repeated via Apply before editing.
 
 Root cause: primary financial/filter-options calls use null for multiple offices, while the office table treats every non-All selection as a single office and names its first item. Fix in RevenueBreakdownTab.jsx: reuse the verified selected-office financial reader for both summaries, pass deduplicated location IDs to the existing multi-location filter-options API, query office rows only for selected offices (or all when All selected), and reject invalid IDs before requests. Preserve formulas, All/single behavior, existing response handling and all other views. No backend/configuration/business-data changes.
 
 Verification: 693 frontend tests PASS (eight new scope cases); production build PASS in 38.65 seconds. Rocket version869 complete. Scoped release changes only the location initializer and revenue callback plus seven dependent-module relinks. Exact compiled All/single/pair/duplicate/invalid-office/date checks PASS; complete reversal equals live139 and all seven prior modules are preserved. Deployment/live verification pending. Existing catch-to-null availability behavior is a separate follow-up, not claimed repaired here.
+
+Closure: source47eef71; deployment8cc1a888-993d-4636-8e5f-25d1ae5c6c29; index-a85db6da38eb.js SHA256a85db6da38eb6d8620734792e7585992b8d34871aabff9250a600f6925047471. Fresh live140 Jan1-Jun30 All, Barnegat, Barnegat+Brick summaries and office rows match independently verified source totals. Pair net7bff9ac2/collections290396b8, separate Brick/Barnegat rows and repeat Apply PASS. No new browser errors. Exact deployed artifact, frontend/API health and three services PASS; backend131 unchanged. No business writes, configuration changes or test records;042/066 excluded. Previous139 release remains recoverable.
