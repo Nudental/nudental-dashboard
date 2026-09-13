@@ -30,10 +30,12 @@ const ExpenseCharts = ({ monthlyTrend = [], byCategory = [], byOffice = [], byDe
     [byCategory]
   );
 
-  const categoryData = useMemo(() =>
-    filteredByCategory?.slice(0, 10)?.map(r => ({ name: r?.category?.length > 20 ? r?.category?.slice(0, 18) + '…' : r?.category, value: r?.total })),
-    [filteredByCategory]
-  );
+  const categoryData = useMemo(() => {
+    const leading = filteredByCategory?.slice(0, 10)?.map(r => ({ name: r?.category?.length > 20 ? r?.category?.slice(0, 18) + '…' : r?.category, value: r?.total })) || [];
+    const remaining = filteredByCategory?.slice(10) || [];
+    if (remaining.length) leading.push({ name: 'Remaining categories', value: remaining.reduce((sum, r) => sum + (Number(r?.total) || 0), 0) });
+    return leading;
+  }, [filteredByCategory]);
 
   const officeData = useMemo(() =>
     byOffice?.map(r => ({
