@@ -146,6 +146,8 @@ const DesktopCatalogView = ({ isAdmin }) => {
   const getSubsForDept = (deptId) => {
     const subs = subsections?.filter(s => s?.department_id === deptId);
     if (!search) return subs;
+    const department = departments?.find(d => d?.id === deptId);
+    if (department?.name?.toLowerCase()?.includes(search?.toLowerCase())) return subs;
     return subs?.filter(s => {
       const subItems = items?.filter(i => i?.subsection_id === s?.id);
       return s?.name?.toLowerCase()?.includes(search?.toLowerCase()) ||
@@ -156,6 +158,10 @@ const DesktopCatalogView = ({ isAdmin }) => {
   const getItemsForSub = (subId) => {
     const its = items?.filter(i => i?.subsection_id === subId && (!deptCategoryFilter || i?.department_category === deptCategoryFilter));
     if (!search) return its;
+    const subsection = subsections?.find(s => s?.id === subId);
+    const department = departments?.find(d => d?.id === subsection?.department_id);
+    if (subsection?.name?.toLowerCase()?.includes(search?.toLowerCase()) ||
+        department?.name?.toLowerCase()?.includes(search?.toLowerCase())) return its;
     return its?.filter(i => i?.name?.toLowerCase()?.includes(search?.toLowerCase()));
   };
 
