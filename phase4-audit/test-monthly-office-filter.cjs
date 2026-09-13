@@ -4,14 +4,12 @@ const parserRoot=process.env.NDASH_PARSER_ROOT||root;
 const parser=require(path.join(parserRoot,'node_modules/@babel/parser'));
 const {subMonths}=require(path.join(parserRoot,'node_modules/date-fns'));
 const text=fs.readFileSync(path.join(root,'src/services/monthlyGrowthService.js'),'utf8');
-const ast=parser.parse(text,{sourceType:'module'});
-function expression(name){for(const node of ast.program.body){const d=node.declaration||node;if(d.type==='VariableDeclaration'){const v=d.declarations.find(v=>v.id.name===name);if(v)return text.slice(v.init.start,v.init.end);}}throw Error(name);}
-const calcGrowthPct=vm.runInNewContext(expression('calcGrowthPct'));
+const moduleCode=text.replace(/^import[\s\S]*?;\s*$/gm,'').replace(/export const /g,'const ');
 async function run(filter='all',fallback=false){
- const calls=[];
- const offices=[{id:'qa-one',name:'QA One'},{id:'qa-two',name:'QA Two'}];
- const aggregate=(offices,year,month,source)=>{calls.push({ids:offices.map(o=>o.id),source});return Object.fromEntries(offices.map((o,i)=>[o.id,{production:o.id==='qa-one'?100:300,collection:o.id==='qa-one'?80:270,new_patients:o.id==='qa-one'?2:4,hasData:source==='daily'||!fallback}]));};
- const fn=vm.runInNewContext(expression('fetchMonthlyGrowth'),{fetchAllOffices:async()=>offices,subMonths,calcGrowthPct,aggregateMEAForMonth:async(o,y,m)=>aggregate(o,y,m,'mea'),aggregateDailyEntriesForMonth:async(o,y,m)=>aggregate(o,y,m,'daily')});
+ const calls=[],offices=[{id:'qa-one',name:'QA One'},{id:'qa-two',name:'QA Two'}];
+ const query={select(){return this},eq(){return this},order(){return this},then(resolve){resolve({data:offices,error:null})}};
+ const read=metric=>async(start,end,id)=>{calls.push({ids:id?[id]:[]});if(fallback)throw Error('QA API unavailable');return {[metric]:metric==='netProduction'?(id==='qa-one'?100:300):metric==='totalCollections'?(id==='qa-one'?80:270):(id==='qa-one'?2:4)}};
+ const fn=vm.runInNewContext(moduleCode+';fetchMonthlyGrowth',{supabase:{from:()=>query},ascendApi:{getProduction:read('netProduction'),getCollections:read('totalCollections'),getPatients:read('newPatients')}});
  return {result:await fn(8,2026,filter),calls};
 }
 test('single office constrains current and prior queries, rows and totals',async()=>{
@@ -26,6 +24,6 @@ test('all-office view retains combined totals',async()=>{
 test('unknown office never falls back to unrelated offices',async()=>{
  const {result,calls}=await run('qa-missing');assert.equal(result.rankedOffices.length,0);assert.equal(result.groupTotal.current_production,0);for(const call of calls)assert.deepEqual(call.ids,[]);
 });
-test('legacy fallback retains the same selected office scope',async()=>{
- const {result,calls}=await run('qa-two',true);assert.equal(result.dataSource,'daily_entries_fallback');assert.equal(result.groupTotal.current_production,300);for(const call of calls)assert.deepEqual(call.ids,['qa-two']);
+test('API failure cannot silently revive legacy fallback figures',async()=>{
+ await assert.rejects(run('qa-two',true),/QA API unavailable/);
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
   ResponsiveContainer, LineChart, Line
@@ -6,8 +6,6 @@ import {
 import Icon from '../../../components/AppIcon';
 import {
   fetchMonthlyGrowth,
-  fetchMonthlyGrowthHistory,
-  fetchSparklineData,
 } from '../../../services/monthlyGrowthService';
 import { format, subMonths } from 'date-fns';
 import { supabase } from '../../../lib/supabase';
@@ -131,6 +129,8 @@ const MonthlyGrowthTab = ({ selectedOfficeIds: propOfficeIds, selectedMonth: pro
   const [officeFilter, setOfficeFilter] = useState('all');
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState(null);
+  const [loadError, setLoadError] = useState('');
+  const requestIdRef = useRef(0);
   const [historyData, setHistoryData] = useState([]);
   const [sparklines, setSparklines] = useState({});
   const [sortCol, setSortCol] = useState('production_growth_pct');
@@ -181,24 +181,27 @@ const MonthlyGrowthTab = ({ selectedOfficeIds: propOfficeIds, selectedMonth: pro
   const currMonthLabel = `${MONTH_NAMES?.[selectedMonth - 1]} ${selectedYear}`;
 
   const loadData = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
     setLoading(true);
+    setLoadError('');
+    setData(null);
+    setHistoryData([]);
+    setSparklines({});
     try {
-      const [growthResult, history, sparklineData] = await Promise.all([
-        fetchMonthlyGrowth(selectedMonth, selectedYear, officeFilter),
-        fetchMonthlyGrowthHistory(officeFilter, 12),
-        fetchSparklineData(),
-      ]);
+      const growthResult = await fetchMonthlyGrowth(selectedMonth, selectedYear, officeFilter, true, () => requestId === requestIdRef.current);
+      if (requestId !== requestIdRef.current) return;
       setData(growthResult);
-      setHistoryData(history);
-      setSparklines(sparklineData);
+      setHistoryData(growthResult.history);
+      setSparklines(growthResult.sparklines);
     } catch (err) {
-      console.error('Monthly growth load error:', err);
+      if (requestId !== requestIdRef.current) return;
+      setLoadError('Monthly growth could not be loaded. Refresh Data to retry.');
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) setLoading(false);
     }
   }, [selectedMonth, selectedYear, officeFilter]);
 
-  useEffect(() => { loadData(); }, [loadData]);
+  useEffect(() => { loadData(); return () => { requestIdRef.current += 1; }; }, [loadData]);
 
   // Build bar chart data — use rankedOffices directly (no OFFICE_NAMES needed)
   const barChartData = (data?.rankedOffices || [])?.map((office) => ({
@@ -266,27 +269,12 @@ const MonthlyGrowthTab = ({ selectedOfficeIds: propOfficeIds, selectedMonth: pro
   return (
     <div className="space-y-6">
       {/* ── Data Source Notice ── */}
-      {data && data?.dataSource === 'MEA' ? (
+      {loadError ? (
+        <div role="alert" className="px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs">{loadError}</div>
+      ) : data ? (
         <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs">
           <Icon name="CheckCircle" size={14} className="flex-shrink-0 mt-0.5 text-emerald-600" />
-          <span>
-            <strong>Dentrix Ascend · MEA Integrated Data:</strong> Monthly growth figures use{' '}
-            <strong>net production</strong> (UCR minus adjustments) and{' '}
-            <strong>actual collections</strong> from the{' '}
-            <code className="bg-emerald-100 px-1 rounded">monthly_executive_analytics</code> table, populated from Dentrix Ascend. Production = true net production. Collections = actual Dentrix collections.
-          </span>
-        </div>
-      ) : data && data?.dataSource === 'daily_entries_fallback' ? (
-        <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs">
-          <Icon name="AlertTriangle" size={14} className="flex-shrink-0 mt-0.5 text-amber-600" />
-          <span>
-            <strong>Manual/EOD Fallback Data:</strong> Monthly growth is using manually entered EOD daily entries because Dentrix/MEA integrated monthly history is unavailable for this period. These values reflect staff-submitted production and collection entries and may differ from Dentrix ledger net production and actual collections. Use for trend/workflow review only.
-          </span>
-        </div>
-      ) : !data && !loading ? (
-        <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-muted border border-border text-muted-foreground text-xs">
-          <Icon name="Info" size={14} className="flex-shrink-0 mt-0.5" />
-          <span>Select a month and year, then click Refresh Data to load monthly growth figures.</span>
+          <span><strong>Dentrix Ascend:</strong> Net production and collections use the current ledger calculations for each selected calendar month. Trends end in the selected month. New patients use first appointments; office counts are new to that office, while the group count is unique across the network.</span>
         </div>
       ) : null}
 
