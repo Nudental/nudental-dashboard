@@ -23,3 +23,15 @@ Read-only SQLite aggregate evidence saved privately in source-coverage.json. pat
 ## Deployment/testing checkpoints
 
 NDASH-007 backend access guard PASS. NDASH-008 aging percentage PASS. NDASH-009 selected-office repair passes 36 frontend tests, build and five actual-artifact cases; live Barnegat, Barnegat + Brick, Payors Section 1 and all-office restoration PASS. Every prior production dist and backend source backup is retained.
+
+## Follow-up verification through NDASH-151 — 2026-09-13
+The original checkpoint above is historical. Current evidence is in the individual repair records.
+- Offices: current/prior-year/percentage/difference views and Location ascending/descending sort verified; negative percentage/count signs corrected in NDASH-147.
+- Payors: Section 1 selected-office scope retained; Section 2 all/single/pair source parity and sorting verified in NDASH-145.
+- Performance: all/single/pair production and collection source paths verified in NDASH-146. Unsupported Case Acceptance remains explicitly gated.
+- Trends: all five charts now honor multi-office selection; six source metrics, overlapping distinct patients/clinical days, all/single parity and invalid scopes verified in NDASH-148.
+- Cancellations: August all/single/pair source and KPI parity verified; Year To Date resolves the actual year interval in NDASH-149. Complete custom calendar months and explicit partial-month guard verified in NDASH-150.
+- Shared filters: Operations now declares unsupported Provider Type grouping; Location, original August totals, synthetic preset readback and supported KPI caller behavior verified in NDASH-151.
+All actions in these follow-ups were read-only with respect to business records. Partial-day Operations reporting and unsupported provider/detail mapping remain explicit limitations, not completed features.
+
+- Providers follow-up NDASH-152: paired-office record selection and scope reset corrected; unchanged 15-row baseline, exact five detail values, single-office nine rows, All eighteen rows, search and both numeric sort directions verified. Existing unsupported detail charts remain gated.
