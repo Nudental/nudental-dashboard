@@ -417,9 +417,7 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
             <Legend />
             <Line type="monotone" dataKey="revenue" name="Net Production" stroke="var(--color-primary)" strokeWidth={2} dot={{ r: 4 }} />
             <Line type="monotone" dataKey="collections" name="Total Collections" stroke="var(--color-success)" strokeWidth={2} dot={{ r: 4 }} />
-            {dailyTarget > 0 && (
-              <ReferenceLine y={dailyTarget} stroke="#f59e0b" strokeDasharray="8 4" strokeWidth={2} label={{ value: `Daily Target: $${Math.round(dailyTarget / 1000)}K`, position: 'insideTopRight', fontSize: 11, fill: '#f59e0b' }} />
-            )}
+
           </LineChart>
         </ResponsiveContainer>
       );
@@ -436,9 +434,7 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
             <Legend />
             <Bar dataKey="revenue" name="Net Production" fill="var(--color-primary)" radius={[8, 8, 0, 0]} />
             <Bar dataKey="collections" name="Total Collections" fill="var(--color-success)" radius={[8, 8, 0, 0]} />
-            {dailyTarget > 0 && (
-              <ReferenceLine y={dailyTarget} stroke="#f59e0b" strokeDasharray="8 4" strokeWidth={2} label={{ value: `Daily Target: $${Math.round(dailyTarget / 1000)}K`, position: 'insideTopRight', fontSize: 11, fill: '#f59e0b' }} />
-            )}
+
           </BarChart>
         </ResponsiveContainer>
       );
@@ -588,25 +584,19 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
         )}
       </div>
 
-      {/* Target Line Legend (only in trend mode when goal is set) */}
-      {mode === 'trend' && chartType !== 'scatter' && dailyTarget > 0 && (
-        <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-warning/5 border border-warning/20 rounded-lg">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-0.5 border-t-2 border-dashed" style={{ borderColor: '#f59e0b' }}></div>
-            <span className="text-xs text-muted-foreground">
-              Daily Target: <strong>${Math.round(dailyTarget)?.toLocaleString()}</strong> / day
-            </span>
-          </div>
-          {goalTarget !== null && (
-            <div className="flex items-center gap-2">
-              <Icon name="Target" size={14} color="#f59e0b" />
-              <span className="text-xs text-muted-foreground">
-                Monthly Goal: <strong>${goalTarget?.toLocaleString('en-US', { maximumFractionDigits: 0 })}</strong>
-              </span>
-            </div>
-          )}
+      {/* Month-specific production goal context; never a daily line on monthly totals. */}
+      {mode === 'trend' && chartType !== 'scatter' && goalData && (
+        <div className="flex flex-col gap-1 mb-4 p-3 bg-muted border border-border rounded-lg" aria-label="Production goal context">
+          {goalData.loading ? <p role="status" className="text-xs text-muted-foreground">Loading production goals...</p>
+            : goalData.error ? <p role="status" className="text-xs text-muted-foreground">{goalData.error}</p>
+            : goalTarget !== null && <>
+              <p className="text-xs text-muted-foreground">{goalData.monthLabel} · {goalData.scopeLabel}</p>
+              <p className="text-sm">Monthly production goal: <strong>{formatCurrency(goalTarget)}</strong></p>
+              <p className="text-xs text-muted-foreground">Daily production pace: {formatCurrency(dailyTarget)} per calendar day. Goals shown for this month only.</p>
+            </>}
         </div>
       )}
+
 
       {/* Trend Analysis — chart + summary cards */}
       {mode === 'trend' && (

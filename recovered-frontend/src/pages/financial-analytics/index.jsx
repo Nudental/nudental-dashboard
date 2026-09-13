@@ -15,7 +15,7 @@ import DentrixReconciliationTab from './components/DentrixReconciliationTab';
 import ServiceCategoriesTab from './components/ServiceCategoriesTab';
 import { useAuth } from '../../contexts/AuthContext';
 import { getAccessibleOffices } from '../../services/dashboardService';
-import { getGoalAchievement } from '../../services/goalsService';
+import { getFinancialGoalContext } from '../../services/goalsService';
 import { format } from 'date-fns';
 import { useRealtimeSubscription } from '../../hooks/useRealtimeSubscription';
 import Icon from '../../components/AppIcon';
@@ -164,38 +164,26 @@ const FinancialAnalytics = () => {
     { label: 'Financial Analytics', path: '/financial-analytics' }
   ];
 
-  // Load goal data — uses applied office filter and applied date range start month
+  // Goal context uses the selected offices and the explicitly labeled start month.
   React.useEffect(() => {
-    const loadGoalData = async () => {
-      if (!userProfile) return;
+    let active = true;
+    setGoalData(null);
+    if (!userProfile || appliedAnalysisMode !== 'trend') return () => { active = false; };
+    setGoalData({ loading: true });
+    const loadGoalContext = async () => {
       try {
         const offices = await getAccessibleOffices(userProfile);
-        if (Array.isArray(offices) && offices?.length > 0) {
-          // Use the applied office filter if set, otherwise first accessible office
-          const targetOfficeId = (appliedOffices?.length > 0 && !appliedOffices?.includes('all'))
-            ? appliedOffices?.[0]
-            : offices?.[0]?.id;
-          // Use the applied date range start month for goal lookup
-          const goalMonthYear = appliedDateRange?.start?.substring(0, 7) || format(new Date(), 'yyyy-MM');
-          const data = await getGoalAchievement(targetOfficeId, goalMonthYear);
-          if (data && typeof data === 'object') {
-            setGoalData({
-              dailyTarget: isFinite(data?.dailyTarget) ? data?.dailyTarget : 0,
-              paceTarget: isFinite(data?.paceTarget) ? data?.paceTarget : 0,
-              target: isFinite(data?.target) ? data?.target : 0,
-              collected: isFinite(data?.collected) ? data?.collected : 0,
-              percentage: isFinite(data?.percentage) ? data?.percentage : 0,
-              daysInMonth: isFinite(data?.daysInMonth) ? data?.daysInMonth : 30,
-              currentDay: isFinite(data?.currentDay) ? data?.currentDay : new Date()?.getDate(),
-            });
-          }
-        }
+        if (!active) return;
+        const data = await getFinancialGoalContext(offices, appliedOffices, appliedDateRange?.start?.substring(0, 7));
+        if (active) setGoalData(data);
       } catch (err) {
-        console.warn('[FinancialAnalytics] Could not load goal data:', err?.message);
+        if (active) setGoalData({ error: 'Production goals are unavailable for the selected offices and month.' });
       }
     };
-    loadGoalData();
-  }, [userProfile, appliedOffices, appliedDateRange]);
+    loadGoalContext();
+    return () => { active = false; };
+  }, [userProfile, appliedOffices, appliedDateRange, appliedAnalysisMode]);
+
 
   // Fetch last 12 months trend data from middleware API — uses APPLIED office state
   React.useEffect(() => {

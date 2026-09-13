@@ -349,3 +349,35 @@ export const getAllOfficesGoalStatus = async (offices, monthYear = null) => {
 };
 
 export default { officeGoalsService, getGoalAchievement, getAllOfficesGoalStatus, getGoalsByMonthAndOffices };
+
+export const getFinancialGoalContext = async (accessibleOffices, selectedIds, monthYear) => {
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(monthYear || '')) throw new Error('Select a valid goal month.');
+  const offices = new Map((accessibleOffices || []).filter(o => o?.id).map(o => [o.id, o]));
+  const selection = [...new Set(selectedIds || [])];
+  const ids = !selection.length || selection.includes('all') ? [...offices.keys()] : selection;
+  if (!ids.length || ids.some(id => !offices.has(id))) throw new Error('Goals are unavailable for the selected offices.');
+  let target = 0;
+  for (let offset = 0; offset < ids.length; offset += 4) {
+    const batch = ids.slice(offset, offset + 4);
+    const rows = await Promise.all(batch.map(id => officeGoalsService.getByOfficeAndMonth(id, monthYear)));
+    rows.forEach((row, i) => {
+      const raw = row?.production_goal ?? row?.monthly_target;
+      if (!row || row.office_id !== batch[i] || row.month_year !== monthYear ||
+          !['number', 'string'].includes(typeof raw) || String(raw).trim() === '' ||
+          !Number.isFinite(Number(raw)) || Number(raw) < 0) {
+        throw new Error('A verified production goal is not available for every selected office in this month.');
+      }
+      target += Number(raw);
+    });
+  }
+  if (!Number.isFinite(target)) throw new Error('The selected goal total is unavailable.');
+  const [year, month] = monthYear.split('-').map(Number);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  return {
+    target,
+    dailyTarget: target / daysInMonth,
+    monthYear,
+    monthLabel: new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    scopeLabel: selection.length && !selection.includes('all') ? ids.map(id => offices.get(id).name || 'Selected office').join(', ') : `All Offices (${ids.length})`,
+  };
+};
