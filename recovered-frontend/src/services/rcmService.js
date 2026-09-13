@@ -1034,7 +1034,7 @@ function normalizeArPayload(payload) {
   };
 }
 
-export const fetchPayorSummary = async ({ start, end, officeId }) => {
+export const fetchPayorSummary = async ({ start, end, officeId, officeIds }) => {
   const API_BASE_V2 = 'https://api.nudashboard.com/v2';
   const API_KEY = import.meta.env?.VITE_ASCEND_API_KEY || '';
   // ── IMPORTANT: Do NOT include Content-Type on GET requests. ──────────────
@@ -1061,7 +1061,7 @@ export const fetchPayorSummary = async ({ start, end, officeId }) => {
   const arStart = lookbackStart?.toISOString()?.slice(0, 10);
   const arEnd = end || asOfDate?.toISOString()?.slice(0, 10);
 
-  console.log(`[fetchPayorSummary] 18-month window: ${arStart} → ${arEnd} | asOf: ${asOfDate?.toISOString()?.slice(0, 10)} | officeId: ${officeId || 'All Offices'}`);
+  console.log(`[fetchPayorSummary] 18-month window: ${arStart} → ${arEnd} | asOf: ${asOfDate?.toISOString()?.slice(0, 10)} | officeId: ${officeIds?.join(',') || officeId || 'All Offices'}`);
 
   // ── Step 1: Paginated fetch across all offices using direct fetch ─────────
   // Uses the same direct fetch pattern as fetchAgingReceivablesLive to avoid
@@ -1096,9 +1096,13 @@ export const fetchPayorSummary = async ({ start, end, officeId }) => {
     return [];
   };
 
-  const officesToFetch = officeId
-    ? ALL_OFFICES?.filter((o) => o?.officeId === officeId)
-    : ALL_OFFICES;
+  const officesToFetch = (() => {
+    const ids = [...new Set(Array.isArray(officeIds) ? officeIds : (officeId ? [officeId] : []))];
+    if (ids.some(id => !ALL_OFFICES.some(office => office.officeId === id))) {
+      throw new Error('Unknown office selection');
+    }
+    return ids.length ? ALL_OFFICES.filter(office => ids.includes(office.officeId)) : ALL_OFFICES;
+  })();
 
   for (const office of officesToFetch) {
     let page = 1;

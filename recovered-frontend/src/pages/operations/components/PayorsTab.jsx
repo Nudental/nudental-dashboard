@@ -177,12 +177,12 @@ const PayorsTab = ({ dateRange, officeIds }) => {
     try {
       const endIso   = toIsoDate(dateRange?.endYear,   dateRange?.endMonth,   true);
       const startIso = toIsoDate(dateRange?.startYear, dateRange?.startMonth, false);
-      const officeId = officeIds?.length === 1 ? officeIds?.[0] : '';
+      const selectedOfficeIds = officeIds;
 
       const rows = await fetchPayorSummary({
         start: startIso || undefined,
         end:   endIso   || undefined,
-        officeId,
+        officeIds: selectedOfficeIds,
       });
 
       const rowArray = Array.isArray(rows) ? rows : [];
