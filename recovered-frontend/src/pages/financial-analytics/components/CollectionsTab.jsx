@@ -124,7 +124,7 @@ const CollectionsTab = ({
   // Initialize from appliedDateRange so the date picker opens to the applied month.
   // Fall back to stagedDateRange / startDate if applied is not yet set.
   const [localOffice, setLocalOffice] = useState(
-    appliedOffices?.includes('all') ? 'all' : (appliedOffices?.[0] || selectedOffices?.includes('all') ? 'all' : (selectedOffices?.[0] || 'all'))
+    (appliedOffices || selectedOffices || officeIds)?.includes('all') ? 'all' : ((appliedOffices || selectedOffices || officeIds)?.join(',') || 'all')
   );
   const [localStart, setLocalStart] = useState(
     appliedDateRange?.start || stagedDateRange?.start || startDate || ''
@@ -137,7 +137,7 @@ const CollectionsTab = ({
   // This ensures the date picker always opens to the applied/committed month.
   useEffect(() => {
     if (appliedOffices) {
-      setLocalOffice(appliedOffices?.includes('all') ? 'all' : (appliedOffices?.[0] || 'all'));
+      setLocalOffice(appliedOffices?.includes('all') ? 'all' : (appliedOffices?.join(',') || 'all'));
     }
   }, [appliedOffices?.join?.(',')]);
 
@@ -215,7 +215,7 @@ const CollectionsTab = ({
   // async state race where onApplyFilters reads stale parent state.
   const handleLocalApply = () => {
     if (dateError) return;
-    const newOffices = localOffice === 'all' ? ['all'] : [localOffice];
+    const newOffices = localOffice === 'all' ? ['all'] : localOffice.split(',');
     const newStart = localStart;
     const newEnd = localEnd;
 
@@ -307,6 +307,9 @@ const CollectionsTab = ({
               onChange={e => setLocalOffice(e?.target?.value)}
               className="h-9 rounded-lg border border-border bg-background text-sm text-foreground px-3 focus:outline-none focus:ring-2 focus:ring-primary/30"
             >
+              {officeIds?.length > 1 && !officeIds.includes('all') && (
+                <option value={officeIds.join(',')}>{getOfficeLabel(officeIds)}</option>
+              )}
               {OFFICE_OPTIONS?.map(opt => (
                 <option key={opt?.value} value={opt?.value}>{opt?.label}</option>
               ))}
