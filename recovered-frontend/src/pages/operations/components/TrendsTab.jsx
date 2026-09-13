@@ -3,8 +3,9 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import { fmtCurrency, fmtNum, getLastNMonths, monthLabel } from '../../../services/operationsService';
-import { resolveOfficeName, OFFICE_MAP } from '../../../constants/offices';
+import { resolveOfficeName, OFFICE_MAP, LOCATION_ID_MAP } from '../../../constants/offices';
 import { ascendApi } from '../../../services/ascendApi';
+import { fetchFinancialReportForOffices } from '../../../services/dentrixNormalizedService';
 
 const FALLBACK_COLORS = ['#0d9488', '#4f46e5', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
@@ -87,8 +88,10 @@ const TrendsTab = ({ dateRange, officeIds, offices }) => {
     setApiError(false);
     try {
       const months = getLastNMonths(12);
-      // locationId: use first selected office if exactly one, otherwise null (all offices)
-      const locationId = officeIds?.length === 1 ? officeIds?.[0] : null;
+      const selectedOfficeIds = officeIds?.includes('all') ? [] : [...new Set(officeIds || [])];
+      if (selectedOfficeIds.some(id => !LOCATION_ID_MAP[id])) throw new Error('Unknown office selection.');
+      // Combined scope preserves distinct patients and clinical days across selected offices.
+      const locationId = selectedOfficeIds.length ? selectedOfficeIds.map(id => LOCATION_ID_MAP[id]).join(',') : null;
 
       const results = await Promise.allSettled(
         months?.map(({ year, month }) => {
@@ -96,8 +99,8 @@ const TrendsTab = ({ dateRange, officeIds, offices }) => {
           const lastDay = new Date(year, month, 0)?.getDate();
           const endDate = `${year}-${String(month)?.padStart(2, '0')}-${String(lastDay)?.padStart(2, '0')}`;
           return Promise.all([
-            ascendApi?.getProduction(startDate, endDate, locationId)?.catch(() => null),
-            ascendApi?.getCollections(startDate, endDate, locationId)?.catch(() => null),
+            fetchFinancialReportForOffices('getProduction', startDate, endDate, selectedOfficeIds)?.catch(() => null),
+            fetchFinancialReportForOffices('getCollections', startDate, endDate, selectedOfficeIds)?.catch(() => null),
             ascendApi?.getPatients(startDate, endDate, locationId)?.catch(() => null),
             ascendApi?.getAppointmentsSummary(startDate, endDate, locationId)?.catch(() => null),
           ])?.then(([prod, coll, patients, appts]) => {
@@ -166,8 +169,9 @@ const TrendsTab = ({ dateRange, officeIds, offices }) => {
     );
   }
 
-  // All trend data is a flat array — single "All Offices" line since API aggregates across all locations
-  const officeKey = 'All Offices';
+  const selectedIds = officeIds?.includes('all') ? [] : [...new Set(officeIds || [])];
+  const officeKey = !selectedIds.length ? 'All Offices' : selectedIds.length === 1
+    ? (officeMap[selectedIds[0]] || resolveOfficeName(selectedIds[0])) : `${selectedIds.length} Selected Offices`;
 
   // Production chart: show UCR and Net as separate lines
   const productionData = trendPoints?.map((p) => ({
