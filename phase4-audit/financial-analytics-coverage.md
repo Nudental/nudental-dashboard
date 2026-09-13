@@ -36,3 +36,5 @@ The individual issue closure documents are authoritative. No business records, p
 - Reconcile Expense Report and Operations coverage with their later issue closures; verify remaining reversible local-only controls.
 
 This is partial section coverage, not overall Phase4 completion. No Phase5 work.
+
+September13 continuation: NDASH129–144 now individually deployed/live verified (see issue records), including financial headline/date/office scope, payment-method scope, trend availability and chart controls, comparison/forecast failures, goal scope, pivot/statistics, Revenue Breakdown scope/availability, and drill-down office commit/metadata scope. All/single/two-office source comparisons retained. Service Categories still correctly gates on global mapping coverage below99%; no mapping backfill. Saved Analyses explicitly unavailable; no saved record created. Unsupported nonoffice drill-down selections show the explicit summary-support warning; Clear works. No financial/provider writes, exports, imports, reconciliations or test business records. Remaining Financial Analytics safe audit items are within Expense Report; full financial write correctness is not claimed.
