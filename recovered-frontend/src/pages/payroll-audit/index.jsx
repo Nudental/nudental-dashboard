@@ -16,6 +16,7 @@ import {
 } from '../../services/payrollService';
 import useRolePermissions from '../../hooks/useRolePermissions';
 import { AccessDenied } from '../../hooks/useRbacGuard';
+import { getDentrixCollectionWindow } from '../../utils/calendarDateHelpers';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const fmtCurrency = (v) =>
@@ -609,9 +610,14 @@ export default function PayrollAudit() {
     setLoading(true);
     setError(null);
     try {
+      // The service accepts final Ascend dates; preserve the live payroll offset once.
+      const { dentrixStart, dentrixEnd } = getDentrixCollectionWindow(
+        selectedRun?.pay_period_start,
+        selectedRun?.pay_period_end
+      );
       const { doctors, hygienists, error: fetchError } = await fetchPayrollData({
-        startDate: selectedRun?.pay_period_start,
-        endDate: selectedRun?.pay_period_end,
+        startDate: dentrixStart,
+        endDate: dentrixEnd,
         locationId: selectedOffice || undefined,
         providerType: selectedProviderType !== 'all' ? selectedProviderType : undefined,
         payrollRun: selectedRun,
