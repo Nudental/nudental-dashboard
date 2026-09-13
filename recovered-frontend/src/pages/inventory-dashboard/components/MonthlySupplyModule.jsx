@@ -87,6 +87,7 @@ const MonthlySupplyModule = () => {
             <p className="text-xs text-muted-foreground">Back-office and clinical supply management across Nu Dental locations.</p>
           </div>
         </div>
+        {(activeTab === 'overview' || activeTab === 'reports') && (
         <div className="flex items-center gap-3">
           <select
             value={officeFilter}
@@ -103,6 +104,7 @@ const MonthlySupplyModule = () => {
             className="px-3 py-2 border border-border rounded-xl text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </div>
+        )}
       </div>
       {/* Sub-tabs */}
       <div className="border-b border-border">
