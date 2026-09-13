@@ -88,6 +88,41 @@ export const ALL_DENTRIX_OFFICES = [
   { officeId: '1c719b5b-fd77-4da8-a1b9-2209f1cea63e', officeName: 'Barnegat',      locationId: '14000000000434' },
 ];
 
+export const fetchFinancialScatterPoints = async (trendData, officeIds = [], isCurrent = () => true) => {
+  const ids = [...new Set(officeIds)];
+  const scopes = !ids.length || ids.includes('all') ? [null] : ids;
+  if (scopes.some(id => id !== null && !Object.hasOwn(LOCATION_ID_MAP, id))) {
+    throw new Error('Select valid offices to load the marketing comparison.');
+  }
+  if (trendData.some(point => !point.startDate || !point.endDate || !point.productionAvailable || !Number.isFinite(point.revenue))) {
+    throw new Error('Verified production data is unavailable for this comparison.');
+  }
+  const jobs = trendData.flatMap((point, index) => scopes.map(officeId => ({ point, index, officeId })));
+  const totals = trendData.map(() => 0);
+  let next = 0;
+  let stopped = false;
+  const worker = async () => {
+    while (next < jobs.length && !stopped && isCurrent()) {
+      const { point, index, officeId } = jobs[next++];
+      // Marketing expenses use office UUIDs; the Dentrix numeric location IDs are different.
+      const response = await ascendApi.getMarketingAmexSpend(point.startDate, point.endDate, officeId)
+        .catch(() => { stopped = true; throw new Error('Marketing spend is unavailable. Please retry.'); });
+      const spend = response?.totals?.totalMarketingSpend;
+      if (response?.error || response?.source !== 'supabase_expenses' ||
+          response?.period?.startDate !== point.startDate || response?.period?.endDate !== point.endDate ||
+          response?.filters?.locationId !== (officeId || 'all') ||
+          spend == null || spend === '' || !Number.isFinite(Number(spend))) {
+        stopped = true;
+        throw new Error('Marketing spend could not be verified for the selected dates and offices.');
+      }
+      totals[index] += Number(spend);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(4, jobs.length) }, worker));
+  if (!isCurrent()) return [];
+  return trendData.map((point, index) => ({ month: point.month, marketing: totals[index], revenue: point.revenue }));
+};
+
 export const fetchFinancialReportForOffices = async (method, startDate, endDate, officeIds = []) => {
   if (!['getProduction', 'getCollections'].includes(method)) throw new Error('Unsupported financial report.');
   const ids = [...new Set(officeIds)];

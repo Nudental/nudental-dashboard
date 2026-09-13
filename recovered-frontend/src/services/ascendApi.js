@@ -56,6 +56,9 @@ export const ascendApi = {
   getProduction: (startDate, endDate, locationId) =>
     safeFetch(withLocation(`${API_BASE}/production/summary?startDate=${startDate}&endDate=${endDate}`, locationId)),
 
+  getMarketingAmexSpend: (startDate, endDate, officeId) =>
+    safeFetch(withLocation(`${API_BASE}/marketing/amex-spend?startDate=${startDate}&endDate=${endDate}`, officeId)),
+
   getCollections: (startDate, endDate, locationId) =>
     safeFetch(withLocation(`${API_BASE}/collections/summary?startDate=${startDate}&endDate=${endDate}`, locationId)),
 

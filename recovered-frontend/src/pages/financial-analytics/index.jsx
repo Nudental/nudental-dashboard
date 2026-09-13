@@ -215,6 +215,8 @@ const FinancialAnalytics = () => {
               ascendApi?.getPatients(startDate, endDate, locationId)?.catch(() => null),
             ])?.then(([prod, coll, patients]) => ({
               month: monthLabel(year, month),
+              startDate, endDate,
+              productionAvailable: prod?.netProduction != null && Number.isFinite(Number(prod.netProduction)),
               // UCR / Gross Production — full billed fee before reductions
               ucrProduction: prod?.grossProduction ?? 0,
               // Net Production — after adjustments (primary display metric)

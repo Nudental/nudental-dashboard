@@ -3,7 +3,7 @@ import { LineChart, Line, BarChart, Bar, ScatterChart, Scatter, XAxis, YAxis, Ca
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { ascendApi } from '../../../services/ascendApi';
-import { fetchFinancialReportForOffices } from '../../../services/dentrixNormalizedService';
+import { fetchFinancialReportForOffices, fetchFinancialScatterPoints } from '../../../services/dentrixNormalizedService';
 import { getLocationIdByOfficeId } from '../../../constants/offices';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -362,7 +362,23 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
   const [chartType, setChartType] = useState('line');
 
   const trendData = data?.trendData || [];
-  const scatterData = [];
+  const [scatterData, setScatterData] = useState([]);
+  const [scatterLoading, setScatterLoading] = useState(false);
+  const [scatterError, setScatterError] = useState(null);
+  useEffect(() => {
+    let current = true;
+    if (mode !== 'trend' || chartType !== 'scatter') return () => { current = false; };
+    setScatterData([]);
+    setScatterError(null);
+    setScatterLoading(true);
+    if (!loading) {
+      fetchFinancialScatterPoints(trendData, appliedOffices || [], () => current)
+        .then(points => { if (current) setScatterData(points); })
+        .catch(error => { if (current) setScatterError(error?.message || 'Marketing comparison is unavailable.'); })
+        .finally(() => { if (current) setScatterLoading(false); });
+    }
+    return () => { current = false; };
+  }, [mode, chartType, loading, trendData, appliedOffices?.join(',')]);
 
   // goalData: { dailyTarget, paceTarget, daysInMonth, currentDay, target }
   const dailyTarget = goalData?.dailyTarget || 0;
@@ -376,7 +392,7 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
 
   const renderTrendChart = () => {
     if (loading) return <div role="status" className="w-full h-full flex items-center justify-center text-muted-foreground">Loading trend data...</div>;
-    if (!trendData?.length) {
+    if (!trendData?.length && chartType !== 'scatter') {
       return (
         <div className="w-full h-full flex flex-col items-center justify-center text-center p-8">
           <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
@@ -429,14 +445,24 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
     }
 
     if (chartType === 'scatter') {
+      if (scatterLoading) return <div role="status" className="w-full h-full flex items-center justify-center text-muted-foreground">Loading marketing comparison...</div>;
+      if (scatterError) return <div role="alert" className="p-4 text-sm text-destructive">{scatterError}</div>;
+      if (!scatterData.length) return <div role="status" className="p-4 text-sm text-muted-foreground">No verified marketing and production data for these dates.</div>;
       return (
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart>
+          <ScatterChart margin={{ top: 12, right: 12, bottom: 20, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-            <XAxis type="number" dataKey="marketing" name="Marketing Spend" stroke="var(--color-muted-foreground)" style={{ fontSize: '12px' }} tickFormatter={(v) => `${(v / 1000)?.toFixed(0)}K`} />
-            <YAxis type="number" dataKey="revenue" name="Revenue" stroke="var(--color-muted-foreground)" style={{ fontSize: '12px' }} tickFormatter={(v) => `${(v / 1000)?.toFixed(0)}K`} />
-            <RechartsTooltip contentStyle={{ backgroundColor: 'var(--color-popover)', border: '1px solid var(--color-border)', borderRadius: '8px' }} formatter={(v) => `${v?.toLocaleString()}`} cursor={{ strokeDasharray: '3 3' }} />
-            <Scatter name="Marketing vs Revenue" data={scatterData} fill="var(--color-primary)" />
+            <XAxis type="number" dataKey="marketing" name="AmEx marketing spend" label={{ value: 'Marketing spend', position: 'insideBottom', offset: -12 }} stroke="var(--color-muted-foreground)" style={{ fontSize: '12px' }} tickFormatter={(v) => `${(v / 1000)?.toFixed(0)}K`} />
+            <YAxis type="number" dataKey="revenue" name="Net production" stroke="var(--color-muted-foreground)" style={{ fontSize: '12px' }} tickFormatter={(v) => `${(v / 1000)?.toFixed(0)}K`} />
+            <RechartsTooltip cursor={{ strokeDasharray: '3 3' }} content={({ active, payload }) => {
+              const point = payload?.[0]?.payload;
+              return active && point ? <div className="rounded-lg border border-border bg-popover p-3 text-sm shadow-md">
+                <p className="font-semibold">{point.month}</p>
+                <p>AmEx marketing spend: {fmt$(point.marketing)}</p>
+                <p>Net production: {fmt$(point.revenue)}</p>
+              </div> : null;
+            }} />
+            <Scatter name="Monthly marketing spend vs net production" data={scatterData} fill="var(--color-primary)" />
           </ScatterChart>
         </ResponsiveContainer>
       );
@@ -513,7 +539,8 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
   }
 
   // ── Render ────────────────────────────────────────────────────────────────
-  const modeLabel = mode === 'trend' ? 'Production and Collections Trend'
+  const modeLabel = mode === 'trend' && chartType === 'scatter' ? 'Marketing Spend and Net Production'
+    : mode === 'trend' ? 'Production and Collections Trend'
     : mode === 'comparison' ? 'Comparative Analysis'
     : mode === 'forecast'? 'Forecasting' :'Production and Collections Trend';
 
@@ -526,7 +553,7 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
             <h2 className="text-lg md:text-xl font-semibold text-foreground">{modeLabel}</h2>
             {mode === 'trend' && (
               <p className="text-xs text-muted-foreground mt-0.5">
-                Trailing 12-Month Trend Ending {appliedDateRange?.end || new Date()?.toISOString()?.slice(0, 10)} · Source: Dentrix FastAPI/SQLite
+                Trailing 12-Month Trend Ending {appliedDateRange?.end || new Date()?.toISOString()?.slice(0, 10)} · Source: {chartType === 'scatter' ? 'Dentrix production and AmEx marketing expenses' : 'Dentrix FastAPI/SQLite'}
               </p>
             )}
             {mode === 'comparison' && (
@@ -562,7 +589,7 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
       </div>
 
       {/* Target Line Legend (only in trend mode when goal is set) */}
-      {mode === 'trend' && dailyTarget > 0 && (
+      {mode === 'trend' && chartType !== 'scatter' && dailyTarget > 0 && (
         <div className="flex flex-wrap items-center gap-4 mb-4 p-3 bg-warning/5 border border-warning/20 rounded-lg">
           <div className="flex items-center gap-2">
             <div className="w-8 h-0.5 border-t-2 border-dashed" style={{ borderColor: '#f59e0b' }}></div>
