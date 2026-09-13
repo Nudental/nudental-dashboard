@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Icon from '../../../components/AppIcon';
 import { ascendApi } from '../../../services/ascendApi';
+import { fetchFinancialReportForOffices } from '../../../services/dentrixNormalizedService';
 import { getLocationIdByOfficeId, OFFICE_LIST, OFFICE_MAP } from '../../../constants/offices';
 
 // ── Formatters ────────────────────────────────────────────────────────────────
@@ -137,11 +138,10 @@ const RevenueBreakdownTab = ({ dateRange, selectedOffices, refreshKey }) => {
   const startDate = dateRange?.start;
   const endDate = dateRange?.end;
 
-  // Resolve single locationId (null = All Offices)
-  const locationId =
-    selectedOffices?.length === 1 && selectedOffices?.[0] !== 'all'
-      ? getLocationIdByOfficeId(selectedOffices?.[0])
-      : null;
+  // The existing filter-options endpoint accepts comma-separated office locations.
+  const locationId = selectedOffices?.length && !selectedOffices.includes('all')
+    ? [...new Set(selectedOffices)].map(id => getLocationIdByOfficeId(id)).join(',')
+    : null;
 
   const isAllOffices =
     !selectedOffices || selectedOffices?.length === 0 || selectedOffices?.includes('all');
@@ -152,10 +152,14 @@ const RevenueBreakdownTab = ({ dateRange, selectedOffices, refreshKey }) => {
     setError(null);
 
     try {
+      if (!isAllOffices && selectedOffices.some(id => !Object.hasOwn(OFFICE_MAP, id) || !getLocationIdByOfficeId(id))) {
+        throw new Error('Select valid offices for the revenue breakdown.');
+      }
+
       // Fetch primary data in parallel
       const [prod, coll, opts] = await Promise.all([
-        ascendApi?.getProduction(startDate, endDate, locationId)?.catch(() => null),
-        ascendApi?.getCollections(startDate, endDate, locationId)?.catch(() => null),
+        fetchFinancialReportForOffices('getProduction', startDate, endDate, selectedOffices)?.catch(() => null),
+        fetchFinancialReportForOffices('getCollections', startDate, endDate, selectedOffices)?.catch(() => null),
         ascendApi?.getFinancialFilterOptions(startDate, endDate, locationId)?.catch(() => null),
       ]);
 
@@ -164,9 +168,9 @@ const RevenueBreakdownTab = ({ dateRange, selectedOffices, refreshKey }) => {
       setFilterOptions(opts);
 
       // Office breakdown — fetch per-office when All Offices selected
-      if (isAllOffices) {
+      if (isAllOffices || selectedOffices.length > 1) {
         const officeResults = await Promise.allSettled(
-          OFFICE_LIST?.map(async (office) => {
+          OFFICE_LIST?.filter(office => isAllOffices || selectedOffices.includes(office.id)).map(async (office) => {
             const locId = getLocationIdByOfficeId(office?.id);
             const [op, oc] = await Promise.all([
               ascendApi?.getProduction(startDate, endDate, locId)?.catch(() => null),
