@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
 import { ascendApi } from '../../../services/ascendApi';
+import { fetchFinancialReportForOffices } from '../../../services/dentrixNormalizedService';
 import { LOCATION_ID_MAP } from '../../../constants/offices';
 
 /* ─── Formatters ──────────────────────────────────────────────────────────── */
@@ -350,8 +351,8 @@ const StatisticalSummary = ({ selectedOffices = ['all'], dateRange, fetchVersion
     const fetchStats = async () => {
       try {
         const [prodRes, collRes] = await Promise.allSettled([
-          ascendApi?.getProduction(resolvedStart, resolvedEnd, locationId),
-          ascendApi?.getCollections(resolvedStart, resolvedEnd, locationId),
+          fetchFinancialReportForOffices('getProduction', resolvedStart, resolvedEnd, officeKey.split(',')),
+          fetchFinancialReportForOffices('getCollections', resolvedStart, resolvedEnd, officeKey.split(',')),
         ]);
 
         if (myRequestId !== requestIdRef?.current) return;
