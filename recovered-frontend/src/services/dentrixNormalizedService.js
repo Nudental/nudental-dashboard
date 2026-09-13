@@ -114,7 +114,80 @@ const normalizeResponse = (raw) => {
  * @param {{ startDate, endDate, officeIds?, dailyDate? }} params
  * @returns {Promise<ProductionMetrics>}
  */
+// Multiple selected offices require separate scoped reads: null means All Offices.
+const fetchSelectedFinancialMetrics = async (params, kind) => {
+  const officeIds = [...new Set(params.officeIds)];
+  if (officeIds.some(id => !LOCATION_ID_MAP[id])) {
+    throw new Error('Financial metrics unavailable: an office selection is invalid.');
+  }
+  const reader = kind === 'production' ? fetchProductionMetrics : fetchCollectionMetrics;
+  const rows = await Promise.all(officeIds.map(id => reader({ ...params, officeIds: [id] })));
+  if (rows.some(row => row._diagnostics?.errors?.length || (params.dailyDate && !row._diagnostics?.rawDaily))) {
+    throw new Error('Financial metrics unavailable for one or more selected offices. Please retry.');
+  }
+  const number = (row, keys, fallback) => {
+    const value = keys.map(key => row?.[key]).find(value => value != null) ?? fallback;
+    if (value === '' || value == null || !Number.isFinite(Number(value))) {
+      throw new Error('Financial metrics incomplete for one or more selected offices. Please retry.');
+    }
+    return Number(value);
+  };
+  const result = {};
+  for (const key of Object.keys(rows[0])) {
+    if (key !== '_diagnostics' && key !== 'collection_rate') {
+      result[key] = rows.reduce((total, row) => total + number(row, [key]), 0);
+    }
+  }
+  const diagnostics = {};
+  if (kind === 'production') {
+    for (const row of rows) {
+      number(row._diagnostics.rawProduction, ['grossProduction', 'gross_production']);
+      number(row._diagnostics.rawProduction, ['netProduction', 'net_production', 'production']);
+    }
+    diagnostics.rawProduction = { grossProduction: result.gross_production_mtd, netProduction: result.net_production_mtd };
+    diagnostics.rawAdjustments = { totalAdjustments: result.production_adjustments_mtd, writeOffs: result.write_offs_mtd, chargeAdjustments: result.charge_adjustments_mtd };
+  } else {
+    // Sum signed provider values before applying the existing display abs rule.
+    const sumRaw = (source, keys, fallback) => rows.reduce((total, row) =>
+      total + number(row._diagnostics[source], keys, fallback), 0);
+    const insurance = sumRaw('rawCollections', ['insuranceCollections', 'insurance_collections']);
+    const patient = sumRaw('rawCollections', ['patientCollections', 'patient_collections']);
+    const total = sumRaw('rawCollections', ['totalCollections', 'total_collections', 'collections']);
+    diagnostics.rawCollections = { insuranceCollections: insurance, patientCollections: patient, totalCollections: total };
+    Object.assign(result, {
+      insurance_collections_mtd: Math.abs(insurance), insuranceCollections: Math.abs(insurance),
+      patient_collections_mtd: Math.abs(patient), patientCollections: Math.abs(patient),
+      total_collections_mtd: Math.abs(total), totalCollections: Math.abs(total),
+    });
+    if (params.dailyDate) {
+      result.insurance_collections_daily = Math.abs(sumRaw('rawDaily', ['insuranceCollections', 'dailyInsuranceCollections'], 0));
+      result.patient_collections_daily = Math.abs(sumRaw('rawDaily', ['patientCollections', 'dailyPatientCollections'], 0));
+      result.total_collections_daily = Math.abs(rows.reduce((sum, row) => {
+        const raw = row._diagnostics.rawDaily;
+        return sum + number(raw, ['totalCollections', 'dailyTotalCollections'],
+          Math.abs(number(raw, ['insuranceCollections', 'dailyInsuranceCollections'], 0)) +
+          Math.abs(number(raw, ['patientCollections', 'dailyPatientCollections'], 0)));
+      }, 0));
+    }
+    // Rates are not additive; use the exact selected net-production denominator.
+    const production = await Promise.all(officeIds.map(id =>
+      ascendApi.getProduction(params.startDate, params.endDate, LOCATION_ID_MAP[id])));
+    const net = production.reduce((sum, row) => sum + number(row, ['netProduction', 'net_production', 'production']), 0);
+    result.collection_rate = net > 0 ? Math.round(total / net * 1000) / 10 : null;
+    diagnostics.rawCollections.collectionRate = result.collection_rate;
+  }
+  result._diagnostics = {
+    metric: kind, officeIds, locationIds: officeIds.map(id => LOCATION_ID_MAP[id]),
+    startDate: params.startDate, endDate: params.endDate, dailyDate: params.dailyDate,
+    fetchedAt: new Date().toISOString(), errors: [], ...diagnostics,
+  };
+  return result;
+};
+
 export const fetchProductionMetrics = async ({ startDate, endDate, officeIds = [], dailyDate = null }) => {
+  if (officeIds.length > 1 && !officeIds.includes('all')) {
+    return fetchSelectedFinancialMetrics({ startDate, endDate, officeIds, dailyDate }, 'production');
+  }
   const locationId = resolveLocationId(officeIds);
 
   const diagnostics = {
@@ -221,6 +294,9 @@ export const fetchProductionMetrics = async ({ startDate, endDate, officeIds = [
  * @returns {Promise<CollectionMetrics>}
  */
 export const fetchCollectionMetrics = async ({ startDate, endDate, officeIds = [], dailyDate = null }) => {
+  if (officeIds.length > 1 && !officeIds.includes('all')) {
+    return fetchSelectedFinancialMetrics({ startDate, endDate, officeIds, dailyDate }, 'collections');
+  }
   const locationId = resolveLocationId(officeIds);
 
   const diagnostics = {

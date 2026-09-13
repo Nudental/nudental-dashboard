@@ -118,9 +118,12 @@ const ProductionAdjustmentsTab = ({
   const resolvedEndDate = endDate || fallbackDateRange?.endDate;
 
   useEffect(() => {
+    let active = true;
     const load = async () => {
       setLoading(true);
       setError(null);
+      setData(null);
+      setOfficeData([]);
       try {
         const today = new Date()?.toISOString()?.split('T')?.[0];
         const [metrics, byOffice] = await Promise.allSettled([
@@ -132,15 +135,18 @@ const ProductionAdjustmentsTab = ({
           }),
           fetchNormalizedMetricsByOffice({ startDate: resolvedStartDate, endDate: resolvedEndDate, officeIds }),
         ]);
-        if (metrics?.status === 'fulfilled') setData(metrics?.value);
+        if (!active) return;
+        if (metrics?.status === 'rejected') throw metrics.reason;
+        setData(metrics?.value);
         if (byOffice?.status === 'fulfilled') setOfficeData(byOffice?.value);
       } catch (err) {
-        setError(err?.message);
+        if (active) setError(err?.message || 'Financial metrics unavailable. Please retry.');
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
     load();
+    return () => { active = false; };
   }, [resolvedStartDate, resolvedEndDate, officeIds?.join(','), refreshKey]);
 
   const chartData = useMemo(() => {

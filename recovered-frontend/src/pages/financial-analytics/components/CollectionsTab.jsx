@@ -161,9 +161,12 @@ const CollectionsTab = ({
   }, [officeIds?.join(',')]);
 
   useEffect(() => {
+    let active = true;
     const load = async () => {
       setLoading(true);
       setError(null);
+      setData(null);
+      setOfficeData([]);
       try {
         const today = new Date()?.toISOString()?.split('T')?.[0];
         const [metrics, byOffice, opts] = await Promise.allSettled([
@@ -171,16 +174,19 @@ const CollectionsTab = ({
           fetchNormalizedMetricsByOffice({ startDate: resolvedStartDate, endDate: resolvedEndDate, officeIds }),
           ascendApi?.getFinancialFilterOptions(resolvedStartDate, resolvedEndDate, locationId)?.catch(() => null),
         ]);
-        if (metrics?.status === 'fulfilled') setData(metrics?.value);
+        if (!active) return;
+        if (metrics?.status === 'rejected') throw metrics.reason;
+        setData(metrics?.value);
         if (byOffice?.status === 'fulfilled') setOfficeData(byOffice?.value);
         if (opts?.status === 'fulfilled') setFilterOptions(opts?.value);
       } catch (err) {
-        setError(err?.message);
+        if (active) setError(err?.message || 'Financial metrics unavailable. Please retry.');
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
     load();
+    return () => { active = false; };
   }, [resolvedStartDate, resolvedEndDate, officeIds?.join(','), refreshKey]);
 
   // ── Date validation ───────────────────────────────────────────────────────

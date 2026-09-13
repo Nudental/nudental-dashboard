@@ -1,0 +1,17 @@
+# NDASH-129 — Combined-office financial headlines use all-office totals
+
+Severity: High. Status: source and release artifact verified; deployment pending.
+
+On128 select only Barnegat and Brick in Financial Analytics using the custom multi-office menu, apply January1–June30,2026, then open Collections. The applied caption names both offices and its office chart shows exactly those two. Insurance, Patient and Total Collections nevertheless match the All Offices baseline exactly. Repeated after restoring All and reapplying the two offices, with a fresh Collections component mount. The local single-office picker displays only Barnegat despite the applied two-office caption; this is additional scope-display evidence, not proof of the values by itself.
+
+Independent existing read-only API totals confirm All equals the four-office sum and all three selected-pair totals differ from All. Only compact fingerprints were output. All UI/API hashes: insurance1954afdc/patient3bb7cdc1/total9909f3a4. Expected selected-pair hashes: insurance0e5e6597/patient6c8f43f3/totalc66346aa. The13-row Payment Source Breakdown also remains exactly identical to All (hash34482b01); independent per-office breakdown validation is still pending.
+
+Production & Adjustments reproduced twice on the same applied pair/range. Actual gross/net fingerprints6851d7ad/52f5821a match All, while independent selected-pair API fingerprints are1a13e780/a4487135. Root cause: dentrixNormalizedService.resolveLocationId intentionally returns null for two or more offices; both metric readers forward null to the API, meaning All Offices. CollectionsTab independently does this for filter-options/payment-method data. Financial Analytics trend/filter-options readers also use a scalar-or-all pattern; those separate views are not claimed fixed here.
+
+Small correction: explicit multiple-office metric reads deduplicate and validate IDs, combine selected-office additive production/adjustment metrics, and net signed collection values before display abs. Collection rate uses summed exact selected net production, with null for a nonpositive denominator. Invalid IDs, missing core fields and partial read failures reject instead of returning misleading aggregates. All/single-office behavior remains unchanged. Only the two affected view loaders clear stale values, surface rejected metric reads, and ignore obsolete responses after filter changes/unmount.
+
+Files: recovered-frontend/src/services/dentrixNormalizedService.js; financial-analytics/components/ProductionAdjustmentsTab.jsx and CollectionsTab.jsx. No backend/configuration/business-data changes. Local single-office picker and payment-source breakdown scope remain separate follow-up checks.
+
+Verification:12 focused tests PASS; all598 retained frontend tests PASS; production build38.65s PASS; Rocket version857 reports the targeted three-file repair/build successful. Actual compiled candidate tests pass selected-only requests, signed values, exact rate, duplicate prevention, missing/failure paths and both view request-order/error guards. Full candidate reversal matches current128 byte-for-byte, including all seven dependent modules. Candidate index-be9d723e9ed7.js; deployment/live verification pending. This is a scoped patch over128, not publication of the whole recovered build.
+
+Do not deploy separately prepared042-v2 over a later release without rebasing and retesting it. Its specific publication approval is still pending. No129 production change has yet been performed.
