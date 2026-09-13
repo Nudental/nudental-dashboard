@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { readCompleteAuditEntries } from './auditReadService';
 
 // ─── DIFF LOGIC ────────────────────────────────────────────────────────────
 const IGNORED_DIFF_KEYS = ['updated_at', 'created_at', 'id'];
@@ -375,13 +376,13 @@ export const backStaffOrdersService = {
 // ─── AUDIT LOGS ────────────────────────────────────────────────────────────
 export const auditLogsService = {
   async getAll() {
-    const { data, error } = await supabase
-      ?.from('audit_logs')
-      ?.select('*, user_profiles(full_name, email)')
-      ?.order('created_at', { ascending: false })
-      ?.limit(200);
-    if (error) throw error;
-    return (data || [])?.map(log => ({
+    const data = await readCompleteAuditEntries((from, to) => supabase
+      .from('audit_logs')
+      .select('*, user_profiles(full_name, email)', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: true })
+      .range(from, to));
+    return data.map(log => ({
       ...log,
       userName: log?.user_profiles?.full_name || log?.user_profiles?.email || 'Unknown',
     }));

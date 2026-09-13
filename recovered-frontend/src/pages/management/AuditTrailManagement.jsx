@@ -43,6 +43,7 @@ const AuditTrailManagement = () => {
   const [actionFilter, setActionFilter] = useState('all');
   const [tableFilter, setTableFilter] = useState('all');
   const [expandedRow, setExpandedRow] = useState(null);
+  const [page, setPage] = useState(1);
 
   const loadLogs = useCallback(async () => {
     setLoading(true);
@@ -51,6 +52,7 @@ const AuditTrailManagement = () => {
       const data = await auditLogsService?.getAll();
       setLogs(data);
     } catch (err) {
+      setLogs([]);
       setError(err?.message || 'Failed to load audit logs');
     } finally {
       setLoading(false);
@@ -58,6 +60,7 @@ const AuditTrailManagement = () => {
   }, []);
 
   useEffect(() => { loadLogs(); }, [loadLogs]);
+  useEffect(() => { setPage(1); setExpandedRow(null); }, [searchQuery, actionFilter, tableFilter]);
 
   const filteredLogs = logs?.filter(log => {
     const matchesSearch = !searchQuery ||
@@ -67,6 +70,9 @@ const AuditTrailManagement = () => {
     const matchesTable = tableFilter === 'all' || log?.table_name === tableFilter;
     return matchesSearch && matchesAction && matchesTable;
   });
+  const pageCount = Math.max(1, Math.ceil(filteredLogs.length / 25));
+  const currentPage = Math.min(page, pageCount);
+  const pagedLogs = filteredLogs.slice((currentPage - 1) * 25, currentPage * 25);
 
   const uniqueActions = [...new Set(logs?.map(l => l?.action))];
   const uniqueTables = [...new Set(logs?.map(l => l?.table_name))];
@@ -163,7 +169,7 @@ const AuditTrailManagement = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredLogs?.map((log) => (
+                {pagedLogs.map((log) => (
                   <React.Fragment key={log?.id}>
                     <tr className="hover:bg-muted/30 transition-colors">
                       <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
@@ -207,6 +213,17 @@ const AuditTrailManagement = () => {
               </tbody>
             </table>
           </div>
+        )}
+        {!loading && filteredLogs.length > 0 && (
+          <nav aria-label="Audit Trail pagination" className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-t border-border">
+            <span className="text-sm text-muted-foreground">Page {currentPage} of {pageCount}</span>
+            <div className="flex items-center gap-2">
+              <button className="px-3 py-1.5 border border-border rounded-md text-sm disabled:opacity-40" disabled={currentPage === 1} onClick={() => setPage(1)}>First</button>
+              <button className="px-3 py-1.5 border border-border rounded-md text-sm disabled:opacity-40" disabled={currentPage === 1} onClick={() => setPage(Math.max(1, currentPage - 1))}>Previous</button>
+              <button className="px-3 py-1.5 border border-border rounded-md text-sm disabled:opacity-40" disabled={currentPage === pageCount} onClick={() => setPage(Math.min(pageCount, currentPage + 1))}>Next</button>
+              <button className="px-3 py-1.5 border border-border rounded-md text-sm disabled:opacity-40" disabled={currentPage === pageCount} onClick={() => setPage(pageCount)}>Last</button>
+            </div>
+          </nav>
         )}
       </div>
     </div>
