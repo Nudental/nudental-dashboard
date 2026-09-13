@@ -262,7 +262,7 @@ const SupplyOverviewTab = ({ officeFilter, monthFilter }) => {
 
       /* ── Monthly Status by Office ── */
       const officeStatus = {};
-      OFFICES?.forEach(o => {
+      OFFICES?.filter(o => !officeId || o === officeId)?.forEach(o => {
         officeStatus[o] = { office: o, draft: 0, submitted: 0, under_review: 0, approved: 0, fulfilled: 0, rejected: 0 };
       });
       (batchesRes?.data || [])?.forEach(b => {
