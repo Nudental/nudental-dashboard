@@ -844,8 +844,8 @@ const DentrixDiagnosticsPage = () => {
                   </thead>
                   <tbody className="divide-y divide-border">
                     {benchmarkRows?.map(row => {
-                      const deltaNMtd = safeNum(row?.net_monthly_production) - safeNum(row?.dashboard_net_monthly_production ?? row?.net_monthly_production);
-                      const deltaTColl = safeNum(row?.total_monthly_coll) - safeNum(row?.dashboard_total_monthly_coll ?? row?.total_monthly_coll);
+                      const deltaNMtd = row?.net_monthly_production == null || row?.dashboard_net_monthly_production == null ? null : safeNum(row?.net_monthly_production) - safeNum(row?.dashboard_net_monthly_production);
+                      const deltaTColl = row?.total_monthly_coll == null || row?.dashboard_total_monthly_coll == null ? null : safeNum(row?.total_monthly_coll) - safeNum(row?.dashboard_total_monthly_coll);
                       const hasMismatch = row?.mismatch_net_monthly_production || row?.mismatch_total_monthly_coll;
                       return (
                         <tr key={row?.id} className={`hover:bg-muted/30 ${hasMismatch ? 'bg-red-50/30' : ''}`}>
@@ -857,13 +857,13 @@ const DentrixDiagnosticsPage = () => {
                           <td className="px-3 py-2.5 tabular-nums text-muted-foreground">{fmtFull(row?.dashboard_net_monthly_production)}</td>
                           <td className="px-3 py-2.5 tabular-nums text-muted-foreground">{fmtFull(row?.dashboard_total_monthly_coll)}</td>
                           <td className="px-3 py-2.5 tabular-nums">
-                            <span className={Math.abs(deltaNMtd) <= 1 ? 'text-emerald-600' : 'text-red-600'}>
-                              {deltaNMtd >= 0 ? '+' : ''}{fmtFull(deltaNMtd)}
+                            <span className={deltaNMtd == null ? 'text-muted-foreground' : Math.abs(deltaNMtd) <= 1 ? 'text-emerald-600' : 'text-red-600'}>
+                              {deltaNMtd == null ? '—' : `${deltaNMtd >= 0 ? '+' : ''}${fmtFull(deltaNMtd)}`}
                             </span>
                           </td>
                           <td className="px-3 py-2.5 tabular-nums">
-                            <span className={Math.abs(deltaTColl) <= 1 ? 'text-emerald-600' : 'text-red-600'}>
-                              {deltaTColl >= 0 ? '+' : ''}{fmtFull(deltaTColl)}
+                            <span className={deltaTColl == null ? 'text-muted-foreground' : Math.abs(deltaTColl) <= 1 ? 'text-emerald-600' : 'text-red-600'}>
+                              {deltaTColl == null ? '—' : `${deltaTColl >= 0 ? '+' : ''}${fmtFull(deltaTColl)}`}
                             </span>
                           </td>
                           <td className="px-3 py-2.5">
