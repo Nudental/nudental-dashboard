@@ -2,6 +2,8 @@
 
 Status: CLOSED — deployed and live-verified PASS.
 
+Severity: High — selected-office reports displayed aggregate values from outside the selected scope.
+
 Reproduced twice on the live Dashboard: Barnegat plus Brick, Last Month, Trends, then Update. All five chart paths remained identical to All Locations. Four legends still said All Offices.
 
 Root cause: TrendsTab converted every selection other than exactly one office to a null location, which means all locations. Patient and appointment aggregate readers accepted only a scalar location; per-office addition would overcount patients and clinical days.

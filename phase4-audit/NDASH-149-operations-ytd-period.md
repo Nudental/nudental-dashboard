@@ -2,6 +2,8 @@
 
 Status: CLOSED — deployed and live-verified PASS.
 
+Severity: High — YTD reporting silently used the current month rather than the selected reporting interval.
+
 Reproduced twice on the live Operations Cancellations view with Barnegat plus Brick. Selecting YTD and Update returned September-only appointment totals (source fingerprints 903677d1 / 97fbeb1a), not January–September totals (0c94914f / 0194fb63). Last Month restored the original August values. This was initially suspected to be a label problem; direct source comparisons established that the requested date range was also wrong.
 
 Root cause: the shared monthly `buildDateRange` function lacked a `ytd` case and defaulted to the current month. The cancellation Period cell also assumed every aggregate covered only one month.
