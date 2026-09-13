@@ -97,7 +97,7 @@ const PivotTable = ({ officeIdsKey = 'all', startDate, endDate, fetchVersion = 0
             const adj = adjRes?.status === 'fulfilled' ? adjRes?.value : null;
             const coll = collRes?.status === 'fulfilled' ? collRes?.value : null;
 
-            const grossProduction = prod?.grossProduction ?? prod?.gross_production ?? 0;
+            const grossProduction = prod?.grossProduction ?? prod?.gross_production ?? null;
 
             const rawAdj =
               adj?.totalAdjustments ??
@@ -105,7 +105,7 @@ const PivotTable = ({ officeIdsKey = 'all', startDate, endDate, fetchVersion = 0
               adj?.adjustments ??
               prod?.adjustments ??
               prod?.totalAdjustments ??
-              0;
+              null;
             const productionAdjustments = rawAdj > 0 ? -rawAdj : rawAdj;
 
             const netProduction =
@@ -117,17 +117,21 @@ const PivotTable = ({ officeIdsKey = 'all', startDate, endDate, fetchVersion = 0
               coll?.patientCollections ??
               coll?.patient_collections ??
               coll?.patientPayments ??
-              0;
+              null;
             const insuranceCollections =
               coll?.insuranceCollections ??
               coll?.insurance_collections ??
               coll?.insurancePayments ??
-              0;
+              null;
             const totalCollections =
               coll?.totalCollections ??
               coll?.total_collections ??
               coll?.collections ??
               patientCollections + insuranceCollections;
+
+            if (prod?.error || coll?.error || [grossProduction, productionAdjustments, netProduction, patientCollections, insuranceCollections, totalCollections].some(value => typeof value !== 'number' || !Number.isFinite(value))) {
+              throw new Error('A complete verified financial record is unavailable for this office.');
+            }
 
             const collectionRate =
               netProduction !== 0 ? totalCollections / netProduction : null;
@@ -148,6 +152,10 @@ const PivotTable = ({ officeIdsKey = 'all', startDate, endDate, fetchVersion = 0
 
         // Stale response guard — discard if a newer fetch has started
         if (myRequestId !== requestIdRef?.current) return;
+
+        if (!results?.length || results.some(result => result.status !== 'fulfilled')) {
+          throw new Error('Verified financial data is unavailable for one or more selected offices.');
+        }
 
         const officeRows = results?.filter((r) => r?.status === 'fulfilled')?.map((r) => r?.value);
 
@@ -187,6 +195,7 @@ const PivotTable = ({ officeIdsKey = 'all', startDate, endDate, fetchVersion = 0
         ]);
       } catch (err) {
         if (myRequestId !== requestIdRef?.current) return;
+        setRows([]);
         console.error('[PivotTable] fetch error:', err);
         setError(err?.message || 'Failed to load pivot data');
       } finally {
