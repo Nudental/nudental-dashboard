@@ -3,6 +3,7 @@ import { LineChart, Line, BarChart, Bar, ScatterChart, Scatter, XAxis, YAxis, Ca
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { ascendApi } from '../../../services/ascendApi';
+import { fetchFinancialReportForOffices } from '../../../services/dentrixNormalizedService';
 import { getLocationIdByOfficeId } from '../../../constants/offices';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -100,10 +101,10 @@ const ComparativePanel = ({ appliedDateRange, appliedOffices }) => {
         setPrevPeriod({ prevStart, prevEnd });
 
         const [curProd, curColl, prevProd, prevColl] = await Promise.all([
-          ascendApi?.getProduction(appliedDateRange?.start, appliedDateRange?.end, locationId)?.catch(() => null),
-          ascendApi?.getCollections(appliedDateRange?.start, appliedDateRange?.end, locationId)?.catch(() => null),
-          ascendApi?.getProduction(prevStart, prevEnd, locationId)?.catch(() => null),
-          ascendApi?.getCollections(prevStart, prevEnd, locationId)?.catch(() => null),
+          fetchFinancialReportForOffices('getProduction', appliedDateRange?.start, appliedDateRange?.end, appliedOffices)?.catch(() => null),
+          fetchFinancialReportForOffices('getCollections', appliedDateRange?.start, appliedDateRange?.end, appliedOffices)?.catch(() => null),
+          fetchFinancialReportForOffices('getProduction', prevStart, prevEnd, appliedOffices)?.catch(() => null),
+          fetchFinancialReportForOffices('getCollections', prevStart, prevEnd, appliedOffices)?.catch(() => null),
         ]);
 
         const buildRow = (prod, coll) => {
@@ -243,8 +244,8 @@ const ForecastingPanel = ({ appliedDateRange, appliedOffices }) => {
             : null;
 
         const [prod, coll] = await Promise.all([
-          ascendApi?.getProduction(appliedDateRange?.start, appliedDateRange?.end, locationId)?.catch(() => null),
-          ascendApi?.getCollections(appliedDateRange?.start, appliedDateRange?.end, locationId)?.catch(() => null),
+          fetchFinancialReportForOffices('getProduction', appliedDateRange?.start, appliedDateRange?.end, appliedOffices)?.catch(() => null),
+          fetchFinancialReportForOffices('getCollections', appliedDateRange?.start, appliedDateRange?.end, appliedOffices)?.catch(() => null),
         ]);
 
         const netProduction = prod?.netProduction ?? 0;

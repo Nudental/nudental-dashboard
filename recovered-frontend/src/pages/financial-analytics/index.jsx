@@ -24,6 +24,7 @@ import { useNavigate } from 'react-router-dom';
 import { useOffice } from '../../contexts/OfficeContext';
 import YearComparisonPanel from '../../components/YearComparisonPanel';
 import { ascendApi } from '../../services/ascendApi';
+import { fetchFinancialReportForOffices } from '../../services/dentrixNormalizedService';
 import { monthLabel } from '../../services/kpiService';
 import { getLocationIdByOfficeId } from '../../constants/offices';
 import { AccessDenied } from '../../hooks/useRbacGuard';
@@ -209,8 +210,8 @@ const FinancialAnalytics = () => {
         const results = await Promise.allSettled(
           months?.map(({ year, month, startDate, endDate }) => {
             return Promise.all([
-              ascendApi?.getProduction(startDate, endDate, locationId)?.catch(() => null),
-              ascendApi?.getCollections(startDate, endDate, locationId)?.catch(() => null),
+              fetchFinancialReportForOffices('getProduction', startDate, endDate, appliedOffices)?.catch(() => null),
+              fetchFinancialReportForOffices('getCollections', startDate, endDate, appliedOffices)?.catch(() => null),
               ascendApi?.getPatients(startDate, endDate, locationId)?.catch(() => null),
             ])?.then(([prod, coll, patients]) => ({
               month: monthLabel(year, month),

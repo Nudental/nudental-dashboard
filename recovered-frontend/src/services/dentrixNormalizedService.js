@@ -88,6 +88,33 @@ export const ALL_DENTRIX_OFFICES = [
   { officeId: '1c719b5b-fd77-4da8-a1b9-2209f1cea63e', officeName: 'Barnegat',      locationId: '14000000000434' },
 ];
 
+export const fetchFinancialReportForOffices = async (method, startDate, endDate, officeIds = []) => {
+  if (!['getProduction', 'getCollections'].includes(method)) throw new Error('Unsupported financial report.');
+  const ids = [...new Set(officeIds)];
+  if (ids.length <= 1 || ids.includes('all')) {
+    return ascendApi[method](startDate, endDate, ids.includes('all') ? null : resolveLocationId(ids));
+  }
+  if (ids.some(id => !LOCATION_ID_MAP[id])) throw new Error('Financial report unavailable: invalid office selection.');
+  const rows = await Promise.all(ids.map(id => ascendApi[method](startDate, endDate, LOCATION_ID_MAP[id])));
+  const sum = (keys, fallback) => rows.reduce((total, row) => {
+    const value = keys.map(key => row?.[key]).find(value => value != null) ?? fallback;
+    if (value == null || value === '' || !Number.isFinite(Number(value))) {
+      throw new Error('Financial report unavailable for one or more selected offices.');
+    }
+    return total + Number(value);
+  }, 0);
+  // Aggregate signed source amounts; existing views apply their display rules afterward.
+  return method === 'getProduction' ? {
+    grossProduction: sum(['grossProduction']),
+    netProduction: sum(['netProduction']),
+    adjustments: sum(['adjustments', 'writeOffs'], 0),
+  } : {
+    insuranceCollections: sum(['insuranceCollections', 'insurance_collections']),
+    patientCollections: sum(['patientCollections', 'patient_collections']),
+    totalCollections: sum(['totalCollections', 'total_collections', 'collections']),
+  };
+};
+
 // ─── Normalize raw API response ───────────────────────────────────────────────
 
 const normalizeResponse = (raw) => {
