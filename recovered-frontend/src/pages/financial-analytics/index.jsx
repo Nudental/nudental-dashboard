@@ -83,6 +83,7 @@ const FinancialAnalytics = () => {
   const [lastRefreshed, setLastRefreshed] = useState(new Date());
   const [monthlyTrendData, setMonthlyTrendData] = useState([]);
   const [monthlyTrendLoading, setMonthlyTrendLoading] = useState(true);
+  const [monthlyTrendError, setMonthlyTrendError] = useState(null);
 
   const isSuperAdmin = userProfile?.role === 'super_admin';
 
@@ -190,18 +191,25 @@ const FinancialAnalytics = () => {
     const loadMonthlyTrend = async () => {
       setMonthlyTrendLoading(true);
       setMonthlyTrendData([]);
+      setMonthlyTrendError(null);
       try {
         const months = getFinancialTrendPeriods(appliedDateRange?.end);
         const locationId = appliedOffices?.length === 1 && appliedOffices?.[0] !== 'all'
           ? getLocationIdByOfficeId(appliedOffices?.[0])
           : null;
-        const results = await Promise.allSettled(
+        const results = await Promise.all(
           months?.map(({ year, month, startDate, endDate }) => {
             return Promise.all([
-              fetchFinancialReportForOffices('getProduction', startDate, endDate, appliedOffices)?.catch(() => null),
-              fetchFinancialReportForOffices('getCollections', startDate, endDate, appliedOffices)?.catch(() => null),
+              fetchFinancialReportForOffices('getProduction', startDate, endDate, appliedOffices),
+              fetchFinancialReportForOffices('getCollections', startDate, endDate, appliedOffices),
               ascendApi?.getPatients(startDate, endDate, locationId)?.catch(() => null),
-            ])?.then(([prod, coll, patients]) => ({
+            ])?.then(([prod, coll, patients]) => {
+              const total = coll?.totalCollections ?? coll?.collections;
+              if (prod?.error || coll?.error || typeof prod?.netProduction !== 'number' || !Number.isFinite(prod.netProduction)
+                || typeof total !== 'number' || !Number.isFinite(total)) {
+                throw new Error('Monthly financial data is incomplete.');
+              }
+              return ({
               month: monthLabel(year, month),
               startDate, endDate,
               productionAvailable: prod?.netProduction != null && Number.isFinite(Number(prod.netProduction)),
@@ -213,13 +221,14 @@ const FinancialAnalytics = () => {
               adjustments: Math.abs(prod?.adjustments ?? prod?.writeOffs ?? 0),
               collections: Math.abs(coll?.totalCollections ?? coll?.collections ?? 0),
               newPatients: patients?.newPatients ?? 0,
-            }));
+              });
+            });
           })
         );
-        const trendPoints = results?.filter((r) => r?.status === 'fulfilled')?.map((r) => r?.value);
-        if (current) setMonthlyTrendData(trendPoints);
+        if (current) setMonthlyTrendData(results);
       } catch (err) {
         console.warn('[FinancialAnalytics] Monthly trend fetch error:', err);
+        if (current) setMonthlyTrendError('Financial trend is unavailable because one or more months could not be verified.');
       } finally {
         if (current) setMonthlyTrendLoading(false);
       }
@@ -587,7 +596,7 @@ const FinancialAnalytics = () => {
                     <>
                       <FinancialSectionBoundary section="Analytics Charts">
                         <ChartVisualization
-                          data={{ trendData: monthlyTrendData }}
+                          data={{ trendData: monthlyTrendData, error: monthlyTrendError }}
                           loading={monthlyTrendLoading}
                           mode={appliedAnalysisMode}
                           goalData={appliedAnalysisMode === 'trend' ? goalData : null}

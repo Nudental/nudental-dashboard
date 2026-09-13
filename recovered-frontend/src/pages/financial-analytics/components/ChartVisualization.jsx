@@ -423,6 +423,7 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
 
   const renderTrendChart = () => {
     if (loading) return <div role="status" className="w-full h-full flex items-center justify-center text-muted-foreground">Loading trend data...</div>;
+    if (data?.error) return <div role="alert" className="w-full h-full flex items-center justify-center text-red-700 p-6">{data.error}</div>;
     if (!trendData?.length && chartType !== 'scatter') {
       return (
         <div className="w-full h-full flex flex-col items-center justify-center text-center p-8">
