@@ -151,6 +151,15 @@ const RevenueBreakdownTab = ({ dateRange, selectedOffices, refreshKey }) => {
     setLoading(true);
     setError(null);
 
+    const requireFinancialData = (production, collections) => {
+      const values = [production?.grossProduction, production?.adjustments ?? production?.writeOffs,
+        production?.netProduction, collections?.patientCollections, collections?.insuranceCollections,
+        collections?.totalCollections ?? collections?.collections];
+      if (production?.error || collections?.error || values.some(value => typeof value !== 'number' || !Number.isFinite(value))) {
+        throw new Error('Revenue breakdown is unavailable because financial data is incomplete.');
+      }
+    };
+
     try {
       if (!isAllOffices && selectedOffices.some(id => !Object.hasOwn(OFFICE_MAP, id) || !getLocationIdByOfficeId(id))) {
         throw new Error('Select valid offices for the revenue breakdown.');
@@ -158,24 +167,30 @@ const RevenueBreakdownTab = ({ dateRange, selectedOffices, refreshKey }) => {
 
       // Fetch primary data in parallel
       const [prod, coll, opts] = await Promise.all([
-        fetchFinancialReportForOffices('getProduction', startDate, endDate, selectedOffices)?.catch(() => null),
-        fetchFinancialReportForOffices('getCollections', startDate, endDate, selectedOffices)?.catch(() => null),
-        ascendApi?.getFinancialFilterOptions(startDate, endDate, locationId)?.catch(() => null),
+        fetchFinancialReportForOffices('getProduction', startDate, endDate, selectedOffices),
+        fetchFinancialReportForOffices('getCollections', startDate, endDate, selectedOffices),
+        ascendApi?.getFinancialFilterOptions(startDate, endDate, locationId),
       ]);
+
+      requireFinancialData(prod, coll);
+      if (opts?.error || !Array.isArray(opts?.paymentMethods) || !Array.isArray(opts?.collectionStatuses)) {
+        throw new Error('Revenue breakdown is unavailable because payment metadata is incomplete.');
+      }
 
       setProdData(prod);
       setCollData(coll);
       setFilterOptions(opts);
 
-      // Office breakdown — fetch per-office when All Offices selected
+      // Office breakdown — fetch every office in the selected scope
       if (isAllOffices || selectedOffices.length > 1) {
-        const officeResults = await Promise.allSettled(
+        const officeResults = await Promise.all(
           OFFICE_LIST?.filter(office => isAllOffices || selectedOffices.includes(office.id)).map(async (office) => {
             const locId = getLocationIdByOfficeId(office?.id);
             const [op, oc] = await Promise.all([
-              ascendApi?.getProduction(startDate, endDate, locId)?.catch(() => null),
-              ascendApi?.getCollections(startDate, endDate, locId)?.catch(() => null),
+              ascendApi?.getProduction(startDate, endDate, locId),
+              ascendApi?.getCollections(startDate, endDate, locId),
             ]);
+            requireFinancialData(op, oc);
             return {
               id: office?.id,
               name: office?.name,
@@ -189,8 +204,7 @@ const RevenueBreakdownTab = ({ dateRange, selectedOffices, refreshKey }) => {
             };
           })
         );
-        const rows = officeResults?.filter((r) => r?.status === 'fulfilled')?.map((r) => r?.value);
-        setOfficeBreakdown(rows);
+        setOfficeBreakdown(officeResults);
       } else {
         // Single office — just show that office row
         const officeName =
@@ -211,6 +225,10 @@ const RevenueBreakdownTab = ({ dateRange, selectedOffices, refreshKey }) => {
       }
     } catch (err) {
       console.error('[RevenueBreakdownTab] fetch error:', err);
+      setProdData(null);
+      setCollData(null);
+      setFilterOptions(null);
+      setOfficeBreakdown([]);
       setError(err?.message || 'Failed to load revenue breakdown data.');
     } finally {
       setLoading(false);
@@ -220,6 +238,15 @@ const RevenueBreakdownTab = ({ dateRange, selectedOffices, refreshKey }) => {
   useEffect(() => {
     fetchData();
   }, [fetchData, refreshKey]);
+
+  if (error) {
+    return (
+      <div role="alert" className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
+        <Icon name="AlertCircle" size={14} color="#dc2626" />
+        <span>{error}</span>
+      </div>
+    );
+  }
 
   // ── Derived values ──────────────────────────────────────────────────────────
   const grossProduction = prodData?.grossProduction ?? 0;
@@ -280,12 +307,7 @@ const RevenueBreakdownTab = ({ dateRange, selectedOffices, refreshKey }) => {
           Service-category breakdown requires ADA/CDT mapping and is not enabled yet.
         </span>
       </div>
-      {error && (
-        <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-700">
-          <Icon name="AlertCircle" size={14} color="#dc2626" />
-          <span>{error}</span>
-        </div>
-      )}
+
       {/* ── Section 1: Production Breakdown ─────────────────────────────────── */}
       <Section title="Production Breakdown" badge={<VerifiedBadge />} icon="TrendingUp">
         {loading ? (
