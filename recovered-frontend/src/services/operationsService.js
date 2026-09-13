@@ -750,7 +750,7 @@ export const fetchMarketingAdSpendFromAmex = async ({ startYear, startMonth, end
     console.log('[MarketingTab] Resolved offices:', results?.map((r) => `${r?.officeName} (${r?.officeId?.slice(0, 8)}...) spend=$${r?.spend}`));
   }
 
-  return results;
+  return officeIds?.length > 1 ? results.filter((row) => officeIds.includes(row.officeId)) : results;
 };
 
 /**
