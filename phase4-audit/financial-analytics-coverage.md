@@ -22,6 +22,7 @@ The individual issue closure documents are authoritative. No business records, p
 -139: Pivot rejects failed or incomplete office reads instead of showing zero/partial totals as successful. Controlled actual-artifact failure cases and healthy live All/single/pair arithmetic PASS.
 
 -140: Revenue Breakdown summaries and office rows use the complete selected scope. All/single/pair and repeat Apply match independent source totals; source, 693 frontend tests, build, Rocket869, scoped artifact and live health PASS. Individual closure documents carry exact commit/deployment evidence.
+-141: Revenue Breakdown rejects failed/incomplete primary, metadata and office reads; error render hides misleading zeroes/Verified badges. 703 tests, build, Rocket870, compiled failure/render cases and healthy live All/single/pair source totals PASS. No production outage induced.
 
 ## Explicitly unavailable / withheld
 -042 reporting-label candidate remains unpublished pending the existing repair-specific approval; rebase onto newest release if approved.
@@ -30,7 +31,7 @@ The individual issue closure documents are authoritative. No business records, p
 - Financial exports involving business data, production imports/sync/reconciliation and goal writes withheld. No isolated Dashboard write environment or ordinary-role account is available; Collaboration staging is a separate product.
 
 ## Remaining safe audit
-- Revenue Breakdown failure/partial-response presentation; retained trend failure/partial-response behavior.
+- Retained trend failure/partial-response behavior.
 - Drill-down/service-category scope and request transitions not already covered by individual closures.
 - Reconcile Expense Report and Operations coverage with their later issue closures; verify remaining reversible local-only controls.
 
