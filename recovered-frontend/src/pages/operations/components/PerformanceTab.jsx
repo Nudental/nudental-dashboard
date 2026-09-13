@@ -218,11 +218,15 @@ const PerformanceTab = ({ dateRange, officeIds, offices }) => {
       }
 
       // ── 12-month trend (Dentrix, already wired in Stage 3B) ─────────────────
-      // locationId for trend: single office if exactly one selected, otherwise null (all-offices)
-      const locationId = officeIds?.length === 1 ? officeIds?.[0] : null;
+      // Keep one series for every explicitly selected office; All remains combined.
+      const trendOfficeIds = !officeIds?.length || officeIds.includes('all') ? ['all'] : [...new Set(officeIds)];
+      if (trendOfficeIds.some(id => id !== 'all' && typeof LOCATION_ID_MAP[id] !== 'string')) {
+        throw new Error('Unknown office selection');
+      }
       const months = getLastNMonths(12);
       const trendResults = await Promise.allSettled(
-        months?.map(({ year, month }) => {
+        months?.flatMap(({ year, month }) => trendOfficeIds.map(officeId => {
+          const locationId = officeId === 'all' ? null : LOCATION_ID_MAP[officeId];
           const mStart = `${year}-${String(month)?.padStart(2, '0')}-01`;
           const mEnd = `${year}-${String(month)?.padStart(2, '0')}-${String(new Date(year, month, 0)?.getDate())?.padStart(2, '0')}`;
           return Promise.all([
@@ -239,7 +243,7 @@ const PerformanceTab = ({ dateRange, officeIds, offices }) => {
             return {
               report_year: year,
               report_month: month,
-              office_id: locationId || 'all',
+              office_id: officeId,
               production_total: netProd,
               gross_production: grossProd,
               collections_total: collTotal,
@@ -250,7 +254,7 @@ const PerformanceTab = ({ dateRange, officeIds, offices }) => {
               tx_accepted_value: null,
             };
           });
-        })
+        }))
       );
       const trendRecords = trendResults
         ?.filter((r) => r?.status === 'fulfilled')
