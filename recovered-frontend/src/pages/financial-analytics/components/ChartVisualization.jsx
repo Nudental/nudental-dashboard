@@ -519,7 +519,7 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
 
   return (
     <div className="bg-card border border-border rounded-lg p-4 md:p-6 shadow-elevation-1">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col gap-4 mb-6">
         <div className="flex items-center gap-2">
           <Icon name="LineChart" size={20} color="var(--color-primary)" />
           <div>
@@ -544,7 +544,7 @@ const ChartVisualization = ({ data, mode, goalData = null, appliedDateRange, app
 
         {/* Chart type switcher — only shown for trend mode */}
         {mode === 'trend' && (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {chartTypes?.map((type) => (
               <Button
                 key={type?.value}
