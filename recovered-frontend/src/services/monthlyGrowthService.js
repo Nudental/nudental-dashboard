@@ -75,7 +75,7 @@ export const fetchMonthlyGrowth = async (selectedMonth, selectedYear, officeFilt
       readMetric(context, null, selectedYear, selectedMonth, 'new_patients'),
       readMetric(context, null, prevYear, prevMonth, 'new_patients'),
     ]) : null,
-    includeTrends ? fetchMonthlyGrowthHistory(officeFilter, 12, selectedMonth, selectedYear, context, offices) : [],
+    [], // The view displays six-month sparklines, not the separate twelve-month history.
     includeTrends ? fetchSparklineData(officeFilter, selectedMonth, selectedYear, context, offices) : {},
   ]);
   const officeRows = offices.map((office) => {
