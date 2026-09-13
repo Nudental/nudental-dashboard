@@ -37,3 +37,5 @@ All actions in these follow-ups were read-only with respect to business records.
 - Providers follow-up NDASH-152: paired-office record selection and scope reset corrected; unchanged 15-row baseline, exact five detail values, single-office nine rows, All eighteen rows, search and both numeric sort directions verified. Existing unsupported detail charts remain gated.
 
 - Marketing NDASH-153: paired-office spend scope corrected. August selected rows and all three headline KPIs match independent source aggregates; both charts use only the selected pair. All/single paths, repeated Update and default restoration PASS. Separate credit-adjustment field naming follow-up remains.
+
+- Marketing NDASH-154: actual plural credit field now read; four known-zero credits and single-office readback verified. Other row values and all/pair KPI totals unchanged; signed cases covered synthetically. Credit-field follow-up closed.
