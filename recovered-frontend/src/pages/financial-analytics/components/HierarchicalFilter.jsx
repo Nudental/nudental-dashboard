@@ -363,13 +363,11 @@ const HierarchicalFilter = ({ onFilterChange, appliedOffices, appliedDateRange, 
     setAppliedFilters(committed);
     onFilterChange?.(committed);
 
-    // Office sync: if exactly one office is selected in drill-down, sync to main office filter
+    // Commit every selected office to the existing main office filter.
     const officeSelections = committed?.filter(f => f?.startsWith('office__'));
-    if (officeSelections?.length === 1 && onOfficeSyncFromDrillDown) {
-      const selectedOfficeItem = officeItems?.find(o => o?.id === officeSelections?.[0]);
-      if (selectedOfficeItem?.officeId) {
-        onOfficeSyncFromDrillDown(selectedOfficeItem?.officeId);
-      }
+    const officeIds = officeSelections.map(id => officeItems?.find(office => office?.id === id)?.officeId);
+    if (officeIds.length > 0 && officeIds.every(Boolean) && onOfficeSyncFromDrillDown) {
+      onOfficeSyncFromDrillDown([...new Set(officeIds)]);
     }
   };
 

@@ -323,10 +323,11 @@ const FinancialAnalytics = () => {
   };
 
   // Sync office from drill-down filter selection to main Advanced Filters
-  const handleOfficeSyncFromDrillDown = (officeId) => {
-    if (!officeId) return;
-    setSelectedOffices([officeId]);
-    setAppliedOffices([officeId]);
+  const handleOfficeSyncFromDrillDown = (officeSelection) => {
+    const offices = [...new Set(Array.isArray(officeSelection) ? officeSelection : [officeSelection])];
+    if (!offices.length || offices.some(id => typeof getLocationIdByOfficeId(id) !== 'string')) return;
+    setSelectedOffices(offices);
+    setAppliedOffices(offices);
     setRefreshKey(k => k + 1);
     setPivotFetchVersion(v => v + 1);
   };
