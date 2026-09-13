@@ -222,7 +222,7 @@ export const fetchProductionMetrics = async ({ startDate, endDate, officeIds = [
     const results = await Promise.all(fetches);
     productionData = results?.[0];
     adjustmentsData = results?.[1];
-    dailyData = results?.[2] || null;
+    dailyData = results?.[2] ? { ...results[2], ...(typeof results[2].production === 'object' ? results[2].production : {}) } : null;
   } catch (err) {
     diagnostics?.errors?.push({ key: 'global', error: err?.message });
   }
@@ -324,7 +324,7 @@ export const fetchCollectionMetrics = async ({ startDate, endDate, officeIds = [
     }
     const results = await Promise.all(fetches);
     collectionsData = results?.[0];
-    dailyData = results?.[1] || null;
+    dailyData = results?.[1] ? { ...results[1], ...(typeof results[1].collections === 'object' ? results[1].collections : {}) } : null;
   } catch (err) {
     diagnostics?.errors?.push({ key: 'global', error: err?.message });
   }
