@@ -1,0 +1,12 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),path=require('path'),vm=require('vm');
+const parser=require(path.join(process.env.NDASH_PARSER_ROOT||path.join(__dirname,'../../rocket-source'),'node_modules/@babel/parser'));
+const source=fs.readFileSync(process.env.NDASH154_SOURCE||path.join(__dirname,'../recovered-frontend/src/services/operationsService.js'),'utf8'),ast=parser.parse(source,{sourceType:'module'}),vars={};for(const e of ast.program.body){const d=e.type==='ExportNamedDeclaration'?e.declaration:e;if(d?.type==='VariableDeclaration')for(const x of d.declarations)vars[x.id.name]=x.init}const code=n=>source.slice(n.start,n.end);
+async function read(fields){const row=Object.freeze({officeName:'Barnegat',googleSpend:100,facebookSpend:0,tntDentalSpend:0,...fields}),context={URLSearchParams,console:{log:()=>{},warn:()=>{}},fetch:async()=>({ok:true,json:async()=>({offices:[row]})})};context._parseSpend=vm.runInNewContext('('+code(vars._parseSpend)+')');const fn=vm.runInNewContext('('+code(vars.fetchMarketingAdSpendFromAmex)+')',context);return(await fn({startYear:2026,startMonth:8,endYear:2026,endMonth:8,officeIds:[]}))[0]}
+test('provider plural field retains a known zero credit',async()=>assert.equal((await read({creditAdjustments:0,totalMarketingSpend:100})).creditAdjustment,0));
+test('provider plural field retains a signed credit',async()=>assert.equal((await read({creditAdjustments:-12.5,totalMarketingSpend:87.5})).creditAdjustment,-12.5));
+test('component fallback includes provider credit exactly once',async()=>assert.equal((await read({creditAdjustments:-12.5})).spend,87.5));
+test('explicit backend total is never adjusted a second time',async()=>assert.equal((await read({creditAdjustments:-12.5,totalMarketingSpend:87.5})).spend,87.5));
+test('legacy singular field retains precedence',async()=>assert.equal((await read({creditAdjustment:-7,creditAdjustments:-12.5})).creditAdjustment,-7));
+test('legacy aliases remain supported',async()=>{for(const name of ['credit_adj','credit_adjustment','creditAdj','credits'])assert.equal((await read({[name]:-3})).creditAdjustment,-3)});
+test('missing and invalid credits remain unknown',async()=>{for(const fields of [{},{creditAdjustments:null},{creditAdjustments:'not-a-number'}])assert.equal((await read(fields)).creditAdjustment,null)});
+test('numeric provider strings normalize without changing immutable source input',async()=>assert.equal((await read({creditAdjustments:'-4.75'})).creditAdjustment,-4.75));

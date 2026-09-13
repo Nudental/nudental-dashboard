@@ -710,7 +710,7 @@ export const fetchMarketingAdSpendFromAmex = async ({ startYear, startMonth, end
       row?.tntDental ?? row?.TNTDental ?? row?.tnt
     );
     const creditAdjustment = _parseSpend(
-      row?.creditAdjustment ?? row?.credit_adj ?? row?.credit_adjustment ??
+      row?.creditAdjustment ?? row?.creditAdjustments ?? row?.credit_adj ?? row?.credit_adjustment ??
       row?.creditAdj ?? row?.credits
     );
 
