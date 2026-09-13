@@ -14,3 +14,6 @@ Scope: Finance / Production & Adjustments and Collections only.
 Reproduced on current live157: both Production & Adjustments and Collections show01/01/2026–12/31/2026 controls alongside Month-to-Date/Monthly/MTD captions. The repair labels the selected range accurately and retains current-day UTC behavior. No dates, financial values, source queries, configuration or business records are modified. Earlier128 review files remain recoverable; this current candidate supersedes their release applicability.
 
 2026-09-13: user explicitly approved NDASH-042 publication through the existing server/production path. Current candidate upload/preparation authorized; original publication blocker resolved. Live verification remains required before closure.
+
+## Released and CLOSED
+Deployment5abc436a-8bbb-4dcb-99db-6504de25ef7c; exact reviewed candidate live. Production/Collections captions, actual dates, unchanged values, current-day behavior, refresh and retainedExpense157 all PASS. Publication blocker resolved by explicit user approval. SeeNDASH-042.md for closure evidence.
