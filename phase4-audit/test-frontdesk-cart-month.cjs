@@ -1,0 +1,5 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),cp=require('node:child_process');
+const s=fs.readFileSync(path.join(__dirname,'../recovered-frontend/src/pages/inventory-dashboard/components/FrontDeskInventoryTab.jsx'),'utf8');const start=s.indexOf('  const monthLabel = quickMonth'),end=s.indexOf(';',start)+1;assert(start>0&&end>start);const code=s.slice(start,end);
+function run(zone,values){const r=cp.spawnSync(process.execPath,['-e','function f(quickMonth){'+code+'return monthLabel}console.log(JSON.stringify('+JSON.stringify(values)+'.map(f)));'],{encoding:'utf8',env:{...process.env,TZ:zone}});assert.equal(r.status,0);return JSON.parse(r.stdout)}
+for(const zone of ['America/New_York','America/Los_Angeles','UTC','Asia/Tokyo'])test('cart month agrees with selected month in '+zone,()=>assert.deepEqual(run(zone,['2026-06','2026-01']),['June 2026','January 2026']));
+test('missing cart month retains its missing-value state',()=>assert.deepEqual(run('America/New_York',['',null]),[null,null]));
