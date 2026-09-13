@@ -1,6 +1,6 @@
 # NDASH-146 — Performance trends collapse selected offices into All
 
-Severity: High. Status: reproduced and tested; deployment/live verification pending.
+Severity: High. Status: deployed and live verified PASS.
 
 Live145 Operations > Performance, Last Month: Barnegat+Brick twice displays legend all and the same collection/adjustment paths c2edf0c7/3b9f5e05 as All Locations. August collection tooltip fingerprint83acfdc1 matches the independent All source. Barnegat alone already works: paths47c2342b/bfad2cfe and August collection fingerprintdfc1982e. Direct source reads confirm Barnegat UUID and its Dentrix ID produce identical aggregates; no single-office source defect is claimed.
 
@@ -9,3 +9,7 @@ Root cause: the monthly trend block maps every multi-office selection to null an
 Eight actual-source monthly-block tests: five failures reproduced before editing, with All, single and calendar controls passing. All745 frontend tests PASS after the fix; production build31.31s PASS. Actual compiled block passes All/single/pair/four-office/duplicate/invalid cases. One scoped awaited block plus seven dependency relinks reverses exactly to145; prior modules and syntax PASS. The artifact retains two now-unused existing local declarations outside the replaced block, avoiding any unrelated compiled rewrite. Rocket875 completed the matching one-file change and build. No business records, exports, provider sync or backend/configuration changes.
 
 Independent August source percentage fingerprints at the existing one-decimal display precision: All collection83acfdc1/adjustment04911393; Barnegat dfc1982e/467f8d36; Brick cea89304/61a261f5. Use these for live tooltip verification; do not print financial amounts.
+
+Source37aba37. Deployment0f3b0646-7885-4a8b-a1f3-3e5137217810; entry index-50c063e9019e.js; SHA25650c063e9019effad9fac5eab46020bdde2e718a4f084176c90038eb548c5d0d4. Exact artifact, frontend/API and three services PASS; backend131 unchanged. Prior145 deployment8832e32b-ac7f-4bd2-a4c2-2cf143768047 remains recoverable;042/066 excluded.
+
+Live146 PASS: All and Barnegat retain their145 path fingerprints. The pair now has two correctly named series,24 collection dots/path2287d755 and16 adjustment dots/path9aff74d4. August collection tooltip fields match both selected-office source fingerprints. Rendered last-dot positions against the first two Y-axis ticks independently reproduce all three scopes' one-decimal adjustment fingerprints above; no internal application state was read. Repeated Update preserves both pair series and source percentages. All Locations restoration matches both original paths and both source percentages. Case Acceptance Source Not Wired gate remains; new browser errors0. Adjustment hover tooltip did not reliably appear through the browser tool even after horizontal scrolling, so no positive hover-tooltip claim is made for that chart. Its rendered values are verified. No business/test records, exports, syncs or configuration changes.
