@@ -246,8 +246,8 @@ const OfficesTab = ({ dateRange, officeIds, offices }) => {
       return `${sign}${val?.toFixed(1)}%`;
     }
     if (subTab === 'diff_last_year') {
-      const sign = val >= 0 ? '+' : '';
-      return col?.fmt ? `${sign}${col?.fmt(Math.abs(val))?.replace('$', val < 0 ? '-$' : '$')}` : `${sign}${fmtNum(val)}`;
+      const sign = val >= 0 ? '+' : '-';
+      return `${sign}${col?.fmt ? col.fmt(Math.abs(val)) : fmtNum(Math.abs(val))}`;
     }
     return col?.fmt ? col?.fmt(val) : fmtNum(val);
   };

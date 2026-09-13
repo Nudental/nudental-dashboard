@@ -1,0 +1,12 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('fs'),path=require('path'),vm=require('vm'),parser=require(path.join(process.env.NDASH_PARSER_ROOT,'node_modules/@babel/parser'));
+const source=fs.readFileSync(path.join(__dirname,'../recovered-frontend/src/pages/operations/components/OfficesTab.jsx'),'utf8'),ast=parser.parse(source,{sourceType:'module',plugins:['jsx']});function find(n){if(!n||typeof n!=='object')return;if(n.type==='VariableDeclarator'&&n.id.name==='formatCellValue')return n.init;for(const v of Object.values(n))for(const c of Array.isArray(v)?v:[v]){const found=find(c);if(found)return found}}const node=find(ast);assert(node);const code='('+source.slice(node.start,node.end)+')';
+function formatter(mode='diff_last_year'){return vm.runInNewContext(code,{subTab:mode,fmtNum:n=>Number(n).toLocaleString('en-US')})}
+const currency={fmt:n=>'$'+Number(n).toFixed(2)},percentage={fmt:n=>Number(n).toFixed(1)+'%'},count={fmt:n=>Number(n).toLocaleString('en-US')};
+test('negative percentage differences preserve their minus sign',()=>assert.equal(formatter()(percentage,-3.4),'-3.4%'));
+test('negative formatted count differences preserve their minus sign',()=>assert.equal(formatter()(count,-25),'-25'));
+test('currency differences retain existing positive and negative output',()=>{assert.equal(formatter()(currency,-25.5),'-$25.50');assert.equal(formatter()(currency,25.5),'+$25.50')});
+test('positive percentages and counts retain their plus sign',()=>{assert.equal(formatter()(percentage,3.4),'+3.4%');assert.equal(formatter()(count,25),'+25')});
+test('fallback number formatting preserves both signs and real zero',()=>{assert.equal(formatter()({},-25),'-25');assert.equal(formatter()({},25),'+25');assert.equal(formatter()({},0),'+0')});
+test('unavailable or nonfinite values remain unavailable',()=>{for(const val of [null,undefined,NaN,Infinity,-Infinity])assert.equal(formatter()(percentage,val),'—')});
+test('Default and Last Year formatting retain original signed values',()=>{for(const mode of ['default','last_year']){assert.equal(formatter(mode)(percentage,-3.4),'-3.4%');assert.equal(formatter(mode)(count,-25),'-25')}});
+test('percentage-change mode retains its existing arithmetic display',()=>{assert.equal(formatter('pct_diff_last_year')(percentage,-20),'-20.0%');assert.equal(formatter('pct_diff_last_year')(percentage,20),'+20.0%')});
