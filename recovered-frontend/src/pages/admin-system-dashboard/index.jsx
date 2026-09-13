@@ -215,9 +215,9 @@ function SyncStatusSection({ syncLogs, apiStatus, onRefresh, refreshing }) {
 
 function NotificationHealthSection({ notifStats }) {
   const channels = [
-    { key: 'email',   label: 'Email',    icon: 'Mail',       delivered: notifStats?.emailDelivered ?? 0, failed: notifStats?.emailFailed ?? 0 },
-    { key: 'push',    label: 'Push',     icon: 'Bell',       delivered: notifStats?.pushDelivered  ?? 0, failed: notifStats?.pushFailed  ?? 0 },
-    { key: 'in_app',  label: 'In-App',   icon: 'MessageSquare', delivered: notifStats?.inAppDelivered ?? 0, failed: notifStats?.inAppFailed ?? 0 },
+    { key: 'email', label: 'Email', icon: 'Mail' },
+    { key: 'push', label: 'Push', icon: 'Bell' },
+    { key: 'in_app', label: 'In-App', icon: 'MessageSquare' },
   ];
 
   return (
@@ -226,13 +226,10 @@ function NotificationHealthSection({ notifStats }) {
       {/* Notification metric disclaimer */}
       <p className="text-xs text-slate-400 mb-3 flex items-start gap-1">
         <Icon name="Info" className="w-3 h-3 flex-shrink-0 mt-0.5" />
-        Notification delivery rates are estimated from recent notification records. A dedicated delivery log is not yet available.
+        Delivery status unavailable: a delivery log is not connected. Recent notification records do not confirm channel delivery or failure.
       </p>
       <div className="space-y-3">
         {channels?.map(ch => {
-          const total = ch?.delivered + ch?.failed;
-          const rate = total > 0 ? Math.round((ch?.delivered / total) * 100) : 100;
-          const health = rate >= 95 ? 'healthy' : rate >= 80 ? 'degraded' : 'failing';
           return (
             <div key={ch?.key} className="flex items-center gap-3">
               <div className="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
@@ -241,18 +238,8 @@ function NotificationHealthSection({ notifStats }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-xs font-medium text-slate-700">{ch?.label}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-slate-500">{ch?.delivered} delivered · {ch?.failed} failed</span>
-                    <StatusBadge status={health} />
-                  </div>
+                  <span className="text-xs text-slate-500">Unavailable</span>
                 </div>
-                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all ${health === 'healthy' ? 'bg-emerald-500' : health === 'degraded' ? 'bg-amber-500' : 'bg-red-500'}`}
-                    style={{ width: `${rate}%` }}
-                  />
-                </div>
-                <p className="text-xs text-slate-400 mt-0.5">{rate}% delivery rate (last 30 notifications)</p>
               </div>
             </div>
           );
@@ -540,9 +527,6 @@ export default function AdminSystemDashboard() {
   const [importSummary, setImportSummary] = useState(null);
   const [auditLog, setAuditLog] = useState([]);
   const [notifStats, setNotifStats] = useState({
-    emailDelivered: 0, emailFailed: 0,
-    pushDelivered: 0,  pushFailed: 0,
-    inAppDelivered: 0, inAppFailed: 0,
     recentEvents: [],
   });
   const [healthAlerts, setHealthAlerts] = useState([]);
@@ -583,16 +567,8 @@ export default function AdminSystemDashboard() {
       setImportSummary(summaryVal);
       setAuditLog(auditVal);
 
-      // Build notification stats from recent notifications
-      const delivered = notifsVal?.filter(n => n?.is_read !== undefined)?.length || notifsVal?.length;
-      const failed = 0; // Would come from a delivery log table if available
+      // Notification records support the event list, not delivery metrics.
       setNotifStats({
-        emailDelivered: Math.floor(delivered * 0.6),
-        emailFailed: failed,
-        pushDelivered: Math.floor(delivered * 0.25),
-        pushFailed: 0,
-        inAppDelivered: delivered,
-        inAppFailed: 0,
         recentEvents: notifsVal?.slice(0, 8),
       });
 
