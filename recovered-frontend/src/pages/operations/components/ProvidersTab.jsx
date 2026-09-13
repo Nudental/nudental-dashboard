@@ -59,6 +59,7 @@ const ProvidersTab = ({ dateRange, officeIds, offices }) => {
 
   const load = useCallback(async () => {
     if (!dateRange) return;
+    setSelectedProvider(null);
     setLoading(true);
     setApiError(null);
     try {
@@ -239,8 +240,8 @@ const ProvidersTab = ({ dateRange, officeIds, offices }) => {
             filtered?.map((r, i) => (
               <div
                 key={i}
-                onClick={() => setSelectedProvider(selectedProvider?.providerName === r?.providerName ? null : r)}
-                className={`bg-card border rounded-lg p-4 cursor-pointer transition-colors ${selectedProvider?.providerName === r?.providerName ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/30'}`}
+                onClick={() => setSelectedProvider(selectedProvider === r ? null : r)}
+                className={`bg-card border rounded-lg p-4 cursor-pointer transition-colors ${selectedProvider === r ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/30'}`}
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
@@ -287,7 +288,7 @@ const ProvidersTab = ({ dateRange, officeIds, offices }) => {
                 </tr>
               ) : (
                 filtered?.map((r, i) => {
-                  const isSelected = selectedProvider?.providerName === r?.providerName;
+                  const isSelected = selectedProvider === r;
                   return (
                     <tr
                       key={i}
