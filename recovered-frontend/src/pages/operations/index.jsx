@@ -100,7 +100,7 @@ const OperationsCenter = () => {
   // Build date range — if "this_month" selected but no data, fall back to last available period
   const now = new Date();
   const thisMonthRange = buildDateRange('this_month');
-  const baseRange = buildDateRange(datePreset);
+  const baseRange = buildDateRange(datePreset, globalFilters?.customStartDate, globalFilters?.customEndDate);
 
   // Effective date range: if this_month selected and last available period is earlier, use that
   const effectiveDateRange = (() => {
@@ -268,6 +268,9 @@ const OperationsCenter = () => {
 
         {/* Tab Content */}
         <div className="p-4 sm:p-6">
+          {baseRange?.error ? (
+            <div role="alert" className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">{baseRange.error}</div>
+          ) : <>
           {/* Year Comparison Panel — shown above all tabs when years are selected */}
           <YearComparisonPanel
             officeIds={selectedOfficeIds}
@@ -288,6 +291,7 @@ const OperationsCenter = () => {
           {activeTab === 'ar_aging' && (isSuperAdmin || hasPermission(TAB_PERMISSION_MAP?.ar_aging)) && <ARAgingTab {...tabProps} />}
           {activeTab === 'marketing' && (isSuperAdmin || hasPermission(TAB_PERMISSION_MAP?.marketing)) && <MarketingTab {...tabProps} />}
           {activeTab === 'scorecards' && (isSuperAdmin || hasPermission(TAB_PERMISSION_MAP?.scorecards)) && <ScorecardsTab {...tabProps} lastAvailablePeriod={lastAvailablePeriod} />}
+          </>}
         </div>
       </main>
     </div>

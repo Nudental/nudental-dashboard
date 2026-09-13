@@ -24,7 +24,7 @@ export const fmtNum = (v) =>
   new Intl.NumberFormat('en-US')?.format(v || 0);
 
 // Build date range from preset string
-export const buildDateRange = (preset) => {
+export const buildDateRange = (preset, customStartDate, customEndDate) => {
   const now = new Date();
   const year = now?.getFullYear();
   const month = now?.getMonth() + 1;
@@ -41,6 +41,22 @@ export const buildDateRange = (preset) => {
       const startM = (q - 1) * 3 + 1;
       const endM = q * 3;
       return { startYear: year, startMonth: startM, endYear: year, endMonth: endM };
+    }
+    case 'custom': {
+      const parseDate = (value) => {
+        if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+        const [y, m, d] = value.split('-').map(Number);
+        const date = new Date(y, m - 1, d);
+        return date.getFullYear() === y && date.getMonth() + 1 === m && date.getDate() === d ? { y, m, d } : null;
+      };
+      const start = parseDate(customStartDate);
+      const end = parseDate(customEndDate);
+      if (!start || !end) return { error: 'Select a valid custom start and end date.' };
+      if (customStartDate > customEndDate) return { error: 'The start date must be on or before the end date.' };
+      if (start.d !== 1 || end.d !== new Date(end.y, end.m, 0).getDate()) {
+        return { error: 'Operations reports use complete calendar months. Select the first day of the starting month and the last day of the ending month.' };
+      }
+      return { startYear: start.y, startMonth: start.m, endYear: end.y, endMonth: end.m };
     }
     case 'ytd':
       return { startYear: year, startMonth: 1, endYear: year, endMonth: month };
