@@ -19,7 +19,7 @@ function getMonthBounds(yyyyMM) {
 
 function fmtDate(v) {
   if (!v) return '—';
-  const d = new Date(v);
+  const d = new Date(typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) ? `${v}T00:00:00` : v);
   if (isNaN(d?.getTime())) return v;
   return d?.toLocaleDateString();
 }
