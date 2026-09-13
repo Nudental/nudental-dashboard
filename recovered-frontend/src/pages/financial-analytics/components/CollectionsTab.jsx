@@ -155,9 +155,9 @@ const CollectionsTab = ({
 
   // Resolve locationId for filter-options API — derived from applied officeIds prop
   const locationId = useMemo(() => {
-    const ids = officeIds?.filter(o => o !== 'all');
-    if (ids?.length === 1) return getLocationIdByOfficeId(ids?.[0]);
-    return null;
+    if (officeIds?.includes('all')) return null;
+    const ids = [...new Set(officeIds || [])];
+    return ids.length ? ids.map(id => getLocationIdByOfficeId(id) || id).join(',') : null;
   }, [officeIds?.join(',')]);
 
   useEffect(() => {
@@ -167,15 +167,17 @@ const CollectionsTab = ({
       setError(null);
       setData(null);
       setOfficeData([]);
+      setFilterOptions(null);
       try {
         const today = new Date()?.toISOString()?.split('T')?.[0];
         const [metrics, byOffice, opts] = await Promise.allSettled([
           fetchCollectionMetrics({ startDate: resolvedStartDate, endDate: resolvedEndDate, officeIds, dailyDate: today }),
           fetchNormalizedMetricsByOffice({ startDate: resolvedStartDate, endDate: resolvedEndDate, officeIds }),
-          ascendApi?.getFinancialFilterOptions(resolvedStartDate, resolvedEndDate, locationId)?.catch(() => null),
+          ascendApi?.getFinancialFilterOptions(resolvedStartDate, resolvedEndDate, locationId),
         ]);
         if (!active) return;
         if (metrics?.status === 'rejected') throw metrics.reason;
+        if (opts?.status === 'rejected') throw opts.reason;
         setData(metrics?.value);
         if (byOffice?.status === 'fulfilled') setOfficeData(byOffice?.value);
         if (opts?.status === 'fulfilled') setFilterOptions(opts?.value);
