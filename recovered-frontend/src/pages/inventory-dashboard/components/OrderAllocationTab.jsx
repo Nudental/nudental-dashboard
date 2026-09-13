@@ -331,8 +331,10 @@ const AllocationTable = ({ rows, loading, categoryMode, onExportCSV }) => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
+  useEffect(() => { setPage(1); }, [rows, categoryMode]);
   const totalPages = Math.ceil((rows?.length || 0) / pageSize);
-  const paginated = (rows || [])?.slice((page - 1) * pageSize, page * pageSize);
+  const currentPage = Math.min(page, Math.max(1, totalPages));
+  const paginated = (rows || [])?.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const isImplant = categoryMode === 'implant';
 
@@ -485,13 +487,13 @@ const AllocationTable = ({ rows, loading, categoryMode, onExportCSV }) => {
           </div>
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground">
-              {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, rows?.length)} of {rows?.length}
+              {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, rows?.length)} of {rows?.length}
             </span>
             <div className="flex items-center gap-1">
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="p-1 rounded hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed">
+              <button onClick={() => setPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className="p-1 rounded hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed">
                 <Icon name="ChevronLeft" size={14} />
               </button>
-              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages || totalPages === 0} className="p-1 rounded hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed">
+              <button onClick={() => setPage(Math.min(totalPages, currentPage + 1))} disabled={currentPage === totalPages || totalPages === 0} className="p-1 rounded hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed">
                 <Icon name="ChevronRight" size={14} />
               </button>
             </div>
