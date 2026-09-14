@@ -1,13 +1,18 @@
 # Phase5 checkpoint — source reconciliation passed
 
 NuDental Dashboard only. Do not repeat Phase4 or modify the Collaboration
-Platform. Reconciliation is complete at the source/build verification level;
-the canonical Git update is the next step. Production remains unchanged.
+Platform. Source/build reconciliation and the canonical Git update are
+complete. Production remains unchanged. Continue with isolated Dashboard QA.
 
 ## Verified source baseline
 
 - Candidate: reconcile/nudental-dashboard-production-20260913.
 - Fetched main: e4a2e0944f74514f6ea98e5ea32eb140333b964f; zero main-only commits.
+- Main was fast-forwarded to source baseline
+  5f052fd47d68d581090163cc888c9614d82d2090, with no force push or deployment.
+- Remote annotated backup: backup/main-before-phase5-reconciliation-20260914
+  points to the previous main. The reconciliation branch and Phase4 backup
+  backup/nudental-dashboard-before-phase5-20260913 are also published.
 - Phase4 branch and all previous backup tags/releases remain preserved.
 - Source equivalence and its exact limitations: source-closure.md.
 - Private evidence fingerprints: source-verification-evidence.json.
@@ -22,14 +27,15 @@ the canonical Git update is the next step. Production remains unchanged.
   13source materializer tests PASS. No app effects/providers ran in these tests.
 - Production still shows Revenue Cycle Management in the existing browser tab.
   No production deployment, service restart, sync or business-data write.
+- Post-push server check PASS: frontend/API200, all3services active, all15
+  production source files unchanged, live21,740,870-byte entry retains the
+  original0230990f6d6c SHA256. Evidence is preserved privately on the server.
 
 ## Immediate next steps
 
-1. Commit the candidate; preserve an annotated main backup and this branch.
-2. Fast-forward GitHub main after confirming the remote has not advanced.
-3. Create the separate Dashboard QA environment with synthetic fixtures.
-4. Verify supported-role UI/API boundaries and safe write workflows.
-5. Trace Expense authority and complete the bounded performance investigation.
+1. Create the separate Dashboard QA environment with synthetic fixtures.
+2. Verify supported-role UI/API boundaries and safe write workflows.
+3. Trace Expense authority and complete the bounded performance investigation.
 
 QA provisioning, role creation, write testing and Expense authority work have
 not started. These remain required Phase5 work. The smaller reconciled bundle
