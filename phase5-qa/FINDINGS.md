@@ -68,6 +68,11 @@ is still pending; this candidate is not deployed.
 
 ## Available tests and fixtures
 
+PH5-AUTH-004 office-workflow candidate is documented in
+[repairs/README.md](repairs/README.md). Eleven original office/active-user checks
+failed across Huddles, checklists and tasks; the restrictive-policy candidate
+passes all 17 offline checks. Production and hosted Supabase remain unchanged.
+
 - Twelve planned identities cover all eight supported roles, a second-office
   manager/staff pair, an inactive user and an unapproved user. No hosted identities
   exist yet. Two offices and two provider records are synthetic, labeled QA.
