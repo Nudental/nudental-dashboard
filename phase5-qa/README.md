@@ -1,6 +1,7 @@
 # Isolated Dashboard QA preparation
 
-Canonical main/reconciliation:909edf99ec2454801a5add8f63b23440ce5f6f44.
+Canonical main:61c224b1bf9ec53d91ab69a8eb00e563204bf76d.
+Original reconciliation:909edf99ec2454801a5add8f63b23440ce5f6f44.
 Application source baseline:5f052fd47d68d581090163cc888c9614d82d2090.
 This worktree is feature/nudental-dashboard-qa-phase5. It is not deployed.
 
@@ -69,3 +70,29 @@ No business data has been copied and no QA action has been connected to an
 operational provider. This worktree's node_modules is a development-only
 junction to the clean reference dependency installation; never install through
 that junction. Fresh checkouts use the documented setup command normally.
+
+## Subsequent preparation and bounded production repair
+
+The AmEx completeness repair PH5-EXP-001 is now deployed and live-verified.
+Main was advanced normally after preservation of
+backup/main-before-phase5-expense-repair-20260914. QA has merged that main;
+only its release documentation needed an add/add merge resolution. The verified
+release documentation was retained. This did not deploy the QA configuration.
+
+The structure materializer build_schema.py is preparatory and never connects to
+a database. Its candidate passes PostgreSQL17 grammar and catalog-count checks:
+219 application tables,81 application functions,31 extension-owned functions
+provided by pg_trgm,40 enums,7 sequences,382 policies and55 triggers including
+the auth user trigger. The existing disabled EOD trigger remains disabled.
+Only the two outbound notification bodies become QA execution-intent records.
+No cron jobs, vault values, identities, sequence current values or business
+records are copied. New-database execution and grant/default comparison remain
+pending; offline syntax is not evidence of successful live schema cloning.
+
+Role configuration was read separately without user profiles or business rows:
+138 settings per role. Eight enum roles are supported; seven additional dormant
+permission-role names are not valid application identities and will not be
+created. Source-derived expected navigation and existing permission rules are
+recorded privately. No QA identities exist yet. UI/API enforcement remains
+unverified until the isolated runtime is available. user_profiles has no
+provider-identity fields, so a separate provider role must not be invented.
