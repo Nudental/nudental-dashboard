@@ -1,0 +1,207 @@
+#!/usr/bin/env python3
+"""
+Dentrix Ascend API Client
+Handles OAuth2 authentication, token refresh, and API calls.
+Credentials loaded from /home/openclaw/.config/ascend/sandbox.json
+"""
+
+import json
+import time
+import requests
+from pathlib import Path
+from datetime import datetime, timezone
+
+CREDS_PATH = Path("/home/openclaw/.config/ascend/sandbox.json")
+
+# Environment URL mapping
+ENV_URLS = {
+    "sandbox": {
+        "oauth": "https://test.hs1api.com/oauth/client_credential/accesstoken?grant_type=client_credentials",
+        "base": "https://test.hs1api.com/ascend-gateway/api",
+    },
+    "test": {
+        "oauth": "https://test.hs1api.com/oauth/client_credential/accesstoken?grant_type=client_credentials",
+        "base": "https://test.hs1api.com/ascend-gateway/api",
+    },
+    "prod": {
+        "oauth": "https://prod.hs1api.com/oauth/client_credential/accesstoken?grant_type=client_credentials",
+        "base": "https://prod.hs1api.com/ascend-gateway/api",
+    },
+}
+
+
+class AscendClient:
+    def __init__(self, creds_path=None):
+        creds_path = Path(creds_path) if creds_path else CREDS_PATH
+        with open(creds_path) as f:
+            self.creds = json.load(f)
+
+        env = self.creds.get("environment", "sandbox")
+        # Normalize environment name: "production" → "prod"
+        if env == "production":
+            env = "prod"
+        # Map sandbox to test URLs (HS1 uses "test" for sandbox)
+        url_env = "test" if env == "sandbox" else env
+        urls = ENV_URLS.get(url_env, ENV_URLS["test"])
+
+        # Prefer explicit URLs from creds file if present
+        self.oauth_url = self.creds.get("oauth_url") or urls["oauth"]
+        self.base_url = self.creds.get("api_base") or urls["base"]
+        # The api_key is the OAuth client_id, secret is the client_secret
+        self.client_id = self.creds["api_key"]
+        self.client_secret = self.creds["secret"]
+        self.app_id = self.creds.get("app_id", "")
+        self.org_id = self.creds.get("org_id", "")  # Sandbox: 69c6dc74ea472a5d6ac5ac8f
+        self.office = self.creds.get("office", "")
+
+        self._access_token = None
+        self._token_type = "Bearer"
+        self._token_expires_at = 0
+
+        # Call log
+        self.call_log = []
+
+    def authenticate(self):
+        """Get OAuth access token using client credentials."""
+        resp = requests.post(
+            self.oauth_url,
+            data={
+                "client_id": self.client_id,
+                "client_secret": self.client_secret,
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+            timeout=30,
+        )
+        if resp.status_code != 200:
+            # Try alternate auth methods
+            return self._try_alternate_auth()
+
+        data = resp.json()
+        self._access_token = data["access_token"]
+        self._token_type = data.get("token_type", "Bearer")
+        # expires_in is typically in seconds
+        expires_in = int(data.get("expires_in", 3600))
+        self._token_expires_at = time.time() + expires_in - 60  # refresh 60s early
+        return True
+
+    def _try_alternate_auth(self):
+        """Try alternate authentication methods."""
+        import base64
+
+        # Method 2: Basic auth with base64
+        creds_b64 = base64.b64encode(
+            f"{self.client_id}:{self.client_secret}".encode()
+        ).decode()
+        resp = requests.post(
+            self.oauth_url,
+            headers={
+                "Authorization": f"Basic {creds_b64}",
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            data={"grant_type": "client_credentials"},
+            timeout=30,
+        )
+        if resp.status_code == 200:
+            data = resp.json()
+            self._access_token = data["access_token"]
+            self._token_type = data.get("token_type", "Bearer")
+            expires_in = int(data.get("expires_in", 3600))
+            self._token_expires_at = time.time() + expires_in - 60
+            return True
+
+        raise Exception("All authentication methods failed")
+
+    def _ensure_token(self):
+        if not self._access_token or time.time() >= self._token_expires_at:
+            self.authenticate()
+
+    def _headers(self, org_id=None):
+        self._ensure_token()
+        h = {
+            "Authorization": f"{self._token_type} {self._access_token}",
+            "Content-Type": "application/json",
+        }
+        oid = org_id or self.org_id
+        if oid:
+            h["Organization-ID"] = str(oid)
+        return h
+
+    def request(self, method, path, params=None, json_body=None, org_id=None):
+        """Make an API request and log it."""
+        url = f"{self.base_url}{path}"
+        headers = self._headers(org_id)
+        start = time.time()
+        try:
+            resp = requests.request(
+                method, url, headers=headers, params=params, json=json_body, timeout=30
+            )
+            elapsed = round(time.time() - start, 3)
+            try:
+                body = resp.json()
+            except Exception:
+                body = resp.text[:500]
+
+            entry = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "method": method,
+                "endpoint": path,
+                "params": params,
+                "status_code": resp.status_code,
+                "response_time_s": elapsed,
+                "response_sample": self._truncate(body),
+            }
+            self.call_log.append(entry)
+            return resp.status_code, body, elapsed
+        except Exception as e:
+            elapsed = round(time.time() - start, 3)
+            entry = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "method": method,
+                "endpoint": path,
+                "params": params,
+                "status_code": 0,
+                "response_time_s": elapsed,
+                "error": str(e),
+            }
+            self.call_log.append(entry)
+            return 0, {"error": str(e)}, elapsed
+
+    def get(self, path, params=None, org_id=None):
+        return self.request("GET", path, params=params, org_id=org_id)
+
+    def post(self, path, json_body=None, params=None, org_id=None):
+        return self.request("POST", path, params=params, json_body=json_body, org_id=org_id)
+
+    def put(self, path, json_body=None, params=None, org_id=None):
+        return self.request("PUT", path, params=params, json_body=json_body, org_id=org_id)
+
+    def delete(self, path, params=None, org_id=None):
+        return self.request("DELETE", path, params=params, org_id=org_id)
+
+    def save_log(self, path):
+        with open(path, "w") as f:
+            json.dump(self.call_log, f, indent=2, default=str)
+
+    @staticmethod
+    def _truncate(body, max_keys=10):
+        """Truncate response for logging."""
+        if isinstance(body, dict):
+            if "data" in body and isinstance(body["data"], list) and len(body["data"]) > 3:
+                sample = body.copy()
+                sample["data"] = body["data"][:3]
+                sample["_truncated_from"] = len(body["data"])
+                return sample
+        return body
+
+
+if __name__ == "__main__":
+    client = AscendClient()
+    print("Authenticating...")
+    result = client.authenticate()
+    print(f"Auth result: {result}")
+    print(f"Token: {client._access_token[:20]}..." if client._access_token else "No token")
+
+    # Test a basic call
+    status, body, elapsed = client.get("/v1/locations")
+    print(f"GET /v1/locations -> {status} ({elapsed}s)")
+    print(json.dumps(body, indent=2)[:500])

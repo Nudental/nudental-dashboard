@@ -1,0 +1,984 @@
+"""
+Dentrix Ascend Streaming Consumer
+Connects to the Ascend AMQPS RabbitMQ stream and writes real-time events
+to Supabase and a local SQLite events table (for SSE fan-out).
+
+Routing key format: <OrgID>.<LocationID>.<ResourceType>.<Method>
+Example:  6482308088c2a542e2dafd27.14000000000432.Appointment.Updated
+
+Run as standalone process:
+    python streaming_consumer.py
+
+Or imported and started as a thread:
+    from streaming_consumer import start_consumer_thread
+    start_consumer_thread()
+"""
+
+import sys
+import os
+import ssl
+import json
+import time
+import logging
+import sqlite3
+import threading
+import requests
+import re
+from datetime import datetime, timezone
+from urllib.parse import urlparse
+from typing import Optional
+
+# Add parent for ascend_client
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from ascend_client import AscendClient
+
+try:
+    import pika
+    import pika.exceptions
+    PIKA_AVAILABLE = True
+except ImportError:
+    PIKA_AVAILABLE = False
+    print("WARNING: pika not installed. Run: pip install pika")
+
+from supabase_service import (
+    upsert_patient, upsert_appointment, upsert_transaction,
+    upsert_provider, upsert_location,
+    write_sync_audit,
+)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(name)s] %(levelname)s %(message)s",
+)
+logger = logging.getLogger("streaming_consumer")
+
+PROD_CREDS = "/home/openclaw/.config/ascend/production.json"
+# NOTE: keep streaming SSE event storage separate from the main Ascend SQLite DB
+# to avoid write-lock contention.
+ASCEND_DB_PATH = os.path.join(os.path.dirname(__file__), "ascend.db")
+EVENTS_DB_PATH = os.path.join(os.path.dirname(__file__), "stream_events.db")
+ORG_ID = "6482308088c2a542e2dafd27"
+
+# How long to wait before reconnecting after failure
+RECONNECT_DELAY = 5   # seconds
+MAX_RECONNECT_DELAY = 60
+
+# ---------------------------------------------------------------------------
+# Local SQLite events table (for SSE fan-out to connected clients)
+# ---------------------------------------------------------------------------
+
+def _get_events_db() -> sqlite3.Connection:
+    # Use a generous timeout + busy_timeout to reduce "database is locked" errors
+    # since this DB is shared with the main Ascend sync.
+    conn = sqlite3.connect(EVENTS_DB_PATH, check_same_thread=False, timeout=30)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA synchronous=NORMAL")
+    conn.execute("PRAGMA busy_timeout=5000")
+    return conn
+
+
+def _init_events_table():
+    conn = _get_events_db()
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS stream_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            event_type TEXT NOT NULL,
+            resource_type TEXT,
+            resource_id TEXT,
+            location_id TEXT,
+            org_id TEXT,
+            payload TEXT NOT NULL,
+            received_at REAL DEFAULT (unixepoch('now', 'subsec'))
+        )
+    """)
+    conn.execute("CREATE INDEX IF NOT EXISTS idx_se_received ON stream_events(received_at)")
+    conn.commit()
+    conn.close()
+    logger.info("Stream events table ready")
+
+
+def _get_ascend_db() -> sqlite3.Connection:
+    """Open the main Ascend SQLite DB for transaction write-backs."""
+    conn = sqlite3.connect(ASCEND_DB_PATH, check_same_thread=False, timeout=30)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA synchronous=NORMAL")
+    conn.execute("PRAGMA busy_timeout=5000")
+    return conn
+
+
+# ---------------------------------------------------------------------------
+# Distribution-lines materializer (keeps DL in sync with payment upserts)
+# ---------------------------------------------------------------------------
+def _rebuild_dl_for_item(conn: sqlite3.Connection, source_table: str, item: dict):
+    """Materialize distribution_lines for a single payment/adjustment.
+
+    Idempotent: deletes any existing rows for this transaction_id first,
+    then re-inserts from the raw distributions array.
+    """
+    tx_id = item.get("id")
+    if not tx_id:
+        return
+
+    dists = item.get("distributions")
+    if not isinstance(dists, list):
+        return
+
+    # Delete existing lines for this transaction
+    conn.execute(
+        "DELETE FROM distribution_lines WHERE source_table = ? AND transaction_id = ?",
+        (source_table, tx_id),
+    )
+
+    if not dists:
+        return
+
+    ledger_type = item.get("ledgerType")
+    tx_date = (item.get("transactionDate") or item.get("entryDate", "")[:10] or None)
+    loc_raw = item.get("location")
+    loc_id = loc_raw.get("id") if isinstance(loc_raw, dict) else loc_raw
+    is_payment = source_table in ("insurance_payments", "patient_payments")
+    tx_amount = float(item.get("amount") or 0)
+
+    # Batch-load procedures for provider_id and procedure_transaction_date
+    charge_ids = [d.get("chargeId") for d in dists if isinstance(d, dict) and d.get("chargeId")]
+    proc_map = {}
+    if charge_ids:
+        qmarks = ",".join(["?"] * len(charge_ids))
+        rows = conn.execute(
+            f"SELECT id, location_id, provider_id, transaction_date FROM procedures WHERE id IN ({qmarks})",
+            tuple(charge_ids),
+        ).fetchall()
+        proc_map = {r["id"]: (r["location_id"], r["provider_id"], r["transaction_date"]) for r in rows}
+
+    lines = []
+    for d in dists:
+        if not isinstance(d, dict):
+            continue
+        charge_id = d.get("chargeId")
+        if not charge_id:
+            continue
+
+        charge_loc = d.get("chargeLocationId")
+        raw_applied = float(d.get("appliedAmount", 0) or 0)
+
+        if is_payment:
+            applied_amount = -abs(raw_applied)
+        elif tx_amount < 0:
+            applied_amount = -abs(raw_applied)
+        else:
+            applied_amount = abs(raw_applied)
+
+        proc = proc_map.get(charge_id)
+        proc_provider = proc[1] if proc else None
+        proc_date = proc[2] if proc else None
+        if not charge_loc and proc:
+            charge_loc = proc[0]
+
+        lines.append((
+            source_table, tx_id, ledger_type, tx_date,
+            loc_id, charge_id, charge_loc, applied_amount,
+            1 if item.get("isActive", True) else 0,
+            proc_provider, proc_date,
+        ))
+
+    if lines:
+        conn.executemany(
+            """INSERT INTO distribution_lines
+               (source_table, transaction_id, transaction_ledger_type, transaction_date,
+                transaction_location_id, charge_id, charge_location_id, applied_amount,
+                line_is_active, procedure_provider_id, procedure_transaction_date)
+               VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+            lines,
+        )
+
+
+# Mapping from Dentrix ledgerType → local SQLite table
+LEDGER_TYPE_TO_TABLE = {
+    "PatientProcedureLedger":              "procedures",
+    "PatientProcedureLedgerCancellation":  "procedures",
+    "PatientProcedureLedgerRebill":        "procedures",
+    "PatientProcedurePayment":             "patient_payments",
+    "PatientProcedurePaymentCancellation": "patient_payments",
+    "PatientProcedurePaymentRebill":       "patient_payments",
+    "InsurancePayment":                    "insurance_payments",
+    "InsurancePaymentCancellation":        "insurance_payments",
+    "InsurancePaymentRebill":              "insurance_payments",
+    "PatientChargeAdjustment":             "adjustments",
+    "PatientChargeAdjustmentCancellation": "adjustments",
+    "PatientChargeAdjustmentRebill":       "adjustments",
+    "PatientCreditAdjustment":             "adjustments",
+    "PatientCreditAdjustmentCancellation": "adjustments",
+    "PatientCreditAdjustmentRebill":       "adjustments",
+    "InsuranceRefundAdjustment":           "adjustments",
+    "InsuranceRefundAdjustmentCancellation": "adjustments",
+    "InsuranceRefundAdjustmentRebill":     "adjustments",
+}
+
+
+def _sqlite_writeback_appointment(resource_data: dict, method: str) -> bool:
+    """
+    FIX-5: Write streaming appointment CREATE/UPDATE/DELETE events back to
+    the local SQLite appointments table so that status changes (e.g.
+    UNCONFIRMED → COMPLETED) are reflected immediately.
+
+    Without this, cursor-based sync only fetches NEW appointments by lastId
+    and never re-fetches existing ones whose status changed.
+    """
+    record_id = resource_data.get("id")
+    if not record_id:
+        return False
+
+    try:
+        conn = _get_ascend_db()
+
+        if method.upper() == "DELETE":
+            with conn:
+                conn.execute("DELETE FROM appointments WHERE id = ?", (record_id,))
+            conn.close()
+            logger.debug(f"SQLite appt write-back DELETE: id={record_id}")
+            return True
+
+        # Map appointment fields (same as sync.py _map_appointment)
+        provider = resource_data.get("provider") or {}
+        location = resource_data.get("location") or {}
+        patient = resource_data.get("patient") or {}
+        provider_id = provider.get("id") if isinstance(provider, dict) else str(provider or "")
+        location_id = location.get("id") if isinstance(location, dict) else str(location or "")
+        patient_id = patient.get("id") if isinstance(patient, dict) else str(patient or "")
+        start = resource_data.get("start") or resource_data.get("startTime") or ""
+        end = resource_data.get("end") or resource_data.get("endTime") or ""
+
+        row = (
+            record_id,
+            start,
+            end,
+            resource_data.get("status"),
+            provider_id,
+            location_id,
+            patient_id,
+            resource_data.get("duration"),
+            (resource_data.get("lastModified") or "")[:10],
+            json.dumps(resource_data),
+        )
+
+        with conn:
+            conn.execute(
+                """INSERT OR REPLACE INTO appointments
+                   (id, start_time, end_time, status, provider_id, location_id,
+                    patient_id, duration, last_modified, raw)
+                   VALUES (?,?,?,?,?,?,?,?,?,?)""",
+                row,
+            )
+        conn.close()
+        logger.debug(f"SQLite appt write-back {method}: id={record_id} status={resource_data.get('status')}")
+        return True
+
+    except Exception as e:
+        logger.error(f"SQLite appt write-back error: {e} id={record_id}")
+        return False
+
+
+def _sqlite_writeback(resource_data: dict, method: str) -> bool:
+    """
+    FIX-3/FIX-4: Write streaming UPDATE/CREATE/DELETE events back to the local
+    SQLite transaction tables so that distributions and field changes are
+    reflected without waiting for the next cursor-based sync cycle.
+
+    This is critical because:
+    - Cursor-based sync only fetches NEW records (by lastId) — never re-fetches updates.
+    - Insurance payments are often created with empty distributions; distributions are
+      populated via a subsequent UPDATE event in Dentrix.
+    - Without this write-back, distributions remain empty in SQLite indefinitely.
+    - DELETE events (voided/cancelled transactions) need to mark is_active=0.
+    """
+    record_id = resource_data.get("id")
+    if not record_id:
+        return False
+
+    ledger_type = resource_data.get("ledgerType")
+    table = LEDGER_TYPE_TO_TABLE.get(ledger_type)
+    if not table:
+        return False  # Not a transaction type we track
+
+    try:
+        provider = resource_data.get("provider") or {}
+        location = resource_data.get("location") or {}
+        patient = resource_data.get("patient") or {}
+        provider_id = provider.get("id") if isinstance(provider, dict) else provider
+        location_id = location.get("id") if isinstance(location, dict) else location
+        patient_id = patient.get("id") if isinstance(patient, dict) else patient
+
+        conn = _get_ascend_db()
+
+        if method.upper() == "DELETE":
+            # FIX-3: Mark deleted records as inactive rather than removing them
+            # (preserves referential integrity for distribution joins)
+            with conn:
+                conn.execute(
+                    f"UPDATE {table} SET is_active = 0 WHERE id = ?",
+                    (record_id,)
+                )
+            conn.close()
+            logger.debug(f"SQLite write-back DELETE: {table} id={record_id}")
+            return True
+
+        # CREATE or UPDATE: full upsert with latest raw JSON
+        entry_date = (resource_data.get("entryDate") or resource_data.get("entryDateTime") or "")[:26]
+        tx_date = (
+            resource_data.get("transactionDate") or
+            entry_date[:10]
+        )
+
+        if table == "insurance_payments":
+            # insurance_payments has 12 columns (extra: claim_location_id, entry_date)
+            claim_loc = None
+            dists = resource_data.get("distributions") or []
+            if dists and isinstance(dists, list):
+                claim_loc = dists[0].get("chargeLocationId")
+            row = (
+                record_id, tx_date,
+                float(resource_data.get("amount") or 0),
+                provider_id, location_id, patient_id, ledger_type,
+                1 if resource_data.get("isActive", True) else 0,
+                (resource_data.get("lastModified") or "")[:10],
+                json.dumps(resource_data),
+                claim_loc,    # claim_location_id
+                entry_date,   # entry_date
+            )
+        else:
+            # procedures, patient_payments, adjustments: 11 columns (+entry_date)
+            row = (
+                record_id, tx_date,
+                float(resource_data.get("amount") or 0),
+                provider_id, location_id, patient_id, ledger_type,
+                1 if resource_data.get("isActive", True) else 0,
+                (resource_data.get("lastModified") or "")[:10],
+                json.dumps(resource_data),
+                entry_date,   # entry_date
+            )
+
+        with conn:
+            conn.execute(
+                f"INSERT OR REPLACE INTO {table} VALUES ({','.join(['?']*len(row))})",
+                row,
+            )
+            # Materialize distribution_lines for this payment/adjustment
+            # so insurance/patient collections stay current in real-time.
+            if table in ("insurance_payments", "patient_payments", "adjustments"):
+                _rebuild_dl_for_item(conn, table, resource_data)
+        conn.close()
+        logger.debug(f"SQLite write-back {method}: {table} id={record_id} ledger={ledger_type}")
+        return True
+
+    except Exception as e:
+        logger.warning(f"SQLite write-back failed ({table}/{method}/{record_id}): {e}")
+        return False
+
+
+def _write_event(event_type: str, resource_type: str, resource_id: Optional[str],
+                 location_id: Optional[str], payload: dict):
+    """Write a streaming event to the local events table for SSE delivery."""
+    try:
+        conn = _get_events_db()
+        conn.execute(
+            """INSERT INTO stream_events
+               (event_type, resource_type, resource_id, location_id, org_id, payload)
+               VALUES (?, ?, ?, ?, ?, ?)""",
+            (event_type, resource_type, resource_id, location_id, ORG_ID,
+             json.dumps(payload, default=str)),
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logger.warning(f"Failed to write local stream event: {e}")
+
+
+def get_recent_events(since_id: int = 0, limit: int = 50) -> list:
+    """Read events newer than since_id from the local events table."""
+    try:
+        conn = _get_events_db()
+        rows = conn.execute(
+            "SELECT * FROM stream_events WHERE id > ? ORDER BY id ASC LIMIT ?",
+            (since_id, limit),
+        ).fetchall()
+        conn.close()
+        return [dict(r) for r in rows]
+    except Exception as e:
+        logger.warning(f"Failed to read stream events: {e}")
+        return []
+
+
+def get_latest_event_id() -> int:
+    try:
+        conn = _get_events_db()
+        row = conn.execute("SELECT MAX(id) as max_id FROM stream_events").fetchone()
+        conn.close()
+        return row["max_id"] or 0
+    except Exception:
+        return 0
+
+
+# ---------------------------------------------------------------------------
+# Streaming URL fetch
+# ---------------------------------------------------------------------------
+
+def get_streaming_info(client: AscendClient) -> dict:
+    """Get AMQPS connection details from Dentrix Ascend."""
+    client._ensure_token()
+    resp = requests.get(
+        "https://prod.hs1api.com/ascend-streaming-api/url",
+        headers={
+            "Authorization": f"{client._token_type} {client._access_token}",
+            "Organization-ID": ORG_ID,
+        },
+        timeout=15,
+    )
+    resp.raise_for_status()
+    return resp.json()
+
+
+# ---------------------------------------------------------------------------
+# Message routing
+# ---------------------------------------------------------------------------
+
+RESOURCE_TYPE_MAP = {
+    # Simple names (original)
+    "patient": "patient",
+    "patients": "patient",
+    "appointment": "appointment",
+    "appointments": "appointment",
+    "transaction": "transaction",
+    "transactions": "transaction",
+    "patientpayment": "transaction",
+    "insurancepayment": "transaction",
+    "adjustment": "transaction",
+    "procedure": "transaction",
+    "provider": "provider",
+    "providers": "provider",
+    "location": "location",
+    "locations": "location",
+    # Versioned names from actual Dentrix AMQPS events
+    "patientv1": "patient",
+    "patientprocedurev1": "transaction",
+    "appointmentv1": "appointment",
+    "transactionv1": "transaction",
+    "insurancepaymentv1": "transaction",
+    "patientpaymentv1": "transaction",
+    "adjustmentv1": "transaction",
+    "visitv1": "visit",
+    "clinicalnotev1": "clinicalnote",
+    "txcasev1": "transaction",
+    "commonpatientprocedures": "transaction",
+    "missedappointmentv1": "appointment",
+    "patientrecarev1": "other",
+    "patientinsuranceplanv1": "other",
+    "carrierinsuranceplanv1": "other",
+    "eventv1": "other",
+}
+
+TRANSACTION_SUBTYPES = {
+    "patientpayment", "insurancepayment", "adjustment", "procedure",
+    "transaction", "transactions",
+    "patientprocedure",
+    # Versioned
+    "patientprocedurev1", "transactionv1", "txcasev1",
+    "commonpatientprocedures", "insurancepaymentv1", "patientpaymentv1",
+    "adjustmentv1",
+}
+
+# Field normalization for streaming events (different from REST API schema)
+def _normalize_stream_event(resource_raw: str, data: dict) -> dict:
+    """Normalize streaming event fields to match REST API schema."""
+    normalized = dict(data)
+    if resource_raw in ("patientprocedurev1", "commonpatientprocedures"):
+        if "serviceDate" in data and "transactionDate" not in data:
+            normalized["transactionDate"] = data["serviceDate"]
+        if "renderingProvider" in data and "provider" not in data:
+            normalized["provider"] = data["renderingProvider"]
+        if "state" in data and "isActive" not in data:
+            normalized["isActive"] = data["state"] == "ACTIVE"
+        if "ledgerType" not in data:
+            normalized["ledgerType"] = "PatientProcedureLedger"
+    return normalized
+
+
+def _parse_routing_key(routing_key: str) -> tuple:
+    """
+    Parse routing key: OrgID.LocationID.ResourceType.Method
+    Returns (org_id, location_id, resource_type, method)
+    """
+    parts = routing_key.split(".")
+    if len(parts) < 4:
+        return (None, None, None, None)
+    org = parts[0]
+    location = parts[1]
+    resource = parts[2].lower()
+    method = parts[3] if len(parts) > 3 else "unknown"
+    return (org, location, resource, method)
+
+
+def _route_message(routing_key: str, body: dict, raw_body: bytes) -> bool:
+    """
+    Route incoming AMQP message to the correct Supabase table.
+    Returns True if successfully handled.
+    """
+    org_id, location_id, resource_raw, method = _parse_routing_key(routing_key)
+    if not resource_raw:
+        logger.warning(f"Could not parse routing key: {routing_key}")
+        return False
+
+    # --- FIX C3: Normalize event type (strip version suffix) ---
+    resource_raw_base = re.sub(r"v\d+$", "", resource_raw)
+    resource_type = RESOURCE_TYPE_MAP.get(resource_raw) or RESOURCE_TYPE_MAP.get(resource_raw_base, resource_raw_base)
+
+    # --- FIX C4: Unwrap event envelope ---
+    # Events arrive as: { "type": "...", "payload": { actual_data } }
+    resource_data = body.get("payload", body)
+    if isinstance(resource_data, str):
+        try:
+            resource_data = json.loads(resource_data)
+        except (json.JSONDecodeError, TypeError):
+            resource_data = body
+
+    # Normalize streaming field names to REST-compatible schema
+    resource_data = _normalize_stream_event(resource_raw_base or resource_raw, resource_data)
+
+    resource_id = resource_data.get("id") or body.get("id") or body.get("resourceId")
+
+    logger.info(
+        f"Stream event: raw={resource_raw} → type={resource_type} method={method} "
+        f"id={resource_id} loc={location_id} has_payload={'payload' in body}"
+    )
+
+    ok = False
+    handler = "unhandled"
+    try:
+        if resource_type == "patient":
+            handler = "upsert_patient"
+            ok = upsert_patient(resource_data, org_id or ORG_ID)
+
+        elif resource_type == "appointment":
+            handler = "upsert_appointment"
+            ok = upsert_appointment(resource_data, org_id or ORG_ID, location_id)
+            # FIX-5: Also write back to local SQLite so appointment status changes
+            # (UNCONFIRMED → COMPLETED, etc.) are reflected immediately.
+            _sqlite_writeback_appointment(resource_data, method)
+
+        elif resource_type == "transaction" or resource_raw in TRANSACTION_SUBTYPES or resource_raw_base in TRANSACTION_SUBTYPES:
+            handler = "upsert_transaction"
+            ok = upsert_transaction(resource_data, org_id or ORG_ID, tx_type=(resource_raw_base or resource_raw))
+            # FIX-3/FIX-4: Also write back to local SQLite so distributions and field
+            # changes are available immediately to the service layer without waiting
+            # for the next hourly cursor-based sync.
+            _sqlite_writeback(resource_data, method)
+
+        elif resource_type == "provider":
+            handler = "upsert_provider"
+            ok = upsert_provider(resource_data, org_id or ORG_ID)
+
+        elif resource_type == "location":
+            handler = "upsert_location"
+            ok = upsert_location(resource_data, org_id or ORG_ID)
+
+        else:
+            # Unhandled/unknown resource types (e.g. "other", "visit", "clinicalnote")
+            # These are valid Dentrix events we don't yet process — log as debug, not error
+            handler = "SKIPPED"
+            logger.debug(
+                f"SKIPPED event (unhandled type): received_type={body.get('type')} raw={resource_raw} "
+                f"normalized={resource_type} routing_key={routing_key}"
+            )
+            ok = True  # Not an error — just a no-op for this resource type
+
+    except Exception as e:
+        logger.error(
+            json.dumps({
+                "error": str(e),
+                "received_type": body.get("type"),
+                "resource_type": resource_type,
+                "resource_raw": resource_raw,
+                "handler": handler,
+                "method": method,
+                "location_id": location_id,
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+            })
+        )
+        ok = False
+
+    logger.info(
+        f"Stream route result: received_type={body.get('type')} raw={resource_raw} normalized={resource_type} "
+        f"handler={handler} ok={ok}"
+    )
+
+    # Always write to local events table for SSE regardless of Supabase result
+    event_payload = {
+        "resourceType": resource_type,
+        "resourceId": resource_id,
+        "method": method,
+        "locationId": location_id,
+        "orgId": org_id or ORG_ID,
+        "data": resource_data,
+        "envelope": body,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "routingKey": routing_key,
+        "supabaseOk": ok,
+    }
+    _write_event(f"{resource_type}.{method}", resource_type, resource_id, location_id, event_payload)
+
+    return ok
+
+
+# ---------------------------------------------------------------------------
+# AMQPS Consumer
+# ---------------------------------------------------------------------------
+
+_consumer_running = False
+_consumer_thread: Optional[threading.Thread] = None
+_stats = {
+    "messages_received": 0,
+    "messages_routed": 0,
+    "messages_skipped": 0,   # Unhandled resource types (not errors)
+    "errors": 0,
+    "connected_at": None,
+    "last_message_at": None,
+    "reconnects": 0,
+}
+
+# Audit batching for Supabase import_audit_log
+_audit_batch = {
+    "received": 0,
+    "imported": 0,
+    "failed": 0,
+    "last_routing_key": None,
+    "last_type": None,
+    "started_ts": time.time(),
+    "last_flush_ts": time.time(),
+}
+
+
+def _flush_stream_audit(force: bool = False):
+    now = time.time()
+    if not force:
+        if _audit_batch["received"] < 50 and (now - _audit_batch["last_flush_ts"]) < 30:
+            return
+
+    duration_ms = int((now - _audit_batch["started_ts"]) * 1000)
+    status = "success" if _audit_batch["failed"] == 0 else ("partial" if _audit_batch["imported"] > 0 else "failed")
+
+    try:
+        write_sync_audit(
+            endpoint_key="streaming_events",
+            endpoint_name="Dentrix AMQPS stream",
+            endpoint_path="amqps",
+            sync_type="streaming",
+            status=status,
+            records_fetched=_audit_batch["received"],
+            records_imported=_audit_batch["imported"],
+            records_failed=_audit_batch["failed"],
+            error_details={
+                "last_routing_key": _audit_batch["last_routing_key"],
+                "last_type": _audit_batch["last_type"],
+            },
+            duration_ms=duration_ms,
+            triggered_by="streaming_consumer",
+        )
+    except Exception as e:
+        logger.warning(f"Failed to write streaming audit: {e}")
+
+    _audit_batch["received"] = 0
+    _audit_batch["imported"] = 0
+    _audit_batch["failed"] = 0
+    _audit_batch["started_ts"] = now
+    _audit_batch["last_flush_ts"] = now
+
+
+def _on_message(channel, method, properties, body):
+    """Callback for each AMQP message."""
+    global _stats
+    _stats["messages_received"] += 1
+    _stats["last_message_at"] = datetime.now(timezone.utc).isoformat()
+
+    routing_key = method.routing_key
+    try:
+        if isinstance(body, bytes):
+            body_str = body.decode("utf-8")
+        else:
+            body_str = body
+
+        payload = json.loads(body_str)
+        ok = _route_message(routing_key, payload, body)
+
+        _audit_batch["received"] += 1
+        _audit_batch["last_routing_key"] = routing_key
+        _audit_batch["last_type"] = payload.get("type") or payload.get("messageType")
+
+        if ok:
+            _stats["messages_routed"] += 1
+            _audit_batch["imported"] += 1
+        else:
+            # Only count as error if it was a genuine failure, not a SKIPPED/unhandled type
+            # (SKIPPED events return ok=True now, so this branch is real failures only)
+            _stats["errors"] += 1
+            _audit_batch["failed"] += 1
+
+        _flush_stream_audit(force=False)
+    except json.JSONDecodeError:
+        logger.warning(f"Non-JSON message on {routing_key}: {body[:100]}")
+        _stats["errors"] += 1
+        _audit_batch["received"] += 1
+        _audit_batch["failed"] += 1
+        _audit_batch["last_routing_key"] = routing_key
+        _audit_batch["last_type"] = "non_json"
+        _flush_stream_audit(force=False)
+
+        # Write raw event to local events table
+        _write_event("raw", "unknown", None, None, {
+            "routingKey": routing_key,
+            "rawBody": body.decode("utf-8", errors="replace")[:500],
+        })
+    except Exception as e:
+        logger.error(f"Message handler error: {e}", exc_info=True)
+        _stats["errors"] += 1
+        _audit_batch["received"] += 1
+        _audit_batch["failed"] += 1
+        _audit_batch["last_routing_key"] = routing_key
+        _audit_batch["last_type"] = "handler_exception"
+        _flush_stream_audit(force=False)
+
+    # Acknowledge the message
+    channel.basic_ack(delivery_tag=method.delivery_tag)
+
+
+def _build_pika_params(amqps_url: str) -> "pika.ConnectionParameters":
+    """Parse AMQPS URL into pika connection parameters with SSL."""
+    parsed = urlparse(amqps_url)
+
+    ssl_ctx = ssl.create_default_context()
+    ssl_ctx.check_hostname = False
+    ssl_ctx.verify_mode = ssl.CERT_NONE  # HS1 certs may be self-signed
+
+    credentials = pika.PlainCredentials(
+        username=parsed.username or "guest",
+        password=parsed.password or "guest",
+    )
+
+    params = pika.ConnectionParameters(
+        host=parsed.hostname,
+        port=parsed.port or 5671,
+        virtual_host=parsed.path.lstrip("/") or "/",
+        credentials=credentials,
+        ssl_options=pika.SSLOptions(ssl_ctx),
+        connection_attempts=3,
+        retry_delay=2,
+        socket_timeout=30,
+        heartbeat=60,
+    )
+    return params
+
+
+def _run_consumer_loop():
+    """Main consumer loop with reconnection logic."""
+    global _stats, _consumer_running
+
+    client = AscendClient(creds_path=PROD_CREDS)
+    client.authenticate()
+    logger.info(f"Authenticated to Dentrix Ascend (org: {ORG_ID})")
+
+    delay = RECONNECT_DELAY
+
+    while _consumer_running:
+        try:
+            logger.info("Fetching AMQPS streaming URL...")
+            stream_info = get_streaming_info(client)
+            amqps_url = stream_info["url"]
+            exchange = stream_info["exchanges"]
+            queue_name = stream_info["queues"]
+            routing_key = stream_info.get("routingKeys", "*.*.*.*")
+
+            logger.info(f"Connecting to AMQPS: {amqps_url[:60]}...")
+            params = _build_pika_params(amqps_url)
+
+            connection = pika.BlockingConnection(params)
+            channel = connection.channel()
+
+            # JWT claim: queues must match ^apiConsumers\.{app_id}\..+$
+            # The API returns base name; we append ".nudashboard" to satisfy the regex
+            base_queue = queue_name
+            suffixed_queue = f"{base_queue}.nudashboard"
+            consume_queue = None
+
+            # Try to create/declare the suffixed named queue
+            for qname in [suffixed_queue, base_queue]:
+                try:
+                    channel.queue_declare(
+                        queue=qname,
+                        durable=False,
+                        exclusive=False,
+                        auto_delete=True,
+                    )
+                    consume_queue = qname
+                    logger.info(f"Queue declared: {qname}")
+                    break
+                except Exception as qe:
+                    logger.info(f"queue_declare({qname!r}) refused: {qe.__class__.__name__}: {str(qe)[:80]}")
+                    # Channel is closed after failure — reopen
+                    try:
+                        channel = connection.channel()
+                    except Exception:
+                        pass
+
+            if not consume_queue:
+                raise Exception(
+                    f"Cannot declare any queue. JWT allows pattern: ^apiConsumers\\.{queue_name.split('.',1)[-1]}\\..$. "
+                    f"Tried: {suffixed_queue}, {base_queue}. "
+                    "HS1 may require provisioning via support ticket."
+                )
+
+            # Bind to the HS1 exchange with topic routing key
+            for rkey in ["*.*.*.*", "#"]:
+                try:
+                    channel.queue_bind(
+                        exchange=exchange,
+                        queue=consume_queue,
+                        routing_key=rkey,
+                    )
+                    logger.info(f"Bound {consume_queue} → {exchange} routing_key={rkey}")
+                    break
+                except Exception as be:
+                    logger.warning(f"Bind with {rkey!r} failed: {be}")
+
+            channel.basic_qos(prefetch_count=10)
+            channel.basic_consume(
+                queue=consume_queue,
+                on_message_callback=_on_message,
+                auto_ack=False,
+            )
+
+            _stats["connected_at"] = datetime.now(timezone.utc).isoformat()
+            _stats["reconnects"] += 1
+            delay = RECONNECT_DELAY  # Reset delay on successful connect
+            logger.info(f"✅ Connected to AMQPS stream. Queue: {queue_name}")
+
+            # Write a connect event to local events table
+            _write_event("consumer.connected", "system", None, None, {
+                "queue": queue_name,
+                "exchange": exchange,
+                "timestamp": _stats["connected_at"],
+            })
+
+            # Block and consume
+            channel.start_consuming()
+
+        except pika.exceptions.AMQPConnectionError as e:
+            logger.warning(f"AMQP connection error: {e}. Reconnecting in {delay}s...")
+        except pika.exceptions.StreamLostError as e:
+            logger.warning(f"AMQP stream lost: {e}. Reconnecting in {delay}s...")
+        except Exception as e:
+            logger.error(f"Consumer error: {e}. Reconnecting in {delay}s...", exc_info=True)
+
+        if not _consumer_running:
+            break
+
+        # Write disconnect event
+        _write_event("consumer.disconnected", "system", None, None, {
+            "reason": "connection_lost",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "stats": dict(_stats),
+        })
+
+        time.sleep(delay)
+        delay = min(delay * 2, MAX_RECONNECT_DELAY)
+
+        # Re-authenticate if token might have expired
+        try:
+            client._ensure_token()
+        except Exception as e:
+            logger.warning(f"Re-auth failed: {e}")
+            try:
+                client.authenticate()
+            except Exception as e2:
+                logger.error(f"Auth retry failed: {e2}")
+
+    logger.info("Consumer loop exited")
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+def get_stats() -> dict:
+    return dict(_stats)
+
+
+def start_consumer_thread() -> Optional[threading.Thread]:
+    """Start the streaming consumer as a background daemon thread."""
+    global _consumer_running, _consumer_thread
+
+    if not PIKA_AVAILABLE:
+        logger.error("pika not installed. Cannot start streaming consumer.")
+        return None
+
+    _init_events_table()
+
+    if _consumer_thread and _consumer_thread.is_alive():
+        logger.info("Consumer thread already running")
+        return _consumer_thread
+
+    _consumer_running = True
+    t = threading.Thread(target=_run_consumer_loop, daemon=True, name="amqp-consumer")
+    t.start()
+    _consumer_thread = t
+    logger.info("Streaming consumer thread started")
+    return t
+
+
+def stop_consumer():
+    global _consumer_running
+    _consumer_running = False
+    try:
+        _flush_stream_audit(force=True)
+    except Exception:
+        pass
+    logger.info("Streaming consumer stop requested")
+
+
+# ---------------------------------------------------------------------------
+# Standalone entry point
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    import signal
+
+    logging.basicConfig(level=logging.DEBUG)
+
+    # ── sync_logger (Phase 2D) — process lifecycle only, NOT per-event ──
+    try:
+        from sync_logger import start_sync_run, finish_sync_run, fail_sync_run
+    except ImportError:
+        start_sync_run = finish_sync_run = fail_sync_run = lambda *a, **kw: None
+
+    _sl_run_id = start_sync_run("dentrix_streaming", trigger_type="realtime", triggered_by="process_start",
+                                metadata={"mode": "standalone", "pid": os.getpid()})
+
+    def _handle_signal(sig, frame):
+        logger.info(f"Signal {sig} received, stopping...")
+        finish_sync_run(_sl_run_id, status="success",
+                        metadata={"reason": f"signal_{sig}", "stats": {k: v for k, v in _stats.items() if k != "connected_at"}})
+        stop_consumer()
+        sys.exit(0)
+
+    signal.signal(signal.SIGINT, _handle_signal)
+    signal.signal(signal.SIGTERM, _handle_signal)
+
+    _init_events_table()
+    _consumer_running = True
+
+    logger.info("Starting Dentrix Ascend streaming consumer (standalone mode)...")
+    try:
+        _run_consumer_loop()
+    except Exception as _exc:
+        fail_sync_run(_sl_run_id, error=_exc,
+                      metadata={"stats": {k: v for k, v in _stats.items() if k != "connected_at"}})
+        raise

@@ -1,0 +1,456 @@
+"""
+Aged Receivables — Direct from Dentrix Ascend API
+Uses /v1/agingbalances/report (Carl Emery, HS1, May 4 2026)
+
+Replaces the old estimated AR calculation (charges - collections - adjustments)
+with exact data from Dentrix including aging buckets, insurance/guarantor split,
+unapplied credits, and per-patient detail.
+"""
+
+import json
+import time
+import logging
+import requests
+from typing import Optional, Dict, Any
+from pathlib import Path
+
+logger = logging.getLogger("ar_service")
+
+CREDS_FILE = "/home/openclaw/.config/ascend/production.json"
+
+LOCATIONS = __NUDASHBOARD_CONFIG_LITERAL_003__
+
+# Token cache
+_token_cache = {"token": None, "expires_at": 0}
+
+
+def _load_creds():
+    with open(CREDS_FILE) as f:
+        return json.load(f)
+
+
+def _get_token(creds=None):
+    now = time.time()
+    if _token_cache["token"] and _token_cache["expires_at"] > now + 60:
+        return _token_cache["token"]
+
+    if creds is None:
+        creds = _load_creds()
+
+    resp = requests.post(creds["oauth_url"],
+        data={"client_id": creds["api_key"], "client_secret": creds["secret"]},
+        timeout=15)
+    resp.raise_for_status()
+    data = resp.json()
+    _token_cache["token"] = data["access_token"]
+    _token_cache["expires_at"] = now + int(data.get("expires_in", 1800))
+    return _token_cache["token"]
+
+
+def fetch_aging_report(location_id: str, include_patients: bool = True) -> Dict[str, Any]:
+    """
+    Fetch aging balances report for a single location.
+    Uses GET /v1/agingbalances/report?filter=location.id=={id},page=={n}
+
+    IMPORTANT: The HS1 API returns PER-PAGE totals, NOT office-level totals.
+    Each page's totals reflect only the patients on that page.
+    We must iterate ALL pages and SUM the numeric fields to get the true
+    office-level totals. (Discovered during verification 2026-05-04.)
+    """
+    creds = _load_creds()
+    token = _get_token(creds)
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Organization-ID": creds["org_id"],
+        "Accept": "application/json",
+    }
+    base = creds["api_base"]
+
+    # Accumulate sums across ALL pages
+    sum_fields = {
+        "currentAmount": 0.0,
+        "thirtyDaysAmount": 0.0,
+        "sixtyDaysAmount": 0.0,
+        "ninetyDaysAmount": 0.0,
+        "total": 0.0,
+        "insurancePortion": 0.0,
+        "guarantorPortion": 0.0,
+        "writeOff": 0.0,
+        "unappliedCreditsAmount": 0.0,
+        "balance": 0.0,
+    }
+    # Per-bucket insurance/guarantor/writeoff splits (May 2026 enrichment)
+    bucket_portions = {
+        "current_ins": 0.0, "current_guar": 0.0, "current_wo": 0.0,
+        "thirty_ins": 0.0, "thirty_guar": 0.0, "thirty_wo": 0.0,
+        "sixty_ins": 0.0, "sixty_guar": 0.0, "sixty_wo": 0.0,
+        "ninety_ins": 0.0, "ninety_guar": 0.0, "ninety_wo": 0.0,
+    }
+    all_patients = []
+    patient_count = 0
+    page = 1
+    pages_fetched = 0
+    had_data = False
+
+    while True:
+        try:
+            resp = requests.get(
+                f"{base}/v1/agingbalances/report",
+                headers=headers,
+                params={"filter": f"location.id=={location_id},page=={page}"},
+                timeout=30,
+            )
+            if resp.status_code == 401:
+                token = _get_token(creds)
+                headers["Authorization"] = f"Bearer {token}"
+                continue
+            if resp.status_code != 200:
+                if page > 1:
+                    break  # Pagination past end — normal
+                logger.error(f"AR report error: {resp.status_code} {resp.text[:200]}")
+                break
+
+            data = resp.json().get("data", {})
+            patients = data.get("patientReports", [])
+            if not patients:
+                break
+
+            had_data = True
+            pages_fetched = page
+
+            # Sum page-level totals into running accumulator
+            tp = data.get("totalPortions", {})
+            sum_fields["currentAmount"] += float(data.get("currentAmount") or 0)
+            sum_fields["thirtyDaysAmount"] += float(data.get("thirtyDaysAmount") or 0)
+            sum_fields["sixtyDaysAmount"] += float(data.get("sixtyDaysAmount") or 0)
+            sum_fields["ninetyDaysAmount"] += float(data.get("ninetyDaysAmount") or 0)
+            sum_fields["total"] += float(data.get("total") or 0)
+            sum_fields["insurancePortion"] += float(tp.get("insurancePortion") or 0)
+            sum_fields["guarantorPortion"] += float(tp.get("guarantorPortion") or 0)
+            sum_fields["writeOff"] += float(tp.get("writeOff") or 0)
+            sum_fields["unappliedCreditsAmount"] += float(data.get("unappliedCreditsAmount") or 0)
+            sum_fields["balance"] += float(data.get("balance") or 0)
+
+            # Per-bucket portion splits
+            cp = data.get("currentPortion") or {}
+            bucket_portions["current_ins"]  += float(cp.get("insurancePortion") or 0)
+            bucket_portions["current_guar"] += float(cp.get("guarantorPortion") or 0)
+            bucket_portions["current_wo"]   += float(cp.get("writeOff") or 0)
+            tdp = data.get("thirtyDaysPortion") or {}
+            bucket_portions["thirty_ins"]  += float(tdp.get("insurancePortion") or 0)
+            bucket_portions["thirty_guar"] += float(tdp.get("guarantorPortion") or 0)
+            bucket_portions["thirty_wo"]   += float(tdp.get("writeOff") or 0)
+            sdp = data.get("sixtyDaysPortion") or {}
+            bucket_portions["sixty_ins"]  += float(sdp.get("insurancePortion") or 0)
+            bucket_portions["sixty_guar"] += float(sdp.get("guarantorPortion") or 0)
+            bucket_portions["sixty_wo"]   += float(sdp.get("writeOff") or 0)
+            ndp = data.get("ninetyDaysPortion") or {}
+            bucket_portions["ninety_ins"]  += float(ndp.get("insurancePortion") or 0)
+            bucket_portions["ninety_guar"] += float(ndp.get("guarantorPortion") or 0)
+            bucket_portions["ninety_wo"]   += float(ndp.get("writeOff") or 0)
+
+            patient_count += len(patients)
+            if include_patients:
+                all_patients.extend(patients)
+
+            page += 1
+            time.sleep(0.05)
+
+        except requests.exceptions.Timeout:
+            logger.warning(f"AR report timeout on page {page} for location {location_id}")
+            break
+        except Exception as e:
+            logger.exception(f"AR report error on page {page}: {e}")
+            break
+
+    return {
+        "totals": sum_fields if had_data else None,
+        "bucket_portions": bucket_portions if had_data else None,
+        "patients": all_patients,
+        "patientCount": patient_count,
+        "pages": pages_fetched,
+    }
+
+
+def get_ar_summary(location_id: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Main entry point for dashboard A/R endpoint.
+    If location_id is given, returns that office's A/R.
+    If None, aggregates all 4 offices.
+    """
+    from datetime import date
+
+    if location_id:
+        report = fetch_aging_report(location_id, include_patients=False)
+        totals = report["totals"]
+        if totals is None:
+            return {"error": "Could not fetch AR data", "source": "dentrix_api"}
+
+        return {
+            "asOf": date.today().isoformat(),
+            "locationId": location_id,
+            "locationName": LOCATIONS.get(location_id, "Unknown"),
+            # Aging buckets
+            "current_0_30": totals["currentAmount"],
+            "aged_31_60": totals["thirtyDaysAmount"],
+            "aged_61_90": totals["sixtyDaysAmount"],
+            "aged_over_90": totals["ninetyDaysAmount"],
+            "totalAR": totals["total"],
+            # Portions
+            "insurancePortion": totals["insurancePortion"],
+            "guarantorPortion": totals["guarantorPortion"],
+            "estimatedWriteOff": totals["writeOff"],
+            "unappliedCredits": totals["unappliedCreditsAmount"],
+            "netBalance": totals["balance"],
+            # Patient count (from all pages, even when include_patients=False)
+            "patientCount": report["patientCount"],
+            "source": "dentrix_ascend_api",
+            "endpoint": "/v1/agingbalances/report",
+        }
+
+    # Aggregate all offices
+    agg = {
+        "current_0_30": 0, "aged_31_60": 0, "aged_61_90": 0, "aged_over_90": 0,
+        "totalAR": 0, "insurancePortion": 0, "guarantorPortion": 0,
+        "estimatedWriteOff": 0, "unappliedCredits": 0, "netBalance": 0,
+        "patientCount": 0,
+    }
+    offices = []
+
+    for loc_id, loc_name in LOCATIONS.items():
+        report = fetch_aging_report(loc_id, include_patients=False)
+        t = report["totals"]
+        if t is None:
+            continue
+
+        office_data = {
+            "locationId": loc_id,
+            "locationName": loc_name,
+            "current_0_30": t["currentAmount"],
+            "aged_31_60": t["thirtyDaysAmount"],
+            "aged_61_90": t["sixtyDaysAmount"],
+            "aged_over_90": t["ninetyDaysAmount"],
+            "totalAR": t["total"],
+            "insurancePortion": t["insurancePortion"],
+            "guarantorPortion": t["guarantorPortion"],
+            "estimatedWriteOff": t["writeOff"],
+            "unappliedCredits": t["unappliedCreditsAmount"],
+            "netBalance": t["balance"],
+            "patientCount": report["patientCount"],
+        }
+        offices.append(office_data)
+
+        for k in agg:
+            agg[k] += office_data[k]
+
+    return {
+        "asOf": date.today().isoformat(),
+        "locationId": None,
+        "locationName": "All Offices",
+        **agg,
+        "offices": offices,
+        "source": "dentrix_ascend_api",
+        "endpoint": "/v1/agingbalances/report",
+    }
+
+
+def get_ar_patients(location_id: str) -> Dict[str, Any]:
+    """
+    Return patient-level aging detail for a single location.
+    """
+    from datetime import date
+
+    report = fetch_aging_report(location_id)
+    patients = []
+    for p in report["patients"]:
+        bal = float(p.get("balance", 0))
+        if abs(bal) < 0.01 and float(p.get("unAppliedCredits", 0)) == 0:
+            continue  # Skip zero-balance patients
+        patients.append({
+            "patientId": p.get("id"),
+            "firstName": p.get("firstName"),
+            "lastName": p.get("lastName"),
+            "current": float(p.get("current", 0)),
+            "thirtyDays": float(p.get("thirtyDays", 0)),
+            "sixtyDays": float(p.get("sixtyDays", 0)),
+            "ninetyDays": float(p.get("ninetyDays", 0)),
+            "balance": bal,
+            "guarantorPortion": float(p.get("guarantorPortionBalance", 0)),
+            "insurancePortion": float(p.get("insurancePortionBalance", 0)),
+            "writeOff": float(p.get("writeOffBalance", 0)),
+            "unappliedCredits": float(p.get("unAppliedCredits", 0)),
+            "claimsPending": float(p.get("claimsPending", 0)),
+        })
+
+    # Sort by total balance descending
+    patients.sort(key=lambda x: abs(x["balance"]), reverse=True)
+
+    return {
+        "asOf": date.today().isoformat(),
+        "locationId": location_id,
+        "locationName": LOCATIONS.get(location_id, "Unknown"),
+        "patients": patients,
+        "count": len(patients),
+        "source": "dentrix_ascend_api",
+    }
+
+
+# ── Official AR Aging for Dentrix Daily Summary (May 2026) ───────────────────
+
+# Office UUID → Dentrix location ID mapping (same as main.py)
+_OFFICE_UUID_TO_LOC = __NUDASHBOARD_CONFIG_LITERAL_004__
+
+# In-memory cache: key = location_id or "all" → {data, ts}
+_ar_cache: Dict[str, Any] = {}
+_AR_CACHE_TTL = 900  # 15 minutes
+
+
+def _build_aging_shape(totals: dict, bp: dict) -> dict:
+    """Build the standardized total/insurance/patient shape from raw totals + bucket_portions."""
+    _r = lambda v: round(v, 2)
+    return {
+        "total": {
+            "current": _r(totals["currentAmount"]),
+            "b30": _r(totals["thirtyDaysAmount"]),
+            "b60": _r(totals["sixtyDaysAmount"]),
+            "b90": _r(totals["ninetyDaysAmount"]),
+            "total": _r(totals["total"]),
+        },
+        "insurance": {
+            "current": _r(bp["current_ins"]),
+            "b30": _r(bp["thirty_ins"]),
+            "b60": _r(bp["sixty_ins"]),
+            "b90": _r(bp["ninety_ins"]),
+            "total": _r(totals["insurancePortion"]),
+        },
+        "patient": {
+            "current": _r(bp["current_guar"]),
+            "b30": _r(bp["thirty_guar"]),
+            "b60": _r(bp["sixty_guar"]),
+            "b90": _r(bp["ninety_guar"]),
+            "total": _r(totals["guarantorPortion"]),
+        },
+        "unapplied_credits": _r(totals["unappliedCreditsAmount"]),
+        "estimated_writeoff": _r(totals["writeOff"]),
+        "net_balance": _r(totals["balance"]),
+    }
+
+
+def get_ar_official(location_id: Optional[str] = None) -> Dict[str, Any]:
+    """
+    Official Dentrix A/R Aging for the Daily Summary card.
+    Returns total/insurance/patient bucket splits from live Dentrix API.
+    Results cached for 15 minutes per scope.
+    """
+    from datetime import date, datetime, timezone
+
+    cache_key = location_id or "all"
+    now = time.time()
+
+    # Check cache
+    cached = _ar_cache.get(cache_key)
+    if cached and (now - cached["ts"]) < _AR_CACHE_TTL:
+        result = cached["data"].copy()
+        result["metadata"]["from_cache"] = True
+        return result
+
+    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    if location_id:
+        # Single office
+        report = fetch_aging_report(location_id, include_patients=False)
+        t = report["totals"]
+        bp = report["bucket_portions"]
+        if t is None or bp is None:
+            return {"error": "Could not fetch AR data from Dentrix", "source": "dentrix_api"}
+
+        shape = _build_aging_shape(t, bp)
+        result = {
+            "ar_aging": {
+                "as_of_date": date.today().isoformat(),
+                "source": "dentrix_ascend/agingbalances_report",
+                **shape,
+            },
+            "by_office": [{
+                "office_id": next((uid for uid, lid in _OFFICE_UUID_TO_LOC.items() if lid == location_id), None),
+                "location_id": location_id,
+                "office": LOCATIONS.get(location_id, "Unknown"),
+                **shape,
+            }],
+            "metadata": {
+                "source": "dentrix_ascend_api",
+                "dentrix_endpoint": "/v1/agingbalances/report",
+                "cached_at": now_iso,
+                "cache_ttl_minutes": _AR_CACHE_TTL // 60,
+                "patient_count": report["patientCount"],
+                "is_official_ar": True,
+                "date_basis": "as_of_current",
+                "from_cache": False,
+                "source_note": "Official Dentrix Ascend Aging Balances report. Current as-of live Dentrix pull; not a date-range report.",
+            },
+            "_source": "dentrix_ascend/agingbalances_report",
+        }
+
+    else:
+        # All offices — aggregate
+        agg_totals = {k: 0.0 for k in [
+            "currentAmount", "thirtyDaysAmount", "sixtyDaysAmount", "ninetyDaysAmount",
+            "total", "insurancePortion", "guarantorPortion", "writeOff",
+            "unappliedCreditsAmount", "balance",
+        ]}
+        agg_bp = {
+            "current_ins": 0.0, "current_guar": 0.0, "current_wo": 0.0,
+            "thirty_ins": 0.0, "thirty_guar": 0.0, "thirty_wo": 0.0,
+            "sixty_ins": 0.0, "sixty_guar": 0.0, "sixty_wo": 0.0,
+            "ninety_ins": 0.0, "ninety_guar": 0.0, "ninety_wo": 0.0,
+        }
+        offices = []
+        total_patients = 0
+
+        for loc_id, loc_name in LOCATIONS.items():
+            report = fetch_aging_report(loc_id, include_patients=False)
+            t = report["totals"]
+            bp = report["bucket_portions"]
+            if t is None or bp is None:
+                continue
+
+            shape = _build_aging_shape(t, bp)
+            uid = next((uid for uid, lid in _OFFICE_UUID_TO_LOC.items() if lid == loc_id), None)
+            offices.append({
+                "office_id": uid,
+                "location_id": loc_id,
+                "office": loc_name,
+                **shape,
+            })
+
+            for k in agg_totals:
+                agg_totals[k] += t[k]
+            for k in agg_bp:
+                agg_bp[k] += bp[k]
+            total_patients += report["patientCount"]
+
+        agg_shape = _build_aging_shape(agg_totals, agg_bp)
+        result = {
+            "ar_aging": {
+                "as_of_date": date.today().isoformat(),
+                "source": "dentrix_ascend/agingbalances_report",
+                **agg_shape,
+            },
+            "by_office": offices,
+            "metadata": {
+                "source": "dentrix_ascend_api",
+                "dentrix_endpoint": "/v1/agingbalances/report",
+                "cached_at": now_iso,
+                "cache_ttl_minutes": _AR_CACHE_TTL // 60,
+                "patient_count": total_patients,
+                "is_official_ar": True,
+                "date_basis": "as_of_current",
+                "from_cache": False,
+                "source_note": "Official Dentrix Ascend Aging Balances report. Current as-of live Dentrix pull; not a date-range report.",
+            },
+            "_source": "dentrix_ascend/agingbalances_report",
+        }
+
+    # Store in cache
+    _ar_cache[cache_key] = {"data": result, "ts": now}
+    return result

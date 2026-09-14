@@ -1,0 +1,781 @@
+"""
+payroll_report.py — NU Dental Provider Compensation Report Generator
+Generates per-provider HTML/PDF payroll reports for any pay period.
+Called by FastAPI endpoint /v2/reports/provider-compensation
+"""
+import sqlite3, datetime, os, zipfile, tempfile, subprocess, io
+from pathlib import Path
+from typing import Optional
+
+DB = Path(__file__).parent / "ascend.db"
+WEASYPRINT_BIN = "/home/linuxbrew/.linuxbrew/bin/weasyprint"
+
+# ── Excluded providers (no compensation report generated) ─────────────────────
+# Dr. G removed from exclusion per directive 2026-05-05 — same tier logic as other doctors
+EXCLUDED_PROVIDER_IDS: set = set()
+EXCLUDED_PROVIDER_NAMES: set = set()
+
+# ── Hygienist rate config ─────────────────────────────────────────────────────
+# Default 40%; explicitly named providers override to 45%
+HYGIENIST_RATE_45 = {"sheryl dubman"}          # lowercase full name
+HYGIENIST_DEFAULT_RATE = 0.40
+
+# ── Provider type classification ─────────────────────────────────────────────
+HYGIENIST_KEYWORDS = {"hygien", "hygn"}
+
+# ── Provider compensation location overrides ──────────────────────────────────
+# Restricts which procedure locations count toward a provider's compensation.
+# Applied to both pay-period collections AND monthly tier basis.
+# Filter uses procedures.location_id (service location), NOT payment location.
+PROVIDER_LOCATION_OVERRIDES = {
+    "14000000008422": {                       # Alan Schwartz
+        "allowed_location_ids": {"14000000000434"},  # Barnegat only
+        "label": "Alan Schwartz — Barnegat-only payroll override",
+        "basis": "procedure_location",
+        "reason": "Provider compensation restricted to Barnegat-only collections by Dr. G approval 2026-05-12",
+    },
+}
+
+def _get_location_override(provider_id: str):
+    """Return set of allowed location IDs for a provider, or None if no override."""
+    entry = PROVIDER_LOCATION_OVERRIDES.get(provider_id)
+    if entry:
+        return entry["allowed_location_ids"]
+    return None
+
+# ── Doctor tier rates ─────────────────────────────────────────────────────────
+def doctor_rate(monthly_total: float) -> float:
+    if monthly_total <= 50_000:  return 0.32
+    if monthly_total <= 65_000:  return 0.33
+    if monthly_total <= 80_000:  return 0.34
+    return 0.35
+
+def hygienist_rate(name: str) -> float:
+    return 0.45 if name.strip().lower() in HYGIENIST_RATE_45 else HYGIENIST_DEFAULT_RATE
+
+# ── DB helpers ────────────────────────────────────────────────────────────────
+def _db_conn():
+    conn = sqlite3.connect(str(DB))
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def _get_providers():
+    """Return list of active providers with id, name, specialty."""
+    conn = _db_conn()
+    rows = conn.execute("""
+        SELECT id,
+               TRIM(COALESCE(first_name,'') || ' ' || COALESCE(last_name,'')) AS name,
+               COALESCE(
+                 NULLIF(JSON_EXTRACT(raw, '$.title'), ''),
+                 NULLIF(JSON_EXTRACT(raw, '$.specialty'), ''),
+                 ''
+               ) AS specialty
+        FROM providers
+        WHERE is_active = 1
+          AND COALESCE(first_name,'') NOT LIKE '%Temp%'
+          AND COALESCE(last_name,'')  NOT LIKE '%Temp%'
+        ORDER BY last_name, first_name
+    """).fetchall()
+    conn.close()
+    return rows
+
+def _is_hygienist(specialty: str) -> bool:
+    s = (specialty or "").lower()
+    return any(k in s for k in HYGIENIST_KEYWORDS)
+
+def _collections_by_date(provider_id: str, start: str, end: str,
+                         allowed_locations: set | None = None) -> list:
+    """Returns list of {applied_date, applied_payments(+), charge_adj(+), net_coll} dicts.
+
+    If allowed_locations is provided, only distributions whose linked procedure
+    is at one of those locations (procedures.location_id) are included.
+    This powers the provider-location compensation override.
+    """
+    conn = _db_conn()
+
+    # Build optional location filter clause + params
+    loc_clause_pay = ""
+    loc_clause_adj = ""
+    loc_params_pay = []
+    loc_params_adj = []
+    if allowed_locations:
+        placeholders = ",".join("?" for _ in allowed_locations)
+        loc_clause_pay = f" AND pr.location_id IN ({placeholders})"
+        loc_clause_adj = f" AND pr2.location_id IN ({placeholders})"
+        loc_params_pay = list(allowed_locations)
+        loc_params_adj = list(allowed_locations)
+
+    sql = f"""
+        SELECT applied_date,
+               ROUND(SUM(applied_payments), 2) AS applied_payments,
+               ROUND(SUM(charge_adj), 2)        AS charge_adj,
+               ROUND(SUM(applied_payments)+SUM(charge_adj), 2) AS net_coll
+        FROM (
+            SELECT dl.transaction_date AS applied_date,
+                   ABS(dl.applied_amount)  AS applied_payments,
+                   0.0                     AS charge_adj
+            FROM distribution_lines dl
+            JOIN procedures pr ON pr.id = dl.charge_id
+            WHERE dl.transaction_date BETWEEN ? AND ?
+              AND dl.source_table IN ('patient_payments','insurance_payments')
+              AND dl.line_is_active = 1
+              AND dl.applied_amount < 0
+              AND COALESCE(dl.procedure_provider_id, pr.provider_id) = ?
+              {loc_clause_pay}
+            UNION ALL
+            SELECT dl.transaction_date, 0.0,
+                   CASE WHEN dl.applied_amount > 0 THEN dl.applied_amount ELSE 0 END
+            FROM distribution_lines dl
+            JOIN procedures pr2 ON pr2.id = dl.charge_id
+            WHERE dl.procedure_provider_id = ?
+              AND dl.transaction_date BETWEEN ? AND ?
+              AND dl.line_is_active = 1
+              AND dl.source_table = 'adjustments'
+              AND dl.applied_amount > 0
+              {loc_clause_adj}
+        ) x
+        GROUP BY applied_date
+        ORDER BY applied_date
+    """
+    params = [start, end, provider_id] + loc_params_pay + [provider_id, start, end] + loc_params_adj
+    rows = conn.execute(sql, params).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+def _production_by_date(provider_id: str, start: str, end: str) -> dict:
+    conn = _db_conn()
+    rows = conn.execute("""
+        SELECT DATE(entry_date) AS prod_date,
+               ROUND(SUM(CASE WHEN amount>0 AND is_active=1 THEN amount ELSE 0 END),2) AS gross,
+               ROUND(SUM(CASE WHEN amount<0 AND is_active=1 THEN ABS(amount) ELSE 0 END),2) AS adj
+        FROM procedures
+        WHERE provider_id = ?
+          AND DATE(entry_date) BETWEEN ? AND ?
+        GROUP BY DATE(entry_date)
+    """, (provider_id, start, end)).fetchall()
+    conn.close()
+    return {r["prod_date"]: dict(r) for r in rows}
+
+def _mtd_collections(provider_id: str, month_start: str, month_end: str,
+                     allowed_locations: set | None = None) -> float:
+    rows = _collections_by_date(provider_id, month_start, month_end,
+                                allowed_locations=allowed_locations)
+    return round(sum(r["applied_payments"] for r in rows), 2)
+
+def _month_bounds(date_str: str):
+    d = datetime.date.fromisoformat(date_str)
+    start = d.replace(day=1).isoformat()
+    import calendar
+    last = calendar.monthrange(d.year, d.month)[1]
+    end = d.replace(day=last).isoformat()
+    return start, end
+
+def ascend_reporting_period(pay_start: str, pay_end: str) -> tuple[str, str]:
+    """Map a payroll period to the corresponding Ascend reporting window.
+
+    Payroll labels remain unchanged. Ascend collections and production are
+    attributed one calendar day earlier at both boundaries.
+    """
+    payroll_start = datetime.date.fromisoformat(pay_start)
+    payroll_end = datetime.date.fromisoformat(pay_end)
+    if payroll_end < payroll_start:
+        raise ValueError("pay_end must be on or after pay_start")
+    one_day = datetime.timedelta(days=1)
+    return (payroll_start - one_day).isoformat(), (payroll_end - one_day).isoformat()
+
+def _fmt(d: str) -> str:
+    return datetime.datetime.strptime(d, "%Y-%m-%d").strftime("%b %d, %Y")
+
+def _m(v: float) -> str:
+    return "—" if v == 0 else f"${v:,.2f}"
+
+# ── HTML report builder ───────────────────────────────────────────────────────
+def build_html(provider_id: str, provider_name: str, specialty: str,
+               pay_start: str, pay_end: str) -> tuple[str, float, float]:
+    """
+    Returns (html_string, total_collections, total_compensation).
+    Handles split-month periods by applying each month's tier separately.
+    """
+    is_hyg  = _is_hygienist(specialty)
+    hyg_rate = hygienist_rate(provider_name) if is_hyg else None
+
+    # Location override (applies to collections AND tier basis)
+    loc_override = _get_location_override(provider_id)
+    ascend_start, ascend_end = ascend_reporting_period(pay_start, pay_end)
+
+    # Split the corresponding Ascend reporting window by month. The report's
+    # visible Pay Period label continues to use pay_start/pay_end.
+    from itertools import groupby
+    all_dates_in_period = []
+    cur = datetime.date.fromisoformat(ascend_start)
+    end_d = datetime.date.fromisoformat(ascend_end)
+    while cur <= end_d:
+        all_dates_in_period.append(cur.isoformat())
+        cur += datetime.timedelta(days=1)
+
+    months = {}
+    for d in all_dates_in_period:
+        mo = d[:7]
+        months.setdefault(mo, []).append(d)
+
+    # Gather data
+    coll_rows = _collections_by_date(provider_id, ascend_start, ascend_end,
+                                     allowed_locations=loc_override)
+    prod_rows = _production_by_date(provider_id, ascend_start, ascend_end)
+    coll_by_date = {r["applied_date"]: r for r in coll_rows}
+    prod_by_date  = prod_rows
+
+    # Per-month MTD and rates
+    month_meta = {}
+    for mo, dates in months.items():
+        mo_start, mo_end_full = _month_bounds(dates[0])
+        # Use end of period within that month as MTD cutoff
+        mo_period_end = dates[-1]
+        mtd = _mtd_collections(provider_id, mo_start, mo_period_end,
+                               allowed_locations=loc_override)
+        rate = hyg_rate if is_hyg else doctor_rate(mtd)
+        month_meta[mo] = {"start": mo_start, "mtd": mtd, "rate": rate,
+                           "dates": dates, "label": datetime.datetime.strptime(mo+"-01","%Y-%m-%d").strftime("%B %Y")}
+
+    # Build sections
+    sections_html = ""
+    grand_coll = grand_gross = grand_adj = grand_net = grand_comp = 0.0
+
+    for mo, meta in sorted(month_meta.items()):
+        dates = sorted(meta["dates"], reverse=True)
+        rate  = meta["rate"]
+        rows_html = ""
+        mo_coll = mo_gross = mo_adj = mo_net = 0.0
+        for d in dates:
+            co    = coll_by_date.get(d, {})
+            pr    = prod_by_date.get(d, {})
+            coll  = float(co.get("applied_payments") or 0)
+            gross = float(pr.get("gross") or 0)
+            adj   = float(pr.get("adj") or 0)
+            net   = round(gross - adj, 2)
+            mo_coll  += coll
+            mo_gross += gross
+            mo_adj   += adj
+            mo_net   += net
+            rows_html += f"""
+            <tr>
+              <td>{_fmt(d)}</td><td>Barnegat</td><td>—</td><td>—</td><td>—</td>
+              <td class='num'>{_m(gross)}</td>
+              <td class='num'>{_m(adj)}</td>
+              <td class='num'>{_m(net)}</td>
+              <td class='num bold'>{_m(coll)}</td>
+            </tr>"""
+
+        mo_coll  = round(mo_coll,  2)
+        mo_gross = round(mo_gross, 2)
+        mo_adj   = round(mo_adj,   2)
+        mo_net   = round(mo_net,   2)
+        mo_comp  = round(mo_coll * rate, 2)
+
+        mtd_note = f"MTD ${meta['mtd']:,.2f}" if not is_hyg else "Hygienist"
+        tier_note = f"{int(rate*100)}% ({mtd_note})"
+
+        sections_html += f"""
+        <tr class='section-hdr'>
+          <td colspan='9'>{meta['label']} — Rate: <strong>{tier_note}</strong> &nbsp;|&nbsp;
+          Collections: <strong>${mo_coll:,.2f}</strong> &nbsp;|&nbsp;
+          Comp: <strong>${mo_comp:,.2f}</strong></td>
+        </tr>
+        {rows_html}
+        <tr class='section-sub'>
+          <td colspan='5'>{meta['label']} Subtotal</td>
+          <td class='num'>${mo_gross:,.2f}</td>
+          <td class='num'>${mo_adj:,.2f}</td>
+          <td class='num'>${mo_net:,.2f}</td>
+          <td class='num'>${mo_coll:,.2f}</td>
+        </tr>"""
+
+        grand_coll  += mo_coll
+        grand_gross += mo_gross
+        grand_adj   += mo_adj
+        grand_net   += mo_net
+        grand_comp  += mo_comp
+
+    grand_coll  = round(grand_coll,  2)
+    grand_gross = round(grand_gross, 2)
+    grand_adj   = round(grand_adj,   2)
+    grand_net   = round(grand_net,   2)
+    grand_comp  = round(grand_comp,  2)
+
+    provider_type = "Hygienist" if is_hyg else "Doctor"
+    rate_display  = f"{int(hyg_rate*100)}%" if is_hyg else " / ".join(
+        f"{int(meta['rate']*100)}%" for meta in month_meta.values())
+    generated = datetime.datetime.now().strftime("%b %d, %Y")
+
+    # Rate badge line for info bar
+    rate_items = ""
+    for mo, meta in sorted(month_meta.items()):
+        lbl = meta["label"]
+        rate_items += f"""
+        <div class='info-item'>
+          <span class='info-label'>{lbl} Rate</span>
+          <span class='info-value'>{int(meta['rate']*100)}%
+            <small style='font-weight:400;font-size:8px;'>
+              {"Hygienist" if is_hyg else f"MTD ${meta['mtd']:,.2f}"}
+            </small>
+          </span>
+        </div>"""
+
+    html = f"""<!DOCTYPE html>
+<html><head><meta charset='utf-8'>
+<style>
+  @page {{ size: letter landscape; margin: 0.4in 0.5in 0.4in 0.5in; }}
+  * {{ box-sizing: border-box; margin:0; padding:0; }}
+  body {{ font-family: Arial, sans-serif; font-size: 10px; color: #1a1a1a; background:#fff; }}
+  .header {{ display:flex; justify-content:space-between; align-items:flex-start;
+             border-bottom: 3px solid #1a3a5c; padding-bottom:7px; margin-bottom:8px; }}
+  .header-left h1 {{ font-size:15px; color:#1a3a5c; font-weight:800; }}
+  .header-left p  {{ font-size:8.5px; color:#777; margin-top:2px; }}
+  .header-right   {{ text-align:right; font-size:8.5px; color:#888; }}
+  .header-right strong {{ display:block; font-size:11px; color:#1a3a5c; }}
+  .info-bar {{ display:flex; flex-wrap:wrap; gap:12px; margin-bottom:8px; background:#f0f4f8;
+               border-radius:6px; padding:7px 12px; border-left:4px solid #1a3a5c; }}
+  .info-item {{ display:flex; flex-direction:column; }}
+  .info-label {{ font-size:7.5px; color:#888; text-transform:uppercase; letter-spacing:0.5px; }}
+  .info-value {{ font-size:10.5px; font-weight:700; color:#1a3a5c; }}
+  .kpis {{ display:flex; gap:10px; margin-bottom:9px; }}
+  .kpi  {{ flex:1; text-align:center; border-radius:7px; padding:8px 5px; }}
+  .kpi-c {{ background:#1a3a5c; color:#fff; }}
+  .kpi-r {{ background:#f4c430; color:#1a3a5c; }}
+  .kpi-p {{ background:#27ae60; color:#fff; }}
+  .kpi-label {{ font-size:7.5px; text-transform:uppercase; letter-spacing:0.8px; opacity:0.85; }}
+  .kpi-value {{ font-size:18px; font-weight:800; margin-top:2px; }}
+  .kpi-sub   {{ font-size:7.5px; opacity:0.75; margin-top:1px; }}
+  table {{ width:100%; border-collapse:collapse; font-size:9.5px; }}
+  thead tr {{ background:#1a3a5c; color:#fff; }}
+  thead th {{ padding:5px 7px; text-align:left; font-size:8.5px;
+              text-transform:uppercase; letter-spacing:0.4px; }}
+  thead th.num {{ text-align:right; }}
+  tbody tr:nth-child(even) {{ background:#f7f9fc; }}
+  tbody td {{ padding:4px 7px; border-bottom:1px solid #e8edf2; }}
+  .num  {{ text-align:right; font-variant-numeric: tabular-nums; }}
+  .bold {{ font-weight:700; color:#1a5276; }}
+  .section-hdr td {{ background:#2c3e50; color:#fff; font-size:9px;
+                     font-weight:600; padding:4px 7px; border:none; }}
+  .section-sub td {{ background:#d5e8f5; font-weight:700;
+                     border-top:2px solid #1a3a5c; font-size:9.5px;
+                     padding:4px 7px; }}
+  .section-sub td.num {{ text-align:right; }}
+  tfoot td {{ background:#1a3a5c; color:#fff; font-weight:700;
+              padding:5px 7px; font-size:10px; border:none; }}
+  tfoot td.num {{ text-align:right; }}
+  .summary-bar {{ margin-top:8px; background:#eafaf1; border:1px solid #27ae60;
+                  border-radius:6px; padding:7px 12px; display:flex;
+                  justify-content:space-between; align-items:center; }}
+  .summary-left {{ font-size:8.5px; color:#555; line-height:1.8; }}
+  .summary-right .pay-amount {{ font-size:17px; font-weight:800; color:#1e8449; }}
+  .summary-right .pay-label  {{ font-size:8px; color:#888; text-transform:uppercase; }}
+  .reconcile {{ font-size:7.5px; color:#999; margin-top:3px; font-style:italic;
+                border-top:1px solid #ddd; padding-top:3px; }}
+</style>
+</head><body>
+<div class='header'>
+  <div class='header-left'>
+    <h1>NU DENTAL — Provider Compensation Report</h1>
+    <p>Confidential — For Internal Use Only &nbsp;|&nbsp; nudashboard.com</p>
+  </div>
+  <div class='header-right'>
+    <strong>Generated: {generated}</strong>nudashboard.com
+  </div>
+</div>
+<div class='info-bar'>
+  <div class='info-item'><span class='info-label'>Provider</span>
+    <span class='info-value'>{provider_name}</span></div>
+  <div class='info-item'><span class='info-label'>Provider Type</span>
+    <span class='info-value'>{provider_type}</span></div>
+  <div class='info-item'><span class='info-label'>Office(s)</span>
+    <span class='info-value'>Barnegat</span></div>
+  <div class='info-item'><span class='info-label'>Pay Period</span>
+    <span class='info-value'>{_fmt(pay_start)} – {_fmt(pay_end)}</span></div>
+  <div class='info-item'><span class='info-label'>Ascend Report</span>
+    <span class='info-value'>{_fmt(ascend_start)} – {_fmt(ascend_end)}</span></div>
+  {rate_items}
+  <div class='info-item'><span class='info-label'>Total Collections</span>
+    <span class='info-value'>${grand_coll:,.2f}</span></div>
+  <div class='info-item'><span class='info-label'>Total Comp</span>
+    <span class='info-value' style='color:#1e8449;'>${grand_comp:,.2f}</span></div>
+</div>
+<div class='kpis'>
+  <div class='kpi kpi-c'>
+    <div class='kpi-label'>Total Collections (Period)</div>
+    <div class='kpi-value'>${grand_coll:,.2f}</div>
+    <div class='kpi-sub'>Ascend: {_fmt(ascend_start)} – {_fmt(ascend_end)}</div>
+  </div>
+  <div class='kpi kpi-r'>
+    <div class='kpi-label'>Compensation Rate</div>
+    <div class='kpi-value'>{rate_display}</div>
+    <div class='kpi-sub'>{"Hygienist flat rate" if is_hyg else "Doctor monthly tier"}</div>
+  </div>
+  <div class='kpi kpi-p'>
+    <div class='kpi-label'>Estimated Compensation</div>
+    <div class='kpi-value'>${grand_comp:,.2f}</div>
+    <div class='kpi-sub'>Based on period collections</div>
+  </div>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>Date</th><th>Office</th><th>Patient</th><th>Payment Type</th><th>Procedure</th>
+      <th class='num'>Gross Prod.</th><th class='num'>Adjustment</th>
+      <th class='num'>Net Prod.</th><th class='num'>Collection</th>
+    </tr>
+  </thead>
+  <tbody>{sections_html}</tbody>
+  <tfoot>
+    <tr>
+      <td colspan='5'><strong>GRAND TOTAL — {provider_name} &nbsp;|&nbsp;
+        {_fmt(pay_start)} to {_fmt(pay_end)}</strong></td>
+      <td class='num'>${grand_gross:,.2f}</td>
+      <td class='num'>${grand_adj:,.2f}</td>
+      <td class='num'>${grand_net:,.2f}</td>
+      <td class='num'>${grand_coll:,.2f}</td>
+    </tr>
+  </tfoot>
+</table>
+<div class='summary-bar'>
+  <div class='summary-left'>
+    <strong>Report Summary</strong><br>
+    {"".join(
+        f"{meta['label']}: Collections ${round(sum(float(coll_by_date.get(d,{}).get('applied_payments',0)) for d in meta['dates']),2):,.2f} @ {int(meta['rate']*100)}% = "
+        f"<strong>${round(sum(float(coll_by_date.get(d,{}).get('applied_payments',0)) for d in meta['dates'])*meta['rate'],2):,.2f}</strong> &nbsp;|&nbsp; "
+        for meta in sorted(month_meta.values(), key=lambda x: x['label'])
+    )}
+    Total Payable: <strong>${grand_comp:,.2f}</strong>
+    {"<br><span style='color:#e74c3c;font-size:8px;'>⚠ Provisional rates — recalculates at month-end if tier changes.</span>" if not is_hyg else ""}
+    <div class='reconcile'>
+      ✓ Reconciled — Total collections match dashboard: ${grand_coll:,.2f} &nbsp;|&nbsp;
+      Source: Dentrix Ascend via NU Dental Dashboard API. No Gusto data. No proration. Confidential.
+    </div>
+  </div>
+  <div class='summary-right'>
+    <div class='pay-label'>Total Payable</div>
+    <div class='pay-amount'>${grand_comp:,.2f}</div>
+  </div>
+</div>
+</body></html>"""
+
+    return html, grand_coll, grand_comp
+
+
+def generate_all_reports(pay_start: str, pay_end: str,
+                         output_dir: Optional[str] = None) -> str:
+    """
+    Generate PDF + HTML for every active provider with collections > 0.
+    Returns path to ZIP file containing all reports.
+    """
+    if output_dir is None:
+        output_dir = tempfile.mkdtemp(prefix="nudental_payroll_")
+
+    providers = _get_providers()
+    zip_path = os.path.join(output_dir, f"NUDental_PayrollReports_{pay_start}_to_{pay_end}.zip")
+
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
+        for p in providers:
+            pid      = p["id"]
+            name     = p["name"]
+            spec     = p["specialty"]
+
+            # Skip owner
+            if pid in EXCLUDED_PROVIDER_IDS or name.strip().lower() in EXCLUDED_PROVIDER_NAMES:
+                continue
+
+            # Quick check: any collections in period? (respects location override)
+            loc_override = _get_location_override(pid)
+            ascend_start, ascend_end = ascend_reporting_period(pay_start, pay_end)
+            coll_rows = _collections_by_date(pid, ascend_start, ascend_end,
+                                             allowed_locations=loc_override)
+            total_coll = sum(r["applied_payments"] for r in coll_rows)
+            if total_coll <= 0:
+                continue
+
+            html, coll, comp = build_html(pid, name, spec, pay_start, pay_end)
+
+            safe_name = name.replace(" ", "_").replace(",", "").replace(".", "")
+            html_name = f"{safe_name}_PayrollReport_{pay_start}_to_{pay_end}.html"
+            pdf_name  = f"{safe_name}_PayrollReport_{pay_start}_to_{pay_end}.pdf"
+
+            html_path = os.path.join(output_dir, html_name)
+            pdf_path  = os.path.join(output_dir, pdf_name)
+
+            with open(html_path, "w") as f:
+                f.write(html)
+
+            # PDF via weasyprint
+            try:
+                subprocess.run(
+                    [WEASYPRINT_BIN, html_path, pdf_path],
+                    check=True, capture_output=True, timeout=30
+                )
+                zf.write(pdf_path,  pdf_name)
+            except Exception as e:
+                print(f"  PDF failed for {name}: {e}")
+
+            zf.write(html_path, html_name)
+            print(f"  ✓ {name}: collections=${coll:,.2f}  comp=${comp:,.2f}")
+
+    return zip_path
+
+
+# ── Provider email map (hardcoded fallback — Supabase providers.email is primary) ──
+# Kept as fallback only; primary source is providers.email in Supabase.
+PROVIDER_EMAIL_MAP: dict = {
+    "alan schwartz":        __NUDASHBOARD_CONFIG_LITERAL_041__,
+    "tracy bushman":        __NUDASHBOARD_CONFIG_LITERAL_042__,
+    "sheryl dubman":        __NUDASHBOARD_CONFIG_LITERAL_043__,
+    "katherine soto":       __NUDASHBOARD_CONFIG_LITERAL_044__,
+    "rawan abuzahrieh":     __NUDASHBOARD_CONFIG_LITERAL_045__,
+    "christina schembari":  __NUDASHBOARD_CONFIG_LITERAL_046__,
+    "alyssa marie":         __NUDASHBOARD_CONFIG_LITERAL_047__,
+    "james clifford rigby": __NUDASHBOARD_CONFIG_LITERAL_048__,
+    "norman margolies":     __NUDASHBOARD_CONFIG_LITERAL_049__,
+    "nelson wollek":        __NUDASHBOARD_CONFIG_LITERAL_050__,
+    "mark henin":           __NUDASHBOARD_CONFIG_LITERAL_051__,
+    "glenn marie":          __NUDASHBOARD_CONFIG_LITERAL_052__,
+    "amtul siddiqui":       __NUDASHBOARD_CONFIG_LITERAL_053__,
+    "admasu gizachew":      __NUDASHBOARD_CONFIG_LITERAL_054__,
+    "john fitzpatrick":     __NUDASHBOARD_CONFIG_LITERAL_055__,
+}
+
+# Name aliases for normalisation (first-name variants)
+_NAME_ALIASES: dict = {"kat": "katherine", "katherine": "kat", "jeff": "james", "jeffrey": "james"}
+# Rigby special case: DB stores "Jeffrey C Rigby", map key is "james clifford rigby"
+_RIGBY_NORMS: set = {"jeffrey c rigby", "jeffrey rigby"}
+
+GOG_SEND_ACCOUNT = __NUDASHBOARD_CONFIG_LITERAL_056__
+
+import re as _re, json as _json, urllib.request as _urllib_req, logging as _logging
+
+_provider_email_logger = _logging.getLogger("payroll_report.email_lookup")
+
+def _normalize_provider_name(name: str) -> str:
+    """Strip titles (Dr./DDS/DMD), handle 'Last, First' format, collapse whitespace."""
+    n = name.strip()
+    # Handle "Last, First" → "First Last" before punctuation removal
+    if "," in n and "temp" not in n.lower():
+        parts = n.split(",", 1)
+        n = f"{parts[1].strip()} {parts[0].strip()}"
+    n = n.lower()
+    for title in ["dr.", "dr ", " dds", " dmd"]:
+        n = n.replace(title, "")
+    n = _re.sub(r"[.,]", "", n)
+    n = _re.sub(r"\s+", " ", n).strip()
+    return n
+
+
+def _lookup_hardcoded(norm: str) -> Optional[str]:
+    """Fallback: check PROVIDER_EMAIL_MAP with fuzzy matching."""
+    # Exact match
+    if norm in PROVIDER_EMAIL_MAP:
+        return PROVIDER_EMAIL_MAP[norm]
+    # Rigby alias
+    if norm in _RIGBY_NORMS:
+        return PROVIDER_EMAIL_MAP.get("james clifford rigby")
+    # First + last only (drop middle initial/name)
+    parts = norm.split()
+    if len(parts) >= 2:
+        short = f"{parts[0]} {parts[-1]}"
+        if short in PROVIDER_EMAIL_MAP:
+            return PROVIDER_EMAIL_MAP[short]
+    # First-name alias (kat ↔ katherine, jeffrey → james)
+    if parts:
+        alt = _NAME_ALIASES.get(parts[0])
+        if alt:
+            alt_name = f"{alt} {' '.join(parts[1:])}"
+            if alt_name in PROVIDER_EMAIL_MAP:
+                return PROVIDER_EMAIL_MAP[alt_name]
+    return None
+
+
+def _query_supabase_provider_email(norm: str) -> Optional[str]:
+    """Query Supabase providers table for email by normalized name match."""
+    try:
+        cfg_path = "/home/openclaw/.config/supabase/nudental.json"
+        with open(cfg_path) as f:
+            cfg = _json.load(f)
+        sb_url = cfg["project_url"]
+        sb_key = cfg["secret_key"]
+        # Fetch active providers with email set
+        url = f"{sb_url}/rest/v1/providers?is_active=eq.true&email=neq.&select=name,email&limit=200"
+        req = _urllib_req.Request(url, headers={
+            "apikey": sb_key,
+            "Authorization": f"Bearer {sb_key}",
+        })
+        with _urllib_req.urlopen(req, timeout=10) as r:
+            rows = _json.loads(r.read())
+        for row in rows:
+            db_norm = _normalize_provider_name(row.get("name", ""))
+            if db_norm == norm and row.get("email"):
+                return row["email"]
+    except Exception as exc:
+        _provider_email_logger.warning("Supabase provider email lookup failed: %s", exc)
+    return None
+
+
+def get_provider_email(name: str) -> Optional[str]:
+    """
+    Resolve provider email.
+    1. Normalize the input name (strip Dr./DDS/DMD, handle Last-First, etc.)
+    2. Query Supabase providers.email (primary source of truth)
+    3. Fall back to hardcoded PROVIDER_EMAIL_MAP
+    4. Log lookup failures (no PHI, no UUIDs)
+    """
+    norm = _normalize_provider_name(name)
+    # 1. Supabase providers.email
+    email = _query_supabase_provider_email(norm)
+    if email:
+        return email
+    # 2. Hardcoded fallback
+    email = _lookup_hardcoded(norm)
+    if email:
+        return email
+    # 3. Log miss
+    _provider_email_logger.info("No email found for provider: %s (normalized: %s)", name, norm)
+    return None
+
+def send_report_to_provider(provider_name: str, provider_email: str,
+                             pay_start: str, pay_end: str,
+                             pdf_path: str, html_str: str,
+                             total_coll: float, total_comp: float) -> bool:
+    """Email the provider their individual compensation report (PDF attached)."""
+    import subprocess, shlex
+
+    payday_map = {
+        # Approximate payday based on period end — can be made smarter
+    }
+    ascend_start, ascend_end = ascend_reporting_period(pay_start, pay_end)
+
+    subject = (f"NU Dental — Your Compensation Report | "
+               f"{_fmt(pay_start)} – {_fmt(pay_end)}")
+
+    body = f"""<div style="font-family:Arial,sans-serif;font-size:13px;color:#222;max-width:520px;">
+<p>Dear {provider_name.split()[-1] if ' ' in provider_name else provider_name},</p>
+<p>Please find attached your NU Dental compensation report for the pay period
+<strong>{_fmt(pay_start)} – {_fmt(pay_end)}</strong>.</p>
+<table style="border-collapse:collapse;margin:16px 0;width:100%;max-width:400px;">
+  <tr style="background:#1a3a5c;color:#fff;">
+    <th style="padding:8px 14px;text-align:left;">Detail</th>
+    <th style="padding:8px 14px;text-align:right;">Amount</th>
+  </tr>
+  <tr>
+    <td style="padding:7px 14px;border-bottom:1px solid #eee;">Total Collections</td>
+    <td style="padding:7px 14px;text-align:right;border-bottom:1px solid #eee;">${total_coll:,.2f}</td>
+  </tr>
+  <tr style="background:#eafaf1;">
+    <td style="padding:7px 14px;font-weight:700;">Estimated Compensation</td>
+    <td style="padding:7px 14px;text-align:right;font-weight:700;color:#1e8449;">${total_comp:,.2f}</td>
+  </tr>
+</table>
+<p style="font-size:11px;color:#888;">
+  This is a preliminary report for the pay period above, based on Ascend activity
+  from {_fmt(ascend_start)} through {_fmt(ascend_end)}.
+  Final amounts are subject to month-end reconciliation if your monthly collections
+  cross a compensation tier threshold.<br><br>
+  Questions? Contact <a href="mailto:__NUDASHBOARD_CONFIG_LITERAL_057__">__NUDASHBOARD_CONFIG_LITERAL_058__</a>.
+</p>
+<p>Best regards,<br><strong>NU Dental Administration</strong></p>
+</div>"""
+
+    cmd = [
+        "gog", "gmail", "send",
+        "--account", GOG_SEND_ACCOUNT,
+        "--to",      provider_email,
+        "--subject", subject,
+        "--body-html", body,
+        "--attach",  pdf_path,
+        "--no-input"
+    ]
+    env = {**os.environ, "GOG_ACCOUNT": GOG_SEND_ACCOUNT}
+    try:
+        result = subprocess.run(cmd, env=env, capture_output=True, text=True, timeout=30)
+        return result.returncode == 0
+    except Exception as e:
+        print(f"  Email failed for {provider_name}: {e}")
+        return False
+
+
+def send_all_reports(pay_start: str, pay_end: str, output_dir: Optional[str] = None,
+                     dry_run: bool = False) -> dict:
+    """
+    Generate + email individual reports to all providers with known emails.
+    Returns summary of sent / skipped / failed.
+    """
+    if output_dir is None:
+        output_dir = tempfile.mkdtemp(prefix="nudental_payroll_email_")
+
+    providers = _get_providers()
+    results = {"sent": [], "skipped": [], "failed": [], "no_email": []}
+
+    for p in providers:
+        pid   = p["id"]
+        name  = p["name"]
+        spec  = p["specialty"]
+
+        # Skip owner and placeholders
+        if pid in EXCLUDED_PROVIDER_IDS or name.strip().lower() in EXCLUDED_PROVIDER_NAMES:
+            results["skipped"].append(f"{name} (owner — excluded)")
+            continue
+        if any(x in name.lower() for x in ["temp", "nu dental provider", "nu dental of"]):
+            results["skipped"].append(name)
+            continue
+
+        loc_override = _get_location_override(pid)
+        ascend_start, ascend_end = ascend_reporting_period(pay_start, pay_end)
+        coll_rows  = _collections_by_date(pid, ascend_start, ascend_end,
+                                          allowed_locations=loc_override)
+        total_coll = sum(r["applied_payments"] for r in coll_rows)
+        if total_coll <= 0:
+            results["skipped"].append(f"{name} (no collections)")
+            continue
+
+        email = get_provider_email(name)
+        if not email:
+            results["no_email"].append(name)
+            continue
+
+        html_str, coll, comp = build_html(pid, name, spec, pay_start, pay_end)
+
+        safe   = name.replace(" ","_").replace(",","").replace(".","")
+        html_p = os.path.join(output_dir, f"{safe}_{pay_start}_to_{pay_end}.html")
+        pdf_p  = os.path.join(output_dir, f"{safe}_{pay_start}_to_{pay_end}.pdf")
+
+        with open(html_p, "w") as f:
+            f.write(html_str)
+
+        try:
+            subprocess.run([WEASYPRINT_BIN, html_p, pdf_p],
+                           check=True, capture_output=True, timeout=30)
+        except Exception as e:
+            results["failed"].append(f"{name} (PDF error: {e})")
+            continue
+
+        if dry_run:
+            print(f"  [DRY RUN] Would email {name} → {email}  comp=${comp:,.2f}")
+            results["sent"].append({"name": name, "email": email,
+                                    "collections": coll, "compensation": comp})
+            continue
+
+        ok = send_report_to_provider(name, email, pay_start, pay_end, pdf_p, html_str, coll, comp)
+        if ok:
+            print(f"  ✓ Emailed {name} → {email}  comp=${comp:,.2f}")
+            results["sent"].append({"name": name, "email": email,
+                                    "collections": coll, "compensation": comp})
+        else:
+            results["failed"].append(name)
+
+    return results
+
+
+if __name__ == "__main__":
+    import sys
+    start = sys.argv[1] if len(sys.argv) > 1 else "2026-04-13"
+    end   = sys.argv[2] if len(sys.argv) > 2 else "2026-04-24"
+    out   = sys.argv[3] if len(sys.argv) > 3 else "/tmp/nudental_payroll"
+    os.makedirs(out, exist_ok=True)
+    print(f"Generating reports for {start} → {end}...")
+    zip_path = generate_all_reports(start, end, out)
+    print(f"\nDone → {zip_path}")

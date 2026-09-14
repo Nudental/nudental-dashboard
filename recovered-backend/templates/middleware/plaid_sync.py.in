@@ -1,0 +1,1256 @@
+#!/usr/bin/env python3
+"""
+plaid_sync.py — Automated Plaid sync for NuDashboard
+Runs nightly via cron. Syncs:
+  1. AmEx vendor charges  → expenses (positive, non-payment only) + amex_raw_transactions
+  2. AmEx refunds/credits → amex_raw_transactions ONLY (original negative sign preserved, NOT in expenses)
+  3. AmEx payments        → amex_payments + amex_raw_transactions (original negative sign, NOT in expenses)
+  4. WF transactions      → expenses (source_tab=Banking) + sync log
+  5. Account balances     → amex_sync_logs
+
+AmEx sign rule (Plaid convention):
+  positive amount = cardholder charge (money out) → vendor_charge → expenses
+  negative amount = credit card payment or refund  → raw only, never flipped to positive
+
+Usage:
+  python3 plaid_sync.py [--days N] [--full]
+  --days N   : pull last N days (default: 7)
+  --full     : pull full 730 days / 24 months (historical backfill)
+"""
+
+import sys
+import json
+import uuid
+import logging
+import argparse
+import datetime
+import time
+import urllib.request
+import urllib.error
+from pathlib import Path
+from collections import defaultdict
+
+# ── Logging ──────────────────────────────────────────────────────────────────
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [plaid_sync] %(levelname)s %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout),
+        logging.FileHandler("/tmp/plaid_sync.log"),
+    ]
+)
+log = logging.getLogger("plaid_sync")
+
+# ── Config ───────────────────────────────────────────────────────────────────
+PLAID_CFG        = Path.home() / ".config/plaid/nudental.json"
+PLAID_TOKENS_FILE = Path.home() / ".config/plaid/access_tokens.json"
+CARDHOLDER_CFG   = Path.home() / ".config/plaid/amex_cardholders.json"
+SB_CFG           = Path.home() / ".config/supabase/nudental.json"
+MIDDLEWARE       = "http://localhost:8001"
+
+# ── Historical lookback constants ────────────────────────────────────────────
+# Used only by --full mode for one-time historical pulls.
+# Nightly cron uses --days 7 (incremental) and is unaffected by this constant.
+# Plaid /transactions/get supports up to 24 months (730 days) for most institutions.
+FULL_HISTORICAL_LOOKBACK_DAYS = 730
+
+PAYMENT_KEYWORDS = [
+    "payment - thank you", "autopay payment", "mobile payment",
+    "online payment", "payment received", "web payment"
+]
+
+# Keywords that identify vendor refunds, credits, and adjustments (negative AmEx charges).
+# These are NOT payments — they are offsets to vendor charges and must be stored in
+# amex_raw_transactions with original negative sign but NOT promoted to expenses as positive.
+REFUND_KEYWORDS = [
+    "refund", "credit", "cr adj", "adj for finance", "return", "reversal",
+    "chargeback", "dispute", "rebate",
+]
+
+# Office UUID map — used when assigning office_id on AmEx expense rows.
+AMEX_OFFICE_ID_MAP = __NUDASHBOARD_CONFIG_LITERAL_059__
+
+
+def classify_amex_transaction(amount, name_lc):
+    """
+    Return an amex_transaction_type string for use in allocation_metadata.
+    Values:
+      vendor_charge        — true outflow to a vendor; promote to expenses
+      amex_payment         — bill payment / autopay / mobile payment; goes to amex_payments only
+      refund               — vendor-issued refund (negative charge); raw only
+      credit_adjustment    — other credit or adjustment (negative, unknown type); raw only
+    """
+    if amount > 0:
+        return "vendor_charge"
+    # Negative amount
+    if any(k in name_lc for k in PAYMENT_KEYWORDS):
+        return "amex_payment"
+    if any(k in name_lc for k in REFUND_KEYWORDS):
+        return "refund"
+    return "credit_adjustment"
+
+# ── Wells Fargo Account Map ───────────────────────────────────────────────────
+# Keyed by account mask (last 4 digits as string).
+# account_role values:
+#   main_operating              — office primary checking
+#   main_operating_corporate_shared — Eatontown main; also used for corporate-wide payments
+#   eft_clearing                — EFT/ACH clearing account; reconciliation only, not expense
+#   needs_review                — unknown card/account; flag for manual review
+WF_ACCOUNT_MAP = __NUDASHBOARD_CONFIG_LITERAL_060__
+
+# EFT account masks — transactions here are clearing/reconciliation only.
+WF_EFT_MASKS = __NUDASHBOARD_CONFIG_LITERAL_061__
+
+# Keywords on account 3526 (Eatontown Main / Corporate Shared) that indicate
+# a corporate-wide funding/payroll/transfer — NOT a vendor expense.
+# Only items that are true internal movements or payroll funding belong here.
+# Real vendor expenses (rent, insurance premiums, loans) stay as Eatontown.
+# Updated 2026-05-18: Narrowed to exclude real operating expenses (rent, insurance,
+# loan payments) that were incorrectly classified as corporate allocation.
+WF_CORPORATE_SHARED_KEYWORDS = __NUDASHBOARD_CONFIG_LITERAL_062__
+
+# ── WF Operating Expense Categories ──────────────────────────────────────────
+# Plaid personal_finance_category primary values that are ALWAYS true operating
+# expenses. When a WF main-account transaction has one of these categories,
+# it gets wf_classification=main_operating_direct_expense regardless of
+# other heuristics (unless it's an EFT clearing account).
+# Updated 2026-05-18: Added to ensure rent, utilities, insurance, loan payments,
+# bank fees, tax/regulatory, medical, and general vendor services are counted.
+WF_OPERATING_EXPENSE_CATEGORIES = __NUDASHBOARD_CONFIG_LITERAL_063__
+
+# ── WF Internal Transfer Patterns ────────────────────────────────────────────
+# Only match TRUE internal movements. The old TRANSFER_KEYWORDS list included
+# broad terms like "transfer" and "american express" that caught legitimate
+# vendor payments. This list is intentionally narrow.
+# Updated 2026-05-18: Replaced overly broad TRANSFER_KEYWORDS.
+WF_INTERNAL_TRANSFER_PATTERNS = __NUDASHBOARD_CONFIG_LITERAL_064__
+
+# ── WF AmEx Payment Detection ────────────────────────────────────────────────
+# Detect WF→AmEx liability payments. These are excluded because AmEx charges
+# are already counted as expenses directly.
+WF_AMEX_PAYMENT_PATTERNS = __NUDASHBOARD_CONFIG_LITERAL_065__
+
+# ── WF Gusto/Payroll Funding Detection ────────────────────────────────────────
+# Detect WF→Gusto payroll funding transfers. These are excluded because Gusto
+# payroll is already counted directly from gusto_expense_facts.
+WF_PAYROLL_FUNDING_PATTERNS = __NUDASHBOARD_CONFIG_LITERAL_066__
+
+# Outgoing health insurance premium payments (employer-side, paid to UHC/Oxford).
+# These are positive debit transactions from the main operating account.
+# Matched by lowercase substring against the Plaid transaction name.
+# NOTE: Claim reimbursements from UHC/insurers are NEGATIVE amounts tagged
+# with "HCCLAIMPMT" and are handled separately — they remain excluded=True.
+WF_HEALTH_PREMIUM_MERCHANTS = __NUDASHBOARD_CONFIG_LITERAL_067__
+
+# ── Helpers ──────────────────────────────────────────────────────────────────
+def load_json(path):
+    with open(path) as f:
+        return json.load(f)
+
+def sb_req(method, path, data=None, sb_url=None, sb_key=None):
+    """Supabase REST request with upsert support."""
+    body = json.dumps(data).encode() if data else None
+    url  = f"{sb_url}/rest/v1/{path}"
+    req  = urllib.request.Request(url, data=body, method=method, headers={
+        "apikey": sb_key, "Authorization": f"Bearer {sb_key}",
+        "Content-Type": "application/json",
+        "Prefer": "resolution=merge-duplicates,return=minimal,on_conflict=ignore"
+    })
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            b = r.read()
+            return json.loads(b) if b else {"ok": True}
+    except urllib.error.HTTPError as e:
+        return {"error": e.read().decode()[:300]}
+
+def plaid_get(path):
+    """Call our middleware Plaid endpoints."""
+    with urllib.request.urlopen(f"{MIDDLEWARE}/{path}", timeout=30) as r:
+        return json.loads(r.read())
+
+def plaid_direct_fetch(item_id: str, days: int) -> list:
+    """Fetch transactions directly from Plaid for a specific item_id.
+
+    Used when --item-id targets a pending/relink item.  The middleware
+    /plaid/transactions endpoint cannot be used in that case because it
+    calls load_plaid_tokens(active_only=True), returning the OLD active
+    item's account_ids — which never match the new item's account_ids.
+
+    This helper bypasses the middleware entirely:
+      1. Loads the access token for item_id from PLAID_TOKENS_FILE.
+      2. Calls Plaid /transactions/get directly with the target date range.
+      3. Paginates until all pages are collected.
+      4. Tags each transaction with institution_name from the token store.
+      5. Returns the full list — DOES NOT write to Supabase or update cursors.
+    """
+    plaid_cfg        = load_json(PLAID_CFG)
+    tokens           = load_json(PLAID_TOKENS_FILE)
+    item_data        = tokens.get(item_id)
+    if not item_data:
+        raise ValueError(f"plaid_direct_fetch: item_id {item_id} not found in token store")
+
+    access_token     = item_data["access_token"]
+    institution_name = item_data.get("institution_name", "Unknown")
+    env              = plaid_cfg.get("environment", "production")
+    base             = ("https://production.plaid.com" if env == "production"
+                        else "https://sandbox.plaid.com")
+    secret_key       = "production_secret" if env == "production" else "sandbox_secret"
+    secret           = plaid_cfg[secret_key]
+
+    end_date   = datetime.date.today().isoformat()
+    start_date = (datetime.date.today() - datetime.timedelta(days=days)).isoformat()
+    COUNT      = 500
+
+    all_txns, offset = [], 0
+    while True:
+        body = json.dumps({
+            "access_token": access_token,
+            "start_date":   start_date,
+            "end_date":     end_date,
+            "options":      {"count": COUNT, "offset": offset}
+        }).encode()
+        req = urllib.request.Request(
+            f"{base}/transactions/get",
+            data=body,
+            method="POST",
+            headers={
+                "Content-Type":    "application/json",
+                "PLAID-CLIENT-ID": plaid_cfg["client_id"],
+                "PLAID-SECRET":    secret,
+            }
+        )
+        with urllib.request.urlopen(req, timeout=60) as r:
+            data = json.loads(r.read())
+
+        page  = data.get("transactions", [])
+        total = data.get("total_transactions", 0)
+
+        for txn in page:
+            txn["institution_name"] = institution_name
+        all_txns.extend(page)
+
+        offset += len(page)
+        if not page or offset >= total or len(page) < COUNT:
+            break
+
+    log.info(
+        f"plaid_direct_fetch: {len(all_txns)} txns for item {item_id[:16]}... "
+        f"(range {start_date} → {end_date})"
+    )
+    return all_txns
+
+def safe_batch_insert(table, records, sb_url, sb_key, batch_size=25):
+    """
+    Insert records in small batches. On batch failure (23505 or other),
+    fall back to row-by-row for that batch. Log all outcomes.
+
+    Returns: {"inserted": N, "skipped": N, "failed": N, "failed_rows": [...]}
+    """
+    inserted = skipped = failed = 0
+    failed_rows = []
+
+    for i in range(0, len(records), batch_size):
+        batch = records[i:i + batch_size]
+        result = sb_req("POST", table, batch, sb_url, sb_key)
+
+        if "error" not in str(result):
+            inserted += len(batch)
+            continue
+
+        # Batch failed — fall back to row-by-row
+        log.warning(f"Batch {i // batch_size} for {table} failed, falling back to row-by-row "
+                    f"({len(batch)} rows)")
+        for rec in batch:
+            r = sb_req("POST", table, [rec], sb_url, sb_key)
+            if "error" not in str(r):
+                inserted += 1
+            elif "23505" in str(r):
+                skipped += 1
+                ref = rec.get("source_reference_id") or rec.get("reference_number") or rec.get("id", "")
+                log.info(f"  Skipped (dedup): {str(ref)[:40]}")
+            else:
+                failed += 1
+                failed_rows.append({
+                    "id": rec.get("id"),
+                    "source_reference_id": rec.get("source_reference_id")
+                                           or rec.get("reference_number"),
+                    "amount": rec.get("amount"),
+                    "date": rec.get("expense_date") or rec.get("transaction_date")
+                            or rec.get("payment_date"),
+                    "error": str(r)[:200],
+                })
+                log.error(f"  Failed: {rec.get('id', '')[:16]} — {str(r)[:100]}")
+
+    # Write failed-rows manifest if any
+    if failed_rows:
+        manifest_path = f"/tmp/plaid_sync_failed_{datetime.date.today().isoformat()}.json"
+        try:
+            with open(manifest_path, "w") as f:
+                json.dump(failed_rows, f, indent=2, default=str)
+            log.error(f"Failed rows manifest: {manifest_path} ({len(failed_rows)} rows)")
+        except Exception as e:
+            log.error(f"Could not write failed manifest: {e}")
+
+    return {"inserted": inserted, "skipped": skipped, "failed": failed, "failed_rows": failed_rows}
+
+
+def stable_id(*parts):
+    return str(uuid.uuid5(uuid.NAMESPACE_DNS, "|".join(str(p) for p in parts)))
+
+# ── Owner → Card mapping ──────────────────────────────────────────────────────
+OWNER_TO_CARD = __NUDASHBOARD_CONFIG_LITERAL_068__
+
+# ── Sync AmEx Transactions ────────────────────────────────────────────────────
+def sync_amex_transactions(txns, amex_ids, cardholder_map, sb_url, sb_key):
+    """
+    Process AmEx transactions from Plaid into expenses + amex_raw_transactions.
+
+    Promotion rules (enforced here — do NOT change without updating this docstring):
+      vendor_charge  (amount > 0, NOT a payment keyword) → expenses + amex_raw_transactions
+      refund         (amount < 0, NOT a payment keyword, matches REFUND_KEYWORDS) → amex_raw_transactions ONLY
+      credit_adjustment (amount < 0, NOT a payment keyword, other) → amex_raw_transactions ONLY
+      amex_payment   (amount < 0, matches PAYMENT_KEYWORDS) → handled by sync_amex_payments(), not here
+
+    Negative amounts are NEVER flipped to positive and NEVER written to expenses.
+    cardholder_name + card_last4 + office_name mapping is preserved exactly as
+    configured in amex_cardholders.json and OWNER_TO_CARD.
+    """
+    # All AmEx rows except payments (payments handled separately by sync_amex_payments)
+    amex_candidates = [
+        t for t in txns
+        if t.get("account_id") in amex_ids
+        and not any(k in (t.get("name") or "").lower() for k in PAYMENT_KEYWORDS)
+    ]
+
+    if not amex_candidates:
+        log.info("AmEx transactions: 0 candidates")
+        return 0
+
+    expense_records = []
+    raw_records     = []
+
+    pending_staged = 0  # counter for pending transactions written as draft
+    promoted_from_pending = 0  # counter for draft→posted promotions
+    debug_pending_seen = 0  # log first few pending_id matches for debugging
+
+    # Fetch existing draft expenses so we can promote them when Plaid posts them.
+    # Plaid often changes transaction_id when pending→posted; posted transactions
+    # include pending_transaction_id pointing to the original pending id.
+    draft_map = {}
+    try:
+        drafts = sb_req(
+            "GET",
+            "expenses?select=id,source_reference_id,allocation_metadata"
+            "&source_tab=eq.amex&expense_status=eq.draft&limit=500",
+            None, sb_url, sb_key
+        )
+        if isinstance(drafts, list):
+            for d in drafts:
+                if d.get("source_reference_id"):
+                    draft_map[d["source_reference_id"]] = d
+    except Exception as e:
+        log.warning(f"AmEx draft prefetch failed: {e}")
+
+    log.info(f"AmEx drafts prefetched for promotion: {len(draft_map)}")
+
+    for t in amex_candidates:
+        owner   = t.get("account_owner", "")
+        card    = OWNER_TO_CARD.get(owner, "1002")
+        ch      = cardholder_map.get(card, cardholder_map["1002"])
+        amount  = float(t.get("amount") or 0)
+        name_lc = (t.get("name") or "").lower()
+        txn_id  = t["transaction_id"]
+        txn_type = classify_amex_transaction(amount, name_lc)
+        is_pending = t.get("pending", False)
+
+        _pfc_raw = (t.get("personal_finance_category") or {}).get("primary", "OTHER")
+        # Plaid sometimes labels outgoing charges as "Income" — correct that
+        if _pfc_raw in ("INCOME", "TRANSFER_IN"):
+            _pfc_raw = "GENERAL_MERCHANDISE"
+        pfc = _pfc_raw.replace("_", " ").title()
+
+        # ── Raw record — ALL candidates (original sign preserved) ─────────────
+        raw_records.append({
+            "id":               stable_id("amex_raw", txn_id),
+            "transaction_date": t["date"],
+            "posted_date":      t["date"],
+            "amount":           amount,          # original Plaid sign — negative for credits/refunds
+            "merchant_name":    t.get("merchant_name") or t.get("name", "Unknown"),
+            "description":      t.get("name", ""),
+            "card_last4":       ch["card"],
+            "cardholder_name":  ch["name"],
+            "cardholder_role":  ch["role"],
+            "reference_number": txn_id,
+            "source_type":      "plaid",
+            "is_duplicate":     False,
+            "needs_review":     txn_type == "credit_adjustment",  # flag unknowns for review
+            "review_reason":    ("Unknown negative transaction — classify manually"
+                                 if txn_type == "credit_adjustment" else None),
+            # normalized_expense_id is set only for vendor_charge rows (those promoted to expenses)
+            "normalized_expense_id": (
+                stable_id(t.get("pending_transaction_id") or txn_id)
+                if txn_type == "vendor_charge" else None
+            ),
+        })
+
+        # ── Expense record — vendor_charge ONLY (positive amounts) ────────────
+        if txn_type != "vendor_charge":
+            # refund / credit_adjustment: stored in raw only; never flipped to positive expense
+            log.debug(f"AmEx raw-only ({txn_type}): {t.get('name','')} ${amount:.2f}")
+            continue
+
+        # amount is guaranteed positive here (vendor_charge)
+        # Pending transactions get expense_status='draft'.
+        # When Plaid later posts the transaction, it may change transaction_id and
+        # provide pending_transaction_id. We promote the existing draft row to
+        # posted instead of inserting a new row (prevents double-count).
+        if is_pending:
+            expense_status = "draft"
+            pending_staged += 1
+            log.info(f"AmEx pending → draft: {t.get('name','')} ${amount:.2f} ({t['date']})")
+        else:
+            pending_id = t.get("pending_transaction_id")
+            if pending_id:
+                # debug: confirm we see pending_transaction_id and whether it matches drafts
+                if promoted_from_pending < 0:  # never true; placeholder to keep lint quiet
+                    pass
+            if pending_id and pending_id in draft_map:
+                # Promote the existing draft row
+                draft_row = draft_map[pending_id]
+                draft_id = draft_row["id"]
+                existing_meta = draft_row.get("allocation_metadata") or {}
+                new_meta = dict(existing_meta)
+                # Clear pending flags
+                new_meta.pop("pending_plaid", None)
+                new_meta.pop("pending_since", None)
+                new_meta["promoted_from_pending_transaction_id"] = pending_id
+
+                patch = {
+                    "expense_status": "posted",
+                    "posted_date": t["date"],
+                    "expense_date": t["date"],
+                    "amount": amount,
+                    "merchant_name": t.get("merchant_name") or t.get("name", "Unknown"),
+                    "notes": t.get("name", ""),
+                    "source_reference_id": txn_id,  # update to posted transaction_id
+                    "allocation_metadata": new_meta,
+                }
+                r = sb_req("PATCH", f"expenses?id=eq.{draft_id}", patch, sb_url, sb_key)
+                if "error" not in str(r):
+                    promoted_from_pending += 1
+                    log.info(f"AmEx draft→posted (pending_id match): {t.get('name','')} ${amount:.2f} ({t['date']})")
+                else:
+                    log.warning(f"AmEx draft promotion PATCH failed ({draft_id}): {r}")
+                # Do NOT insert a new expense row for this posted txn_id
+                continue
+
+            expense_status = "posted"
+
+        alloc_meta = {
+            "amex_transaction_type": "vendor_charge",
+            "card_last4":            ch["card"],
+            "cardholder_name":       ch["name"],
+            "office_name":           ch.get("office") or "Corp",
+        }
+        if is_pending:
+            alloc_meta["pending_plaid"] = True
+            alloc_meta["pending_since"] = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        expense_records.append({
+            "id":               stable_id(txn_id),
+            "expense_date":     t["date"],
+            "posted_date":      t["date"],
+            "amount":           amount,          # positive vendor charge — no abs() needed
+            "merchant_name":    t.get("merchant_name") or t.get("name", "Unknown"),
+            "card_last4":       ch["card"],
+            "cardholder_name":  ch["name"],
+            "cardholder_role":  ch["role"],
+            "office_name":      ch.get("office") or "Corp",
+            "office_id":        AMEX_OFFICE_ID_MAP.get(ch.get("office") or "", None),
+            "department_name":  ch.get("dept", "Management"),
+            "source_type":      "amex_api",
+            "payment_source":   "amex",
+            "source_tab":       "amex",
+            "source_reference_id": txn_id,
+            "category_name":    pfc,
+            "expense_status":   expense_status,
+            "is_recurring":     False,
+            "notes":            t.get("name", ""),
+            "allocation_metadata": alloc_meta,
+        })
+
+    # Write expense records (vendor charges only) — safe batch insert
+    exp_result = safe_batch_insert("expenses", expense_records, sb_url, sb_key)
+    inserted = exp_result["inserted"]
+
+    # Write raw records (all candidates — original sign preserved) — safe batch insert
+    raw_result = safe_batch_insert("amex_raw_transactions", raw_records, sb_url, sb_key)
+
+    credits_count = sum(1 for t in amex_candidates if float(t.get("amount") or 0) < 0)
+    posted_count  = sum(1 for r in expense_records if r["expense_status"] == "posted")
+    log.info(
+        f"AmEx transactions: {inserted} vendor charges promoted to expenses "
+        f"(posted={posted_count}, draft/pending={pending_staged}, promoted_drafts={promoted_from_pending}) | "
+        f"skipped={exp_result['skipped']} | failed={exp_result['failed']} | "
+        f"{credits_count} credits/refunds stored in raw only | "
+        f"{len(amex_candidates)} total candidates | "
+        f"raw: inserted={raw_result['inserted']} skipped={raw_result['skipped']} "
+        f"failed={raw_result['failed']}"
+    )
+    return inserted
+
+# ── AmEx Draft → Posted Promotion ──────────────────────────────────────────────
+def promote_amex_drafts(txns, amex_ids, sb_url, sb_key):
+    """
+    Re-check existing AmEx draft/pending expense rows against the current
+    Plaid transaction batch. If the matching Plaid transaction is now non-pending
+    (posted), promote expense_status from 'draft' to 'posted'.
+
+    This fixes the gap where pending charges written as 'draft' were never
+    promoted when Plaid later marked them as posted.
+
+    Added 2026-05-18 per Dr. G's reconciliation audit directive.
+    """
+    # Build a set of posted (non-pending) Plaid transaction IDs from current batch
+    posted_plaid_ids = set()
+    for t in txns:
+        if (t.get("account_id") in amex_ids
+                and not t.get("pending", False)
+                and (t.get("amount") or 0) > 0
+                and not any(k in (t.get("name") or "").lower() for k in PAYMENT_KEYWORDS)):
+            posted_plaid_ids.add(t["transaction_id"])
+
+    if not posted_plaid_ids:
+        return 0
+
+    # Fetch all current AmEx draft rows from Supabase
+    draft_rows = sb_req(
+        "GET",
+        "expenses?select=id,source_reference_id,expense_date,amount,merchant_name"
+        "&source_tab=eq.amex&expense_status=eq.draft&limit=500",
+        None, sb_url, sb_key
+    )
+    if not isinstance(draft_rows, list) or not draft_rows:
+        return 0
+
+    # Find draft rows whose source_reference_id (Plaid transaction_id) is now posted
+    to_promote = [
+        r for r in draft_rows
+        if r.get("source_reference_id") in posted_plaid_ids
+    ]
+
+    if not to_promote:
+        log.info(f"AmEx draft promotion: {len(draft_rows)} drafts checked, 0 ready to promote")
+        return 0
+
+    promoted = 0
+    for row in to_promote:
+        # Use PATCH to update expense_status from draft → posted
+        # Also clear pending_plaid flag in allocation_metadata
+        patch_url = f"expenses?id=eq.{row['id']}"
+        patch_data = {
+            "expense_status": "posted",
+        }
+        result = sb_req("PATCH", patch_url, patch_data, sb_url, sb_key)
+        if "error" not in str(result):
+            promoted += 1
+            log.info(
+                f"AmEx draft→posted: {row.get('merchant_name','')} "
+                f"${row.get('amount',0):.2f} ({row.get('expense_date','')})"
+            )
+        else:
+            log.warning(f"AmEx draft promotion failed for {row['id']}: {result}")
+
+    log.info(f"AmEx draft promotion: {promoted}/{len(to_promote)} promoted to posted")
+    return promoted
+
+
+# ── AmEx Vendor Credits/Refunds → Negative Expense Rows ──────────────────────
+def sync_amex_credits(txns, amex_ids, cardholder_map, sb_url, sb_key):
+    """
+    Insert AmEx vendor credits/refunds as negative expense rows in the expenses
+    table, so they reduce the AmEx expense total.
+
+    Rules:
+      - Only non-payment negative transactions (refund, credit_adjustment)
+      - Only non-pending transactions
+      - Stored with original negative amount
+      - expense_status = 'posted'
+      - source_tab = 'amex'
+      - AmEx payments (MOBILE PAYMENT, AUTOPAY) are NEVER included
+
+    Added 2026-05-18 per Dr. G's directive: vendor credits/refunds should
+    reduce AmEx expense. If a charge is fully refunded, net expense = $0.
+    """
+    credit_candidates = [
+        t for t in txns
+        if t.get("account_id") in amex_ids
+        and (t.get("amount") or 0) < 0
+        and not t.get("pending", False)
+        and not any(k in (t.get("name") or "").lower() for k in PAYMENT_KEYWORDS)
+    ]
+
+    if not credit_candidates:
+        log.info("AmEx credits: 0 candidates")
+        return 0
+
+    expense_records = []
+    for t in credit_candidates:
+        owner   = t.get("account_owner", "")
+        card    = OWNER_TO_CARD.get(owner, "1002")
+        ch      = cardholder_map.get(card, cardholder_map["1002"])
+        amount  = float(t.get("amount") or 0)  # negative
+        name_lc = (t.get("name") or "").lower()
+        txn_id  = t["transaction_id"]
+        txn_type = classify_amex_transaction(amount, name_lc)
+
+        _pfc_raw = (t.get("personal_finance_category") or {}).get("primary", "OTHER")
+        if _pfc_raw in ("INCOME", "TRANSFER_IN"):
+            _pfc_raw = "GENERAL_MERCHANDISE"
+        pfc = _pfc_raw.replace("_", " ").title()
+
+        alloc_meta = {
+            "amex_transaction_type": txn_type,  # "refund" or "credit_adjustment"
+            "card_last4":            ch["card"],
+            "cardholder_name":       ch["name"],
+            "office_name":           ch.get("office") or "Corp",
+            "is_vendor_credit":      True,
+        }
+
+        expense_records.append({
+            "id":               stable_id("amex_credit", txn_id),
+            "expense_date":     t["date"],
+            "posted_date":      t["date"],
+            "amount":           amount,  # NEGATIVE — reduces total
+            "merchant_name":    t.get("merchant_name") or t.get("name", "Unknown"),
+            "card_last4":       ch["card"],
+            "cardholder_name":  ch["name"],
+            "cardholder_role":  ch["role"],
+            "office_name":      ch.get("office") or "Corp",
+            "office_id":        AMEX_OFFICE_ID_MAP.get(ch.get("office") or "", None),
+            "department_name":  ch.get("dept", "Management"),
+            "source_type":      "amex_api",
+            "payment_source":   "amex",
+            "source_tab":       "amex",
+            "source_reference_id": txn_id,
+            "category_name":    pfc,
+            "expense_status":   "posted",
+            "is_recurring":     False,
+            "notes":            f"VENDOR CREDIT: {t.get('name', '')}",
+            "allocation_metadata": alloc_meta,
+        })
+
+    if not expense_records:
+        return 0
+
+    result = safe_batch_insert("expenses", expense_records, sb_url, sb_key)
+    log.info(
+        f"AmEx credits: {result['inserted']} vendor credit rows inserted "
+        f"(total amount: ${sum(r['amount'] for r in expense_records):,.2f}) | "
+        f"skipped={result['skipped']} | failed={result['failed']}"
+    )
+    return result["inserted"]
+
+
+# ── Sync AmEx Payments ────────────────────────────────────────────────────────
+def sync_amex_payments(txns, amex_ids, cardholder_map, sb_url, sb_key):
+    """
+    Route AmEx bill payments (mobile payment / autopay / payment received) to:
+      1. amex_payments table — for payment tracking and reconciliation
+      2. amex_raw_transactions — with original negative sign for audit trail
+
+    Payments are NEVER written to expenses.
+    """
+    CARD_PROGRAM = {
+        "1001": "Amazon Business Prime",
+        "1002": "Business Platinum",
+        "1003": "Blue Business Cash",
+    }
+
+    payments = [t for t in txns
+                if t.get("account_id") in amex_ids
+                and (t.get("amount") or 0) < 0
+                and any(k in (t.get("name") or "").lower() for k in PAYMENT_KEYWORDS)]
+
+    if not payments:
+        log.info("AmEx payments: 0 new")
+        return 0
+
+    payment_records = []
+    raw_records     = []
+
+    for t in payments:
+        owner    = t.get("account_owner", "")
+        card     = OWNER_TO_CARD.get(owner, "1002")
+        ch       = cardholder_map.get(card, cardholder_map["1002"])
+        pay_date = t["date"]
+        month    = int(pay_date[5:7])
+        year     = int(pay_date[:4])
+        pd       = datetime.date.fromisoformat(pay_date)
+        period_end   = pd - datetime.timedelta(days=1)
+        period_start = period_end - datetime.timedelta(days=30)
+        txn_id   = t["transaction_id"]
+        amount   = float(t.get("amount") or 0)  # negative in Plaid convention
+
+        payment_records.append({
+            "id":                     stable_id("pay", txn_id),
+            "payment_date":           pay_date,
+            "amount_paid":            abs(amount),   # amex_payments stores positive payment amount
+            "statement_period_start": period_start.isoformat(),
+            "statement_period_end":   period_end.isoformat(),
+            "statement_month":        month,
+            "statement_year":         year,
+            "payment_status":         "cleared",
+            "payment_reference":      txn_id,
+            "card_last4":             card,
+            "card_program":           CARD_PROGRAM.get(card, "Business Platinum"),
+            "source_type":            "manual",  # enum constrained; keep as manual, notes show Plaid
+            "notes":                  f"{t.get('name','')} — auto-synced via Plaid",
+        })
+
+        # Raw record — original negative sign preserved for audit trail
+        raw_records.append({
+            "id":               stable_id("amex_raw", txn_id),
+            "transaction_date": pay_date,
+            "posted_date":      pay_date,
+            "amount":           amount,          # original negative Plaid sign
+            "merchant_name":    t.get("merchant_name") or t.get("name", "Unknown"),
+            "description":      t.get("name", ""),
+            "card_last4":       ch["card"],
+            "cardholder_name":  ch["name"],
+            "cardholder_role":  ch["role"],
+            "reference_number": txn_id,
+            "source_type":      "plaid",
+            "is_duplicate":     False,
+            "needs_review":     False,
+            "review_reason":    None,
+            "normalized_expense_id": None,  # payments are never promoted to expenses
+        })
+
+    pay_result = safe_batch_insert("amex_payments", payment_records, sb_url, sb_key)
+    raw_result = safe_batch_insert("amex_raw_transactions", raw_records, sb_url, sb_key)
+
+    log.info(
+        f"AmEx payments: inserted={pay_result['inserted']} skipped={pay_result['skipped']} "
+        f"failed={pay_result['failed']} | "
+        f"raw: inserted={raw_result['inserted']} skipped={raw_result['skipped']} "
+        f"failed={raw_result['failed']}"
+    )
+    return pay_result["inserted"]
+
+# ── WF Office Resolution ──────────────────────────────────────────────────────
+def resolve_wf_office(mask, name_lc):
+    """
+    Returns (office_name, department_name, account_role, display_role,
+             source_tab, category_override, excluded_from_expense)
+    based on account mask and transaction name.
+
+    excluded_from_expense is stored in allocation_metadata only — no schema change.
+    """
+    info = WF_ACCOUNT_MAP.get(mask)
+
+    if info is None:
+        # Unknown account — log for review, keep Corp as safe fallback
+        return (
+            "Corp", "Management",
+            "unknown", f"Unknown WF Account ...{mask}",
+            "Banking", None, False,
+        )
+
+    role = info["account_role"]
+    office = info["office_name"]
+    display = info["display_role"]
+
+    # ── EFT clearing accounts ─────────────────────────────────────────────────
+    if role == "eft_clearing":
+        return (
+            office, "Management",
+            role, display,
+            "Banking/EFT", "EFT Clearing / Reconciliation", True,
+        )
+
+    # ── Needs-review accounts ─────────────────────────────────────────────────
+    if role == "needs_review":
+        return (
+            "Unassigned / Needs Review", "Management",
+            role, display,
+            "Banking", "Needs Review", False,
+        )
+
+    # ── 3526 — Eatontown Main / Corporate Shared ──────────────────────────────
+    if mask == "3526":
+        is_corporate = any(k in name_lc for k in WF_CORPORATE_SHARED_KEYWORDS)
+        if is_corporate:
+            return (
+                "Corp", "Management",
+                "corporate_shared", display,
+                "Banking", "Corporate / Shared / Needs Allocation", False,
+            )
+        # True Eatontown vendor outflow
+        return (
+            "Eatontown", "Management",
+            role, display,
+            "Banking", None, False,
+        )
+
+    # ── All other main operating accounts ────────────────────────────────────
+    return (
+        office, "Management",
+        role, display,
+        "Banking", None, False,
+    )
+
+
+# ── Sync WF Transactions ──────────────────────────────────────────────────────
+def sync_wf_transactions(txns, wf_accounts, sb_url, sb_key, dry_run=False):
+    wf_ids = set(wf_accounts.keys())
+    wf_txns = [t for t in txns if t.get("account_id") in wf_ids
+               and (t.get("amount") or 0) != 0]
+
+    if not wf_txns:
+        log.info("WF transactions: 0 new")
+        return 0
+
+    records = []
+
+    # In-batch duplicate detection for TD loan payments (prevents double-count)
+    td_loan_seen = set()  # keys: (mask, date, amount)
+
+    for t in wf_txns:
+        acct    = wf_accounts.get(t["account_id"], {})
+        name_lc = (t.get("name") or "").lower()
+        pfc     = (t.get("personal_finance_category") or {}).get("primary", "OTHER").replace("_", " ").title()
+        mask    = (acct.get("balances") or {}).get("mask") or acct.get("mask") or acct.get("account_id", "")[-4:]
+        amount  = float(t.get("amount") or 0)
+
+        (office_name, dept_name, account_role, display_role,
+         source_tab, category_override, excluded) = resolve_wf_office(mask, name_lc)
+
+        # ── Smart classification (updated 2026-05-18) ─────────────────────────
+        # Step 1: Detect internal transfers (narrow patterns only)
+        # TD Bank rule (Dr. G directive):
+        #   - TD loan repayment rows are TRUE debt-service expenses → include
+        #   - TD transfers to savings (no loan keyword) are asset moves → exclude
+        is_td_transfer = "transfer to td bank" in name_lc
+        is_td_loan_payment = is_td_transfer and ("loan" in name_lc or "loan rep" in name_lc)
+        is_td_savings_transfer = is_td_transfer and (not is_td_loan_payment) and (
+            " na sav" in name_lc or "sav " in name_lc or "savings" in name_lc
+        )
+        is_internal_transfer = is_td_savings_transfer or any(k in name_lc for k in WF_INTERNAL_TRANSFER_PATTERNS)
+        # Step 2: Detect WF→AmEx liability payments
+        is_amex_payment = any(k in name_lc for k in WF_AMEX_PAYMENT_PATTERNS)
+        # Step 3: Detect WF→Gusto payroll funding
+        is_payroll_funding = any(k in name_lc for k in WF_PAYROLL_FUNDING_PATTERNS)
+        # Step 4: Detect health insurance premiums
+        is_health_premium = (
+            source_tab == "Banking"
+            and amount > 0
+            and any(p in name_lc for p in WF_HEALTH_PREMIUM_MERCHANTS)
+        )
+
+        # ── Determine category ────────────────────────────────────────────────
+        if is_health_premium:
+            category = "Health Insurance"
+        elif is_internal_transfer:
+            category = "Internal Transfer"
+        elif is_amex_payment:
+            category = "AmEx Payment"
+        elif is_payroll_funding:
+            category = "Payroll Funding"
+        elif category_override:
+            category = category_override
+        else:
+            category = pfc
+
+        # ── Determine wf_classification ───────────────────────────────────────
+        # Priority order:
+        #   1. EFT clearing accounts → eft_clearing_reconciliation (always excluded)
+        #   2. Needs review accounts → needs_review
+        #   3. Health insurance premiums → main_operating_direct_expense (always included)
+        #   4. TD loan payments → main_operating_direct_expense (included)
+        #      BUT: if duplicate within batch or marked '2nd attempt' → needs_review (excluded)
+        #   5. Internal transfers → internal_transfer (excluded)
+        #   6. AmEx payments → liability_payment_amex (reference bucket)
+        #   7. Gusto/payroll funding → payroll_funding (reference bucket)
+        #   8. Negative amounts (income/deposits/refunds) → income_or_deposit (excluded)
+        #   9. Everything else on main accounts → main_operating_direct_expense (INCLUDED)
+        if account_role == "eft_clearing":
+            wf_class = "eft_clearing_reconciliation"
+            excluded = True
+        elif account_role == "needs_review":
+            wf_class = "needs_review"
+            excluded = False
+        elif is_health_premium:
+            wf_class = "main_operating_direct_expense"
+            excluded = False
+            log.info(f"WF health premium rule applied: {t.get('name')} {t['date']} ${amount:.2f}")
+        elif is_td_loan_payment and amount > 0:
+            # Duplicate/attempt guardrails
+            td_key = (mask, t.get("date"), round(amount, 2))
+            if "2nd attempt" in name_lc or td_key in td_loan_seen:
+                wf_class = "needs_review"
+                excluded = True
+                category = "Needs Review"
+            else:
+                td_loan_seen.add(td_key)
+                wf_class = "main_operating_direct_expense"
+                excluded = False
+                category = "Loan Payments"
+        elif is_internal_transfer:
+            wf_class = "internal_transfer"
+            excluded = True
+        elif is_amex_payment and amount > 0:
+            wf_class = "liability_payment_amex"
+            excluded = False  # reference bucket
+        elif is_payroll_funding and amount > 0:
+            wf_class = "payroll_funding"
+            excluded = False  # reference bucket
+        elif amount <= 0:
+            wf_class = "income_or_deposit"
+            excluded = True
+        elif account_role == "corporate_shared":
+            if pfc in WF_OPERATING_EXPENSE_CATEGORIES:
+                wf_class = "main_operating_direct_expense"
+                excluded = False
+            else:
+                wf_class = "corporate_shared_needs_allocation"
+                excluded = False
+        else:
+            wf_class = "main_operating_direct_expense"
+            excluded = False
+
+        # Pack non-schema fields into allocation_metadata (JSONB — accepts dict)
+        alloc_meta = {
+            "wf_account_role":        account_role,
+            "wf_display_role":        display_role,
+            "source_account_last4":   mask,
+            "excluded_from_expense":  excluded,
+            "wf_classification":      wf_class,
+        }
+
+        records.append({
+            "id":                  stable_id("wf", t["transaction_id"]),
+            "expense_date":        t["date"],
+            "posted_date":         t["date"],
+            "amount":              t["amount"],
+            "merchant_name":       t.get("merchant_name") or t.get("name", "Unknown"),
+            "card_last4":          mask,
+            "cardholder_name":     "Admasu Gizachew",
+            "cardholder_role":     "CEO",
+            "office_name":         office_name,
+            "department_name":     dept_name,
+            "source_type":         "banking",
+            "payment_source":      "banking",
+            "source_tab":          source_tab,
+            "source_reference_id": t["transaction_id"],
+            "category_name":       category,
+            "expense_status":      "posted",
+            "is_recurring":        False,
+            "notes":               t.get("name", ""),
+            "allocation_metadata": alloc_meta,
+        })
+
+    if dry_run:
+        return records  # caller handles reporting
+
+    # ── Preserve CURATED allocation_metadata on existing rows ────────────────
+    # Only preserve metadata that was explicitly curated (backfilled, deduped,
+    # or manually reviewed). Auto-generated metadata from prior syncs should
+    # be overwritten by the current (improved) classification rules.
+    # Curated markers: reclassified_2026_05_18, deduped_2026_05_18, manually_reviewed
+    CURATED_MARKERS = {"reclassified_2026_05_18", "deduped_2026_05_18", "manually_reviewed"}
+    existing_alloc = {}
+    all_ids = [rec["id"] for rec in records]
+    for i in range(0, len(all_ids), 100):
+        batch = ",".join(all_ids[i:i+100])
+        try:
+            resp = sb_req("GET",
+                          f"expenses?select=id,allocation_metadata&id=in.({batch})",
+                          None, sb_url, sb_key)
+            if isinstance(resp, list):
+                for row in resp:
+                    meta = row.get("allocation_metadata")
+                    if meta and any(meta.get(m) for m in CURATED_MARKERS):
+                        existing_alloc[row["id"]] = meta
+        except Exception as prefetch_err:
+            log.warning(f"WF preserve-metadata prefetch error (batch {i}): {prefetch_err}")
+
+    if existing_alloc:
+        log.info(f"Preserving curated allocation_metadata for {len(existing_alloc)} WF expense rows")
+        for rec in records:
+            if rec["id"] in existing_alloc:
+                rec["allocation_metadata"] = existing_alloc[rec["id"]]
+    # ─────────────────────────────────────────────────────────────────────────
+
+    wf_result = safe_batch_insert("expenses", records, sb_url, sb_key)
+    inserted = wf_result["inserted"]
+
+    log.info(
+        f"WF transactions: inserted={inserted} skipped={wf_result['skipped']} "
+        f"failed={wf_result['failed']} ({len(wf_txns)} found)"
+    )
+    return inserted
+
+# ── Write Sync Log ────────────────────────────────────────────────────────────
+def write_sync_log(
+    started_at, completed_at, sync_type,
+    amex_count, wf_count, payment_count,
+    total_fetched, accounts,
+    error_count=0, error_details=None,
+    sb_url=None, sb_key=None,
+):
+    """
+    Write one row to amex_sync_logs after each Plaid sync run.
+
+    Maps to the actual table schema:
+      sync_type        → 'plaid_nightly' | 'plaid_webhook' | 'plaid_full'
+      started_at       → ISO timestamp (UTC) when sync began
+      completed_at     → ISO timestamp (UTC) when sync finished
+      status           → 'success' or 'error'
+      records_fetched  → total transactions pulled from Plaid
+      records_imported → total rows upserted (amex vendor charges + wf txns)
+      duplicates_skipped → 0 (dedup is handled by upsert ON CONFLICT; we don't count separately)
+      errors           → count of upsert errors logged during sync
+      error_details    → JSONB: source breakdown + account summary + last error msg
+      notes            → human-readable one-liner for MarketingTab "last synced" display
+
+    MarketingTab should read:
+      SELECT notes, completed_at, status FROM amex_sync_logs
+      ORDER BY completed_at DESC LIMIT 1
+    and warn if completed_at < NOW() - INTERVAL '24 hours'.
+    """
+    amex_accts = [a for a in accounts if "American Express" in a.get("institution_name", "")]
+    wf_accts   = [a for a in accounts if "Wells Fargo"       in a.get("institution_name", "")]
+
+    amex_balance = sum((a.get("balances") or {}).get("current") or 0 for a in amex_accts)
+
+    details = {
+        "source":               "plaid",
+        "amex_vendor_charges":  amex_count,
+        "amex_payments":        payment_count,
+        "wf_transactions":      wf_count,
+        "amex_accounts":        len(amex_accts),
+        "wf_accounts":          len(wf_accts),
+        "amex_total_balance":   amex_balance,
+        "amex_account_masks":   [a.get("mask") for a in amex_accts],
+        "wf_account_masks":     [
+            (a.get("balances") or {}).get("mask") or a.get("account_id", "")[-4:]
+            for a in wf_accts
+        ],
+    }
+    if error_details:
+        details["last_error"] = str(error_details)[:500]
+
+    status = "error" if error_count > 0 and (amex_count + wf_count) == 0 else "success"
+
+    # ET display for notes field (UTC-4 during EDT)
+    try:
+        ct = datetime.datetime.fromisoformat(completed_at.replace("Z", "+00:00"))
+        et = ct - datetime.timedelta(hours=4)
+        et_str = et.strftime("%-m/%-d/%Y %-I:%M %p ET")
+    except Exception:
+        et_str = completed_at
+
+    notes = (
+        f"Plaid sync {et_str} — "
+        f"AmEx: {amex_count} charges | WF: {wf_count} txns | "
+        f"status: {status}"
+    )
+
+    row = {
+        "id":                 stable_id("plaid_sync_log", started_at),
+        "sync_type":          sync_type,
+        "triggered_by":       None,
+        "started_at":         started_at,
+        "completed_at":       completed_at,
+        "status":             status,
+        "records_fetched":    total_fetched,
+        "records_imported":   amex_count + wf_count,
+        "duplicates_skipped": 0,
+        "errors":             error_count,
+        "error_details":      details,
+        "notes":              notes,
+    }
+
+    r = sb_req("POST", "amex_sync_logs", [row], sb_url, sb_key)
+    if "error" in str(r):
+        log.warning(f"amex_sync_logs write error: {r}")
+    else:
+        log.info(f"Sync log written: {notes}")
+
+# ── Main ──────────────────────────────────────────────────────────────────────
+def print_wf_dry_run_report(records):
+    """
+    Read-only report: group WF records by mask + account_role,
+    show transaction count, outflow total, inflow total.
+    No data is written.
+    """
+    from collections import defaultdict
+    groups = defaultdict(lambda: {"count": 0, "outflow": 0.0, "inflow": 0.0,
+                                  "office": "", "role": "", "display": ""})
+    for r in records:
+        meta  = r.get("allocation_metadata", {})
+        mask  = meta.get("source_account_last4", r.get("card_last4", "????"))
+        role  = meta.get("wf_account_role", "unknown")
+        key   = f"{mask}|{role}"
+        g     = groups[key]
+        g["office"]  = r["office_name"]
+        g["role"]    = role
+        g["display"] = meta.get("wf_display_role", "")
+        g["count"]  += 1
+        amt = float(r.get("amount", 0))
+        if amt > 0:
+            g["outflow"] += amt
+        else:
+            g["inflow"]  += abs(amt)
+
+    print("\n" + "=" * 90)
+    print(f"  WF DRY-RUN REPORT — Last 30 days  ({len(records)} transactions, no data written)")
+    print("=" * 90)
+    hdr = f"  {'Mask':<6}  {'Office':<30}  {'Role':<30}  {'Txns':>5}  {'Outflow':>12}  {'Inflow':>12}"
+    print(hdr)
+    print("-" * 90)
+    for key in sorted(groups):
+        g = groups[key]
+        mask = key.split("|")[0]
+        print(f"  ...{mask:<3}  {g['office']:<30}  {g['role']:<30}  {g['count']:>5}  "
+              f"${g['outflow']:>11,.2f}  ${g['inflow']:>11,.2f}")
+    print("=" * 90 + "\n")
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Plaid → Supabase sync")
+    parser.add_argument("--days",     type=int, default=7,   help="Days to pull (default: 7)")
+    parser.add_argument("--full",     action="store_true",   help=f"Full {FULL_HISTORICAL_LOOKBACK_DAYS}-day historical backfill (24 months)")
+    parser.add_argument("--dry-run",  action="store_true",   help="WF office-mapping report only; no writes")
+    parser.add_argument("--item-id",  type=str, default=None,
+                        help="Target a specific Plaid item_id (e.g. a pending relink item). "
+                             "When set, only transactions from that item are synced. "
+                             "Bypasses active_only filter so pending items can be targeted explicitly.")
+    args = parser.parse_args()
+
+    # ── sync_logger (Phase 2B) ──
+    try:
+        from sync_logger import start_sync_run, finish_sync_run, fail_sync_run
+    except ImportError:
+        start_sync_run = finish_sync_run = fail_sync_run = lambda *a, **kw: None
+
+    sync_type_label = "plaid_full" if args.full else ("plaid_dry_run" if args.dry_run else "plaid_nightly")
+    _run_id = start_sync_run("plaid_sync", trigger_type="scheduled", triggered_by="cron",
+                             metadata={"sync_type": sync_type_label, "days": args.days, "full": args.full})
+
+    days = FULL_HISTORICAL_LOOKBACK_DAYS if args.full else (30 if args.dry_run else args.days)
+    target_item_id = args.item_id  # None = normal mode (active items only via middleware)
+    log.info(f"=== Plaid Sync starting (days={days}, target_item_id={target_item_id or 'all-active'}) ===")
+    started_at = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    # Load config
+    sb_cfg      = load_json(SB_CFG)
+    sb_url      = sb_cfg["project_url"]
+    sb_key      = sb_cfg["secret_key"]
+    cardholder_map = load_json(CARDHOLDER_CFG)
+
+    # Pull accounts
+    # If --item-id is set, fetch accounts via middleware using all tokens
+    # (including pending), then filter to only that item's accounts.
+    acct_data = plaid_get("plaid/accounts" + (f"?include_pending=true" if target_item_id else ""))
+    accounts  = acct_data["accounts"]
+
+    # If targeting a specific item, restrict to accounts from that item only
+    if target_item_id:
+        accounts = [a for a in accounts if a.get("item_id") == target_item_id]
+        if not accounts:
+            log.warning(f"--item-id {target_item_id}: no accounts found. "
+                        f"Item may be pending and not returned by /plaid/accounts. "
+                        f"Activate item first or check item_id.")
+
+    amex_ids   = {a["account_id"] for a in accounts
+                  if "American Express" in a.get("institution_name", "")}
+    wf_accounts = {a["account_id"]: a for a in accounts
+                   if "Wells Fargo" in a.get("institution_name", "")}
+
+    log.info(f"Accounts: {len(amex_ids)} AmEx | {len(wf_accounts)} WF")
+
+    # Pull transactions
+    # If --item-id is provided, fetch directly from Plaid using that item's own
+    # access token.  This bypasses the middleware /plaid/transactions endpoint,
+    # which uses active_only=True and therefore returns the OLD active item's
+    # account_ids — causing zero matches when validating a pending relink item.
+    # Normal scheduled syncs (no --item-id) continue to use the middleware path.
+    if target_item_id:
+        txns = plaid_direct_fetch(target_item_id, days)
+    else:
+        txn_data = plaid_get(f"plaid/transactions?days={days}")
+        txns     = txn_data.get("transactions", [])
+    log.info(f"Transactions pulled: {len(txns)}")
+
+    # ── Dry-run mode: WF office mapping report only, no writes ───────────────
+    if args.dry_run:
+        wf_records = sync_wf_transactions(txns, wf_accounts, sb_url, sb_key, dry_run=True)
+        print_wf_dry_run_report(wf_records)
+        log.info("=== Dry-run complete — no data written ===")
+        return 0
+
+    # Run syncs
+    error_count   = 0
+    last_error    = None
+    amex_count    = 0
+    payment_count = 0
+    wf_count      = 0
+
+    try:
+        amex_count    = sync_amex_transactions(txns, amex_ids, cardholder_map, sb_url, sb_key)
+        payment_count = sync_amex_payments(txns, amex_ids, cardholder_map, sb_url, sb_key)
+        # AmEx draft→posted promotion (added 2026-05-18)
+        promoted      = promote_amex_drafts(txns, amex_ids, sb_url, sb_key)
+        if promoted:
+            log.info(f"AmEx draft→posted: {promoted} rows promoted")
+        # AmEx vendor credits/refunds (added 2026-05-18)
+        credit_count  = sync_amex_credits(txns, amex_ids, cardholder_map, sb_url, sb_key)
+        if credit_count:
+            log.info(f"AmEx vendor credits: {credit_count} credit rows inserted")
+        wf_count      = sync_wf_transactions(txns, wf_accounts, sb_url, sb_key)
+    except Exception as e:
+        error_count += 1
+        last_error   = str(e)
+        log.error(f"Sync error: {e}")
+
+    completed_at = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    # Determine sync_type for log
+    if args.full:
+        sync_type = "plaid_full"
+    elif args.dry_run:
+        sync_type = "plaid_dry_run"
+    else:
+        sync_type = "plaid_nightly"
+
+    write_sync_log(
+        started_at=started_at,
+        completed_at=completed_at,
+        sync_type=sync_type,
+        amex_count=amex_count,
+        wf_count=wf_count,
+        payment_count=payment_count,
+        total_fetched=len(txns),
+        accounts=accounts,
+        error_count=error_count,
+        error_details=last_error,
+        sb_url=sb_url,
+        sb_key=sb_key,
+    )
+
+    log.info(f"=== Sync complete: AmEx txns={amex_count} | Payments={payment_count} | WF txns={wf_count} ===")
+
+    # ── Finish sync run logging ──
+    total_inserted = amex_count + payment_count + wf_count
+    if error_count == 0:
+        finish_sync_run(_run_id, status="success", rows_read=len(txns), rows_inserted=total_inserted)
+    else:
+        fail_sync_run(_run_id, error_message=last_error, rows_read=len(txns),
+                      rows_inserted=total_inserted, rows_failed=error_count)
+
+    return 0 if error_count == 0 else 1
+
+if __name__ == "__main__":
+    sys.exit(main())

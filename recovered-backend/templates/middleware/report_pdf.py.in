@@ -1,0 +1,734 @@
+"""
+Reports PDF Generator — Branded Nu Dental PDF export for Reports sections.
+
+Created: 2026-05-21
+Uses: reportlab
+
+Brand colors (from MEMORY.md):
+  Primary cyan: #00B5CC (Pantone 630C)
+  Light sky:    #9BCBEB (Pantone 2905C)
+  Mint:         #6ECEB2 (Pantone 324C)
+"""
+
+import io
+import os
+from datetime import datetime, timezone
+from typing import Optional
+
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_RIGHT
+from reportlab.platypus import (
+    SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer,
+    PageBreak, Image, KeepTogether, HRFlowable,
+)
+from reportlab.pdfgen import canvas
+
+# ── Brand Colors ──────────────────────────────────────────────────────────
+
+BRAND_CYAN    = colors.HexColor("#00B5CC")
+BRAND_SKY     = colors.HexColor("#9BCBEB")
+BRAND_MINT    = colors.HexColor("#6ECEB2")
+BRAND_DARK    = colors.HexColor("#1A1A2E")
+HEADER_BG     = colors.HexColor("#00B5CC")
+HEADER_TEXT    = colors.white
+ROW_ALT       = colors.HexColor("#F0FAFB")
+BORDER_COLOR  = colors.HexColor("#D0E8EC")
+SUBTLE_GRAY   = colors.HexColor("#666666")
+LIGHT_GRAY    = colors.HexColor("#F5F5F5")
+
+# ── Logo path ─────────────────────────────────────────────────────────────
+
+LOGO_PATH = os.path.join(os.path.dirname(__file__), "static", "nudental_logo.png")
+LOGO_EXISTS = os.path.isfile(LOGO_PATH)
+
+# ── Styles ────────────────────────────────────────────────────────────────
+
+def _get_styles():
+    styles = getSampleStyleSheet()
+
+    styles.add(ParagraphStyle(
+        "BrandTitle",
+        parent=styles["Title"],
+        fontName="Helvetica-Bold",
+        fontSize=18,
+        textColor=BRAND_DARK,
+        spaceAfter=4,
+    ))
+    styles.add(ParagraphStyle(
+        "BrandSubtitle",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=10,
+        textColor=SUBTLE_GRAY,
+        spaceAfter=2,
+    ))
+    styles.add(ParagraphStyle(
+        "SectionHeader",
+        parent=styles["Heading2"],
+        fontName="Helvetica-Bold",
+        fontSize=13,
+        textColor=BRAND_CYAN,
+        spaceBefore=16,
+        spaceAfter=6,
+    ))
+    styles.add(ParagraphStyle(
+        "KPILabel",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=8,
+        textColor=SUBTLE_GRAY,
+        alignment=TA_CENTER,
+    ))
+    styles.add(ParagraphStyle(
+        "KPIValue",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=14,
+        textColor=BRAND_DARK,
+        alignment=TA_CENTER,
+    ))
+    styles.add(ParagraphStyle(
+        "SourceNote",
+        parent=styles["Normal"],
+        fontName="Helvetica-Oblique",
+        fontSize=7,
+        textColor=SUBTLE_GRAY,
+        spaceBefore=4,
+        spaceAfter=2,
+    ))
+    styles.add(ParagraphStyle(
+        "CellText",
+        parent=styles["Normal"],
+        fontName="Helvetica",
+        fontSize=8,
+        leading=10,
+    ))
+    styles.add(ParagraphStyle(
+        "CellTextBold",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=8,
+        leading=10,
+    ))
+    styles.add(ParagraphStyle(
+        "HeaderCell",
+        parent=styles["Normal"],
+        fontName="Helvetica-Bold",
+        fontSize=8,
+        leading=10,
+        textColor=HEADER_TEXT,
+    ))
+    return styles
+
+
+# ── Helper: format values for PDF cells ───────────────────────────────────
+
+def _fmt(val, fmt_type="text"):
+    if val is None or val == "":
+        return "—"
+    if fmt_type == "money":
+        try:
+            v = float(val)
+            neg = v < 0
+            s = f"${abs(v):,.2f}"
+            return f"({s})" if neg else s
+        except (ValueError, TypeError):
+            return str(val)
+    if fmt_type == "pct":
+        try:
+            return f"{float(val):.1f}%"
+        except (ValueError, TypeError):
+            return str(val)
+    if fmt_type == "int":
+        try:
+            return f"{int(float(val)):,}"
+        except (ValueError, TypeError):
+            return str(val)
+    if fmt_type == "days":
+        try:
+            return f"{float(val):.1f}"
+        except (ValueError, TypeError):
+            return str(val)
+    return str(val)
+
+
+# ── Helper: build a branded table ─────────────────────────────────────────
+
+def _make_table(headers: list[str], rows: list[dict], col_formats: list[str] = None,
+                col_widths: list[float] = None, styles_obj=None) -> Table:
+    """Build a branded ReportLab Table from headers + row dicts."""
+    s = styles_obj or _get_styles()
+
+    if not col_formats:
+        col_formats = ["text"] * len(headers)
+
+    # Header row
+    table_data = [[Paragraph(h, s["HeaderCell"]) for h in headers]]
+
+    # Data rows
+    for row in rows:
+        table_row = []
+        for i, h in enumerate(headers):
+            val = row.get(h, "")
+            fmt = col_formats[i] if i < len(col_formats) else "text"
+            cell_style = s["CellTextBold"] if i == 0 else s["CellText"]
+            table_row.append(Paragraph(_fmt(val, fmt), cell_style))
+        table_data.append(table_row)
+
+    t = Table(table_data, colWidths=col_widths, repeatRows=1)
+
+    # Style
+    style_cmds = [
+        ("BACKGROUND", (0, 0), (-1, 0), HEADER_BG),
+        ("TEXTCOLOR", (0, 0), (-1, 0), HEADER_TEXT),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTSIZE", (0, 0), (-1, 0), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 6),
+        ("TOPPADDING", (0, 0), (-1, 0), 6),
+        ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+        ("FONTSIZE", (0, 1), (-1, -1), 8),
+        ("TOPPADDING", (0, 1), (-1, -1), 4),
+        ("BOTTOMPADDING", (0, 1), (-1, -1), 4),
+        ("GRID", (0, 0), (-1, -1), 0.5, BORDER_COLOR),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, ROW_ALT]),
+    ]
+
+    # Right-align money/pct/int columns
+    for i, fmt in enumerate(col_formats):
+        if fmt in ("money", "pct", "int", "days"):
+            style_cmds.append(("ALIGN", (i, 0), (i, -1), "RIGHT"))
+
+    t.setStyle(TableStyle(style_cmds))
+    return t
+
+
+# ── Page template with header/footer ─────────────────────────────────────
+
+class _BrandedPageTemplate:
+    """Draws header logo + footer on each page."""
+
+    def __init__(self, report_title: str, subtitle: str, user_email: str, user_role: str):
+        self.report_title = report_title
+        self.subtitle = subtitle
+        self.user_email = user_email
+        self.user_role = user_role
+
+    def on_page(self, canvas_obj, doc):
+        canvas_obj.saveState()
+        w, h = doc.pagesize
+
+        # ── Header ──
+        # Logo
+        if LOGO_EXISTS:
+            try:
+                canvas_obj.drawImage(LOGO_PATH, 36, h - 52, width=120, height=20,
+                                     preserveAspectRatio=True, mask="auto")
+            except Exception:
+                canvas_obj.setFont("Helvetica-Bold", 14)
+                canvas_obj.setFillColor(BRAND_CYAN)
+                canvas_obj.drawString(36, h - 44, "NU Dental")
+        else:
+            canvas_obj.setFont("Helvetica-Bold", 14)
+            canvas_obj.setFillColor(BRAND_CYAN)
+            canvas_obj.drawString(36, h - 44, "NU Dental")
+
+        # Header line
+        canvas_obj.setStrokeColor(BRAND_CYAN)
+        canvas_obj.setLineWidth(1.5)
+        canvas_obj.line(36, h - 58, w - 36, h - 58)
+
+        # ── Footer ──
+        canvas_obj.setStrokeColor(BORDER_COLOR)
+        canvas_obj.setLineWidth(0.5)
+        canvas_obj.line(36, 42, w - 36, 42)
+
+        canvas_obj.setFont("Helvetica", 6.5)
+        canvas_obj.setFillColor(SUBTLE_GRAY)
+
+        # Left: confidential
+        canvas_obj.drawString(36, 30, "Confidential — Internal Use Only")
+
+        # Center: generated by
+        gen_text = f"Generated by {self.user_email} ({self.user_role})"
+        canvas_obj.drawCentredString(w / 2, 30, gen_text)
+
+        # Right: page number
+        canvas_obj.drawRightString(w - 36, 30, f"Page {doc.page}")
+
+        canvas_obj.restoreState()
+
+    def on_first_page(self, canvas_obj, doc):
+        self.on_page(canvas_obj, doc)
+
+    def on_later_pages(self, canvas_obj, doc):
+        self.on_page(canvas_obj, doc)
+
+
+# ── KPI card helper ───────────────────────────────────────────────────────
+
+def _kpi_cards(kpis: list[tuple[str, str]], styles_obj) -> Table:
+    """
+    Build a row of KPI cards.
+    kpis: list of (label, value_string) tuples.
+    """
+    s = styles_obj
+    n = len(kpis)
+    if n == 0:
+        return Spacer(1, 0)
+
+    # Build 2-row table: values on top, labels below
+    val_row = []
+    lbl_row = []
+    for label, value in kpis:
+        val_row.append(Paragraph(value, s["KPIValue"]))
+        lbl_row.append(Paragraph(label, s["KPILabel"]))
+
+    t = Table([val_row, lbl_row], colWidths=[2.0 * inch] * n)
+    t.setStyle(TableStyle([
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, 0), 8),
+        ("BOTTOMPADDING", (0, 1), (-1, 1), 8),
+        ("BACKGROUND", (0, 0), (-1, -1), LIGHT_GRAY),
+        ("BOX", (0, 0), (-1, -1), 0.5, BORDER_COLOR),
+        ("LINEBELOW", (0, 0), (-1, 0), 0.5, BORDER_COLOR),
+    ]))
+    return t
+
+
+# ── Per-report PDF builders ──────────────────────────────────────────────
+
+def _build_executive_summary(headers, rows, meta, s) -> list:
+    elements = []
+    elements.append(Paragraph("Executive Summary", s["SectionHeader"]))
+
+    # KPI cards from first row or aggregate
+    if rows:
+        # Aggregate all offices
+        total_prod = sum(r.get("Gross Production", 0) or 0 for r in rows)
+        total_coll = sum(r.get("Total Collections", 0) or 0 for r in rows)
+        total_exp = sum(r.get("Total Expenses", 0) or 0 for r in rows)
+        net_profit = round(total_coll - total_exp, 2)
+
+        kpis = [
+            ("Gross Production", _fmt(total_prod, "money")),
+            ("Total Collections", _fmt(total_coll, "money")),
+            ("Total Expenses", _fmt(total_exp, "money")),
+            ("Est. Net Profit", _fmt(net_profit, "money")),
+        ]
+        elements.append(_kpi_cards(kpis, s))
+        elements.append(Spacer(1, 12))
+
+    elements.append(Paragraph("Office Breakdown", s["SectionHeader"]))
+
+    col_formats = ["text", "money", "money", "money", "money", "money", "money", "pct", "money", "money", "int"]
+    elements.append(_make_table(headers, rows, col_formats, styles_obj=s))
+
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(
+        "Source: Dentrix Ascend production &amp; collections + Finance Expense Report protected totals. "
+        "Est. Net Profit = Total Collections − Total Expenses.",
+        s["SourceNote"]
+    ))
+    return elements
+
+
+def _build_pl_summary(headers, rows, meta, s) -> list:
+    elements = []
+    elements.append(Paragraph("Profit &amp; Loss Summary", s["SectionHeader"]))
+
+    col_formats = ["text", "money", "money", "money", "money", "money", "pct", "money", "money", "pct"]
+
+    # Add a total row
+    if rows:
+        total = {"Month": "TOTAL"}
+        for h in headers[1:]:
+            if h == "Margin %" or h == "Collection Rate %":
+                vals = [r.get(h, 0) or 0 for r in rows]
+                total[h] = round(sum(vals) / len(vals), 1) if vals else 0
+            else:
+                total[h] = round(sum(r.get(h, 0) or 0 for r in rows), 2)
+        rows_with_total = rows + [total]
+    else:
+        rows_with_total = rows
+
+    t = _make_table(headers, rows_with_total, col_formats, styles_obj=s)
+
+    # Bold the total row
+    if rows_with_total:
+        last = len(rows_with_total)
+        t.setStyle(TableStyle([
+            ("FONTNAME", (0, last), (-1, last), "Helvetica-Bold"),
+            ("LINEABOVE", (0, last), (-1, last), 1.5, BRAND_CYAN),
+            ("BACKGROUND", (0, last), (-1, last), LIGHT_GRAY),
+        ]))
+
+    elements.append(t)
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(
+        "Source: Dentrix Ascend monthly production &amp; collections, Finance Expense Report protected expenses. "
+        "Net Profit = Collections − Expenses. Margin = Net Profit / Collections.",
+        s["SourceNote"]
+    ))
+    return elements
+
+
+def _build_expense_breakdown(headers, rows, meta, s) -> list:
+    elements = []
+    elements.append(Paragraph("Expense Breakdown", s["SectionHeader"]))
+
+    col_formats = ["text", "money"]
+
+    t = _make_table(headers, rows, col_formats, col_widths=[3.5 * inch, 2.5 * inch], styles_obj=s)
+
+    # Bold the total row
+    if rows:
+        last = len(rows)
+        t.setStyle(TableStyle([
+            ("FONTNAME", (0, last), (-1, last), "Helvetica-Bold"),
+            ("LINEABOVE", (0, last), (-1, last), 1.5, BRAND_CYAN),
+            ("BACKGROUND", (0, last), (-1, last), LIGHT_GRAY),
+        ]))
+
+    elements.append(t)
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(
+        "Source: Finance Expense Report — Gusto payroll, AmEx corporate card, Wells Fargo direct operating. "
+        "AmEx Net = Charges − Credits/Refunds.",
+        s["SourceNote"]
+    ))
+    return elements
+
+
+def _build_goal_leaderboard(headers, rows, meta, s) -> list:
+    elements = []
+    elements.append(Paragraph("Goal Leaderboard", s["SectionHeader"]))
+
+    col_formats = ["text", "money", "money", "pct", "money", "money", "pct"]
+    elements.append(_make_table(headers, rows, col_formats, styles_obj=s))
+
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(
+        "Source: office_goals targets + Dentrix Ascend collections &amp; production actuals. "
+        "Achievement % = Actual / Goal × 100. Ranked by Collections Achievement.",
+        s["SourceNote"]
+    ))
+    return elements
+
+
+def _build_period_comparison(headers, rows, meta, s) -> list:
+    elements = []
+    elements.append(Paragraph("Period Comparison", s["SectionHeader"]))
+
+    col_formats = ["text", "money", "money", "money", "pct"]
+    elements.append(_make_table(headers, rows, col_formats, styles_obj=s))
+
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(
+        "Source: Dentrix Ascend production &amp; collections, Finance Expense Report protected expenses. "
+        "Change = Period A − Period B. Change % = Change / |Period B| × 100.",
+        s["SourceNote"]
+    ))
+    return elements
+
+
+def _build_provider_production_collections(headers, rows, meta, s) -> list:
+    elements = []
+    elements.append(Paragraph("Provider Production &amp; Collections", s["SectionHeader"]))
+
+    # KPI summary
+    if rows:
+        total_gross = sum(r.get("Gross Production", 0) or 0 for r in rows)
+        total_coll = sum(r.get("Total Collections", 0) or 0 for r in rows)
+        n_providers = len(rows)
+        kpis = [
+            ("Providers", str(n_providers)),
+            ("Gross Production", _fmt(total_gross, "money")),
+            ("Total Collections", _fmt(total_coll, "money")),
+        ]
+        elements.append(_kpi_cards(kpis, s))
+        elements.append(Spacer(1, 10))
+
+    col_formats = ["text", "text", "text", "text", "money", "money", "money",
+                   "money", "money", "money", "pct", "int", "int"]
+    elements.append(_make_table(headers, rows, col_formats, styles_obj=s))
+
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(
+        "Source: /v2/reports/provider-performance — Dentrix Ascend procedures, distribution lines, appointments. "
+        "Collection Rate = Total Collections / Net Production × 100.",
+        s["SourceNote"]
+    ))
+    return elements
+
+
+def _build_office_comparison(headers, rows, meta, s) -> list:
+    elements = []
+    elements.append(Paragraph("Office Comparison", s["SectionHeader"]))
+
+    col_formats = ["text", "money", "money", "money", "money", "money", "pct", "pct", "int"]
+    elements.append(_make_table(headers, rows, col_formats, styles_obj=s))
+
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(
+        "Source: Dentrix Ascend collections &amp; production per office, Finance Expense Report office-scoped expenses. "
+        "Net Profit = Collections − Expenses. Margin = Net Profit / Collections × 100. "
+        "Corporate/Shared expenses are shown separately and not attributed to any single office.",
+        s["SourceNote"]
+    ))
+    return elements
+
+
+def _build_treatment_plan_completion(headers, rows, meta, s) -> list:
+    elements = []
+    elements.append(Paragraph("Treatment Plan Completion", s["SectionHeader"]))
+
+    window = meta.get("completion_window_days", 90)
+    elements.append(Paragraph(
+        f"Completion Window: {window} days from planned end date. "
+        "Reflects formally treatment-planned procedures only.",
+        s["SourceNote"]
+    ))
+    elements.append(Spacer(1, 6))
+
+    # Split into sections
+    summary_rows = [r for r in rows if r.get("Section") == "SUMMARY"]
+    office_rows = [r for r in rows if r.get("Section") == "BY OFFICE"]
+    provider_rows = [r for r in rows if r.get("Section") == "BY PLANNING PROVIDER"]
+
+    # Summary KPIs
+    if summary_rows:
+        sr = summary_rows[0]
+        kpis = [
+            ("Planned Value", _fmt(sr.get("Planned Value"), "money")),
+            ("Completed Value", _fmt(sr.get("Completed Value"), "money")),
+            ("Completion Rate", _fmt(sr.get("Completion Rate (Value)"), "pct")),
+            ("Avg Days", _fmt(sr.get("Avg Days"), "days")),
+            ("Median Days", _fmt(sr.get("Median Days"), "days")),
+        ]
+        elements.append(_kpi_cards(kpis, s))
+        elements.append(Spacer(1, 6))
+
+        # Additional summary detail
+        detail_kpis = [
+            ("Open Value", _fmt(sr.get("Open Value"), "money")),
+            ("Unscheduled", _fmt(sr.get("Unscheduled Value"), "money")),
+            ("Sched. Not Completed", _fmt(sr.get("Scheduled Not Completed"), "money")),
+        ]
+        elements.append(_kpi_cards(detail_kpis, s))
+        elements.append(Spacer(1, 12))
+
+    # By Office table
+    if office_rows:
+        elements.append(Paragraph("By Office", s["SectionHeader"]))
+        office_headers = ["Name", "Planned Value", "Completed Value",
+                         "Completion Rate (Value)", "Open Value", "Avg Days", "Median Days"]
+        office_formats = ["text", "money", "money", "pct", "money", "days", "days"]
+        elements.append(_make_table(office_headers, office_rows, office_formats, styles_obj=s))
+        elements.append(Spacer(1, 10))
+
+    # By Provider table
+    if provider_rows:
+        elements.append(Paragraph("By Planning Provider", s["SectionHeader"]))
+        prov_headers = ["Name", "Planned Value", "Completed Value",
+                       "Completion Rate (Value)", "Open Value", "Avg Days", "Median Days"]
+        prov_formats = ["text", "money", "money", "pct", "money", "days", "days"]
+        elements.append(_make_table(prov_headers, provider_rows, prov_formats, styles_obj=s))
+
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(
+        "Source: /v2/eod/treatment-plan-completion — Dentrix Ascend patient_procedures with treatmentPlannedDate. "
+        "Excludes direct/walk-in completions and same-day plan+complete.",
+        s["SourceNote"]
+    ))
+    return elements
+
+
+def _build_patient_flow(headers, rows, meta, s) -> list:
+    elements = []
+    elements.append(Paragraph("Patient Flow", s["SectionHeader"]))
+
+    # Identify summary/total row for KPI cards
+    total_row = None
+    office_rows = []
+    monthly_rows = []
+    in_monthly = False
+    for r in rows:
+        office_val = r.get("Office", "")
+        if office_val == "── Monthly Trend ──":
+            in_monthly = True
+            continue
+        if office_val == "TOTAL":
+            total_row = r
+            continue
+        if in_monthly:
+            monthly_rows.append(r)
+        else:
+            office_rows.append(r)
+
+    # Use total row if multi-office, otherwise first office row
+    kpi_src = total_row or (office_rows[0] if office_rows else None)
+
+    if kpi_src:
+        # Row 1: patient counts (3 cards — fits comfortably)
+        kpis_row1 = [
+            ("New Patients", _fmt(kpi_src.get("New Patients"), "int")),
+            ("Active Patients", _fmt(kpi_src.get("Active Patients"), "int")),
+            ("Total Scheduled", _fmt(kpi_src.get("Total Scheduled"), "int")),
+        ]
+        elements.append(_kpi_cards(kpis_row1, s))
+        elements.append(Spacer(1, 6))
+        # Row 2: outcomes (3 cards)
+        kpis_row2 = [
+            ("Completed", _fmt(kpi_src.get("Completed"), "int")),
+            ("Show Rate", _fmt(kpi_src.get("Show Rate %"), "pct")),
+            ("Missed Rate", _fmt(kpi_src.get("Missed Rate %"), "pct")),
+        ]
+        elements.append(_kpi_cards(kpis_row2, s))
+        elements.append(Spacer(1, 12))
+
+    # Office breakdown table
+    if office_rows:
+        if total_row:
+            elements.append(Paragraph("By Office", s["SectionHeader"]))
+        col_formats = ["text", "int", "int", "int", "int", "int", "int", "int", "pct", "pct"]
+        display_rows = office_rows + ([total_row] if total_row else [])
+        t = _make_table(headers, display_rows, col_formats, styles_obj=s)
+
+        # Bold the total row
+        if total_row:
+            last = len(display_rows)
+            t.setStyle(TableStyle([
+                ("FONTNAME", (0, last), (-1, last), "Helvetica-Bold"),
+                ("LINEABOVE", (0, last), (-1, last), 1.5, BRAND_CYAN),
+                ("BACKGROUND", (0, last), (-1, last), LIGHT_GRAY),
+            ]))
+        elements.append(t)
+        elements.append(Spacer(1, 10))
+
+    # Monthly trend table
+    if monthly_rows:
+        elements.append(Paragraph("Monthly Trend", s["SectionHeader"]))
+        # Data rows store month labels under "Office" key — copy to "Month" for display
+        trend_rows = []
+        for r in monthly_rows:
+            tr = dict(r)
+            tr["Month"] = tr.pop("Office", "—")
+            trend_rows.append(tr)
+        trend_headers = ["Month"] + list(headers[1:])
+        col_formats = ["text", "int", "int", "int", "int", "int", "int", "int", "pct", "pct"]
+        elements.append(_make_table(trend_headers, trend_rows, col_formats, styles_obj=s))
+        elements.append(Spacer(1, 10))
+
+    elements.append(Spacer(1, 8))
+    elements.append(Paragraph(
+        "Source: /v2/patients/summary + /v2/appointments/summary — Dentrix Ascend SQLite. "
+        "No daily_entries, no MEA, no manual/EOD data. Aggregate-only, no patient-level PHI. "
+        "Show Rate = Completed / Total Scheduled × 100. "
+        "Missed Rate = (Cancelled + Broken + No-Shows) / Total Scheduled × 100.",
+        s["SourceNote"]
+    ))
+    return elements
+
+
+# ── Builder dispatch ──────────────────────────────────────────────────────
+
+BUILDERS = {
+    "executive_summary": _build_executive_summary,
+    "pl_summary": _build_pl_summary,
+    "expense_breakdown": _build_expense_breakdown,
+    "goal_leaderboard": _build_goal_leaderboard,
+    "period_comparison": _build_period_comparison,
+    "provider_production_collections": _build_provider_production_collections,
+    "office_comparison": _build_office_comparison,
+    "treatment_plan_completion": _build_treatment_plan_completion,
+    "patient_flow": _build_patient_flow,
+}
+
+REPORT_TITLES = {
+    "executive_summary": "Executive Summary",
+    "pl_summary": "Profit & Loss Summary",
+    "expense_breakdown": "Expense Breakdown",
+    "goal_leaderboard": "Goal Leaderboard",
+    "period_comparison": "Period Comparison",
+    "provider_production_collections": "Provider Production & Collections",
+    "office_comparison": "Office Comparison",
+    "treatment_plan_completion": "Treatment Plan Completion",
+    "patient_flow": "Patient Flow",
+}
+
+
+# ── Main generator ────────────────────────────────────────────────────────
+
+def generate_pdf(
+    report_type: str,
+    headers: list[str],
+    rows: list[dict],
+    date_range_start: str,
+    date_range_end: str,
+    office_label: str,
+    user_email: str,
+    user_role: str,
+    metadata: dict = None,
+) -> bytes:
+    """Generate a branded Nu Dental PDF report and return bytes."""
+    metadata = metadata or {}
+    buf = io.BytesIO()
+
+    title = REPORT_TITLES.get(report_type, report_type.replace("_", " ").title())
+    subtitle_parts = [
+        f"{date_range_start} — {date_range_end}",
+        office_label if office_label else "All Offices",
+    ]
+    subtitle = " | ".join(subtitle_parts)
+    gen_ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+
+    # Use landscape for wide tables
+    wide_reports = {"provider_production_collections", "executive_summary", "pl_summary", "treatment_plan_completion", "patient_flow"}
+    page_size = landscape(letter) if report_type in wide_reports else letter
+
+    template = _BrandedPageTemplate(title, subtitle, user_email, user_role)
+
+    doc = SimpleDocTemplate(
+        buf,
+        pagesize=page_size,
+        topMargin=72,
+        bottomMargin=54,
+        leftMargin=36,
+        rightMargin=36,
+        title=f"Nu Dental — {title}",
+        author="Nu Dashboard",
+    )
+
+    s = _get_styles()
+
+    # Build document elements
+    elements = []
+
+    # Title block
+    elements.append(Paragraph(title, s["BrandTitle"]))
+    elements.append(Paragraph(subtitle, s["BrandSubtitle"]))
+    elements.append(Paragraph(f"Generated: {gen_ts}", s["BrandSubtitle"]))
+    elements.append(Spacer(1, 6))
+    elements.append(HRFlowable(width="100%", thickness=0.5, color=BRAND_SKY))
+    elements.append(Spacer(1, 8))
+
+    # Report-specific content
+    builder = BUILDERS.get(report_type)
+    if builder:
+        report_elements = builder(headers, rows, metadata, s)
+        elements.extend(report_elements)
+    else:
+        # Fallback: generic table
+        elements.append(_make_table(headers, rows, styles_obj=s))
+
+    # Build PDF
+    doc.build(elements,
+              onFirstPage=template.on_first_page,
+              onLaterPages=template.on_later_pages)
+
+    return buf.getvalue()

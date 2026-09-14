@@ -1,0 +1,1087 @@
+"""
+Ascend Data Sync
+Incrementally syncs Dentrix Ascend transaction data to local SQLite.
+
+Method: Cursor-based pagination (lastId). This module fetches ALL records from
+where it last left off, regardless of date. It does NOT use server-side date
+filtering. The startDate/endDate params passed to the API are NOT reliably
+applied server-side (they are accepted but ignored for most endpoints).
+
+For date-filtered pulls, use fresh_pull.py which uses Joel White's confirmed
+filter= syntax (HS1, May 2026):
+  ?filter=location.id=={id},transactionDate>={start},transactionDate<={end}
+
+Data is stored locally so ascend_service.py can run fast date-range queries
+against SQLite.
+
+Tables synced:
+- procedures  (from /v1/transactions/procedures)
+- patient_payments (from /v1/transactions/patientpayments)
+- insurance_payments (from /v1/transactions/insurancepayments)
+- adjustments (from /v1/transactions/adjustments)
+- appointments (from /v1/appointments)
+- patients (from /v1/patients)
+- providers (from /v1/providers) — no cursor needed, small list
+- locations (from /v1/locations) — no cursor needed, small list
+"""
+
+import os
+import sys
+import json
+import time
+import sqlite3
+import logging
+import threading
+from pathlib import Path
+from typing import Optional
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from ascend_client import AscendClient
+from supabase_service import (
+    upsert_patient, upsert_appointment, upsert_transaction,
+    upsert_provider, upsert_location,
+    write_sync_audit,
+)
+
+logger = logging.getLogger("ascend_sync")
+
+ORG_ID = "6482308088c2a542e2dafd27"
+SUPABASE_SYNC_ENABLED = True  # Mirror SQLite writes to Supabase
+
+PROD_CREDS_PATH = "/home/openclaw/.config/ascend/production.json"
+DB_PATH = Path(__file__).parent / "ascend.db"
+
+# How many records per API page
+PAGE_SIZE = 500
+
+# Required date placeholder for APIs that need it (but ignore it)
+EPOCH_DATE = "2020-01-01"
+FUTURE_DATE = "2030-12-31"
+
+
+def get_db() -> sqlite3.Connection:
+    conn = sqlite3.connect(str(DB_PATH), check_same_thread=False, timeout=30)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA synchronous=NORMAL")
+    conn.execute("PRAGMA busy_timeout=30000")   # 30s max wait on locked DB
+    conn.execute("PRAGMA cache_size=-32000")    # 32MB page cache
+    return conn
+
+
+def _map_insurance_claim(item: dict) -> tuple:
+    """
+    Map an insurance claim from /v1/insuranceclaims to the insurance_claims table.
+    Column order: id, location_id, service_date, rendering_provider_id, patient_id,
+                  is_active, last_modified, raw, billing_provider_id
+    """
+    loc = item.get("location") or {}
+    loc_id = loc.get("id") if isinstance(loc, dict) else str(loc or "")
+    bp = item.get("billingProvider") or {}
+    rp = item.get("renderingProvider") or {}
+    pat = item.get("patient") or {}
+    return (
+        item["id"],
+        loc_id or None,
+        (item.get("serviceDate") or "")[:10],
+        rp.get("id") if isinstance(rp, dict) else str(rp or ""),
+        pat.get("id") if isinstance(pat, dict) else str(pat or ""),
+        1 if item.get("isActive", True) else 0,
+        (item.get("lastModified") or "")[:10],
+        json.dumps(item),
+        bp.get("id") if isinstance(bp, dict) else str(bp or ""),
+    )
+
+
+def init_db():
+    """Create tables and indexes if they don't exist."""
+    conn = get_db()
+    with conn:
+        conn.executescript("""
+        CREATE TABLE IF NOT EXISTS procedures (
+            id TEXT PRIMARY KEY,
+            transaction_date TEXT,
+            amount REAL,
+            provider_id TEXT,
+            location_id TEXT,
+            patient_id TEXT,
+            ledger_type TEXT,
+            is_active INTEGER,
+            last_modified TEXT,
+            raw TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_proc_date ON procedures(transaction_date);
+        CREATE INDEX IF NOT EXISTS idx_proc_provider ON procedures(provider_id);
+        CREATE INDEX IF NOT EXISTS idx_proc_location ON procedures(location_id);
+
+        CREATE TABLE IF NOT EXISTS patient_payments (
+            id TEXT PRIMARY KEY,
+            transaction_date TEXT,
+            amount REAL,
+            provider_id TEXT,
+            location_id TEXT,
+            patient_id TEXT,
+            ledger_type TEXT,
+            is_active INTEGER,
+            last_modified TEXT,
+            raw TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_pp_date ON patient_payments(transaction_date);
+        CREATE INDEX IF NOT EXISTS idx_pp_provider ON patient_payments(provider_id);
+
+        CREATE TABLE IF NOT EXISTS insurance_payments (
+            id TEXT PRIMARY KEY,
+            transaction_date TEXT,
+            amount REAL,
+            provider_id TEXT,
+            location_id TEXT,
+            patient_id TEXT,
+            ledger_type TEXT,
+            is_active INTEGER,
+            last_modified TEXT,
+            raw TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_ip_date ON insurance_payments(transaction_date);
+        CREATE INDEX IF NOT EXISTS idx_ip_provider ON insurance_payments(provider_id);
+
+        CREATE TABLE IF NOT EXISTS adjustments (
+            id TEXT PRIMARY KEY,
+            transaction_date TEXT,
+            amount REAL,
+            provider_id TEXT,
+            location_id TEXT,
+            patient_id TEXT,
+            ledger_type TEXT,
+            is_active INTEGER,
+            last_modified TEXT,
+            raw TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_adj_date ON adjustments(transaction_date);
+
+        CREATE TABLE IF NOT EXISTS appointments (
+            id TEXT PRIMARY KEY,
+            start_time TEXT,
+            end_time TEXT,
+            status TEXT,
+            provider_id TEXT,
+            location_id TEXT,
+            patient_id TEXT,
+            duration INTEGER,
+            last_modified TEXT,
+            raw TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_appt_start ON appointments(start_time);
+        CREATE INDEX IF NOT EXISTS idx_appt_provider ON appointments(provider_id);
+        CREATE INDEX IF NOT EXISTS idx_appt_location ON appointments(location_id);
+        CREATE INDEX IF NOT EXISTS idx_appt_status ON appointments(status);
+
+        CREATE TABLE IF NOT EXISTS patients (
+            id TEXT PRIMARY KEY,
+            first_name TEXT,
+            last_name TEXT,
+            created_date TEXT,
+            location_id TEXT,
+            last_modified TEXT,
+            raw TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_pat_created ON patients(created_date);
+
+        CREATE TABLE IF NOT EXISTS providers (
+            id TEXT PRIMARY KEY,
+            first_name TEXT,
+            last_name TEXT,
+            npi TEXT,
+            is_active INTEGER,
+            raw TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS locations (
+            id TEXT PRIMARY KEY,
+            name TEXT,
+            city TEXT,
+            state TEXT,
+            raw TEXT
+        );
+
+        CREATE TABLE IF NOT EXISTS sync_state (
+            table_name TEXT PRIMARY KEY,
+            last_id TEXT,
+            last_synced_at REAL,
+            total_count INTEGER DEFAULT 0
+        );
+
+        -- Insurance claims: used for per-office attribution via service location.
+        -- Payments are tagged with the billing location; claims carry the service location.
+        -- COALESCE(claim_location_id, location_id) is used throughout collection queries.
+        CREATE TABLE IF NOT EXISTS insurance_claims (
+            id TEXT PRIMARY KEY,
+            location_id TEXT,
+            service_date TEXT,
+            rendering_provider_id TEXT,
+            patient_id TEXT,
+            is_active INTEGER DEFAULT 1,
+            last_modified TEXT,
+            raw TEXT,
+            billing_provider_id TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_ic_location ON insurance_claims(location_id);
+        CREATE INDEX IF NOT EXISTS idx_ic_service_date ON insurance_claims(service_date);
+
+        -- FIX-2b / FIX-7: Materialized distribution lines for fast provider attribution
+        -- and portal-style "applied date" calculations.
+        CREATE TABLE IF NOT EXISTS distribution_lines (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source_table TEXT NOT NULL,              -- insurance_payments|patient_payments|adjustments
+            transaction_id TEXT NOT NULL,
+            transaction_ledger_type TEXT,
+            transaction_date TEXT,
+            transaction_location_id TEXT,
+            charge_id TEXT NOT NULL,
+            charge_location_id TEXT,
+            applied_amount REAL,
+            line_is_active INTEGER,
+            -- denormalized from procedures to avoid heavy joins at query time
+            procedure_provider_id TEXT,
+            procedure_transaction_date TEXT,
+            procedure_location_id TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_dl_tx ON distribution_lines(source_table, transaction_id);
+        CREATE INDEX IF NOT EXISTS idx_dl_charge ON distribution_lines(charge_id);
+        CREATE INDEX IF NOT EXISTS idx_dl_procprov ON distribution_lines(procedure_provider_id);
+        CREATE INDEX IF NOT EXISTS idx_dl_procdt ON distribution_lines(procedure_transaction_date);
+        CREATE INDEX IF NOT EXISTS idx_dl_txdt ON distribution_lines(transaction_date);
+
+        """)
+    conn.close()
+    logger.info(f"Database initialized at {DB_PATH}")
+
+
+def _get_last_id(conn: sqlite3.Connection, table_name: str) -> Optional[str]:
+    row = conn.execute(
+        "SELECT last_id FROM sync_state WHERE table_name = ?", (table_name,)
+    ).fetchone()
+    return row["last_id"] if row else None
+
+
+def _save_sync_state(conn: sqlite3.Connection, table_name: str, last_id: str, count: int):
+    conn.execute("""
+        INSERT INTO sync_state (table_name, last_id, last_synced_at, total_count)
+        VALUES (?, ?, ?, ?)
+        ON CONFLICT(table_name) DO UPDATE SET
+            last_id = excluded.last_id,
+            last_synced_at = excluded.last_synced_at,
+            total_count = sync_state.total_count + excluded.total_count
+    """, (table_name, last_id, time.time(), count))
+
+
+def _extract_nested_id(obj) -> Optional[str]:
+    if isinstance(obj, dict):
+        return obj.get("id")
+    return obj
+
+
+def _sync_item_to_supabase(table_name: str, item: dict):
+    """Mirror a synced item to Supabase."""
+    loc_id = _extract_nested_id(item.get("location"))
+    if table_name in ("procedures", "patient_payments", "insurance_payments", "adjustments"):
+        upsert_transaction(item, ORG_ID, tx_type=table_name)
+    elif table_name == "appointments":
+        upsert_appointment(item, ORG_ID, loc_id)
+    elif table_name == "patients":
+        upsert_patient(item, ORG_ID)
+    elif table_name == "providers":
+        upsert_provider(item, ORG_ID)
+    elif table_name == "locations":
+        upsert_location(item, ORG_ID)
+
+
+def _rebuild_distribution_lines_for_item(conn: sqlite3.Connection, source_table: str, item: dict):
+    """Upsert materialized distribution lines for a single transaction item."""
+    tx_id = item.get("id")
+    if not tx_id:
+        return
+
+    dists = item.get("distributions")
+    if not isinstance(dists, list):
+        return
+
+    ledger_type = item.get("ledgerType")
+    tx_date = (item.get("transactionDate") or item.get("entryDate", "")[:10] or None)
+    loc_id = _extract_nested_id(item.get("location"))
+
+    # Replace all existing lines for this transaction
+    conn.execute(
+        "DELETE FROM distribution_lines WHERE source_table = ? AND transaction_id = ?",
+        (source_table, tx_id),
+    )
+
+    if not dists:
+        return
+
+    # Load procedure mapping for just the referenced charges (fast indexed lookups)
+    charge_ids = [d.get("chargeId") for d in dists if isinstance(d, dict) and d.get("chargeId")]
+    proc_map = {}
+    if charge_ids:
+        qmarks = ",".join(["?"] * len(charge_ids))
+        rows = conn.execute(
+            f"SELECT id, provider_id, transaction_date FROM procedures WHERE id IN ({qmarks})",
+            tuple(charge_ids),
+        ).fetchall()
+        proc_map = {r["id"]: (r["provider_id"], r["transaction_date"]) for r in rows}
+
+    lines = []
+    for d in dists:
+        if not isinstance(d, dict):
+            continue
+        charge_id = d.get("chargeId")
+        if not charge_id:
+            continue
+        proc_provider, proc_date = proc_map.get(charge_id, (None, None))
+        lines.append((
+            source_table,
+            tx_id,
+            ledger_type,
+            tx_date,
+            loc_id,
+            charge_id,
+            d.get("chargeLocationId"),
+            float(d.get("appliedAmount") or 0),
+            1 if d.get("isActive", True) else 0,
+            proc_provider,
+            proc_date,
+        ))
+
+    conn.executemany(
+        """
+        INSERT INTO distribution_lines (
+            source_table, transaction_id, transaction_ledger_type, transaction_date,
+            transaction_location_id, charge_id, charge_location_id, applied_amount,
+            line_is_active, procedure_provider_id, procedure_transaction_date
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?)
+        """,
+        lines,
+    )
+
+
+def _sync_table(
+    client: AscendClient,
+    conn: sqlite3.Connection,
+    endpoint: str,
+    table_name: str,
+    row_mapper,
+    extra_params: Optional[dict] = None,
+    requires_date: bool = False,
+):
+    """Generic cursor-based sync for a table."""
+    last_id = _get_last_id(conn, table_name)
+    params = dict(extra_params or {})
+    params["pageSize"] = PAGE_SIZE
+
+    if requires_date:
+        params.setdefault("startDate", EPOCH_DATE)
+        params.setdefault("endDate", FUTURE_DATE)
+
+    started_ts = time.time()
+    total_synced = 0
+    cursor_id = last_id
+    page = 0
+
+    total_sqlite_ok = 0
+    total_sqlite_fail = 0
+    total_sb_ok = 0
+    total_sb_fail = 0
+    last_http_status: Optional[int] = None
+    last_error: Optional[str] = None
+
+    logger.info(f"Syncing {table_name} from {endpoint} (cursor: {cursor_id})")
+
+    while True:
+        req_params = dict(params)
+        if cursor_id:
+            req_params["lastId"] = cursor_id
+
+        status, body, elapsed = client.get(endpoint, params=req_params)
+        last_http_status = status
+
+        if status != 200:
+            last_error = f"HTTP {status}"
+            logger.error(f"Sync {table_name}: HTTP {status} - {str(body)[:200]}")
+            break
+
+        items = body.get("data", []) if isinstance(body, dict) else (body if isinstance(body, list) else [])
+
+        if not items:
+            logger.info(f"Sync {table_name}: No more items (page {page})")
+            break
+
+        page_sqlite_ok = 0
+        page_sqlite_fail = 0
+        page_sb_ok = 0
+        page_sb_fail = 0
+
+        with conn:
+            for item in items:
+                try:
+                    row = row_mapper(item)
+                    conn.execute(
+                        f"INSERT OR REPLACE INTO {table_name} VALUES ({','.join(['?']*len(row))})",
+                        row,
+                    )
+                    page_sqlite_ok += 1
+
+                    # FIX-7: Materialize distributions for fast joins
+                    if table_name in ("patient_payments", "insurance_payments", "adjustments"):
+                        try:
+                            _rebuild_distribution_lines_for_item(conn, table_name, item)
+                        except Exception as e:
+                            # Do not fail the whole sync — log first few
+                            if page_sqlite_fail <= 3:
+                                logger.warning(f"distribution_lines upsert {table_name}: {e}")
+
+                    # Mirror to Supabase AFTER every successful SQLite write (Fix C1/C2)
+                    if SUPABASE_SYNC_ENABLED:
+                        try:
+                            _sync_item_to_supabase(table_name, item)
+                            page_sb_ok += 1
+                        except Exception as e:
+                            page_sb_fail += 1
+                            if page_sb_fail <= 3:
+                                logger.warning(f"Supabase mirror {table_name}: {e}")
+
+                except Exception as e:
+                    page_sqlite_fail += 1
+                    if page_sqlite_fail <= 3:
+                        logger.warning(f"Insert error for {table_name}: {e}")
+
+        total_sqlite_ok += page_sqlite_ok
+        total_sqlite_fail += page_sqlite_fail
+        total_sb_ok += page_sb_ok
+        total_sb_fail += page_sb_fail
+
+        if SUPABASE_SYNC_ENABLED and (page_sb_ok or page_sb_fail):
+            logger.info(
+                f"Supabase mirror {table_name}: page {page} {page_sb_ok} ok, {page_sb_fail} failed"
+            )
+
+        new_last_id = items[-1].get("id")
+
+        # SAFETY: Only advance cursor if ALL items on this page inserted successfully.
+        # If any failed, stop sync for this table — do not skip records.
+        if page_sqlite_fail > 0:
+            logger.error(
+                f"Sync {table_name}: STOPPING — {page_sqlite_fail} insert failures on page {page}. "
+                f"Cursor NOT advanced past {cursor_id}. Fix the issue and re-run."
+            )
+            last_error = f"{page_sqlite_fail} insert failures on page {page}"
+            break
+
+        if new_last_id:
+            with conn:
+                _save_sync_state(conn, table_name, new_last_id, page_sqlite_ok)
+            cursor_id = new_last_id
+
+        total_synced += len(items)
+        page += 1
+        logger.debug(f"Sync {table_name}: page {page}, +{len(items)} records (total: {total_synced})")
+
+        if len(items) < PAGE_SIZE:
+            break
+
+        time.sleep(0.05)
+
+    duration_ms = int((time.time() - started_ts) * 1000)
+    if total_synced == 0 and (last_http_status == 200):
+        audit_status = "nodata"
+    elif last_http_status != 200:
+        audit_status = "failed"
+    elif total_sqlite_fail or total_sb_fail:
+        audit_status = "partial"
+    else:
+        audit_status = "success"
+
+    # Supabase audit entry (import_audit_log)
+    try:
+        write_sync_audit(
+            endpoint_key=table_name,
+            endpoint_name=table_name,
+            endpoint_path=endpoint,
+            sync_type="scheduled",
+            status=audit_status,
+            records_fetched=total_synced,
+            records_imported=(total_sb_ok if SUPABASE_SYNC_ENABLED else total_sqlite_ok),
+            records_failed=(total_sb_fail if SUPABASE_SYNC_ENABLED else total_sqlite_fail),
+            response_status_code=last_http_status,
+            error_details={"error": last_error} if last_error else None,
+            duration_ms=duration_ms,
+        )
+    except Exception as e:
+        logger.warning(f"Failed to write sync audit: {e}")
+
+    logger.info(
+        f"Sync {table_name}: done, fetched {total_synced}, sqlite_ok={total_sqlite_ok}, "
+        f"sqlite_fail={total_sqlite_fail}, sb_ok={total_sb_ok}, sb_fail={total_sb_fail}"
+    )
+    return total_synced
+
+
+def _map_transaction(item: dict, ledger_filter: Optional[str] = None) -> tuple:
+    provider = item.get("provider") or {}
+    location = item.get("location") or {}
+    patient = item.get("patient") or {}
+    entry_date = (item.get("entryDate") or item.get("entryDateTime") or "")[:26]  # ISO w/ ms
+    return (
+        item.get("id"),
+        item.get("transactionDate") or entry_date[:10],
+        float(item.get("amount") or 0),
+        _extract_nested_id(provider),
+        _extract_nested_id(location),
+        _extract_nested_id(patient),
+        item.get("ledgerType"),
+        1 if item.get("isActive", True) else 0,
+        (item.get("lastModified") or "")[:10],
+        json.dumps(item),
+        entry_date,  # entry_date column (added by ALTER TABLE)
+    )
+
+
+def _map_insurance_payment(item: dict) -> tuple:
+    """Insurance payments have 12 columns (extra: claim_location_id, entry_date)."""
+    provider = item.get("provider") or {}
+    location = item.get("location") or {}
+    patient = item.get("patient") or {}
+    entry_date = (item.get("entryDate") or item.get("entryDateTime") or "")[:26]
+    # claim_location_id: from distributions[0].chargeLocationId if present
+    claim_loc = None
+    dists = item.get("distributions") or []
+    if dists and isinstance(dists, list):
+        claim_loc = dists[0].get("chargeLocationId")
+    return (
+        item.get("id"),
+        item.get("transactionDate") or entry_date[:10],
+        float(item.get("amount") or 0),
+        _extract_nested_id(provider),
+        _extract_nested_id(location),
+        _extract_nested_id(patient),
+        item.get("ledgerType"),
+        1 if item.get("isActive", True) else 0,
+        (item.get("lastModified") or "")[:10],
+        json.dumps(item),
+        claim_loc,    # claim_location_id column (added by ALTER TABLE)
+        entry_date,   # entry_date column (added by ALTER TABLE)
+    )
+
+
+def _map_appointment(item: dict) -> tuple:
+    provider = item.get("provider") or {}
+    location = item.get("location") or {}
+    patient = item.get("patient") or {}
+    start = item.get("start") or item.get("startTime") or ""
+    end = item.get("end") or item.get("endTime") or ""
+    return (
+        item.get("id"),
+        start,
+        end,
+        item.get("status"),
+        _extract_nested_id(provider),
+        _extract_nested_id(location),
+        _extract_nested_id(patient),
+        item.get("duration"),
+        (item.get("lastModified") or "")[:10],
+        json.dumps(item),
+    )
+
+
+def _map_patient(item: dict) -> tuple:
+    location = item.get("location") or {}
+    created = (
+        item.get("created") or item.get("createdDate") or
+        item.get("entryDate") or item.get("dateCreated") or ""
+    )
+    return (
+        item.get("id"),
+        item.get("firstName") or item.get("first") or "",
+        item.get("lastName") or item.get("last") or "",
+        str(created)[:10],
+        _extract_nested_id(location),
+        (item.get("lastModified") or "")[:10],
+        json.dumps(item),
+    )
+
+
+def _map_provider(item: dict) -> tuple:
+    first = item.get("firstName") or ""
+    last = item.get("lastName") or ""
+    return (
+        item.get("id"),
+        first,
+        last,
+        item.get("npi"),
+        1 if item.get("active", True) else 0,
+        json.dumps(item),
+    )
+
+
+def _map_location(item: dict) -> tuple:
+    return (
+        item.get("id"),
+        item.get("name"),
+        item.get("city"),
+        item.get("state"),
+        json.dumps(item),
+    )
+
+
+def sync_all(client: Optional[AscendClient] = None) -> dict:
+    """Run a full incremental sync for all tables. Returns sync stats."""
+    if client is None:
+        client = AscendClient(creds_path=PROD_CREDS_PATH)
+        client.authenticate()
+
+    conn = get_db()
+    stats = {}
+
+    # Static data (providers, locations)
+    # Always refresh these (small datasets)
+    logger.info("Syncing providers and locations...")
+    for endpoint, table, mapper in [
+        ("/v1/providers", "providers", _map_provider),
+        ("/v1/locations", "locations", _map_location),
+    ]:
+        started_ts = time.time()
+        status, body, _ = client.get(endpoint, params={"pageSize": 500})
+        fetched = 0
+        sqlite_ok = 0
+        sqlite_fail = 0
+        sb_ok = 0
+        sb_fail = 0
+
+        if status == 200:
+            items = body.get("data", []) if isinstance(body, dict) else []
+            fetched = len(items)
+            with conn:
+                for item in items:
+                    try:
+                        row = mapper(item)
+                        conn.execute(
+                            f"INSERT OR REPLACE INTO {table} VALUES ({','.join(['?']*len(row))})",
+                            row,
+                        )
+                        sqlite_ok += 1
+
+                        if SUPABASE_SYNC_ENABLED:
+                            try:
+                                _sync_item_to_supabase(table, item)
+                                sb_ok += 1
+                            except Exception as e:
+                                sb_fail += 1
+                                if sb_fail <= 3:
+                                    logger.warning(f"Supabase mirror {table}: {e}")
+
+                    except Exception as e:
+                        sqlite_fail += 1
+                        if sqlite_fail <= 3:
+                            logger.warning(f"Insert {table}: {e}")
+
+            stats[table] = fetched
+            logger.info(f"Synced {fetched} {table} (sqlite_ok={sqlite_ok}, sb_ok={sb_ok}, sb_fail={sb_fail})")
+
+        duration_ms = int((time.time() - started_ts) * 1000)
+        audit_status = "success" if (status == 200 and sqlite_fail == 0 and sb_fail == 0) else ("failed" if status != 200 else "partial")
+        try:
+            write_sync_audit(
+                endpoint_key=table,
+                endpoint_name=table,
+                endpoint_path=endpoint,
+                sync_type="scheduled",
+                status=audit_status,
+                records_fetched=fetched,
+                records_imported=(sb_ok if SUPABASE_SYNC_ENABLED else sqlite_ok),
+                records_failed=(sb_fail if SUPABASE_SYNC_ENABLED else sqlite_fail),
+                response_status_code=status,
+                duration_ms=duration_ms,
+            )
+        except Exception as e:
+            logger.warning(f"Failed to write sync audit ({table}): {e}")
+
+    # Transaction data (cursor-based, incremental)
+    # insurance_payments uses a dedicated mapper (12 columns: +claim_location_id, +entry_date)
+    # All others use _map_transaction (11 columns: +entry_date)
+    _TXN_TABLE_MAP = [
+        ("/v1/transactions/procedures",        "procedures",         _map_transaction),
+        ("/v1/transactions/patientpayments",    "patient_payments",   _map_transaction),
+        ("/v1/transactions/insurancepayments",  "insurance_payments", _map_insurance_payment),
+        ("/v1/transactions/adjustments",        "adjustments",        _map_transaction),
+    ]
+    for endpoint, table, mapper in _TXN_TABLE_MAP:
+        n = _sync_table(
+            client, conn, endpoint, table,
+            row_mapper=mapper,
+            requires_date=True,
+        )
+        stats[table] = n
+
+    # Appointments (cursor-based)
+    n = _sync_table(
+        client, conn, "/v1/appointments", "appointments",
+        row_mapper=_map_appointment,
+    )
+    stats["appointments"] = n
+
+    # Patients (cursor-based)
+    n = _sync_table(
+        client, conn, "/v1/patients", "patients",
+        row_mapper=_map_patient,
+    )
+    stats["patients"] = n
+
+    # Insurance claims (cursor-based) — used for per-office attribution.
+    # Synced AFTER transaction tables so claim_location_id can be backfilled immediately.
+    logger.info("Syncing insurance_claims...")
+    n = _sync_table(
+        client, conn, "/v1/insuranceclaims", "insurance_claims",
+        row_mapper=_map_insurance_claim,
+    )
+    stats["insurance_claims"] = n
+
+    # Post-sync: backfill claim_location_id on insurance_payments for any newly
+    # synced claims and ensure billing_provider_id is populated from raw JSON.
+    try:
+        logger.info("Backfilling insurance_payments.claim_location_id from insurance_claims...")
+        with conn:
+            conn.execute("""
+                UPDATE insurance_payments
+                SET claim_location_id = (
+                    SELECT ic.location_id FROM insurance_claims ic
+                    WHERE ic.id = json_extract(insurance_payments.raw, '$.insuranceClaim.id')
+                )
+                WHERE json_extract(raw, '$.insuranceClaim.id') IS NOT NULL
+                  AND (claim_location_id IS NULL
+                       OR claim_location_id != (
+                           SELECT ic.location_id FROM insurance_claims ic
+                           WHERE ic.id = json_extract(insurance_payments.raw, '$.insuranceClaim.id')
+                       ))
+            """)
+            # Also backfill billing_provider_id on insurance_claims from raw JSON
+            conn.execute("""
+                UPDATE insurance_claims
+                SET billing_provider_id = json_extract(raw, '$.billingProvider.id')
+                WHERE billing_provider_id IS NULL
+                  AND json_extract(raw, '$.billingProvider.id') IS NOT NULL
+            """)
+        logger.info("claim_location_id backfill complete")
+    except Exception as e:
+        logger.warning(f"claim_location_id backfill failed (non-fatal): {e}")
+
+    conn.close()
+
+    # FIX-5: After incremental sync, refresh records with empty distributions.
+    # Run for recent data (last 90 days) to catch payments updated after initial sync.
+    from datetime import date, timedelta
+    ninety_days_ago = (date.today() - timedelta(days=90)).isoformat()
+    try:
+        refresh_stats = refresh_empty_distributions(
+            client=client,
+            tables=["insurance_payments", "patient_payments"],
+            since_date=ninety_days_ago,
+            limit_per_table=500,
+        )
+        stats["empty_dist_refresh"] = refresh_stats
+        logger.info(f"Empty-distribution refresh: {refresh_stats}")
+    except Exception as e:
+        logger.warning(f"Empty-distribution refresh failed (non-fatal): {e}")
+
+    # ── Patient gap-fill: fetch any patient IDs referenced in procedures/claims
+    # but absent from the local patients table.
+    #
+    # Root cause: the cursor-based patients sync advances monotonically by ID.
+    # New patients registered in Dentrix may receive IDs in a range the cursor
+    # already passed (non-strictly-sequential allocation across branches/offices),
+    # meaning they are never re-fetched by the incremental sync.
+    # This targeted fetch closes that gap after every sync run without resetting
+    # the cursor or touching any other table.
+    try:
+        missing_rows = conn.execute("""
+            WITH charged_patients AS (
+                SELECT DISTINCT patient_id FROM procedures
+                WHERE is_active = 1
+                  AND ledger_type IN ('PatientProcedureLedger','PatientProcedureLedgerRebill')
+                UNION
+                SELECT DISTINCT patient_id FROM insurance_claims
+                WHERE is_active = 1
+            )
+            SELECT cp.patient_id
+            FROM charged_patients cp
+            LEFT JOIN patients p ON cp.patient_id = p.id
+            WHERE p.id IS NULL
+        """).fetchall()
+        missing_ids = [r["patient_id"] for r in missing_rows]
+
+        if missing_ids:
+            logger.info(f"Patient gap-fill: {len(missing_ids)} missing patient(s) found — fetching from Dentrix API")
+            gf_ok = 0
+            gf_fail = 0
+            for pid in missing_ids:
+                try:
+                    status, body, _ = client.get(f"/v1/patients/{pid}")
+                    if status != 200:
+                        gf_fail += 1
+                        continue
+                    data = body.get("data") if isinstance(body, dict) else body
+                    if not isinstance(data, dict) or not data.get("id"):
+                        gf_fail += 1
+                        continue
+                    pref_loc = data.get("preferredLocation") or {}
+                    pref_loc_id = pref_loc.get("id") if isinstance(pref_loc, dict) else None
+                    loc = data.get("location") or {}
+                    loc_id_val = loc.get("id") if isinstance(loc, dict) else None
+                    created_val = (
+                        data.get("firstVisitDate") or data.get("created") or
+                        data.get("createdDate") or data.get("entryDate") or ""
+                    )
+                    row = (
+                        data.get("id"),
+                        data.get("firstName") or "",
+                        data.get("lastName") or "",
+                        str(created_val)[:10],
+                        loc_id_val,
+                        (data.get("lastModified") or "")[:10],
+                        json.dumps(data),
+                        pref_loc_id,
+                    )
+                    with conn:
+                        conn.execute(
+                            "INSERT OR REPLACE INTO patients VALUES (?,?,?,?,?,?,?,?)",
+                            row,
+                        )
+                    gf_ok += 1
+                    time.sleep(0.1)
+                except Exception as _gf_err:
+                    gf_fail += 1
+                    logger.warning(f"Patient gap-fill: failed to fetch {pid}: {_gf_err}")
+
+            logger.info(f"Patient gap-fill complete: {gf_ok} fetched, {gf_fail} failed")
+            stats["patient_gap_fill"] = {"filled": gf_ok, "failed": gf_fail, "total_missing": len(missing_ids)}
+        else:
+            logger.info("Patient gap-fill: no missing patients found")
+            stats["patient_gap_fill"] = {"filled": 0, "failed": 0, "total_missing": 0}
+
+    except Exception as e:
+        logger.warning(f"Patient gap-fill failed (non-fatal): {e}")
+        stats["patient_gap_fill"] = {"error": str(e)}
+
+    logger.info(f"Sync complete: {stats}")
+    return stats
+
+
+def get_db_stats() -> dict:
+    """Return record counts per table."""
+    conn = get_db()
+    stats = {}
+    for table in ["procedures", "patient_payments", "insurance_payments", "adjustments", "appointments", "patients", "providers", "locations"]:
+        row = conn.execute(f"SELECT COUNT(*) as cnt FROM {table}").fetchone()
+        stats[table] = row["cnt"] if row else 0
+    sync_rows = conn.execute("SELECT * FROM sync_state").fetchall()
+    stats["sync_state"] = [dict(r) for r in sync_rows]
+    conn.close()
+    return stats
+
+
+def refresh_empty_distributions(
+    client: Optional[AscendClient] = None,
+    tables: Optional[list] = None,
+    since_date: str = "2024-01-01",
+    limit_per_table: int = 2000,
+) -> dict:
+    """
+    FIX-5: Re-fetch individual records whose distributions array is empty.
+
+    Insurance payments are often created with distributions=[] and then updated
+    once the claim is processed. Because the cursor-based sync only fetches NEW
+    records by ID, it never re-fetches updates. This function queries the local DB
+    for recent records with empty distributions and re-fetches each one directly
+    from the API by ID so the latest version (with populated distributions) is stored.
+
+    Called:
+    - On demand via the management API / admin endpoint
+    - Automatically in sync_all() once per hour for recent data
+    - On first startup when historical gaps are detected
+    """
+    if client is None:
+        client = AscendClient(creds_path=PROD_CREDS_PATH)
+        client.authenticate()
+
+    if tables is None:
+        tables = ["insurance_payments", "patient_payments"]
+
+    # Map table → REST API endpoint for single-record fetch
+    SINGLE_FETCH_ENDPOINTS = {
+        "insurance_payments": "/v1/transactions/insurancepayments",
+        "patient_payments":   "/v1/transactions/patientpayments",
+        "procedures":         "/v1/transactions/procedures",
+        "adjustments":        "/v1/transactions/adjustments",
+    }
+
+    conn = get_db()
+    results = {}
+
+    for table in tables:
+        endpoint_base = SINGLE_FETCH_ENDPOINTS.get(table)
+        if not endpoint_base:
+            logger.warning(f"No single-fetch endpoint for {table}, skipping")
+            continue
+
+        # Find records with empty distributions in the raw JSON
+        try:
+            rows = conn.execute(f"""
+                SELECT id FROM {table}
+                WHERE json_extract(raw, '$.distributions') = '[]'
+                  AND is_active = 1
+                  AND transaction_date >= ?
+                  AND ledger_type NOT LIKE '%Cancellation%'
+                ORDER BY transaction_date DESC
+                LIMIT ?
+            """, (since_date, limit_per_table)).fetchall()
+        except Exception as e:
+            logger.error(f"Failed to query {table} for empty distributions: {e}")
+            results[table] = {"error": str(e)}
+            continue
+
+        record_ids = [r["id"] for r in rows]
+        logger.info(f"FIX-5: Refreshing {len(record_ids)} empty-distribution {table} records")
+
+        updated = 0
+        errors = 0
+        still_empty = 0
+
+        for record_id in record_ids:
+            try:
+                status, body, _ = client.get(f"{endpoint_base}/{record_id}")
+                if status != 200:
+                    errors += 1
+                    continue
+
+                # body is the single record
+                item = body if isinstance(body, dict) else {}
+                if not item.get("id"):
+                    errors += 1
+                    continue
+
+                dists = item.get("distributions", [])
+                row = _map_transaction(item)
+                with conn:
+                    conn.execute(
+                        f"INSERT OR REPLACE INTO {table} VALUES ({','.join(['?']*len(row))})",
+                        row,
+                    )
+
+                if dists:
+                    updated += 1
+                else:
+                    still_empty += 1
+
+                time.sleep(0.02)  # Rate-limiting
+
+            except Exception as e:
+                errors += 1
+                if errors <= 5:
+                    logger.warning(f"FIX-5: Error refreshing {table}/{record_id}: {e}")
+
+        results[table] = {
+            "candidates": len(record_ids),
+            "updated_with_distributions": updated,
+            "still_empty": still_empty,
+            "errors": errors,
+        }
+        logger.info(
+            f"FIX-5: {table} — refreshed {updated} with distributions, "
+            f"{still_empty} still empty, {errors} errors"
+        )
+
+    conn.close()
+
+    # ---------------------------------------------------------------------------
+    # Post-sync: recompute production_by_month for current and prior 2 months
+    # This keeps the precomputed table fresh for the Executive Overview KPI cards.
+    # PDF-authoritative rows (source='pdf_authoritative') are protected by
+    # recompute_month's skip logic — they are never overwritten.
+    # ---------------------------------------------------------------------------
+    try:
+        from ascend_service import recompute_month as _recompute_month
+        from datetime import date as _date
+        import calendar as _cal
+
+        KNOWN_LOCS = ["14000000000432", "14000000000433", "14000000000434", "14000000000435"]
+        today = _date.today()
+
+        for months_back in range(0, 3):  # current month + 2 prior months
+            year = today.year
+            month = today.month - months_back
+            while month <= 0:
+                month += 12
+                year -= 1
+            for lid in KNOWN_LOCS:
+                try:
+                    _recompute_month(lid, year, month, force=False)
+                except Exception as _re:
+                    logger.warning(f"Post-sync recompute skipped {lid} {year}-{month}: {_re}")
+
+        logger.info("Post-sync recompute of production_by_month complete")
+    except Exception as e:
+        logger.warning(f"Post-sync recompute failed (non-fatal): {e}")
+
+    return results
+
+
+# ---------------------------------------------------------------------------
+# Background sync thread
+# ---------------------------------------------------------------------------
+
+_sync_lock = threading.Lock()
+_sync_running = False
+
+
+def start_background_sync(interval_seconds: int = 3600):
+    """Start a background thread that syncs every interval_seconds."""
+    def _sync_loop():
+        global _sync_running
+        logger.info("Background sync thread started")
+
+        # Initial sync
+        with _sync_lock:
+            try:
+                sync_all()
+            except Exception as e:
+                logger.error(f"Initial sync failed: {e}", exc_info=True)
+
+        # Periodic sync
+        while _sync_running:
+            time.sleep(interval_seconds)
+            if not _sync_running:
+                break
+            with _sync_lock:
+                try:
+                    logger.info("Starting scheduled sync...")
+                    sync_all()
+                except Exception as e:
+                    logger.error(f"Scheduled sync failed: {e}", exc_info=True)
+
+        logger.info("Background sync thread stopped")
+
+    global _sync_running
+    _sync_running = True
+    t = threading.Thread(target=_sync_loop, daemon=True, name="ascend-sync")
+    t.start()
+    return t
+
+
+def stop_background_sync():
+    global _sync_running
+    _sync_running = False
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    init_db()
+    stats = sync_all()
+    print(f"Sync stats: {stats}")
+    print(f"DB stats: {get_db_stats()}")

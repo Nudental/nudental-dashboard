@@ -1,0 +1,620 @@
+#!/usr/bin/env python3
+"""
+A/R Snapshot Capture — stores aggregate-only Dentrix A/R data for trend history.
+
+Uses the verified page-summed ar_service.fetch_aging_report() which matches
+the Dentrix Ascend Aged Receivables report (Carl Emery, HS1, May 2026).
+
+NO PHI stored: no patient names, DOBs, IDs, guarantor names, or row-level balances.
+Only office-level aggregate totals.
+
+Freshness semantics (updated 2026-09-05):
+  - snapshot_date: the run date (when this check executed)
+  - latest_ar_change_date: the most recent date where the AR total actually changed
+  - A successful check with the same AR total is NOT stale — it means "checked OK,
+    no new activity since [latest_ar_change_date]"
+  - A failed check (API error, timeout, no_data) is an alert condition
+  - Finance must show Staten Island as "Checked [timestamp]; no new activity since [date]"
+    when the check succeeds with 0 new changes — never create zero-dollar rows to hide this
+
+Usage:
+    python3 ar_snapshot.py              # Capture today's snapshot
+    python3 ar_snapshot.py --date 2026-05-04   # Capture for a specific date
+    python3 ar_snapshot.py --dry-run    # Show what would be captured without storing
+    python3 ar_snapshot.py --location-health   # Show per-location check status
+"""
+
+import sys
+import os
+import sqlite3
+import time
+import argparse
+import logging
+import requests
+from datetime import datetime, date, timezone
+
+# Add middleware directory to path for ar_service import
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.stdout.reconfigure(line_buffering=True)
+
+from ar_service import fetch_aging_report, LOCATIONS
+
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ascend.db")
+LOG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs")
+
+TELEGRAM_BOT_TOKEN = open("/home/openclaw/.config/telegram/bot_token").read().strip()  # was: [REDACTED]
+TELEGRAM_CHAT_ID   = __NUDASHBOARD_CONFIG_LITERAL_005__
+
+logger = logging.getLogger("ar_snapshot")
+
+
+def _telegram_alert(msg: str):
+    """Send Telegram alert. Non-fatal if it fails."""
+    try:
+        requests.post(
+            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+            data={
+                "chat_id": TELEGRAM_CHAT_ID,
+                "text": msg,
+                "parse_mode": "Markdown",
+            },
+            timeout=10,
+        )
+    except Exception:
+        pass
+
+
+def _get_prior_check(conn: sqlite3.Connection, location_id: str) -> dict | None:
+    """
+    Get the most recent successful check for this location.
+    Returns None if no prior check exists.
+    """
+    row = conn.execute("""
+        SELECT total_ar, latest_ar_change_date, checked_at, check_date
+        FROM ar_location_sync_checks
+        WHERE location_id = ? AND check_status = 'ok' AND total_ar IS NOT NULL
+        ORDER BY check_date DESC, id DESC
+        LIMIT 1
+    """, (location_id,)).fetchone()
+    if not row:
+        return None
+    return {
+        "total_ar":              row[0],
+        "latest_ar_change_date": row[1],
+        "checked_at":            row[2],
+        "check_date":            row[3],
+    }
+
+
+def _record_location_check(
+    conn: sqlite3.Connection,
+    location_id: str,
+    location_name: str,
+    check_date: str,
+    checked_at: str,
+    total_ar: float | None,
+    rows_returned: int,
+    pages_fetched: int,
+    prior: dict | None,
+    check_status: str = "ok",
+    error_message: str | None = None,
+) -> dict:
+    """
+    Record a per-location check in ar_location_sync_checks.
+    Determines data_changed and latest_ar_change_date vs prior check.
+    Returns the recorded check metadata.
+    """
+    data_changed = 0
+    latest_ar_change_date = None
+    prior_total = None
+
+    if prior:
+        prior_total = prior["total_ar"]
+        latest_ar_change_date = prior["latest_ar_change_date"]
+        if total_ar is not None and abs(total_ar - prior_total) >= 0.01:
+            data_changed = 1
+            latest_ar_change_date = check_date  # data changed today
+
+    elif total_ar is not None and rows_returned > 0:
+        # First ever check — data_changed=1, change date = today
+        data_changed = 1
+        latest_ar_change_date = check_date
+
+    conn.execute("""
+        INSERT INTO ar_location_sync_checks (
+            location_id, location_name, checked_at, check_date,
+            rows_returned, pages_fetched, total_ar,
+            latest_ar_change_date, prior_check_total_ar, data_changed,
+            check_status, error_message, source_method
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        location_id, location_name, checked_at, check_date,
+        rows_returned, pages_fetched, total_ar,
+        latest_ar_change_date, prior_total, data_changed,
+        check_status, error_message, "dentrix_ascend_api",
+    ))
+    conn.commit()
+
+    return {
+        "location_id":           location_id,
+        "location_name":         location_name,
+        "checked_at":            checked_at,
+        "check_date":            check_date,
+        "total_ar":              total_ar,
+        "rows_returned":         rows_returned,
+        "pages_fetched":         pages_fetched,
+        "data_changed":          data_changed,
+        "latest_ar_change_date": latest_ar_change_date,
+        "prior_check_total_ar":  prior_total,
+        "check_status":          check_status,
+        "error_message":         error_message,
+    }
+
+
+def get_location_health(conn: sqlite3.Connection | None = None) -> list[dict]:
+    """
+    Return per-location health: most recent check + last activity date.
+    Safe to call externally (e.g. from main.py Finance endpoint).
+    """
+    own_conn = conn is None
+    if own_conn:
+        conn = sqlite3.connect(DB_PATH, timeout=10)
+        conn.row_factory = sqlite3.Row
+
+    try:
+        rows = conn.execute("""
+            SELECT
+                c.location_id,
+                c.location_name,
+                c.checked_at,
+                c.check_date,
+                c.total_ar,
+                c.latest_ar_change_date,
+                c.data_changed,
+                c.check_status,
+                c.error_message,
+                c.rows_returned,
+                c.pages_fetched
+            FROM ar_location_sync_checks c
+            INNER JOIN (
+                SELECT location_id, MAX(id) AS max_id
+                FROM ar_location_sync_checks
+                GROUP BY location_id
+            ) latest ON c.location_id = latest.location_id AND c.id = latest.max_id
+            ORDER BY c.location_name
+        """).fetchall()
+
+        result = []
+        for r in rows:
+            # Determine display status
+            status = r["check_status"]
+            last_activity_date = r["latest_ar_change_date"]
+            if status == "ok":
+                if last_activity_date and last_activity_date < r["check_date"]:
+                    display_status = f"Checked {r['checked_at'][:19]}Z; no new activity since {last_activity_date}"
+                elif last_activity_date == r["check_date"]:
+                    display_status = f"Checked {r['checked_at'][:19]}Z; data updated today"
+                else:
+                    display_status = f"Checked {r['checked_at'][:19]}Z"
+            else:
+                display_status = f"Check FAILED at {r['checked_at'][:19]}Z — {r['error_message'] or status}"
+
+            result.append({
+                "location_id":           r["location_id"],
+                "location_name":         r["location_name"],
+                "checked_at":            r["checked_at"],
+                "check_date":            r["check_date"],
+                "total_ar":              r["total_ar"],
+                "latest_ar_change_date": last_activity_date,
+                "data_changed_today":    bool(r["data_changed"]),
+                "check_status":          status,
+                "error_message":         r["error_message"],
+                "rows_returned":         r["rows_returned"],
+                "pages_fetched":         r["pages_fetched"],
+                "display_status":        display_status,
+            })
+        return result
+    finally:
+        if own_conn:
+            conn.close()
+
+
+def capture_snapshot(snapshot_date: str = None, dry_run: bool = False) -> dict:
+    """
+    Capture A/R snapshot for all offices + aggregate.
+    Records per-location heartbeats in ar_location_sync_checks.
+    Returns summary of what was captured.
+
+    FRESHNESS SEMANTICS:
+      - snapshot_date is the RUN DATE (today), not the "source as-of date"
+      - latest_ar_change_date tracks when the AR total last changed
+      - A successful check with unchanged AR is NOT stale — it means the API
+        was checked successfully and there was no new activity
+      - Only an API error or missed heartbeat is an alert condition
+    """
+    snap_date = snapshot_date or date.today().isoformat()
+    snap_ts   = datetime.now(timezone.utc).isoformat()
+
+    logger.info(f"Capturing A/R snapshot for {snap_date} at {snap_ts}")
+
+    # Open DB early to read prior check state
+    conn = sqlite3.connect(DB_PATH, timeout=30)
+    conn.execute("PRAGMA journal_mode=WAL")
+
+    results      = {}
+    check_records = {}
+    all_totals   = {
+        "total_ar": 0, "net_balance": 0, "insurance_portion": 0,
+        "guarantor_portion": 0, "estimated_writeoff": 0, "unapplied_credits": 0,
+        "current_0_30": 0, "aged_31_60": 0, "aged_61_90": 0, "aged_over_90": 0,
+        "patient_count": 0, "page_count": 0,
+    }
+
+    failed_locations = []
+
+    # Capture each office
+    for loc_id, loc_name in LOCATIONS.items():
+        logger.info(f"  Fetching {loc_name} ({loc_id})...")
+
+        prior = _get_prior_check(conn, loc_id)
+        check_status  = "ok"
+        error_message = None
+        totals        = None
+        pages_fetched = 0
+        patient_count = 0
+
+        try:
+            report = fetch_aging_report(loc_id, include_patients=False)
+            totals = report["totals"]
+
+            if totals is None:
+                # API returned HTTP 200 but no patient rows — zero-row check (NOT an error)
+                # This is valid for Staten Island after Aug 28: "no new data"
+                check_status  = "ok"
+                patient_count = 0
+                pages_fetched = 0
+                logger.info(
+                    f"    {loc_name}: API check succeeded with 0 rows — "
+                    f"no outstanding aging balances returned (valid zero-row check)"
+                )
+            else:
+                patient_count = report["patientCount"]
+                pages_fetched = report["pages"]
+                logger.info(
+                    f"    Total A/R: ${totals['total']:,.2f} | "
+                    f"Patients: {patient_count} | Pages: {pages_fetched}"
+                )
+
+        except Exception as exc:
+            check_status  = "api_error"
+            error_message = str(exc)[:500]
+            logger.error(f"    FAILED: {loc_name}: {exc}")
+            failed_locations.append(loc_name)
+
+        # Record the check heartbeat regardless of whether data changed
+        check_rec = _record_location_check(
+            conn=conn,
+            location_id=loc_id,
+            location_name=loc_name,
+            check_date=snap_date,
+            checked_at=snap_ts,
+            total_ar=round(totals["total"], 2) if totals else None,
+            rows_returned=patient_count,
+            pages_fetched=pages_fetched,
+            prior=prior,
+            check_status=check_status,
+            error_message=error_message,
+        )
+        check_records[loc_name] = check_rec
+
+        if check_status != "ok" or totals is None:
+            continue  # Don't store snapshot row for failed/zero-row check
+
+        row = {
+            "snapshot_date":     snap_date,
+            "snapshot_timestamp": snap_ts,
+            "location_id":       loc_id,
+            "location_name":     loc_name,
+            "is_all_locations":  0,
+            "total_ar":          round(totals["total"], 2),
+            "net_balance":       round(totals["balance"], 2),
+            "insurance_portion": round(totals["insurancePortion"], 2),
+            "guarantor_portion": round(totals["guarantorPortion"], 2),
+            "estimated_writeoff":round(totals["writeOff"], 2),
+            "unapplied_credits": round(totals["unappliedCreditsAmount"], 2),
+            "current_0_30":      round(totals["currentAmount"], 2),
+            "aged_31_60":        round(totals["thirtyDaysAmount"], 2),
+            "aged_61_90":        round(totals["sixtyDaysAmount"], 2),
+            "aged_over_90":      round(totals["ninetyDaysAmount"], 2),
+            "patient_count":     patient_count,
+            "page_count":        pages_fetched,
+        }
+        results[loc_name] = row
+
+        # Accumulate for all-locations
+        for k in ["total_ar","net_balance","insurance_portion","guarantor_portion",
+                  "estimated_writeoff","unapplied_credits","current_0_30","aged_31_60",
+                  "aged_61_90","aged_over_90","patient_count","page_count"]:
+            all_totals[k] += row[k]
+
+    # All-locations aggregate (only if at least some offices succeeded)
+    if results:
+        all_row = {
+            "snapshot_date":      snap_date,
+            "snapshot_timestamp": snap_ts,
+            "location_id":        "",
+            "location_name":      "All Offices",
+            "is_all_locations":   1,
+            **{k: round(v, 2) if isinstance(v, float) else v for k, v in all_totals.items()},
+        }
+        results["All Offices"] = all_row
+        logger.info(
+            f"  All Offices (from {len(results)-1} offices): "
+            f"Total A/R: ${all_row['total_ar']:,.2f} | Patients: {all_row['patient_count']}"
+        )
+
+    # Alert on API failures
+    if failed_locations:
+        alert_msg = (
+            f"🚨 *A/R Snapshot: API check FAILED*\n"
+            f"Date: {snap_date}\n"
+            f"Failed locations: {', '.join(failed_locations)}\n"
+            f"Action: Check /v1/agingbalances/report connectivity and credentials."
+        )
+        _telegram_alert(alert_msg)
+
+    if dry_run:
+        logger.info("DRY RUN — not storing to database")
+        conn.close()
+        return {
+            "status":        "dry_run",
+            "date":          snap_date,
+            "rows":          len(results),
+            "results":       results,
+            "check_records": check_records,
+        }
+
+    # Store snapshot rows
+    upsert_sql = """
+    INSERT INTO ar_snapshots (
+        snapshot_date, snapshot_timestamp, location_id, location_name, is_all_locations,
+        total_ar, net_balance, insurance_portion, guarantor_portion, estimated_writeoff,
+        unapplied_credits, current_0_30, aged_31_60, aged_61_90, aged_over_90,
+        patient_count, page_count, source_endpoint, source_label
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT(snapshot_date, location_id, is_all_locations)
+    DO UPDATE SET
+        snapshot_timestamp   = excluded.snapshot_timestamp,
+        total_ar             = excluded.total_ar,
+        net_balance          = excluded.net_balance,
+        insurance_portion    = excluded.insurance_portion,
+        guarantor_portion    = excluded.guarantor_portion,
+        estimated_writeoff   = excluded.estimated_writeoff,
+        unapplied_credits    = excluded.unapplied_credits,
+        current_0_30         = excluded.current_0_30,
+        aged_31_60           = excluded.aged_31_60,
+        aged_61_90           = excluded.aged_61_90,
+        aged_over_90         = excluded.aged_over_90,
+        patient_count        = excluded.patient_count,
+        page_count           = excluded.page_count,
+        updated_at           = strftime('%Y-%m-%dT%H:%M:%S','now')
+    """
+
+    inserted = 0
+    for name, row in results.items():
+        conn.execute(upsert_sql, (
+            row["snapshot_date"], row["snapshot_timestamp"],
+            row["location_id"], row["location_name"], row["is_all_locations"],
+            row["total_ar"], row["net_balance"],
+            row["insurance_portion"], row["guarantor_portion"], row["estimated_writeoff"],
+            row["unapplied_credits"], row["current_0_30"], row["aged_31_60"],
+            row["aged_61_90"], row["aged_over_90"],
+            row["patient_count"], row["page_count"],
+            "/v1/agingbalances/report", "dentrix_ascend_api",
+        ))
+        inserted += 1
+    conn.commit()
+
+    # Verify
+    count = conn.execute(
+        "SELECT COUNT(*) FROM ar_snapshots WHERE snapshot_date = ?", (snap_date,)
+    ).fetchone()[0]
+    dupes = conn.execute("""
+        SELECT snapshot_date, location_id, is_all_locations, COUNT(*) as cnt
+        FROM ar_snapshots WHERE snapshot_date = ?
+        GROUP BY snapshot_date, location_id, is_all_locations
+        HAVING cnt > 1
+    """, (snap_date,)).fetchall()
+    conn.close()
+
+    logger.info(f"\n  Stored {inserted} snapshot rows for {snap_date}")
+    logger.info(f"  Total rows for date: {count}")
+    logger.info(f"  Location check heartbeats: {len(check_records)}")
+
+    return {
+        "status":         "success" if not failed_locations else "partial",
+        "date":           snap_date,
+        "timestamp":      snap_ts,
+        "rows_upserted":  inserted,
+        "rows_for_date":  count,
+        "duplicates":     len(dupes),
+        "failed_locations": failed_locations,
+        "results":        results,
+        "check_records":  check_records,
+    }
+
+
+def backfill_check_history():
+    """
+    Backfill ar_location_sync_checks from existing ar_snapshots table
+    for dates where we have snapshot data but no check record.
+    Used on first run to seed the latest_ar_change_date for each location.
+    """
+    conn = sqlite3.connect(DB_PATH, timeout=30)
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.row_factory = sqlite3.Row
+
+    try:
+        # Get all snapshot rows ordered by date
+        snaps = conn.execute("""
+            SELECT snapshot_date, location_id, location_name, total_ar,
+                   snapshot_timestamp, patient_count, page_count
+            FROM ar_snapshots
+            WHERE is_all_locations = 0
+            ORDER BY location_id, snapshot_date ASC
+        """).fetchall()
+
+        # Check which dates already have check records
+        existing = set(conn.execute("""
+            SELECT location_id || '|' || check_date FROM ar_location_sync_checks
+        """).fetchall())
+        existing = {r[0] for r in existing}
+
+        inserted = 0
+        prior_by_loc: dict[str, dict] = {}
+
+        for snap in snaps:
+            key = f"{snap['location_id']}|{snap['snapshot_date']}"
+            if key in existing:
+                prior_by_loc[snap["location_id"]] = {
+                    "total_ar":              snap["total_ar"],
+                    "latest_ar_change_date": None,  # We'll compute this from what we insert
+                }
+                continue
+
+            prior = prior_by_loc.get(snap["location_id"])
+            data_changed = 0
+            latest_ar_change_date = None
+            prior_total = None
+
+            if prior:
+                prior_total = prior["total_ar"]
+                latest_ar_change_date = prior.get("latest_ar_change_date")
+                if snap["total_ar"] is not None and abs(snap["total_ar"] - prior_total) >= 0.01:
+                    data_changed = 1
+                    latest_ar_change_date = snap["snapshot_date"]
+            else:
+                data_changed = 1
+                latest_ar_change_date = snap["snapshot_date"]
+
+            conn.execute("""
+                INSERT OR IGNORE INTO ar_location_sync_checks (
+                    location_id, location_name, checked_at, check_date,
+                    rows_returned, pages_fetched, total_ar,
+                    latest_ar_change_date, prior_check_total_ar, data_changed,
+                    check_status, source_method
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'ok', 'dentrix_ascend_api')
+            """, (
+                snap["location_id"], snap["location_name"],
+                snap["snapshot_timestamp"] or snap["snapshot_date"] + "T03:30:00",
+                snap["snapshot_date"],
+                snap["patient_count"] or 0,
+                snap["page_count"] or 0,
+                snap["total_ar"],
+                latest_ar_change_date,
+                prior_total,
+                data_changed,
+            ))
+            inserted += 1
+
+            prior_by_loc[snap["location_id"]] = {
+                "total_ar":              snap["total_ar"],
+                "latest_ar_change_date": latest_ar_change_date,
+            }
+
+        conn.commit()
+        logger.info(f"Backfilled {inserted} check records from existing ar_snapshots")
+        return inserted
+    finally:
+        conn.close()
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Capture A/R snapshot with per-location heartbeats")
+    parser.add_argument("--date",             default=None, help="Snapshot date (YYYY-MM-DD)")
+    parser.add_argument("--dry-run",          action="store_true", help="Don't store, just show")
+    parser.add_argument("--location-health",  action="store_true", help="Show per-location check status")
+    parser.add_argument("--backfill-history", action="store_true", help="Backfill check history from existing snapshots")
+    args = parser.parse_args()
+
+    # Set up logging
+    os.makedirs(LOG_DIR, exist_ok=True)
+    snap_date = args.date or date.today().isoformat()
+    log_file  = os.path.join(LOG_DIR, f"ar_snapshot_{snap_date}.log")
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(name)s] %(levelname)s %(message)s",
+        handlers=[
+            logging.StreamHandler(sys.stdout),
+            logging.FileHandler(log_file),
+        ],
+    )
+
+    if args.location_health:
+        health = get_location_health()
+        print(f"\n{'='*80}")
+        print(f"  Per-Location A/R Sync Health — {date.today().isoformat()}")
+        print(f"{'='*80}")
+        for loc in health:
+            print(f"\n  {loc['location_name']} ({loc['location_id']})")
+            print(f"    Status:         {loc['display_status']}")
+            print(f"    Total A/R:      ${loc['total_ar']:,.2f}" if loc['total_ar'] else "    Total A/R:      N/A")
+            print(f"    Last changed:   {loc['latest_ar_change_date'] or 'unknown'}")
+            print(f"    Rows returned:  {loc['rows_returned']}")
+            if loc['error_message']:
+                print(f"    Error:          {loc['error_message']}")
+        print(f"\n{'='*80}")
+        return
+
+    if args.backfill_history:
+        logger.info("Backfilling check history from existing ar_snapshots...")
+        count = backfill_check_history()
+        print(f"Backfilled {count} check records.")
+        return
+
+    logger.info(f"=== A/R Snapshot Capture ===")
+    logger.info(f"Date: {snap_date}")
+    logger.info(f"Log: {log_file}")
+    logger.info(f"Dry run: {args.dry_run}")
+
+    try:
+        result = capture_snapshot(args.date, args.dry_run)
+        logger.info(f"\nResult: {result['status']}")
+        logger.info(f"Snapshot rows: {result.get('rows_upserted', 'N/A')}")
+
+        # Print summary table
+        print(f"\n{'='*80}")
+        print(f"  A/R Snapshot Summary — {snap_date}")
+        print(f"{'='*80}")
+
+        for name, rec in result.get("check_records", {}).items():
+            ar_str    = f"${rec['total_ar']:>12,.2f}" if rec["total_ar"] is not None else "         N/A    "
+            chg_str   = "CHANGED" if rec["data_changed"] else "unchanged"
+            last_chg  = rec["latest_ar_change_date"] or "unknown"
+            status    = rec["check_status"]
+            err_str   = f" ❌ {rec['error_message'][:60]}" if rec.get("error_message") else ""
+            print(
+                f"  {name:<16}  {ar_str}  [{chg_str:9}]  "
+                f"last_activity={last_chg}  status={status}{err_str}"
+            )
+
+        print(f"{'='*80}")
+
+        if result.get("failed_locations"):
+            print(f"\n  ⚠️  API check FAILED for: {', '.join(result['failed_locations'])}")
+            print(f"  Alert sent via Telegram.")
+
+    except Exception as e:
+        logger.error(f"FAILED: {e}", exc_info=True)
+        _telegram_alert(
+            f"🚨 *A/R Snapshot FAILED*\n"
+            f"Date: {snap_date}\n"
+            f"Error: {str(e)[:200]}\n"
+            f"Log: {log_file}"
+        )
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

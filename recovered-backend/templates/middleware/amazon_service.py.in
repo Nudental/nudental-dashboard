@@ -1,0 +1,443 @@
+"""
+amazon_service.py — Amazon Business API Integration
+Nu Dental Dashboard | Built 2026-05-25
+
+Covers:
+  - OAuth 2.0 (Login with Amazon) — auth, callback, token refresh
+  - Reporting API v2021-01-08 — order history sync
+  - Product Search API — search by keyword or ASIN
+  - Cart API — build cart, estimate cost
+  - Ordering API — place orders
+  - Order Requests — submit for approval (office managers), approve/reject (Ny)
+
+Base URL: https://na.business-api.amazon.com
+Auth:     https://api.amazon.com/auth/o2/token
+"""
+
+import json
+import os
+import secrets
+import time
+import logging
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Optional
+import requests
+import httpx
+
+logger = logging.getLogger("amazon_service")
+
+# ─── Config ──────────────────────────────────────────────────────────────────
+
+CREDS_PATH = Path("/home/openclaw/.config/amazon_business/nudental.json")
+TOKENS_PATH = Path("/home/openclaw/.config/amazon_business/tokens.json")
+
+# Amazon Business API base (North America)
+AB_BASE = "https://na.business-api.amazon.com"
+LWA_TOKEN_URL = "https://api.amazon.com/auth/o2/token"
+LWA_AUTH_URL = "https://www.amazon.com/ap/oa"
+
+# Scopes needed:
+# b2b:orders:read     — read order history
+# b2b:orders:write    — place orders
+# b2b:search          — product search
+# b2b:carts           — cart management
+SCOPES = "b2b:orders:read b2b:orders:write b2b:search b2b:carts"
+
+
+def _load_creds() -> dict:
+    with open(CREDS_PATH) as f:
+        return json.load(f)
+
+
+def _load_tokens() -> dict:
+    if TOKENS_PATH.exists():
+        with open(TOKENS_PATH) as f:
+            return json.load(f)
+    return {}
+
+
+def _save_tokens(tokens: dict):
+    TOKENS_PATH.parent.mkdir(parents=True, exist_ok=True)
+    with open(TOKENS_PATH, "w") as f:
+        json.dump(tokens, f, indent=2)
+    os.chmod(TOKENS_PATH, 0o600)
+
+
+# ─── OAuth Flow ──────────────────────────────────────────────────────────────
+
+def get_authorization_url(state: Optional[str] = None) -> dict:
+    """
+    Returns the URL Dr. G must visit to authorize the app.
+    Dr. G signs in to Amazon Business, clicks Allow.
+    Amazon redirects to /amazon/callback?code=...&state=...
+    """
+    creds = _load_creds()
+    if not state:
+        state = secrets.token_urlsafe(32)
+
+    params = {
+        "client_id": creds["client_id"],
+        "scope": SCOPES,
+        "response_type": "code",
+        "redirect_uri": creds["redirect_uri"],
+        "state": state,
+    }
+    qs = "&".join(f"{k}={v}" for k, v in params.items())
+    url = f"{LWA_AUTH_URL}?{qs}"
+
+    # Save state for CSRF validation
+    tokens = _load_tokens()
+    tokens["oauth_state"] = state
+    _save_tokens(tokens)
+
+    return {"auth_url": url, "state": state}
+
+
+def exchange_code_for_tokens(code: str, state: str) -> dict:
+    """
+    Exchange authorization code for access_token + refresh_token.
+    Called by the /amazon/callback endpoint.
+    """
+    creds = _load_creds()
+
+    # Validate state (CSRF protection)
+    tokens = _load_tokens()
+    saved_state = tokens.get("oauth_state")
+    if saved_state and saved_state != state:
+        raise ValueError(f"OAuth state mismatch — possible CSRF. Expected: {saved_state}, got: {state}")
+
+    resp = requests.post(LWA_TOKEN_URL, data={
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": creds["redirect_uri"],
+        "client_id": creds["client_id"],
+        "client_secret": creds["client_secret"],
+    })
+    resp.raise_for_status()
+    data = resp.json()
+
+    if "refresh_token" not in data:
+        raise ValueError(f"Token exchange failed: {data}")
+
+    tokens = {
+        "access_token": data["access_token"],
+        "refresh_token": data["refresh_token"],
+        "expires_in": data.get("expires_in", 3600),
+        "obtained_at": time.time(),
+        "token_type": data.get("token_type", "bearer"),
+        "scopes": SCOPES,
+        "note": "Amazon Business OAuth tokens for Nu Dental. Refresh token is long-lived."
+    }
+    _save_tokens(tokens)
+    logger.info("Amazon Business tokens obtained and saved.")
+    return {"status": "authorized", "scopes": SCOPES}
+
+
+def get_access_token() -> str:
+    """
+    Returns a valid access token, refreshing if expired (>50 min old).
+    """
+    creds = _load_creds()
+    tokens = _load_tokens()
+
+    if not tokens.get("refresh_token"):
+        raise RuntimeError("Amazon Business not authorized yet. Run /amazon/auth first.")
+
+    # Check if access token is still fresh (refresh if >50 min old)
+    obtained_at = tokens.get("obtained_at", 0)
+    expires_in = tokens.get("expires_in", 3600)
+    age = time.time() - obtained_at
+
+    if age < (expires_in - 300) and tokens.get("access_token"):
+        return tokens["access_token"]
+
+    # Refresh
+    resp = requests.post(LWA_TOKEN_URL, data={
+        "grant_type": "refresh_token",
+        "refresh_token": tokens["refresh_token"],
+        "client_id": creds["client_id"],
+        "client_secret": creds["client_secret"],
+    })
+    resp.raise_for_status()
+    data = resp.json()
+
+    tokens["access_token"] = data["access_token"]
+    tokens["expires_in"] = data.get("expires_in", 3600)
+    tokens["obtained_at"] = time.time()
+    _save_tokens(tokens)
+    logger.debug("Amazon Business access token refreshed.")
+    return tokens["access_token"]
+
+
+def is_authorized() -> bool:
+    tokens = _load_tokens()
+    return bool(tokens.get("refresh_token"))
+
+
+# ─── API Helper ──────────────────────────────────────────────────────────────
+
+def _ab_get(path: str, params: dict = None) -> dict:
+    token = get_access_token()
+    url = f"{AB_BASE}{path}"
+    resp = requests.get(url, params=params, headers={
+        "x-amz-access-token": token,
+        "Content-Type": "application/json",
+    })
+    resp.raise_for_status()
+    return resp.json()
+
+
+def _ab_post(path: str, payload: dict) -> dict:
+    token = get_access_token()
+    url = f"{AB_BASE}{path}"
+    resp = requests.post(url, json=payload, headers={
+        "x-amz-access-token": token,
+        "Content-Type": "application/json",
+    })
+    resp.raise_for_status()
+    return resp.json()
+
+
+# ─── Order History Sync ───────────────────────────────────────────────────────
+
+# Office manager email → office location mapping
+EMAIL_TO_OFFICE = __NUDASHBOARD_CONFIG_LITERAL_001__
+
+OFFICE_ID_MAP = __NUDASHBOARD_CONFIG_LITERAL_002__
+
+
+def _map_order_to_row(order: dict, line: dict) -> dict:
+    """Map a single order + line item to a front_desk_amazon_orders row."""
+    buyer_email = order.get("buyingCustomer", {}).get("email", "").lower()
+    buyer_name = order.get("buyingCustomer", {}).get("name", "")
+    approver = order.get("lastOrderApproverName", "")
+    office = EMAIL_TO_OFFICE.get(buyer_email)
+
+    # Try businessOrderInfo.location as fallback
+    if not office:
+        biz_loc = order.get("businessOrderInfo", {}).get("location", "")
+        if biz_loc:
+            office = biz_loc
+
+    order_date_str = order.get("orderDate", "")
+    try:
+        order_dt = datetime.fromisoformat(order_date_str.replace("Z", "+00:00"))
+        order_month = order_dt.strftime("%Y-%m")
+    except Exception:
+        order_month = None
+
+    seller = line.get("seller", {})
+    subtotal = float(line.get("itemSubTotal", {}).get("amount", 0))
+    tax = float(line.get("itemTax", {}).get("amount", 0))
+    net_total = float(line.get("itemNetTotal", {}).get("amount", 0))
+    ppu = float(line.get("purchasedPricePerUnit", {}).get("amount", 0))
+
+    return {
+        "order_date": order_date_str,
+        "order_month": order_month,
+        "order_id": order.get("orderId"),
+        "amazon_order_status": order.get("orderStatus"),
+        "receiving_status": "Pending",
+        "office_location": office,
+        "requester_name": buyer_name,
+        "ordered_by": buyer_name,
+        "approved_by": approver,
+        "asin": line.get("asin"),
+        "item_name": line.get("title"),
+        "amazon_product_category": line.get("productCategory"),
+        "unspsc": line.get("unspsc"),
+        "brand": line.get("brandName"),
+        "manufacturer": line.get("manufacturerName"),
+        "item_quantity": line.get("itemQuantity", 1),
+        "purchase_ppu": ppu,
+        "item_subtotal": subtotal,
+        "item_tax": tax,
+        "item_net_total": net_total,
+        "seller_name": seller.get("sellerName"),
+        "import_status": "synced_via_api",
+        "source_row": None,
+        "payment_card_ending": None,  # not available via API
+        "payment_identifier_raw": "API sync — card not exposed",
+        "notes": f"Synced via Amazon Business API on {datetime.now(timezone.utc).strftime('%Y-%m-%d')}",
+    }
+
+
+def sync_orders(start_date: str, end_date: str, supabase_client=None) -> dict:
+    """
+    Fetch orders from Amazon Business API for a date range and upsert to Supabase.
+    start_date / end_date: ISO 8601 strings e.g. '2026-01-01T00:00:00'
+    """
+    rows_fetched = 0
+    rows_inserted = 0
+    rows_skipped = 0
+    errors = []
+
+    params = {
+        "startDate": start_date,
+        "endDate": end_date,
+        "includeLineItems": "true",
+        "includeShipments": "true",
+    }
+
+    while True:
+        try:
+            data = _ab_get("/reporting/2021-01-08/orders/getOrdersByOrderDate", params=params)
+        except Exception as e:
+            errors.append(str(e))
+            break
+
+        orders = data.get("orders", [])
+        for order in orders:
+            line_items = order.get("lineItems", [])
+            if not line_items:
+                line_items = [{}]  # order-level row without line item
+            for line in line_items:
+                rows_fetched += 1
+                row = _map_order_to_row(order, line)
+                if supabase_client:
+                    try:
+                        result = supabase_client.upsert_amazon_order(row)
+                        if result.get("inserted"):
+                            rows_inserted += 1
+                        else:
+                            rows_skipped += 1
+                    except Exception as e:
+                        errors.append(f"Insert error for order {row.get('order_id')}: {e}")
+
+        # Pagination
+        next_token = data.get("nextPageToken")
+        if not next_token:
+            break
+        params = {"nextPageToken": next_token}
+
+    return {
+        "rows_fetched": rows_fetched,
+        "rows_inserted": rows_inserted,
+        "rows_skipped": rows_skipped,
+        "errors": errors,
+        "sync_date": datetime.now(timezone.utc).isoformat(),
+    }
+
+
+# ─── Product Search ───────────────────────────────────────────────────────────
+
+def search_products(keyword: str, page_size: int = 20, page_number: int = 1) -> dict:
+    """
+    Search Amazon Business product catalog.
+    Returns list of products with ASIN, title, price, brand, image URL.
+    """
+    params = {
+        "keywords": keyword,
+        "pageSize": page_size,
+        "pageNumber": page_number,
+        "facets": "price",
+    }
+    return _ab_get("/products/2020-08-26/products", params=params)
+
+
+def get_product(asin: str) -> dict:
+    """Get product details by ASIN."""
+    return _ab_get(f"/products/2020-08-26/products/{asin}")
+
+
+# ─── Cart Management ─────────────────────────────────────────────────────────
+
+def create_cart(items: list[dict]) -> dict:
+    """
+    Create a new cart with items.
+    items: [{"asin": "B001XYZ", "quantity": 2}, ...]
+    Returns cart object including estimated total.
+    """
+    payload = {
+        "items": [{"asin": item["asin"], "quantity": item["quantity"]} for item in items]
+    }
+    return _ab_post("/carts/v1/carts", payload)
+
+
+def get_cart(cart_id: str) -> dict:
+    return _ab_get(f"/carts/v1/carts/{cart_id}")
+
+
+def get_cart_estimate(cart_id: str) -> dict:
+    """Get estimated total cost for a cart before placing order."""
+    return _ab_get(f"/carts/v1/carts/{cart_id}/estimatedTotalPurchaseCost")
+
+
+# ─── Order Placement ─────────────────────────────────────────────────────────
+
+def place_order(cart_id: str, purchase_order_number: str = None, notes: str = None) -> dict:
+    """
+    Place an order from a cart.
+    Returns Amazon order ID.
+    """
+    payload = {"cartId": cart_id}
+    if purchase_order_number:
+        payload["purchaseOrderNumber"] = purchase_order_number
+    if notes:
+        payload["businessOrderInfo"] = {"customField": notes}
+    return _ab_post("/ordering/2021-08-01/orders", payload)
+
+
+# ─── Supabase Order Request Helpers ─────────────────────────────────────────
+
+def build_order_request_payload(
+    user_id: str,
+    user_email: str,
+    office_location: str,
+    office_id: str,
+    cart_items: list[dict],
+    estimated_total: float,
+    amazon_cart_id: str,
+    notes: str = None,
+) -> dict:
+    """Build a Supabase insert payload for amazon_order_requests table."""
+    return {
+        "requested_by_user_id": user_id,
+        "requested_by_email": user_email,
+        "office_location": office_location,
+        "office_id": office_id,
+        "status": "pending",
+        "cart_items": cart_items,
+        "estimated_total": estimated_total,
+        "amazon_cart_id": amazon_cart_id,
+        "notes": notes,
+        "notification_sent": False,
+    }
+
+
+# ─── Telegram Notification (Ny) ──────────────────────────────────────────────
+
+NY_TELEGRAM_CHAT_ID = None  # Set after Ny registers her Telegram with the bot
+NY_USER_ID = "2954e9e7-9b8a-4ed3-a624-71f91c36d2c3"  # Ny's dashboard user ID
+
+def format_order_request_notification(request: dict) -> str:
+    """Format a Telegram message for Ny when a new order request arrives."""
+    items = request.get("cart_items", [])
+    item_count = sum(i.get("quantity", 1) for i in items)
+    total = request.get("estimated_total", 0)
+    office = request.get("office_location", "Unknown Office")
+    requester = request.get("requested_by_email", "Unknown")
+    req_id = request.get("id", "")
+
+    lines = [
+        f"🛒 *New Order Request*",
+        f"",
+        f"*Office:* {office}",
+        f"*Requested by:* {requester}",
+        f"*Items:* {item_count} items",
+        f"*Estimated total:* ${total:.2f}",
+        f"",
+    ]
+    if items:
+        lines.append("*Items:*")
+        for item in items[:5]:  # show first 5
+            lines.append(f"  • {item.get('title', item.get('asin', '?'))} × {item.get('quantity', 1)}")
+        if len(items) > 5:
+            lines.append(f"  • ...and {len(items)-5} more")
+        lines.append("")
+
+    lines.append(f"Review in dashboard → Front Desk → Place Order")
+    lines.append(f"Request ID: `{req_id}`")
+
+    return "\n".join(lines)

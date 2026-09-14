@@ -1,0 +1,76 @@
+-- ============================================================
+-- ar_aging_snapshots — Precomputed Dentrix Aged Receivables
+-- Source of truth for PayorsTab and Claims/AR tab on nudashboard
+--
+-- NO PHI: aggregate-only rows (no patient names, DOBs, etc.)
+-- Each row = one office (or one payor within an office) for one report snapshot
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS ar_aging_snapshots (
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+    -- Report identity
+    report_as_of        DATE        NOT NULL,
+    report_type         TEXT        NOT NULL DEFAULT 'over_90',
+    -- 'over_90' = Dentrix Aged Receivables "Over 90" format (no upper age cap)
+    -- '91_365'  = legacy format capped at 365 days
+
+    -- Row type
+    row_type            TEXT        NOT NULL DEFAULT 'office_total',
+    -- 'practice_total' = one row for the whole practice
+    -- 'office_total'   = one row per office, payor_name = NULL
+    -- 'payor_row'      = one row per payor per office (future)
+
+    -- Office
+    office_name         TEXT,
+    location_id         TEXT,        -- Dentrix location_id (14000000000xxx)
+
+    -- Payor (NULL for office_total rows)
+    payor_name          TEXT,
+    payor_id            TEXT,        -- Dentrix payorId / NPI
+
+    -- Insurance AR aging buckets
+    -- Buckets may be NULL if Dentrix export does not provide office-level bucket breakdown.
+    bucket_0_30         NUMERIC(12,2),
+    bucket_31_60        NUMERIC(12,2),
+    bucket_61_90        NUMERIC(12,2),
+    bucket_over_90      NUMERIC(12,2),
+    -- NOTE: total_insurance_ar is derived at query time to avoid NULL math issues.
+
+    -- Full AR (for Claims/AR tab — NULL for payor_row rows)
+    total_balance_before_credits  NUMERIC(12,2),
+    unapplied_credits             NUMERIC(12,2),  -- negative value
+    net_balance_after_credits     NUMERIC(12,2),
+    guarantor_portion             NUMERIC(12,2),
+    insurance_portion             NUMERIC(12,2),
+    estimated_writeoff            NUMERIC(12,2),
+
+    -- Provenance
+    source_file         TEXT,        -- e.g. "DentrixAgedReceivables_2026-05-01_1906.pdf"
+    source_note         TEXT,
+    imported_at         TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    imported_by         TEXT         NOT NULL DEFAULT 'yabezy',
+
+    -- Reconciliation
+    reconciled          BOOLEAN      NOT NULL DEFAULT FALSE,
+    reconciliation_note TEXT,
+
+    UNIQUE (report_as_of, report_type, row_type, location_id, payor_name)
+);
+
+-- Indexes for dashboard queries
+CREATE INDEX IF NOT EXISTS idx_ar_as_of      ON ar_aging_snapshots(report_as_of DESC);
+CREATE INDEX IF NOT EXISTS idx_ar_location   ON ar_aging_snapshots(location_id);
+CREATE INDEX IF NOT EXISTS idx_ar_row_type   ON ar_aging_snapshots(row_type);
+CREATE INDEX IF NOT EXISTS idx_ar_reconciled ON ar_aging_snapshots(reconciled);
+
+-- Row-level security (read-only for anon)
+ALTER TABLE ar_aging_snapshots ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "ar_aging_read_anon" ON ar_aging_snapshots
+    FOR SELECT USING (true);
+
+-- Writes restricted to service role key.
+-- Note: PostgREST enforces role via JWT; this policy simply allows the role.
+CREATE POLICY "ar_aging_write_service" ON ar_aging_snapshots
+    FOR ALL USING (auth.role() = 'service_role') WITH CHECK (auth.role() = 'service_role');

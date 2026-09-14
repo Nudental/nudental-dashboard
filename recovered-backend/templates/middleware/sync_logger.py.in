@@ -1,0 +1,232 @@
+"""
+sync_logger.py — Shared helper for writing sync_job_runs rows.
+Phase 2B: Non-blocking, sanitized, Supabase service-role writes.
+
+Usage:
+    from sync_logger import start_sync_run, finish_sync_run, fail_sync_run
+
+    run_id = start_sync_run("plaid_sync", trigger_type="scheduled", triggered_by="cron")
+    try:
+        # ... do work ...
+        finish_sync_run(run_id, status="success", rows_read=100, rows_inserted=50)
+    except Exception as e:
+        fail_sync_run(run_id, error=e, rows_read=100)
+
+All functions are non-blocking: if Supabase write fails, the real job continues.
+"""
+
+import json
+import logging
+import os
+import re
+import time
+import uuid
+from datetime import datetime, timezone
+from typing import Optional
+
+logger = logging.getLogger("sync_logger")
+
+# ── Supabase config ─────────────────────────────────────────────────────────
+
+_CREDS_PATH = os.path.expanduser("~/.config/supabase/nudental.json")
+_sb_config: Optional[dict] = None
+
+
+def _load_sb() -> dict:
+    global _sb_config
+    if _sb_config is None:
+        with open(_CREDS_PATH) as f:
+            _sb_config = json.load(f)
+    return _sb_config
+
+
+def _sb_url(table: str) -> str:
+    return f"{_load_sb()['project_url']}/rest/v1/{table}"
+
+
+def _sb_headers() -> dict:
+    cfg = _load_sb()
+    return {
+        "apikey": cfg["secret_key"],
+        "Authorization": f"Bearer {cfg['secret_key']}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation",
+    }
+
+
+# ── Sanitization ────────────────────────────────────────────────────────────
+
+_SANITIZE_PATTERNS = [
+    re.compile(r"Bearer\s+[A-Za-z0-9_\-\.]+", re.IGNORECASE),
+    re.compile(r"eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+(?:\.[A-Za-z0-9_\-]+)?"),
+    re.compile(r"sb[-_]secret[-_][A-Za-z0-9_\-]+"),
+    re.compile(r"[A-Za-z0-9_\-]{20,}\.apps\.googleusercontent\.com"),
+    re.compile(r"(?:api[_-]?key|secret|token|password|access_token|refresh_token)[=:]\s*\S+", re.IGNORECASE),
+    re.compile(r"\b\d{3}-\d{2}-\d{4}\b"),  # SSN
+    re.compile(r"access-[A-Za-z0-9]{20,}"),  # Plaid access tokens
+]
+
+
+def _sanitize(text: Optional[str], max_len: int = 500) -> Optional[str]:
+    """Strip secrets, tokens, SSNs from error text. Truncate to max_len."""
+    if not text:
+        return text
+    text = str(text)
+    for pat in _SANITIZE_PATTERNS:
+        text = pat.sub("[REDACTED]", text)
+    if len(text) > max_len:
+        text = text[: max_len - 3] + "..."
+    return text
+
+
+# ── Core API ─────────────────────────────────────────────────────────────────
+
+def start_sync_run(
+    job_key: str,
+    trigger_type: str = "scheduled",
+    triggered_by: str = "cron",
+    metadata: Optional[dict] = None,
+) -> Optional[str]:
+    """
+    Insert a 'running' row into sync_job_runs. Returns the row UUID or None on failure.
+    Non-blocking: logs warning on failure, never raises.
+    """
+    import requests as _requests
+
+    run_id = str(uuid.uuid4())
+    payload = {
+        "id": run_id,
+        "job_key": job_key,
+        "run_id": run_id,
+        "trigger_type": trigger_type,
+        "triggered_by": triggered_by,
+        "status": "running",
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "metadata": metadata,
+    }
+
+    try:
+        resp = _requests.post(
+            _sb_url("sync_job_runs"),
+            json=payload,
+            headers=_sb_headers(),
+            timeout=10,
+        )
+        if resp.status_code in (200, 201):
+            logger.info(f"sync_job_runs: started {job_key} (run_id={run_id[:8]})")
+            return run_id
+        else:
+            logger.warning(
+                f"sync_job_runs: failed to start {job_key}: "
+                f"HTTP {resp.status_code} — {resp.text[:200]}"
+            )
+            return None
+    except Exception as e:
+        logger.warning(f"sync_job_runs: exception starting {job_key}: {e}")
+        return None
+
+
+def finish_sync_run(
+    run_id: Optional[str],
+    status: str = "success",
+    rows_read: int = 0,
+    rows_inserted: int = 0,
+    rows_updated: int = 0,
+    rows_failed: int = 0,
+    error_message: Optional[str] = None,
+    metadata: Optional[dict] = None,
+) -> bool:
+    """
+    Update an existing sync_job_runs row to completed state.
+    Non-blocking: logs warning on failure, never raises.
+    Returns True on success, False on failure.
+    """
+    if not run_id:
+        return False
+
+    import requests as _requests
+
+    now = datetime.now(timezone.utc)
+    payload = {
+        "status": status,
+        "completed_at": now.isoformat(),
+        "rows_read": rows_read,
+        "rows_inserted": rows_inserted,
+        "rows_updated": rows_updated,
+        "rows_failed": rows_failed,
+        "error_message": _sanitize(error_message),
+    }
+
+    if metadata is not None:
+        payload["metadata"] = metadata
+
+    # Calculate duration from started_at (we need to fetch it)
+    # Simpler: just record completed_at and let the view compute duration if needed.
+    # But we can compute from the start time if we track it.
+    # For now, we'll set duration_ms via a subquery approach — or skip it and let
+    # the caller pass it. Actually, let's compute it in a simple way:
+    try:
+        # Fetch the started_at to compute duration
+        resp_get = _requests.get(
+            _sb_url("sync_job_runs") + f"?id=eq.{run_id}&select=started_at",
+            headers={**_sb_headers(), "Prefer": ""},
+            timeout=10,
+        )
+        if resp_get.status_code == 200 and resp_get.json():
+            started_str = resp_get.json()[0].get("started_at", "")
+            if started_str:
+                started_dt = datetime.fromisoformat(started_str.replace("Z", "+00:00"))
+                duration_ms = int((now - started_dt).total_seconds() * 1000)
+                payload["duration_ms"] = duration_ms
+    except Exception:
+        pass  # Duration is nice-to-have, don't fail over it
+
+    try:
+        resp = _requests.patch(
+            _sb_url("sync_job_runs") + f"?id=eq.{run_id}",
+            json=payload,
+            headers=_sb_headers(),
+            timeout=10,
+        )
+        if resp.status_code in (200, 204):
+            logger.info(
+                f"sync_job_runs: finished {run_id[:8]} status={status} "
+                f"read={rows_read} ins={rows_inserted} upd={rows_updated} fail={rows_failed}"
+            )
+            return True
+        else:
+            logger.warning(
+                f"sync_job_runs: failed to finish {run_id[:8]}: "
+                f"HTTP {resp.status_code} — {resp.text[:200]}"
+            )
+            return False
+    except Exception as e:
+        logger.warning(f"sync_job_runs: exception finishing {run_id[:8]}: {e}")
+        return False
+
+
+def fail_sync_run(
+    run_id: Optional[str],
+    error: Optional[Exception] = None,
+    error_message: Optional[str] = None,
+    rows_read: int = 0,
+    rows_inserted: int = 0,
+    rows_updated: int = 0,
+    rows_failed: int = 0,
+    metadata: Optional[dict] = None,
+) -> bool:
+    """
+    Convenience wrapper: mark a run as failed with an error.
+    Non-blocking: logs warning on failure, never raises.
+    """
+    msg = error_message or (str(error) if error else "Unknown error")
+    return finish_sync_run(
+        run_id=run_id,
+        status="failed",
+        rows_read=rows_read,
+        rows_inserted=rows_inserted,
+        rows_updated=rows_updated,
+        rows_failed=rows_failed,
+        error_message=msg,
+        metadata=metadata,
+    )

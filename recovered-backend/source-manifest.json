@@ -1,0 +1,735 @@
+[
+  {
+    "file": "middleware/amazon_service.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_001__",
+    "label": "EMAIL_TO_OFFICE",
+    "reason": "fixed business identity mapping",
+    "line": 205,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/amazon_service.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_002__",
+    "label": "OFFICE_ID_MAP",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 216,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "source_file": "middleware/amazon_service.py",
+    "sha256": "d9ae66dd4692ac095031cc08cd9432e46fd663fb45fcd5bbcb94060a2f3ed28e",
+    "template_sha256": "2ad9664db49d635e88537151f6b3defdbcf93f6d3da989211a76a359ef7606ac",
+    "round_trip_exact": true
+  },
+  {
+    "file": "middleware/ar_service.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_003__",
+    "label": "LOCATIONS",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 21,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/ar_service.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_004__",
+    "label": "_OFFICE_UUID_TO_LOC",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 306,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "source_file": "middleware/ar_service.py",
+    "sha256": "51f39fb6fc0ac21bfd615a5e0211064210e99d2610f118ba32529ed39b372a04",
+    "template_sha256": "0864bd86e34f606eefa3ef821ac9c8aad0234038bdc07e3a1c8181f5191d79b2",
+    "round_trip_exact": true
+  },
+  {
+    "file": "middleware/ar_snapshot.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_005__",
+    "label": "TELEGRAM_CHAT_ID",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 46,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "source_file": "middleware/ar_snapshot.py",
+    "sha256": "8fd91ceeed080d427959ead142c5e40fe9b25393886c9001625b70544fecfc28",
+    "template_sha256": "9f02663b4882bb8a3b28dab57231b757c1b489dbf3b6ec214dfdfd1b0085f40b",
+    "round_trip_exact": true
+  },
+  {
+    "source_file": "client/ascend_client.py",
+    "sha256": "b93f5acd37b4e0168b71b8e3d9f4207f7e9acf5e3eb6902deb0456e35a6c47e2",
+    "template_sha256": "b93f5acd37b4e0168b71b8e3d9f4207f7e9acf5e3eb6902deb0456e35a6c47e2",
+    "round_trip_exact": true
+  },
+  {
+    "file": "middleware/ascend_service.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_006__",
+    "label": "_PROVIDER_TYPE_MAP",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 13,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "source_file": "middleware/ascend_service.py",
+    "sha256": "85b660c8bd0e5da672636915aa3942ec3f0cc97870839de15acd681f1ec74664",
+    "template_sha256": "cfdccdbabdae75b81a2f57071def4a88837c2cc2d03078b869cb4b9d13f42a6e",
+    "round_trip_exact": true
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_007__",
+    "label": null,
+    "reason": "known credential repeated in source text",
+    "line": 2,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_008__",
+    "label": "OFFICE_UUID_TO_LOCATION_ID",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 84,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_009__",
+    "label": "NUDASHBOARD_API_KEY",
+    "reason": "credential/configuration value",
+    "line": 102,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_010__",
+    "label": "JWT_SECRET",
+    "reason": "credential/configuration value",
+    "line": 103,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_011__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 119,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_012__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 120,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_013__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 121,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_014__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 122,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_015__",
+    "label": "NUDASHBOARD_API_KEY",
+    "reason": "credential/configuration value",
+    "line": 163,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_016__",
+    "label": "sb_key",
+    "reason": "credential/configuration value",
+    "line": 1361,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_017__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 1731,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_018__",
+    "label": "PLAID_CLIENT_ID",
+    "reason": "credential/configuration value",
+    "line": 2222,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_019__",
+    "label": "PLAID_SANDBOX_SECRET",
+    "reason": "credential/configuration value",
+    "line": 2223,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_020__",
+    "label": "PLAID_PRODUCTION_SECRET",
+    "reason": "credential/configuration value",
+    "line": 2224,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_021__",
+    "label": "WF_ACCOUNT_MAP",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 3290,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_022__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 4105,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_023__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 4106,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_024__",
+    "label": "OFFICE_TO_LOCATION",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 4128,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_025__",
+    "label": "LOCATION_NAMES",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 4135,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_026__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 9049,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_027__",
+    "label": "DENTRIX_BENCHMARKS",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 9097,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_028__",
+    "label": "DENTRIX_FULL_AR",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 9103,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_029__",
+    "label": "RCM_AGING_BUCKET_REFERENCE",
+    "reason": "historical financial reference; synthetic replacement required in QA",
+    "line": 9180,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_030__",
+    "label": "RCM_AGING_BUCKET_REFERENCE",
+    "reason": "historical financial reference; synthetic replacement required in QA",
+    "line": 9363,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_031__",
+    "label": "EXEC_PDF_VALUES",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 9995,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_032__",
+    "label": "OFFICE_CANONICAL",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 10015,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_033__",
+    "label": "EXEC_MONTHLY_PDF",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 10022,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_034__",
+    "label": "EXEC_GRAND_PDF",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 10029,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_035__",
+    "label": "VALID_LOCATION_IDS",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 10036,
+    "kind": "python_literal",
+    "literal_type": "set"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_036__",
+    "label": "_GPR_LOCATION_TO_NAME",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 10082,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/main_candidate.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_037__",
+    "label": "_GPR_LOCATION_TO_OFFICE_ID",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 10088,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "source_file": "middleware/main_candidate.py",
+    "sha256": "a3961f234a8895617052de9cce99306cb6380f48c2d650f4395ab2c160bf0336",
+    "template_sha256": "f408d6f3b23c13bcf0747dda00c5d4184cb3d4c53496d8fc02deb2d0f0eb190c",
+    "round_trip_exact": true
+  },
+  {
+    "file": "middleware/otp_auth.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_038__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 183,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/otp_auth.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_039__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 317,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/otp_auth.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_040__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 318,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "source_file": "middleware/otp_auth.py",
+    "sha256": "04408177700c1005b2538e63de769de1a043656793c91713f340c222e332874e",
+    "template_sha256": "6b8001b96c6e6fbf4606932a0e27b2601b2cd262c4260349755fb58b6bc70874",
+    "round_trip_exact": true
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_041__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 527,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_042__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 528,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_043__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 529,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_044__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 530,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_045__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 531,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_046__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 532,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_047__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 533,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_048__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 534,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_049__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 535,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_050__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 536,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_051__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 537,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_052__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 538,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_053__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 539,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_054__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 540,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_055__",
+    "label": null,
+    "reason": "fixed email identity",
+    "line": 541,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_056__",
+    "label": "GOG_SEND_ACCOUNT",
+    "reason": "fixed email identity",
+    "line": 549,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_057__",
+    "label": null,
+    "reason": "email text in comment or interpolation",
+    "line": 678,
+    "kind": "email_text"
+  },
+  {
+    "file": "middleware/payroll_report.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_058__",
+    "label": null,
+    "reason": "email text in comment or interpolation",
+    "line": 678,
+    "kind": "email_text"
+  },
+  {
+    "source_file": "middleware/payroll_report.py",
+    "sha256": "e77fe6e072ab4a8499a8bc046a0c45f401b93a51bf1feb114f4cb2a71d0a048b",
+    "template_sha256": "939c7dfa429cd02841fb73a07478fc698f9d3516352d69990e08b280e947865a",
+    "round_trip_exact": true
+  },
+  {
+    "file": "middleware/plaid_sync.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_059__",
+    "label": "AMEX_OFFICE_ID_MAP",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 71,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/plaid_sync.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_060__",
+    "label": "WF_ACCOUNT_MAP",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 104,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/plaid_sync.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_061__",
+    "label": "WF_EFT_MASKS",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 158,
+    "kind": "python_literal",
+    "literal_type": "set"
+  },
+  {
+    "file": "middleware/plaid_sync.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_062__",
+    "label": "WF_CORPORATE_SHARED_KEYWORDS",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 166,
+    "kind": "python_literal",
+    "literal_type": "list"
+  },
+  {
+    "file": "middleware/plaid_sync.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_063__",
+    "label": "WF_OPERATING_EXPENSE_CATEGORIES",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 178,
+    "kind": "python_literal",
+    "literal_type": "set"
+  },
+  {
+    "file": "middleware/plaid_sync.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_064__",
+    "label": "WF_INTERNAL_TRANSFER_PATTERNS",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 190,
+    "kind": "python_literal",
+    "literal_type": "list"
+  },
+  {
+    "file": "middleware/plaid_sync.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_065__",
+    "label": "WF_AMEX_PAYMENT_PATTERNS",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 204,
+    "kind": "python_literal",
+    "literal_type": "list"
+  },
+  {
+    "file": "middleware/plaid_sync.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_066__",
+    "label": "WF_PAYROLL_FUNDING_PATTERNS",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 211,
+    "kind": "python_literal",
+    "literal_type": "list"
+  },
+  {
+    "file": "middleware/plaid_sync.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_067__",
+    "label": "WF_HEALTH_PREMIUM_MERCHANTS",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 221,
+    "kind": "python_literal",
+    "literal_type": "list"
+  },
+  {
+    "file": "middleware/plaid_sync.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_068__",
+    "label": "OWNER_TO_CARD",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 381,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "source_file": "middleware/plaid_sync.py",
+    "sha256": "e728bc8fa1bd5d32b03711f8aced72fb463503360777eb4e60aabfbb86a00e54",
+    "template_sha256": "7398cda01009a705b66fb3a12a1ee7de353c5d0ac8431dec0d37009b4462d713",
+    "round_trip_exact": true
+  },
+  {
+    "file": "middleware/report_export.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_069__",
+    "label": "LOCATION_NAMES",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 50,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/report_export.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_070__",
+    "label": "OFFICE_UUID_TO_LOCATION_ID",
+    "reason": "deployment business configuration; synthetic replacement required in QA",
+    "line": 62,
+    "kind": "python_literal",
+    "literal_type": "dict"
+  },
+  {
+    "file": "middleware/report_export.py",
+    "marker": "__NUDASHBOARD_CONFIG_LITERAL_071__",
+    "label": null,
+    "reason": "known credential repeated in source text",
+    "line": 149,
+    "kind": "python_literal",
+    "literal_type": "str"
+  },
+  {
+    "source_file": "middleware/report_export.py",
+    "sha256": "dd5379c4bdf82dbe321c2fe81fc2a00562e59b6dc1991dfd19031374993a9350",
+    "template_sha256": "44e217dfea4d50c0fc021da5ea8a38863ae41e8b6e3fdac989b7c29b0bc44bba",
+    "round_trip_exact": true
+  },
+  {
+    "source_file": "middleware/report_pdf.py",
+    "sha256": "c70886cbc52d688b69f55a26473c72abbb5625aa1335bd7447351d59e4eb5e08",
+    "template_sha256": "c70886cbc52d688b69f55a26473c72abbb5625aa1335bd7447351d59e4eb5e08",
+    "round_trip_exact": true
+  },
+  {
+    "source_file": "middleware/streaming_consumer.py",
+    "sha256": "809689aa0a1a1d752c4f1d4d6029c949714642a33529229cee3671c2d1e69cbb",
+    "template_sha256": "809689aa0a1a1d752c4f1d4d6029c949714642a33529229cee3671c2d1e69cbb",
+    "round_trip_exact": true
+  },
+  {
+    "source_file": "middleware/supabase_service.py",
+    "sha256": "8320c04200e67fb3c08f9b5e8122299ee39b1826b6caf9847dadebbc4162dfc2",
+    "template_sha256": "8320c04200e67fb3c08f9b5e8122299ee39b1826b6caf9847dadebbc4162dfc2",
+    "round_trip_exact": true
+  },
+  {
+    "source_file": "middleware/sync.py",
+    "sha256": "7507b781b2cdb40786ef75c2ac052e15c85e8f0b8a5e11ac11348a2af5fa1e5f",
+    "template_sha256": "7507b781b2cdb40786ef75c2ac052e15c85e8f0b8a5e11ac11348a2af5fa1e5f",
+    "round_trip_exact": true
+  },
+  {
+    "source_file": "middleware/sync_logger.py",
+    "sha256": "eb8d5c2afbace9dd94f6eab6b20709e92fb421c964eb894037e1b539486a38b9",
+    "template_sha256": "eb8d5c2afbace9dd94f6eab6b20709e92fb421c964eb894037e1b539486a38b9",
+    "round_trip_exact": true
+  },
+  {
+    "source_file": "middleware/ar_aging_migration.sql",
+    "sha256": "bda610354c12bfb5bd3e1878ac28044f4e7ea24758b296a24fb8eebb5b604608",
+    "template_sha256": "bda610354c12bfb5bd3e1878ac28044f4e7ea24758b296a24fb8eebb5b604608",
+    "round_trip_exact": true
+  }
+]

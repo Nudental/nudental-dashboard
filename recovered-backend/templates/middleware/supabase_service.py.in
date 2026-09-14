@@ -1,0 +1,501 @@
+"""
+Supabase Service
+Handles upserts and reads for the nudental Supabase project.
+Tables: dentrix_patients, dentrix_appointments, dentrix_transactions,
+        dentrix_providers, dentrix_locations
+
+Supabase project: siwtadgdqtvxoztnxzhx
+"""
+
+import json
+import logging
+import time
+from datetime import datetime, timezone
+from typing import Optional, Any
+import requests
+
+logger = logging.getLogger("supabase_service")
+
+CREDS_PATH = "/home/openclaw/.config/supabase/nudental.json"
+_sb_config: Optional[dict] = None
+
+
+def _load_config() -> dict:
+    global _sb_config
+    if _sb_config is None:
+        with open(CREDS_PATH) as f:
+            _sb_config = json.load(f)
+    return _sb_config
+
+
+def _headers() -> dict:
+    cfg = _load_config()
+    key = cfg["secret_key"]
+    return {
+        "apikey": key,
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json",
+        "Prefer": "return=minimal",
+    }
+
+
+def _base_url() -> str:
+    return _load_config()["project_url"] + "/rest/v1"
+
+
+# ---------------------------------------------------------------------------
+# Table creation SQL (run once via Supabase dashboard or management API)
+# ---------------------------------------------------------------------------
+
+MIGRATION_SQL = """
+-- Dentrix streaming tables for nudashboard real-time sync
+
+CREATE TABLE IF NOT EXISTS dentrix_patients (
+    id TEXT PRIMARY KEY,
+    org_id TEXT NOT NULL,
+    data JSONB NOT NULL,
+    last_modified TIMESTAMPTZ,
+    synced_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_dp_org ON dentrix_patients(org_id);
+CREATE INDEX IF NOT EXISTS idx_dp_modified ON dentrix_patients(last_modified);
+
+CREATE TABLE IF NOT EXISTS dentrix_appointments (
+    id TEXT PRIMARY KEY,
+    org_id TEXT NOT NULL,
+    location_id TEXT,
+    provider_id TEXT,
+    data JSONB NOT NULL,
+    last_modified TIMESTAMPTZ,
+    synced_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_da_org ON dentrix_appointments(org_id);
+CREATE INDEX IF NOT EXISTS idx_da_loc ON dentrix_appointments(location_id);
+CREATE INDEX IF NOT EXISTS idx_da_prov ON dentrix_appointments(provider_id);
+CREATE INDEX IF NOT EXISTS idx_da_modified ON dentrix_appointments(last_modified);
+
+CREATE TABLE IF NOT EXISTS dentrix_transactions (
+    id TEXT PRIMARY KEY,
+    org_id TEXT NOT NULL,
+    type TEXT,
+    location_id TEXT,
+    provider_id TEXT,
+    data JSONB NOT NULL,
+    last_modified TIMESTAMPTZ,
+    synced_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_dt_org ON dentrix_transactions(org_id);
+CREATE INDEX IF NOT EXISTS idx_dt_type ON dentrix_transactions(type);
+CREATE INDEX IF NOT EXISTS idx_dt_modified ON dentrix_transactions(last_modified);
+
+CREATE TABLE IF NOT EXISTS dentrix_providers (
+    id TEXT PRIMARY KEY,
+    org_id TEXT NOT NULL,
+    data JSONB NOT NULL,
+    last_modified TIMESTAMPTZ,
+    synced_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS dentrix_locations (
+    id TEXT PRIMARY KEY,
+    org_id TEXT NOT NULL,
+    data JSONB NOT NULL,
+    last_modified TIMESTAMPTZ,
+    synced_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS goals (
+    id BIGSERIAL PRIMARY KEY,
+    location_id TEXT,
+    year INTEGER,
+    month INTEGER,
+    production_goal NUMERIC(12,2),
+    collections_goal NUMERIC(12,2),
+    new_patients_goal INTEGER,
+    data JSONB,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_goals_loc ON goals(location_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_goals_unique ON goals(location_id, year, month);
+
+CREATE TABLE IF NOT EXISTS ar_aging_snapshots (
+    id                            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    report_as_of                  DATE        NOT NULL,
+    report_type                   TEXT        NOT NULL DEFAULT 'over_90',
+    row_type                      TEXT        NOT NULL DEFAULT 'office_total',
+    office_name                   TEXT,
+    location_id                   TEXT,
+    payor_name                    TEXT,
+    payor_id                      TEXT,
+    bucket_0_30                   NUMERIC(12,2),
+    bucket_31_60                  NUMERIC(12,2),
+    bucket_61_90                  NUMERIC(12,2),
+    bucket_over_90                NUMERIC(12,2),
+    total_balance_before_credits  NUMERIC(12,2),
+    unapplied_credits             NUMERIC(12,2),
+    net_balance_after_credits     NUMERIC(12,2),
+    guarantor_portion             NUMERIC(12,2),
+    insurance_portion             NUMERIC(12,2),
+    estimated_writeoff            NUMERIC(12,2),
+    source_file                   TEXT,
+    source_note                   TEXT,
+    imported_at                   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+    imported_by                   TEXT         NOT NULL DEFAULT 'yabezy',
+    reconciled                    BOOLEAN      NOT NULL DEFAULT FALSE,
+    reconciliation_note           TEXT,
+    UNIQUE (report_as_of, report_type, row_type, location_id, payor_name)
+);
+CREATE INDEX IF NOT EXISTS idx_ar_as_of    ON ar_aging_snapshots(report_as_of DESC);
+CREATE INDEX IF NOT EXISTS idx_ar_location ON ar_aging_snapshots(location_id);
+CREATE INDEX IF NOT EXISTS idx_ar_row_type ON ar_aging_snapshots(row_type);
+ALTER TABLE ar_aging_snapshots ENABLE ROW LEVEL SECURITY;
+"""
+
+
+def apply_migrations() -> dict:
+    """
+    Attempt to apply migrations via Supabase management API.
+    Falls back to a no-op if the API isn't accessible.
+    Returns status dict.
+    """
+    cfg = _load_config()
+    project_id = cfg.get("project_id", "siwtadgdqtvxoztnxzhx")
+    secret_key = cfg["secret_key"]
+
+    # Try management API (requires management token, may fail)
+    mgmt_url = f"https://api.supabase.com/v1/projects/{project_id}/database/query"
+    try:
+        resp = requests.post(
+            mgmt_url,
+            headers={
+                "Authorization": f"Bearer {secret_key}",
+                "Content-Type": "application/json",
+            },
+            json={"query": MIGRATION_SQL},
+            timeout=30,
+        )
+        if resp.status_code in (200, 201):
+            logger.info("Migrations applied via management API")
+            return {"status": "ok", "method": "management_api"}
+        else:
+            logger.warning(f"Management API migration failed: {resp.status_code} {resp.text[:200]}")
+    except Exception as e:
+        logger.warning(f"Management API not available: {e}")
+
+    # Tables might already exist — return guidance
+    return {
+        "status": "manual_required",
+        "message": "Run MIGRATION_SQL in Supabase SQL Editor if tables don't exist",
+        "sql_preview": MIGRATION_SQL[:200] + "...",
+    }
+
+
+# ---------------------------------------------------------------------------
+# Upsert helpers
+# ---------------------------------------------------------------------------
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _nested_id(obj) -> Optional[str]:
+    if isinstance(obj, dict):
+        return obj.get("id")
+    return obj
+
+
+def upsert_patient(resource: dict, org_id: str) -> bool:
+    """Upsert a patient record to dentrix_patients."""
+    row_id = resource.get("id")
+    if not row_id:
+        return False
+    last_mod = resource.get("lastModified") or resource.get("modifiedDate")
+    row = {
+        "id": row_id,
+        "org_id": org_id,
+        "data": resource,
+        "last_modified": last_mod,
+        "synced_at": _now_iso(),
+    }
+    return _upsert("dentrix_patients", row)
+
+
+def upsert_appointment(resource: dict, org_id: str, location_id: Optional[str] = None, provider_id: Optional[str] = None) -> bool:
+    row_id = resource.get("id")
+    if not row_id:
+        return False
+    loc_id = location_id or _nested_id(resource.get("location"))
+    prov_id = provider_id or _nested_id(resource.get("provider"))
+    last_mod = resource.get("lastModified") or resource.get("modifiedDate")
+    row = {
+        "id": row_id,
+        "org_id": org_id,
+        "location_id": loc_id,
+        "provider_id": prov_id,
+        "data": resource,
+        "last_modified": last_mod,
+        "synced_at": _now_iso(),
+    }
+    return _upsert("dentrix_appointments", row)
+
+
+def upsert_transaction(resource: dict, org_id: str, tx_type: Optional[str] = None) -> bool:
+    row_id = resource.get("id")
+    if not row_id:
+        return False
+    loc_id = _nested_id(resource.get("location"))
+    prov_id = _nested_id(resource.get("provider"))
+    last_mod = resource.get("lastModified") or resource.get("modifiedDate")
+    row = {
+        "id": row_id,
+        "org_id": org_id,
+        "type": tx_type or resource.get("ledgerType") or resource.get("type"),
+        "location_id": loc_id,
+        "provider_id": prov_id,
+        "data": resource,
+        "last_modified": last_mod,
+        "synced_at": _now_iso(),
+    }
+    return _upsert("dentrix_transactions", row)
+
+
+def upsert_provider(resource: dict, org_id: str) -> bool:
+    row_id = resource.get("id")
+    if not row_id:
+        return False
+    last_mod = resource.get("lastModified")
+    row = {
+        "id": row_id,
+        "org_id": org_id,
+        "data": resource,
+        "last_modified": last_mod,
+        "synced_at": _now_iso(),
+    }
+    return _upsert("dentrix_providers", row)
+
+
+def upsert_location(resource: dict, org_id: str) -> bool:
+    row_id = resource.get("id")
+    if not row_id:
+        return False
+    last_mod = resource.get("lastModified")
+    row = {
+        "id": row_id,
+        "org_id": org_id,
+        "data": resource,
+        "last_modified": last_mod,
+        "synced_at": _now_iso(),
+    }
+    return _upsert("dentrix_locations", row)
+
+
+def _upsert(table: str, row: dict, retries: int = 2) -> bool:
+    """Upsert a single row via Supabase REST API."""
+    url = f"{_base_url()}/{table}"
+    headers = dict(_headers())
+    headers["Prefer"] = "resolution=merge-duplicates,return=minimal"
+
+    # JSONB fields need to be JSON strings for PostgREST
+    payload = {}
+    for k, v in row.items():
+        if isinstance(v, (dict, list)):
+            payload[k] = v  # PostgREST handles JSON natively
+        else:
+            payload[k] = v
+
+    for attempt in range(retries + 1):
+        try:
+            resp = requests.post(url, headers=headers, json=payload, timeout=10)
+            if resp.status_code in (200, 201, 204):
+                return True
+            if resp.status_code == 404:
+                logger.warning(f"Table {table} not found — run MIGRATION_SQL in Supabase dashboard")
+                return False
+            if resp.status_code == 409:
+                # Conflict — try PATCH instead
+                patch_resp = requests.patch(
+                    f"{url}?id=eq.{row['id']}",
+                    headers=headers,
+                    json=payload,
+                    timeout=10,
+                )
+                return patch_resp.status_code in (200, 204)
+            logger.warning(f"Supabase upsert {table}: {resp.status_code} {resp.text[:100]}")
+            if attempt < retries:
+                time.sleep(1)
+        except Exception as e:
+            logger.warning(f"Supabase upsert {table} attempt {attempt}: {e}")
+            if attempt < retries:
+                time.sleep(1)
+    return False
+
+
+def _batch_upsert(table: str, rows: list, retries: int = 2) -> int:
+    """Batch upsert multiple rows via Supabase REST API. Returns count of successfully inserted rows."""
+    if not rows:
+        return 0
+    url = f"{_base_url()}/{table}"
+    headers = dict(_headers())
+    headers["Prefer"] = "resolution=merge-duplicates,return=minimal"
+
+    for attempt in range(retries + 1):
+        try:
+            resp = requests.post(url, headers=headers, json=rows, timeout=30)
+            if resp.status_code in (200, 201, 204):
+                return len(rows)
+            logger.warning(f"Batch upsert {table}: {resp.status_code} {resp.text[:200]}")
+            if attempt < retries:
+                time.sleep(1)
+        except Exception as e:
+            logger.warning(f"Batch upsert {table} attempt {attempt}: {e}")
+            if attempt < retries:
+                time.sleep(1)
+    return 0
+
+
+def batch_upsert_transactions(items: list, org_id: str, tx_type: str = None, batch_size: int = 200) -> int:
+    """Batch upsert transactions to Supabase."""
+    rows = []
+    for item in items:
+        row_id = item.get("id")
+        if not row_id:
+            continue
+        rows.append({
+            "id": row_id,
+            "org_id": org_id,
+            "type": tx_type or item.get("ledgerType") or item.get("type"),
+            "location_id": _nested_id(item.get("location")),
+            "provider_id": _nested_id(item.get("provider")),
+            "data": item,
+            "last_modified": item.get("lastModified") or item.get("modifiedDate"),
+            "synced_at": _now_iso(),
+        })
+    total = 0
+    for i in range(0, len(rows), batch_size):
+        batch = rows[i:i+batch_size]
+        total += _batch_upsert("dentrix_transactions", batch)
+    return total
+
+
+def batch_upsert_appointments(items: list, org_id: str, batch_size: int = 200) -> int:
+    """Batch upsert appointments to Supabase."""
+    rows = []
+    for item in items:
+        row_id = item.get("id")
+        if not row_id:
+            continue
+        rows.append({
+            "id": row_id,
+            "org_id": org_id,
+            "location_id": _nested_id(item.get("location")),
+            "provider_id": _nested_id(item.get("provider")),
+            "data": item,
+            "last_modified": item.get("lastModified") or item.get("modifiedDate"),
+            "synced_at": _now_iso(),
+        })
+    total = 0
+    for i in range(0, len(rows), batch_size):
+        batch = rows[i:i+batch_size]
+        total += _batch_upsert("dentrix_appointments", batch)
+    return total
+
+
+def batch_upsert_patients(items: list, org_id: str, batch_size: int = 200) -> int:
+    """Batch upsert patients to Supabase."""
+    rows = []
+    for item in items:
+        row_id = item.get("id")
+        if not row_id:
+            continue
+        rows.append({
+            "id": row_id,
+            "org_id": org_id,
+            "data": item,
+            "last_modified": item.get("lastModified") or item.get("modifiedDate"),
+            "synced_at": _now_iso(),
+        })
+    total = 0
+    for i in range(0, len(rows), batch_size):
+        batch = rows[i:i+batch_size]
+        total += _batch_upsert("dentrix_patients", batch)
+    return total
+
+
+def get_table_counts() -> dict:
+    """Return record counts for all dentrix tables."""
+    tables = ["dentrix_patients", "dentrix_appointments", "dentrix_transactions",
+              "dentrix_providers", "dentrix_locations"]
+    counts = {}
+    for table in tables:
+        try:
+            resp = requests.get(
+                f"{_base_url()}/{table}",
+                headers={**_headers(), "Prefer": "count=exact"},
+                params={"select": "id"},
+                timeout=10,
+            )
+            if resp.status_code == 200:
+                count_header = resp.headers.get("content-range", "")
+                if "/" in count_header:
+                    counts[table] = int(count_header.split("/")[-1])
+                else:
+                    counts[table] = len(resp.json())
+            else:
+                counts[table] = f"error:{resp.status_code}"
+        except Exception as e:
+            counts[table] = f"error:{e}"
+    return counts
+
+
+def write_sync_audit(
+    endpoint_key: str,
+    sync_type: str = "scheduled",  # scheduled, historical, streaming, manual
+    status: str = "success",        # success, partial, failed, nodata
+    office_id: str = None,
+    office_name: str = None,
+    location_id: str = None,
+    endpoint_name: str = None,
+    endpoint_path: str = None,
+    records_fetched: int = 0,
+    records_imported: int = 0,
+    records_skipped: int = 0,
+    records_failed: int = 0,
+    response_status_code: int = None,
+    error_code: str = None,
+    error_details: dict = None,
+    duration_ms: int = None,
+    triggered_by: str = "middleware_sync",
+) -> bool:
+    """Write a sync audit entry to the import_audit_log table in Supabase."""
+    import uuid
+
+    row = {
+        "run_id": str(uuid.uuid4()),
+        "endpoint_key": endpoint_key,
+        "sync_type": sync_type,
+        "status": status,
+        "office_id": office_id,
+        "office_name": office_name,
+        "location_id": location_id,
+        "endpoint_name": endpoint_name,
+        "endpoint_path": endpoint_path,
+        "records_fetched": records_fetched,
+        "records_imported": records_imported,
+        "records_skipped": records_skipped,
+        "records_failed": records_failed,
+        "response_status_code": response_status_code,
+        "error_code": error_code,
+        "error_details": error_details,
+        "duration_ms": duration_ms,
+        "source_system": "Dentrix Ascend",
+        "triggered_by": triggered_by,
+    }
+    row = {k: v for k, v in row.items() if v is not None}
+    return _upsert("import_audit_log", row, retries=1)
+
+
+def seed_providers_and_locations(providers: list, locations: list, org_id: str) -> dict:
+    """Bulk seed providers and locations to Supabase after initial sync."""
+    p_ok = sum(1 for p in providers if upsert_provider(p, org_id))
+    l_ok = sum(1 for l in locations if upsert_location(l, org_id))
+    return {"providers_seeded": p_ok, "locations_seeded": l_ok}

@@ -42,3 +42,17 @@ Outstanding: complete environment/default/file-input inventory, confirm runtime 
 - The static scan records47 file/path literals for continued runtime-input review. A source filename or an environment label alone does not establish QA isolation.
 
 Remaining backend work: canonical configuration representation, complete file-input requirements, and future QA-only execution guards. Production behavior/configuration remains unchanged.
+
+## Exact source reconstruction and publication boundary
+
+`recovered-backend/` now preserves fifteen Python source templates and the referenced `ar_aging_migration.sql` schema source. A fresh read-only server check confirms all15 Python modules still match the preserved snapshots. The schema source is3338bytes, SHA256`bda610354c12bfb5bd3e1878ac28044f4e7ea24758b296a24fb8eebb5b604608`; it contains structure/index/policy definitions, not business rows. No SQL was executed and no policy changed.
+
+The source closure includes `plaid_sync.py`: the main module starts it as a subprocess, so static imports alone missed it. Runtime inspection also identifies `gog gmail send` paths in bank-sync alerts, OTP delivery and payroll report delivery, plus WeasyPrint report execution. Future QA guards must cover these paths as well as HTTP adapters. None was invoked by the investigation.
+
+Source reconstruction uses71 typed private configuration slots. These exclude embedded credentials, repeated credential examples, fixed email identities, provider/bank/office mappings, and historical financial reference totals from the public source tree. The original literal text remains in private recovery inputs outside Git. Supplying those inputs reproduces all16 source files byte for byte; application modules are never imported, SQL is never executed, and the output is never served or deployed. This preserves the existing production behavior without changing its authentication/configuration architecture.
+
+Privacy verification finds0 occurrences of the6 distinct known embedded credential values and0 email addresses in the templates. Business mappings/reference containers were separately identified and moved to private slots; synthetic QA replacements are required. The raw source archives and private materialized comparison copy are not part of this repository.
+
+The materializer passes13 synthetic tests covering exact output, missing/extra slots, literal/code rejection, slot-type enforcement, email-text validation, reviewed template hashes, path traversal, production-hash mismatch, no overwrites and validation before writing. An early test exposed that address text can parse as Python's matrix operator if substituted into the wrong expression context; explicit reviewed slot kinds and literal types now reject that mismatch. No application or production defect is claimed from this harness finding.
+
+This is a reconstruction baseline, not a QA runtime. The existing schema's policies are preserved as source, not accepted as proof of role isolation. No private values, production data stores, rendered source, environment files or live-provider credentials were copied into the repository. Main and all deployed services remain unchanged.

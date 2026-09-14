@@ -1,0 +1,1006 @@
+"""
+OTP / Trusted-Browser Auth Routes — Phase 0C Step 2
+====================================================
+
+FastAPI router for OTP-based device trust on nudashboard.com.
+All routes require a valid Supabase Auth JWT (Bearer token).
+
+Tables used (created in Phase 0C Step 1B):
+  - trusted_devices   (SHA-256 hashed device tokens)
+  - otp_challenges    (SHA-256 hashed OTP codes, 10-min TTL)
+  - auth_audit_log    (immutable event log)
+  - site_settings     (otp_config feature flag)
+
+Security:
+  - Device tokens stored ONLY as SHA-256 hashes
+  - OTP codes stored ONLY as SHA-256 hashes
+  - Cookie: HttpOnly, Secure, SameSite=Strict, Domain=.nudashboard.com
+  - JWT validated via Supabase /auth/v1/user endpoint (no local secret needed)
+  - All DB writes use service-role key
+  - OTP email delivery is DRY-RUN only until explicitly enabled
+
+Created: 2026-05-26
+"""
+
+import hashlib
+import json
+import logging
+import os
+import secrets
+import time
+from datetime import datetime, timezone
+from typing import Optional
+
+# Load .env so OTP_EMAIL_DRY_RUN and other settings are picked up
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+
+import requests as http_requests
+from fastapi import APIRouter, HTTPException, Request, Body
+from fastapi.responses import JSONResponse
+
+logger = logging.getLogger("otp_auth")
+
+router = APIRouter(prefix="/v2/auth", tags=["OTP Auth"])
+
+# ── Supabase config ───────────────────────────────────────────────────────
+
+_sb_config: Optional[dict] = None
+
+SUPABASE_CREDS_PATH = os.path.expanduser("~/.config/supabase/nudental.json")
+
+# Cookie settings for trusted device token
+COOKIE_NAME = "nu_device_token"
+COOKIE_DOMAIN = ".nudashboard.com"
+COOKIE_PATH = "/"
+COOKIE_MAX_AGE = 7_776_000  # 90 days in seconds
+COOKIE_SECURE = True
+COOKIE_HTTPONLY = True
+COOKIE_SAMESITE = "lax"  # Fixed 2026-09-08: was strict, drops cookie on Workflow→EOD back navigation
+
+# OTP email: DRY_RUN mode — controlled via environment variable
+# Default: true (dry-run, no real emails). Set OTP_EMAIL_DRY_RUN=false to enable real sends.
+OTP_EMAIL_DRY_RUN = os.environ.get("OTP_EMAIL_DRY_RUN", "true").lower() == "true"
+
+logger.info(f"OTP email mode: {'DRY-RUN (no real emails)' if OTP_EMAIL_DRY_RUN else 'LIVE (real emails enabled)'}")
+
+# Rate limiting: in-memory per-user counters (resets on restart — acceptable for now)
+_otp_send_tracker: dict = {}  # {user_id: [(timestamp, ...), ...]}
+_otp_verify_tracker: dict = {}
+_OTP_SEND_WINDOW = 600  # 10 minutes
+_OTP_SEND_MAX = 3  # max 3 sends per window
+_OTP_LOCKOUT_WINDOW = 1800  # 30 minutes
+_OTP_LOCKOUT_MAX_CHALLENGES = 3  # max 3 expired/failed challenges before lockout
+
+
+def _load_sb() -> dict:
+    """Load Supabase config (cached)."""
+    global _sb_config
+    if _sb_config is None:
+        with open(SUPABASE_CREDS_PATH) as f:
+            _sb_config = json.load(f)
+    return _sb_config
+
+
+def _sb_headers() -> dict:
+    """Service-role headers for Supabase REST API."""
+    cfg = _load_sb()
+    return {
+        "apikey": cfg["secret_key"],
+        "Authorization": f"Bearer {cfg['secret_key']}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation",
+    }
+
+
+def _sb_url(table: str) -> str:
+    """Supabase REST URL for a table."""
+    return f"{_load_sb()['project_url']}/rest/v1/{table}"
+
+
+# ── JWT validation via Supabase Auth ──────────────────────────────────────
+
+def _extract_bearer_token(request: Request) -> str:
+    """Extract Bearer token from Authorization header."""
+    auth = request.headers.get("Authorization", "")
+    if not auth.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid Authorization header")
+    token = auth[7:].strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="Empty bearer token")
+    return token
+
+
+def _validate_supabase_jwt(token: str) -> dict:
+    """
+    Validate a Supabase Auth JWT by calling /auth/v1/user.
+    Returns the user object with id, email, etc.
+    This is the safest approach — no local JWT secret management.
+    """
+    cfg = _load_sb()
+    url = f"{cfg['project_url']}/auth/v1/user"
+    headers = {
+        "apikey": cfg["secret_key"],
+        "Authorization": f"Bearer {token}",
+    }
+    r = http_requests.get(url, headers=headers, timeout=10)
+    if r.status_code != 200:
+        logger.warning(f"JWT validation failed: {r.status_code} — {r.text[:200]}")
+        raise HTTPException(status_code=401, detail="Invalid or expired session")
+    user = r.json()
+    if not user.get("id"):
+        raise HTTPException(status_code=401, detail="Invalid user session")
+    return user
+
+
+def _get_user_from_request(request: Request) -> dict:
+    """Extract and validate JWT, return Supabase user object."""
+    token = _extract_bearer_token(request)
+    return _validate_supabase_jwt(token)
+
+
+def _get_user_profile(user_id: str) -> Optional[dict]:
+    """Fetch user_profiles row for a user (role, email, is_active, etc.)."""
+    r = http_requests.get(
+        _sb_url("user_profiles"),
+        params={"select": "id,email,username,role,is_active", "id": f"eq.{user_id}"},
+        headers=_sb_headers(),
+        timeout=10,
+    )
+    if r.status_code == 200 and r.json():
+        return r.json()[0]
+    return None
+
+
+def _is_admin_or_super(profile: dict) -> bool:
+    """Check if profile has admin or super_admin role."""
+    return profile.get("role") in ("admin", "super_admin")
+
+
+def _is_super_admin(profile: dict) -> bool:
+    """Check if profile has super_admin role."""
+    return profile.get("role") == "super_admin"
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────
+
+def _sha256(value: str) -> str:
+    """SHA-256 hash a string, return hex digest."""
+    return hashlib.sha256(value.encode("utf-8")).hexdigest()
+
+
+def _generate_otp() -> str:
+    """Generate a cryptographically secure 6-digit OTP."""
+    return f"{secrets.randbelow(900000) + 100000}"
+
+
+def _generate_device_token() -> str:
+    """Generate a cryptographically secure device token (64 hex chars = 256 bits)."""
+    return secrets.token_hex(32)
+
+
+def _mask_email(email: str) -> str:
+    __NUDASHBOARD_CONFIG_LITERAL_038__
+    if not email or "@" not in email:
+        return "***"
+    local, domain = email.split("@", 1)
+    if len(local) <= 2:
+        masked = local[0] + "***"
+    else:
+        masked = local[:3] + "***"
+    return f"{masked}@{domain}"
+
+
+def _get_client_ip(request: Request) -> str:
+    """Get client IP from request (respects CF-Connecting-IP / X-Forwarded-For)."""
+    return (
+        request.headers.get("CF-Connecting-IP")
+        or request.headers.get("X-Forwarded-For", "").split(",")[0].strip()
+        or request.client.host
+        if request.client
+        else "unknown"
+    )
+
+
+def _parse_device_label(request: Request) -> str:
+    """Parse user-agent into a short device label."""
+    ua = request.headers.get("User-Agent", "Unknown")
+    # Simple parsing — extract browser and OS
+    label_parts = []
+    if "Chrome" in ua and "Edg" not in ua:
+        label_parts.append("Chrome")
+    elif "Edg" in ua:
+        label_parts.append("Edge")
+    elif "Firefox" in ua:
+        label_parts.append("Firefox")
+    elif "Safari" in ua:
+        label_parts.append("Safari")
+    else:
+        label_parts.append("Browser")
+
+    if "Windows" in ua:
+        label_parts.append("Windows")
+    elif "Mac" in ua:
+        label_parts.append("macOS")
+    elif "Linux" in ua:
+        label_parts.append("Linux")
+    elif "iPhone" in ua or "iPad" in ua:
+        label_parts.append("iOS")
+    elif "Android" in ua:
+        label_parts.append("Android")
+
+    return " / ".join(label_parts) if label_parts else "Unknown Device"
+
+
+def _now_iso() -> str:
+    """Current UTC time as ISO string."""
+    return datetime.now(timezone.utc).isoformat()
+
+
+# ── OTP config ────────────────────────────────────────────────────────────
+
+def _get_otp_config() -> dict:
+    """Read otp_config from site_settings. Returns defaults if not found."""
+    defaults = {
+        "otp_enabled": False,
+        "otp_enforced_roles": ["super_admin"],
+        "otp_trust_days": 90,
+        "otp_max_attempts": 5,
+        "otp_cooldown_minutes": 30,
+        "otp_bypass_must_change_password": True,
+    }
+    try:
+        r = http_requests.get(
+            _sb_url("site_settings"),
+            params={"select": "value", "key": "eq.otp_config"},
+            headers=_sb_headers(),
+            timeout=10,
+        )
+        if r.status_code == 200 and r.json():
+            config = r.json()[0].get("value", {})
+            # Merge with defaults for any missing keys
+            merged = {**defaults, **config}
+            return merged
+    except Exception as e:
+        logger.error(f"Failed to read otp_config: {e}")
+    return defaults
+
+
+# ── Audit logging ─────────────────────────────────────────────────────────
+
+def _audit_log(user_id: Optional[str], event_type: str, metadata: dict = None,
+               ip_address: str = None):
+    """Write a row to auth_audit_log via service-role."""
+    try:
+        payload = {
+            "user_id": user_id,
+            "event_type": event_type,
+            "metadata": metadata or {},
+            "ip_address": ip_address,
+        }
+        r = http_requests.post(
+            _sb_url("auth_audit_log"),
+            json=payload,
+            headers=_sb_headers(),
+            timeout=10,
+        )
+        if r.status_code not in (200, 201):
+            logger.error(f"Audit log write failed: {r.status_code} — {r.text[:200]}")
+    except Exception as e:
+        logger.error(f"Audit log exception: {e}")
+
+
+# ── Email sending ─────────────────────────────────────────────────────────
+
+def _send_otp_email(to_email: str, otp_code: str) -> bool:
+    """
+    Send OTP verification email via gog Gmail CLI.
+    Returns True on success, False on failure.
+    Does NOT log the OTP code (security: code should not appear in logs in live mode).
+    """
+    import subprocess
+
+    subject = "Nu Portal — Your Verification Code"
+    body = (
+        f"Your Nu Portal verification code is:\n\n"
+        f"{otp_code}\n\n"
+        f"This code expires in 10 minutes.\n\n"
+        f"If you did not request this code, you can safely ignore this email.\n"
+        f"If you believe someone is trying to access your account, contact your "
+        f"administrator immediately.\n\n"
+        f"— Nu Portal Security\n"
+        f"nudashboard.com"
+    )
+
+    cmd = [
+        "gog", "gmail", "send",
+        "--account", __NUDASHBOARD_CONFIG_LITERAL_039__,
+        "--from", __NUDASHBOARD_CONFIG_LITERAL_040__,
+        "--to", to_email,
+        "--subject", subject,
+        "--body", body,
+    ]
+
+    try:
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        if result.returncode == 0:
+            logger.info(f"OTP email sent to {to_email} (gog exit 0)")
+            return True
+        else:
+            logger.error(
+                f"OTP email failed for {to_email}: exit={result.returncode} "
+                f"stderr={result.stderr[:200] if result.stderr else 'none'}"
+            )
+            return False
+    except subprocess.TimeoutExpired:
+        logger.error(f"OTP email timeout for {to_email} (30s)")
+        return False
+    except Exception as e:
+        logger.error(f"OTP email exception for {to_email}: {e}")
+        return False
+
+
+# ── Rate limiting ─────────────────────────────────────────────────────────
+
+def _check_send_rate(user_id: str) -> bool:
+    """Return True if user is within OTP send rate limit."""
+    now = time.time()
+    history = _otp_send_tracker.get(user_id, [])
+    # Prune old entries
+    history = [t for t in history if now - t < _OTP_SEND_WINDOW]
+    _otp_send_tracker[user_id] = history
+    return len(history) < _OTP_SEND_MAX
+
+
+def _record_send(user_id: str):
+    """Record an OTP send event for rate limiting."""
+    history = _otp_send_tracker.get(user_id, [])
+    history.append(time.time())
+    _otp_send_tracker[user_id] = history
+
+
+# ══════════════════════════════════════════════════════════════════════════
+# ROUTES
+# ══════════════════════════════════════════════════════════════════════════
+
+
+# ── 1. POST /v2/auth/check-trusted-device ─────────────────────────────────
+
+@router.post("/check-trusted-device")
+async def check_trusted_device(request: Request):
+    """
+    Check if the current browser has a valid trusted device token.
+
+    Reads the nu_device_token cookie, hashes it, looks up in trusted_devices.
+    If OTP is disabled globally or for this user's role, returns trusted=true.
+
+    Returns:
+      { trusted: true/false, reason?, challenge_required?, delivery_hint? }
+    """
+    user = _get_user_from_request(request)
+    user_id = user["id"]
+    ip = _get_client_ip(request)
+    profile = _get_user_profile(user_id)
+
+    if not profile or not profile.get("is_active"):
+        raise HTTPException(status_code=403, detail="Account is not active")
+
+    # Check feature flag
+    config = _get_otp_config()
+
+    if not config.get("otp_enabled"):
+        _audit_log(user_id, "device_trust_check_pass", {"reason": "otp_disabled"}, ip)
+        return {"trusted": True, "reason": "otp_disabled"}
+
+    user_role = profile.get("role", "staff")
+    enforced_roles = config.get("otp_enforced_roles", [])
+
+    if user_role not in enforced_roles:
+        _audit_log(user_id, "device_trust_check_pass",
+                   {"reason": "role_exempt", "role": user_role}, ip)
+        return {"trusted": True, "reason": "role_exempt"}
+
+    # Check for trusted device cookie
+    cookie_token = request.cookies.get(COOKIE_NAME)
+
+    if not cookie_token:
+        email = profile.get("email", user.get("email", ""))
+        _audit_log(user_id, "device_trust_check_fail",
+                   {"reason": "no_cookie"}, ip)
+        return {
+            "trusted": False,
+            "challenge_required": True,
+            "delivery_hint": _mask_email(email),
+        }
+
+    # Hash the cookie and look up
+    token_hash = _sha256(cookie_token)
+
+    r = http_requests.get(
+        _sb_url("trusted_devices"),
+        params={
+            "select": "id,expires_at,revoked_at",
+            "token_hash": f"eq.{token_hash}",
+            "user_id": f"eq.{user_id}",
+        },
+        headers=_sb_headers(),
+        timeout=10,
+    )
+
+    if r.status_code != 200 or not r.json():
+        email = profile.get("email", user.get("email", ""))
+        _audit_log(user_id, "device_trust_check_fail",
+                   {"reason": "token_not_found"}, ip)
+        return {
+            "trusted": False,
+            "challenge_required": True,
+            "delivery_hint": _mask_email(email),
+        }
+
+    device = r.json()[0]
+
+    # Check revocation
+    if device.get("revoked_at"):
+        email = profile.get("email", user.get("email", ""))
+        _audit_log(user_id, "device_trust_check_fail",
+                   {"reason": "device_revoked", "device_id": device["id"]}, ip)
+        return {
+            "trusted": False,
+            "challenge_required": True,
+            "delivery_hint": _mask_email(email),
+        }
+
+    # Check expiry
+    expires_at = device.get("expires_at", "")
+    if expires_at:
+        try:
+            exp_dt = datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
+            if exp_dt < datetime.now(timezone.utc):
+                email = profile.get("email", user.get("email", ""))
+                _audit_log(user_id, "device_trust_check_fail",
+                           {"reason": "device_expired", "device_id": device["id"]}, ip)
+                return {
+                    "trusted": False,
+                    "challenge_required": True,
+                    "delivery_hint": _mask_email(email),
+                }
+        except (ValueError, TypeError):
+            pass  # If parse fails, treat as valid (fail-open for this check)
+
+    # Device is valid — update last_used_at
+    http_requests.patch(
+        _sb_url("trusted_devices") + f"?id=eq.{device['id']}",
+        json={"last_used_at": _now_iso()},
+        headers=_sb_headers(),
+        timeout=10,
+    )
+
+    _audit_log(user_id, "device_trust_check_pass",
+               {"device_id": device["id"]}, ip)
+    return {"trusted": True}
+
+
+# ── 2. POST /v2/auth/send-login-otp ──────────────────────────────────────
+
+@router.post("/send-login-otp")
+async def send_login_otp(request: Request):
+    """
+    Generate a 6-digit OTP, store its hash, and send to user's email.
+
+    Currently in DRY_RUN mode — logs the OTP action but does NOT send real email.
+    Real email sending requires explicit approval and OTP_EMAIL_DRY_RUN=False.
+
+    Returns:
+      { sent: true, delivery_hint, expires_in, dry_run? }
+    """
+    user = _get_user_from_request(request)
+    user_id = user["id"]
+    ip = _get_client_ip(request)
+    profile = _get_user_profile(user_id)
+
+    if not profile or not profile.get("is_active"):
+        raise HTTPException(status_code=403, detail="Account is not active")
+
+    # Check feature flag (don't generate OTP if disabled)
+    config = _get_otp_config()
+    if not config.get("otp_enabled"):
+        return {"sent": False, "reason": "otp_disabled"}
+
+    user_role = profile.get("role", "staff")
+    if user_role not in config.get("otp_enforced_roles", []):
+        return {"sent": False, "reason": "role_exempt"}
+
+    # Rate limit check
+    if not _check_send_rate(user_id):
+        _audit_log(user_id, "otp_requested",
+                   {"status": "rate_limited"}, ip)
+        raise HTTPException(
+            status_code=429,
+            detail="Too many OTP requests. Please wait a few minutes.",
+        )
+
+    # Invalidate any existing unverified challenges for this user
+    http_requests.patch(
+        _sb_url("otp_challenges")
+        + f"?user_id=eq.{user_id}&verified_at=is.null&expires_at=gt.{_now_iso()}",
+        json={"expires_at": _now_iso()},
+        headers=_sb_headers(),
+        timeout=10,
+    )
+
+    # Generate OTP
+    otp_code = _generate_otp()
+    otp_hash = _sha256(otp_code)
+    email = profile.get("email", user.get("email", ""))
+    masked = _mask_email(email)
+
+    max_attempts = config.get("otp_max_attempts", 5)
+
+    # Store challenge
+    challenge_payload = {
+        "user_id": user_id,
+        "otp_hash": otp_hash,
+        "purpose": "login_device_trust",
+        "delivery_method": "email",
+        "delivery_target": masked,
+        "max_attempts": max_attempts,
+        "ip_address": ip,
+    }
+
+    r = http_requests.post(
+        _sb_url("otp_challenges"),
+        json=challenge_payload,
+        headers=_sb_headers(),
+        timeout=10,
+    )
+
+    if r.status_code not in (200, 201):
+        logger.error(f"Failed to create OTP challenge: {r.status_code} — {r.text[:200]}")
+        raise HTTPException(status_code=500, detail="Failed to create verification challenge")
+
+    _record_send(user_id)
+
+    # Email delivery
+    if OTP_EMAIL_DRY_RUN:
+        logger.info(f"[DRY-RUN] OTP for user {user_id} ({email}): code={otp_code} — NOT sent")
+        _audit_log(user_id, "otp_requested",
+                   {"delivery_method": "email", "delivery_target": masked,
+                    "dry_run": True}, ip)
+        return {
+            "sent": True,
+            "delivery_hint": masked,
+            "expires_in": 600,
+            "dry_run": True,
+            "_dev_note": "OTP email not sent (dry-run mode). Check server logs for code.",
+        }
+    else:
+        # Real email sending via gog Gmail CLI
+        send_ok = _send_otp_email(email, otp_code)
+        _audit_log(user_id, "otp_requested",
+                   {"delivery_method": "email", "delivery_target": masked,
+                    "dry_run": False, "send_success": send_ok}, ip)
+        if not send_ok:
+            return {
+                "sent": False,
+                "error": "delivery_failed",
+                "delivery_hint": masked,
+                "message": "Could not send verification code. Please try again or contact admin.",
+            }
+        return {
+            "sent": True,
+            "delivery_hint": masked,
+            "expires_in": 600,
+        }
+
+
+# ── 3. POST /v2/auth/verify-login-otp ────────────────────────────────────
+
+@router.post("/verify-login-otp")
+async def verify_login_otp(
+    request: Request,
+    otp_code: str = Body(..., embed=True),
+    trust_device: bool = Body(True, embed=True),
+):
+    """
+    Verify a submitted OTP code. On success, optionally trust the device.
+
+    If trust_device=true and verification succeeds:
+      - Generates a device token
+      - Stores SHA-256 hash in trusted_devices
+      - Sets nu_device_token cookie in the response
+
+    Returns:
+      { verified: true/false, device_trusted?, attempts_remaining?, error? }
+    """
+    user = _get_user_from_request(request)
+    user_id = user["id"]
+    ip = _get_client_ip(request)
+    config = _get_otp_config()
+
+    if not config.get("otp_enabled"):
+        return {"verified": False, "error": "otp_disabled"}
+
+    # Sanitize OTP input — must be exactly 6 digits
+    otp_code = otp_code.strip()
+    if not otp_code.isdigit() or len(otp_code) != 6:
+        raise HTTPException(status_code=400, detail="OTP must be exactly 6 digits")
+
+    # Find the latest unexpired, unverified challenge for this user
+    r = http_requests.get(
+        _sb_url("otp_challenges"),
+        params={
+            "select": "id,otp_hash,attempts,max_attempts,expires_at,verified_at",
+            "user_id": f"eq.{user_id}",
+            "verified_at": "is.null",
+            "expires_at": f"gt.{_now_iso()}",
+            "order": "created_at.desc",
+            "limit": "1",
+        },
+        headers=_sb_headers(),
+        timeout=10,
+    )
+
+    if r.status_code != 200 or not r.json():
+        _audit_log(user_id, "otp_failed",
+                   {"reason": "no_active_challenge"}, ip)
+        return {"verified": False, "error": "expired", "message": "No active code. Please request a new one."}
+
+    challenge = r.json()[0]
+    challenge_id = challenge["id"]
+    current_attempts = challenge.get("attempts", 0)
+    max_attempts = challenge.get("max_attempts", 5)
+
+    # Check if max attempts reached
+    if current_attempts >= max_attempts:
+        # Expire the challenge
+        http_requests.patch(
+            _sb_url("otp_challenges") + f"?id=eq.{challenge_id}",
+            json={"expires_at": _now_iso()},
+            headers=_sb_headers(),
+            timeout=10,
+        )
+        _audit_log(user_id, "otp_failed",
+                   {"reason": "max_attempts", "challenge_id": challenge_id}, ip)
+        return {
+            "verified": False,
+            "error": "max_attempts",
+            "message": "Too many attempts. Please request a new code.",
+        }
+
+    # Increment attempts
+    new_attempts = current_attempts + 1
+    http_requests.patch(
+        _sb_url("otp_challenges") + f"?id=eq.{challenge_id}",
+        json={"attempts": new_attempts},
+        headers=_sb_headers(),
+        timeout=10,
+    )
+
+    # Verify OTP hash
+    submitted_hash = _sha256(otp_code)
+    if submitted_hash != challenge["otp_hash"]:
+        remaining = max_attempts - new_attempts
+        _audit_log(user_id, "otp_failed",
+                   {"reason": "wrong_code", "challenge_id": challenge_id,
+                    "attempt": new_attempts, "remaining": remaining}, ip)
+        return {
+            "verified": False,
+            "error": "wrong_code",
+            "attempts_remaining": remaining,
+            "message": f"Incorrect code. {remaining} attempt{'s' if remaining != 1 else ''} remaining.",
+        }
+
+    # ── OTP verified successfully ──
+
+    # Mark challenge as verified
+    http_requests.patch(
+        _sb_url("otp_challenges") + f"?id=eq.{challenge_id}",
+        json={"verified_at": _now_iso()},
+        headers=_sb_headers(),
+        timeout=10,
+    )
+
+    _audit_log(user_id, "otp_verified",
+               {"challenge_id": challenge_id}, ip)
+
+    # Optionally trust this device
+    if trust_device:
+        raw_token = _generate_device_token()
+        token_hash = _sha256(raw_token)
+        device_label = _parse_device_label(request)
+        trust_days = config.get("otp_trust_days", 90)
+
+        device_payload = {
+            "user_id": user_id,
+            "token_hash": token_hash,
+            "device_label": device_label,
+            "ip_at_trust": ip,
+        }
+
+        # Set custom expires_at if trust_days differs from default 90
+        # (The DB default is 90 days, but config might override)
+        if trust_days != 90:
+            from datetime import timedelta
+            exp = datetime.now(timezone.utc) + timedelta(days=trust_days)
+            device_payload["expires_at"] = exp.isoformat()
+
+        dr = http_requests.post(
+            _sb_url("trusted_devices"),
+            json=device_payload,
+            headers=_sb_headers(),
+            timeout=10,
+        )
+
+        if dr.status_code not in (200, 201):
+            logger.error(f"Failed to create trusted device: {dr.status_code} — {dr.text[:200]}")
+            # Don't fail the whole verification — OTP was correct
+            _audit_log(user_id, "otp_verified",
+                       {"device_trust_failed": True, "error": dr.text[:100]}, ip)
+            return {"verified": True, "device_trusted": False}
+
+        device_row = dr.json()[0] if dr.json() else {}
+        _audit_log(user_id, "device_trusted",
+                   {"device_id": device_row.get("id"), "device_label": device_label,
+                    "trust_days": trust_days}, ip)
+
+        # Build response with Set-Cookie header
+        response = JSONResponse(content={
+            "verified": True,
+            "device_trusted": True,
+            "trust_days": trust_days,
+        })
+
+        response.set_cookie(
+            key=COOKIE_NAME,
+            value=raw_token,
+            domain=COOKIE_DOMAIN,
+            path=COOKIE_PATH,
+            max_age=trust_days * 86400,
+            secure=COOKIE_SECURE,
+            httponly=COOKIE_HTTPONLY,
+            samesite=COOKIE_SAMESITE,
+        )
+
+        return response
+
+    # Verified but no device trust requested
+    return {"verified": True, "device_trusted": False}
+
+
+# ── 4. POST /v2/auth/revoke-trusted-device ────────────────────────────────
+
+@router.post("/revoke-trusted-device")
+async def revoke_trusted_device(
+    request: Request,
+    device_id: Optional[str] = Body(None, embed=True),
+    target_user_id: Optional[str] = Body(None, embed=True),
+    revoke_all: bool = Body(False, embed=True),
+):
+    """
+    Revoke one or all trusted devices.
+
+    - Users can revoke their own devices (device_id required).
+    - Admin/super_admin can revoke any user's devices (target_user_id + device_id or revoke_all).
+    - revoke_all=true revokes ALL devices for the target user.
+
+    Returns:
+      { revoked: true, count }
+    """
+    user = _get_user_from_request(request)
+    acting_user_id = user["id"]
+    ip = _get_client_ip(request)
+    profile = _get_user_profile(acting_user_id)
+
+    if not profile:
+        raise HTTPException(status_code=403, detail="Profile not found")
+
+    # Determine target user
+    effective_user_id = acting_user_id  # default: own devices
+
+    if target_user_id and target_user_id != acting_user_id:
+        # Acting on another user's devices — admin/super_admin only
+        if not _is_admin_or_super(profile):
+            raise HTTPException(status_code=403, detail="Admin role required to manage other users' devices")
+        effective_user_id = target_user_id
+
+    now = _now_iso()
+    revoke_payload = {
+        "revoked_at": now,
+        "revoked_by": acting_user_id,
+    }
+
+    if revoke_all:
+        # Revoke ALL non-revoked devices for the target user
+        r = http_requests.patch(
+            _sb_url("trusted_devices")
+            + f"?user_id=eq.{effective_user_id}&revoked_at=is.null",
+            json=revoke_payload,
+            headers={**_sb_headers(), "Prefer": "return=representation"},
+            timeout=10,
+        )
+        count = len(r.json()) if r.status_code == 200 and r.json() else 0
+        _audit_log(acting_user_id, "device_revoked_all",
+                   {"target_user_id": effective_user_id, "count": count}, ip)
+        return {"revoked": True, "count": count}
+
+    if not device_id:
+        raise HTTPException(status_code=400, detail="device_id or revoke_all required")
+
+    # Revoke a single device
+    # Verify the device belongs to the effective user (or acting user is admin)
+    filter_params = f"?id=eq.{device_id}&revoked_at=is.null"
+    if not _is_admin_or_super(profile):
+        # Non-admin: must be own device
+        filter_params += f"&user_id=eq.{acting_user_id}"
+
+    r = http_requests.patch(
+        _sb_url("trusted_devices") + filter_params,
+        json=revoke_payload,
+        headers={**_sb_headers(), "Prefer": "return=representation"},
+        timeout=10,
+    )
+
+    count = len(r.json()) if r.status_code == 200 and r.json() else 0
+    if count == 0:
+        raise HTTPException(status_code=404, detail="Device not found or already revoked")
+
+    _audit_log(acting_user_id, "device_revoked",
+               {"device_id": device_id, "target_user_id": effective_user_id}, ip)
+    return {"revoked": True, "count": count}
+
+
+# ── 5. GET /v2/auth/trusted-devices ───────────────────────────────────────
+
+@router.get("/trusted-devices")
+async def list_trusted_devices(
+    request: Request,
+    target_user_id: Optional[str] = None,
+):
+    """
+    List trusted devices for the authenticated user (or a target user if admin).
+
+    Returns:
+      [ { id, device_label, ip_at_trust, created_at, expires_at, last_used_at, revoked_at } ]
+    """
+    user = _get_user_from_request(request)
+    acting_user_id = user["id"]
+    profile = _get_user_profile(acting_user_id)
+
+    if not profile:
+        raise HTTPException(status_code=403, detail="Profile not found")
+
+    effective_user_id = acting_user_id
+
+    if target_user_id and target_user_id != acting_user_id:
+        if not _is_admin_or_super(profile):
+            raise HTTPException(status_code=403, detail="Admin role required")
+        effective_user_id = target_user_id
+
+    r = http_requests.get(
+        _sb_url("trusted_devices"),
+        params={
+            "select": "id,device_label,ip_at_trust,created_at,expires_at,last_used_at,revoked_at",
+            "user_id": f"eq.{effective_user_id}",
+            "order": "created_at.desc",
+        },
+        headers=_sb_headers(),
+        timeout=10,
+    )
+
+    if r.status_code != 200:
+        raise HTTPException(status_code=500, detail="Failed to fetch devices")
+
+    return r.json()
+
+
+# ── 6. GET /v2/auth/otp-config ────────────────────────────────────────────
+
+@router.get("/otp-config")
+async def get_otp_config(request: Request):
+    """
+    Read the current OTP configuration. Admin/super_admin only.
+
+    Returns: the otp_config object from site_settings.
+    """
+    user = _get_user_from_request(request)
+    user_id = user["id"]
+    ip = _get_client_ip(request)
+    profile = _get_user_profile(user_id)
+
+    if not profile or not _is_admin_or_super(profile):
+        raise HTTPException(status_code=403, detail="Admin role required")
+
+    config = _get_otp_config()
+    _audit_log(user_id, "otp_config_read", {}, ip)
+    return config
+
+
+# ── 7. POST /v2/auth/otp-config ──────────────────────────────────────────
+
+@router.post("/otp-config")
+async def update_otp_config(
+    request: Request,
+    config_update: dict = Body(...),
+):
+    """
+    Update OTP configuration. Super_admin only.
+
+    Accepts partial updates — only provided keys are changed.
+    Cannot set otp_enabled=true unless explicitly provided.
+
+    Returns: the updated otp_config object.
+    """
+    user = _get_user_from_request(request)
+    user_id = user["id"]
+    ip = _get_client_ip(request)
+    profile = _get_user_profile(user_id)
+
+    if not profile or not _is_super_admin(profile):
+        raise HTTPException(status_code=403, detail="Super admin role required")
+
+    # Allowed config keys
+    allowed_keys = {
+        "otp_enabled", "otp_enforced_roles", "otp_trust_days",
+        "otp_max_attempts", "otp_cooldown_minutes", "otp_bypass_must_change_password",
+    }
+
+    # Validate input
+    invalid_keys = set(config_update.keys()) - allowed_keys
+    if invalid_keys:
+        raise HTTPException(status_code=400,
+                            detail=f"Invalid config keys: {', '.join(invalid_keys)}")
+
+    # Type validation
+    if "otp_enabled" in config_update and not isinstance(config_update["otp_enabled"], bool):
+        raise HTTPException(status_code=400, detail="otp_enabled must be boolean")
+    if "otp_enforced_roles" in config_update:
+        roles = config_update["otp_enforced_roles"]
+        if not isinstance(roles, list):
+            raise HTTPException(status_code=400, detail="otp_enforced_roles must be a list")
+        valid_roles = {"super_admin", "admin", "office_manager", "staff"}
+        bad = set(roles) - valid_roles
+        if bad:
+            raise HTTPException(status_code=400, detail=f"Invalid roles: {', '.join(bad)}")
+    if "otp_trust_days" in config_update:
+        days = config_update["otp_trust_days"]
+        if not isinstance(days, int) or days < 1 or days > 365:
+            raise HTTPException(status_code=400, detail="otp_trust_days must be 1-365")
+    if "otp_max_attempts" in config_update:
+        ma = config_update["otp_max_attempts"]
+        if not isinstance(ma, int) or ma < 1 or ma > 20:
+            raise HTTPException(status_code=400, detail="otp_max_attempts must be 1-20")
+    if "otp_cooldown_minutes" in config_update:
+        cm = config_update["otp_cooldown_minutes"]
+        if not isinstance(cm, int) or cm < 1 or cm > 120:
+            raise HTTPException(status_code=400, detail="otp_cooldown_minutes must be 1-120")
+
+    # Merge with current config
+    current = _get_otp_config()
+    merged = {**current, **config_update}
+
+    # Write to site_settings
+    r = http_requests.patch(
+        _sb_url("site_settings") + "?key=eq.otp_config",
+        json={
+            "value": merged,
+            "updated_at": _now_iso(),
+            "updated_by": user_id,
+        },
+        headers=_sb_headers(),
+        timeout=10,
+    )
+
+    if r.status_code not in (200, 204):
+        logger.error(f"Failed to update otp_config: {r.status_code} — {r.text[:200]}")
+        raise HTTPException(status_code=500, detail="Failed to update config")
+
+    _audit_log(user_id, "otp_config_updated",
+               {"changes": config_update, "new_config": merged}, ip)
+
+    logger.info(f"OTP config updated by {user_id}: {config_update}")
+    return merged

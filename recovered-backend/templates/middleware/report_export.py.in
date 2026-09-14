@@ -1,0 +1,1625 @@
+"""
+Reports Individual Export — Backend endpoints with RBAC + audit logging.
+
+Created: 2026-05-21
+Checkpoint: reports-individual-export-backend-rbac-audit-no-frontend
+
+Supports CSV (and XLSX) export for verified Reports sections.
+All exports are aggregate-only — no patient-level PHI.
+"""
+
+import csv
+import io
+import json
+import logging
+import os
+import re
+import urllib.request
+from datetime import datetime, date, timezone
+from typing import Optional
+
+from fastapi import APIRouter, HTTPException, Body, Depends, Header
+
+logger = logging.getLogger("report_export")
+
+router = APIRouter(prefix="/v2/reports", tags=["Reports Export"])
+
+# ── Config ────────────────────────────────────────────────────────────────
+
+SUPPORTED_REPORT_TYPES = {
+    "executive_summary",
+    "pl_summary",
+    "expense_breakdown",
+    "goal_leaderboard",
+    "period_comparison",
+    "provider_production_collections",
+    "office_comparison",
+    "treatment_plan_completion",
+    "patient_flow",
+    "full_workbook",
+}
+
+UNSUPPORTED_REPORT_TYPES = {
+    "case_acceptance": "Legacy Case Acceptance source not verified.",
+}
+
+SUPPORTED_FORMATS = {"csv", "xlsx", "pdf"}
+
+PERMISSION_KEY = "resources.reports.individual_export"
+
+LOCATION_NAMES = __NUDASHBOARD_CONFIG_LITERAL_069__
+
+LOCATION_IDS_BY_NAME = {v.lower(): k for k, v in LOCATION_NAMES.items()}
+
+ALL_LOCATION_IDS = list(LOCATION_NAMES.keys())
+
+# Supabase office UUIDs → Dentrix location IDs
+OFFICE_UUID_TO_LOCATION_ID = __NUDASHBOARD_CONFIG_LITERAL_070__
+
+# Reverse: UUID → display name
+OFFICE_UUID_TO_NAME = {
+    uid: LOCATION_NAMES[lid] for uid, lid in OFFICE_UUID_TO_LOCATION_ID.items()
+}
+
+# Combined lookup: accepts UUID, location ID, or office name → display name
+def _resolve_office_name(val: str) -> str:
+    """Resolve any office identifier to a human-readable display name."""
+    v = val.strip()
+    vl = v.lower()
+    # UUID → name
+    if vl in OFFICE_UUID_TO_NAME:
+        return OFFICE_UUID_TO_NAME[vl]
+    # Dentrix location ID → name
+    if v in LOCATION_NAMES:
+        return LOCATION_NAMES[v]
+    # Already a name?
+    for name in LOCATION_NAMES.values():
+        if vl == name.lower():
+            return name
+    # Unknown
+    short = v[:8] if len(v) > 12 else v
+    return f"Unknown Office ({short})"
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────
+
+def _load_supabase_config():
+    cfg_path = os.path.expanduser("~/.config/supabase/nudental.json")
+    with open(cfg_path) as f:
+        return json.load(f)
+
+
+def _sb_rest(path: str, method: str = "GET", body: dict = None) -> list | dict:
+    """Supabase REST call with service role key."""
+    cfg = _load_supabase_config()
+    base = cfg["project_url"] + "/rest/v1"
+    key = cfg["secret_key"]
+    url = f"{base}/{path}"
+    headers = {
+        "apikey": key,
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation",
+    }
+    if method == "GET":
+        req = urllib.request.Request(url, headers=headers)
+    else:
+        data = json.dumps(body).encode() if body else b"{}"
+        req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    with urllib.request.urlopen(req) as r:
+        return json.loads(r.read())
+
+
+def _api_get(path: str, api_key: str) -> dict | list:
+    """Internal HTTP call to our own middleware API."""
+    from urllib.parse import quote
+    # Encode the path properly — split at ? to keep query string structure
+    if "?" in path:
+        base, qs = path.split("?", 1)
+        # Re-encode each param value
+        parts = []
+        for param in qs.split("&"):
+            if "=" in param:
+                k, v = param.split("=", 1)
+                parts.append(f"{k}={quote(v, safe='')}")
+            else:
+                parts.append(param)
+        path = f"{base}?{'&'.join(parts)}"
+    url = f"http://127.0.0.1:8001{path}"
+    req = urllib.request.Request(url, headers={
+        "X-API-Key": api_key,
+        "Accept": "application/json",
+    })
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.loads(r.read())
+
+
+def _verify_api_key(x_api_key: str = Header(..., alias="X-API-Key")):
+    """Reuse the same API key verification as other endpoints."""
+    if x_api_key != __NUDASHBOARD_CONFIG_LITERAL_071__:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+    return x_api_key
+
+
+def _check_rbac(user_id: str, user_email: str, user_role: str):
+    """Verify the user has export permission."""
+    if not user_role:
+        raise HTTPException(status_code=403, detail="User role is required")
+    allowed = {"super_admin", "admin"}
+    if user_role not in allowed:
+        # Also check the permission key
+        rows = _sb_rest(
+            f"role_permissions?role=eq.{user_role}&permission=eq.{PERMISSION_KEY}&enabled=eq.true&limit=1"
+        )
+        if not rows:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Role '{user_role}' does not have '{PERMISSION_KEY}' permission"
+            )
+
+
+def _check_rbac_full_workbook(user_id: str, user_email: str, user_role: str):
+    """Verify the user has full workbook export permission.
+    Accepts either the full_workbook permission or the individual export permission."""
+    if not user_role:
+        raise HTTPException(status_code=403, detail="User role is required")
+    allowed = {"super_admin", "admin"}
+    if user_role not in allowed:
+        # Check full_workbook permission first, fall back to individual export
+        rows = _sb_rest(
+            f"role_permissions?role=eq.{user_role}&permission=eq.{FULL_WORKBOOK_PERMISSION}&enabled=eq.true&limit=1"
+        )
+        if not rows:
+            rows = _sb_rest(
+                f"role_permissions?role=eq.{user_role}&permission=eq.{PERMISSION_KEY}&enabled=eq.true&limit=1"
+            )
+        if not rows:
+            raise HTTPException(
+                status_code=403,
+                detail=f"Role '{user_role}' does not have '{FULL_WORKBOOK_PERMISSION}' permission"
+            )
+
+
+def _audit_log(
+    user_id: str,
+    user_email: str,
+    user_role: str,
+    report_type: str,
+    export_format: str,
+    date_range_start: str,
+    date_range_end: str,
+    office_filter: list,
+    sheets_exported: list,
+    row_counts: dict,
+    source_notes: str = "",
+    metadata: dict = None,
+) -> str:
+    """Insert audit row. Returns audit row ID. Raises on failure."""
+    row = {
+        "user_id": user_id,
+        "user_email": user_email,
+        "user_role": user_role,
+        "report_type": report_type,
+        "export_format": export_format,
+        "date_range_start": date_range_start,
+        "date_range_end": date_range_end,
+        "office_filter": office_filter,
+        "sheets_exported": sheets_exported,
+        "row_counts": row_counts,
+        "phi_flag": False,
+        "source_version": "3.0.0",
+        "source_notes": source_notes,
+        "metadata": metadata or {},
+    }
+    try:
+        result = _sb_rest("report_export_audit_log", method="POST", body=row)
+        if isinstance(result, list) and result:
+            return result[0]["id"]
+        return "unknown"
+    except Exception as e:
+        logger.error(f"Audit log insert failed: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Audit logging failed — export blocked. Error: {str(e)}"
+        )
+
+
+def _sanitize_filename(name: str) -> str:
+    return re.sub(r"[^a-zA-Z0-9_\-]", "_", name)
+
+
+_ALL_OFFICE_STRINGS = {"all", "all_offices", "all offices", ""}
+
+def _coerce_office_filter(raw) -> list:
+    """Coerce office_filter from any input shape to a clean list.
+    
+    Handles: None, [], "all", "all_offices", "All Offices", "",
+    single UUID string, list of UUIDs/names.
+    """
+    if raw is None:
+        return []
+    if isinstance(raw, str):
+        trimmed = raw.strip()
+        if trimmed.lower() in _ALL_OFFICE_STRINGS:
+            return []
+        # Single value string — wrap in list
+        return [trimmed]
+    if isinstance(raw, list):
+        # Filter out "all"/"all_offices" sentinel values inside the list
+        cleaned = []
+        for item in raw:
+            if isinstance(item, str):
+                t = item.strip()
+                if t.lower() not in _ALL_OFFICE_STRINGS and t:
+                    cleaned.append(t)
+        return cleaned
+    # Unexpected type — treat as empty
+    return []
+
+
+def _normalize_office_filter(office_filter: list) -> list[str]:
+    """Normalize office_filter entries to display names.
+    Accepts UUIDs, location IDs, or names — returns list of display names."""
+    if not office_filter:
+        return []
+    return [_resolve_office_name(o) for o in office_filter if o]
+
+
+def _office_label(office_filter: list) -> str:
+    names = _normalize_office_filter(office_filter)
+    if not names or len(names) >= len(LOCATION_NAMES):
+        return "all_offices"
+    return "_".join(_sanitize_filename(n) for n in names[:4])
+
+
+def _office_display(office_filter: list) -> str:
+    """Human-readable office display string for PDF headers, etc."""
+    names = _normalize_office_filter(office_filter)
+    if not names or len(names) >= len(LOCATION_NAMES):
+        return "All Offices"
+    return ", ".join(names)
+
+
+def _resolve_office_locations(office_filter: list) -> list[str]:
+    """Convert office identifiers (UUIDs, names, or location IDs) to Dentrix location IDs."""
+    if not office_filter:
+        return ALL_LOCATION_IDS
+    locs = []
+    for val in office_filter:
+        v = val.strip().lower()
+        # UUID → location ID
+        if v in OFFICE_UUID_TO_LOCATION_ID:
+            locs.append(OFFICE_UUID_TO_LOCATION_ID[v])
+            continue
+        # Already a location ID
+        if val.strip() in LOCATION_NAMES:
+            locs.append(val.strip())
+            continue
+        # Name → location ID
+        lid = LOCATION_IDS_BY_NAME.get(v)
+        if lid:
+            locs.append(lid)
+    return locs or ALL_LOCATION_IDS
+
+
+def _make_csv(
+    headers: list[str],
+    rows: list[dict],
+    *,
+    report_title: str = "",
+    date_range_start: str = "",
+    date_range_end: str = "",
+    office_display: str = "",
+    source_notes: str = "",
+    user_email: str = "",
+    user_role: str = "",
+) -> str:
+    """Generate CSV with clean metadata header rows."""
+    buf = io.StringIO()
+
+    # Metadata header block (Option A — clean, importable)
+    meta_lines = [
+        f"# Nu Dental — {report_title}",
+        f"# Date Range: {date_range_start} to {date_range_end}",
+        f"# Office: {office_display or 'All Offices'}",
+        f"# Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}",
+        f"# Generated by: {user_email} ({user_role})",
+        f"# Source: {source_notes}" if source_notes else None,
+        f"# Confidential — Internal Use Only",
+        f"#",
+    ]
+    for line in meta_lines:
+        if line is not None:
+            buf.write(line + "\n")
+
+    writer = csv.DictWriter(buf, fieldnames=headers, extrasaction="ignore")
+    writer.writeheader()
+    for row in rows:
+        writer.writerow(row)
+    return buf.getvalue()
+
+
+# ── XLSX column format maps per report type ───────────────────────────────
+
+# Format codes: "text", "money", "pct", "int", "days"
+XLSX_COL_FORMATS = {
+    "executive_summary": [
+        "text", "money", "money", "money", "money", "money", "money",
+        "pct", "money", "money", "int",
+    ],
+    "pl_summary": [
+        "text", "money", "money", "money", "money", "money",
+        "pct", "money", "money", "pct",
+    ],
+    "expense_breakdown": ["text", "money"],
+    "goal_leaderboard": [
+        "text", "money", "money", "pct", "money", "money", "pct",
+    ],
+    "period_comparison": ["text", "money", "money", "money", "pct"],
+    "provider_production_collections": [
+        "text", "text", "text", "text",
+        "money", "money", "money", "money", "money", "money",
+        "pct", "int", "int",
+    ],
+    "office_comparison": [
+        "text", "money", "money", "money", "money", "money",
+        "pct", "pct", "int",
+    ],
+    "treatment_plan_completion": [
+        "text", "text", "int", "money", "int", "money",
+        "pct", "pct", "money", "money", "money", "days", "days",
+    ],
+    "patient_flow": [
+        "text", "int", "int", "int", "int", "int", "int", "int",
+        "pct", "pct",
+    ],
+}
+
+# Source notes per report (reused in CSV and XLSX)
+XLSX_SOURCE_NOTES = {
+    "executive_summary": "Source: Dentrix Ascend production & collections + Finance Expense Report protected totals. Est. Net Profit = Total Collections − Total Expenses.",
+    "pl_summary": "Source: Dentrix Ascend monthly production & collections, Finance Expense Report protected expenses. Net Profit = Collections − Expenses. Margin = Net Profit / Collections.",
+    "expense_breakdown": "Source: Finance Expense Report — Gusto payroll, AmEx corporate card, Wells Fargo direct operating. AmEx Net = Charges − Credits/Refunds.",
+    "goal_leaderboard": "Source: office_goals targets + Dentrix Ascend collections & production actuals. Achievement % = Actual / Goal × 100. Ranked by Collections Achievement.",
+    "period_comparison": "Source: Dentrix Ascend production & collections, Finance Expense Report protected expenses. Change = Period A − Period B. Change % = Change / |Period B| × 100.",
+    "provider_production_collections": "Source: /v2/reports/provider-performance — Dentrix Ascend procedures, distribution lines, appointments. Collection Rate = Total Collections / Net Production × 100.",
+    "office_comparison": "Source: Dentrix Ascend collections & production per office, Finance Expense Report office-scoped expenses. Net Profit = Collections − Expenses. Margin = Net Profit / Collections × 100.",
+    "treatment_plan_completion": "Source: /v2/eod/treatment-plan-completion — Dentrix Ascend patient_procedures with treatmentPlannedDate. Excludes direct/walk-in completions and same-day plan+complete.",
+    "patient_flow": "Source: /v2/patients/summary + /v2/appointments/summary — Dentrix Ascend SQLite. No daily_entries, no MEA, no manual/EOD data. Aggregate-only, no patient-level PHI.",
+}
+
+LOGO_PATH_XLSX = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "nudental_logo.png")
+LOGO_EXISTS_XLSX = os.path.isfile(LOGO_PATH_XLSX)
+
+REPORT_DISPLAY_TITLES = {
+    "executive_summary": "Executive Summary",
+    "pl_summary": "Profit & Loss Summary",
+    "expense_breakdown": "Expense Breakdown",
+    "goal_leaderboard": "Goal Leaderboard",
+    "period_comparison": "Period Comparison",
+    "provider_production_collections": "Provider Production & Collections",
+    "office_comparison": "Office Comparison",
+    "treatment_plan_completion": "Treatment Plan Completion",
+    "patient_flow": "Patient Flow",
+}
+
+
+def _create_xlsx_formats(wb):
+    """Create all branded formats for a workbook. Returns a dict of format objects."""
+    f = {}
+    f["title"] = wb.add_format({"bold": True, "font_size": 16, "font_color": "#1A1A2E", "font_name": "Calibri"})
+    f["subtitle"] = wb.add_format({"font_size": 10, "font_color": "#666666", "font_name": "Calibri"})
+    f["hdr"] = wb.add_format({
+        "bold": True, "bg_color": "#00B5CC", "font_color": "#FFFFFF",
+        "border": 1, "border_color": "#D0E8EC",
+        "font_name": "Calibri", "font_size": 10, "text_wrap": True, "valign": "vcenter",
+    })
+    f["source"] = wb.add_format({"font_name": "Calibri", "font_size": 8, "font_color": "#666666", "italic": True, "text_wrap": True})
+    f["confidential"] = wb.add_format({"font_name": "Calibri", "font_size": 8, "font_color": "#999999", "italic": True})
+
+    # Generate cell formats for each type × (normal/bold) × (white/alt bg)
+    _base = {"font_name": "Calibri", "font_size": 10, "border": 1, "border_color": "#D0E8EC"}
+    _alt_bg = "#F0FAFB"
+    _num_fmts = {"text": None, "money": '$#,##0.00', "pct": '0.0"%"', "int": '#,##0', "days": '0.0'}
+
+    for typ, nf in _num_fmts.items():
+        for bold in (False, True):
+            for alt in (False, True):
+                props = dict(_base)
+                if nf:
+                    props["num_format"] = nf
+                if bold:
+                    props["bold"] = True
+                if alt:
+                    props["bg_color"] = _alt_bg
+                key = f"{typ}{'_bold' if bold else ''}{'_alt' if alt else ''}"
+                f[key] = wb.add_format(props)
+
+    return f
+
+
+def _write_branded_sheet(
+    wb, fmts: dict, ws_name: str,
+    headers: list[str], rows: list[dict],
+    *,
+    report_type: str = "",
+    date_range_start: str = "",
+    date_range_end: str = "",
+    office_display: str = "",
+    user_email: str = "",
+    user_role: str = "",
+    gen_ts: str = "",
+):
+    """Write one branded sheet into an existing workbook. Returns (worksheet, data_row_count)."""
+    ws = wb.add_worksheet(ws_name[:31])
+
+    if not gen_ts:
+        gen_ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    title = REPORT_DISPLAY_TITLES.get(report_type, ws_name)
+    source = XLSX_SOURCE_NOTES.get(report_type, "")
+    col_formats = XLSX_COL_FORMATS.get(report_type, [])
+
+    # ── Title block ──
+    row_cursor = 0
+    if LOGO_EXISTS_XLSX:
+        try:
+            ws.insert_image(row_cursor, 0, LOGO_PATH_XLSX, {
+                "x_scale": 0.6, "y_scale": 0.6, "x_offset": 2, "y_offset": 2, "object_position": 1,
+            })
+        except Exception:
+            ws.write(row_cursor, 0, "NU Dental", fmts["title"])
+    else:
+        ws.write(row_cursor, 0, "NU Dental", fmts["title"])
+
+    row_cursor += 3
+    ws.write(row_cursor, 0, title, fmts["title"]); row_cursor += 1
+    ws.write(row_cursor, 0, f"Date Range: {date_range_start} — {date_range_end}", fmts["subtitle"]); row_cursor += 1
+    ws.write(row_cursor, 0, f"Office: {office_display or 'All Offices'}", fmts["subtitle"]); row_cursor += 1
+    ws.write(row_cursor, 0, f"Generated: {gen_ts}  |  By: {user_email} ({user_role})", fmts["subtitle"]); row_cursor += 1
+    ws.write(row_cursor, 0, "Confidential — Internal Use Only", fmts["confidential"]); row_cursor += 2
+
+    # ── Data table ──
+    data_start_row = row_cursor
+    n_cols = len(headers)
+
+    for col, h in enumerate(headers):
+        ws.write(data_start_row, col, h, fmts["hdr"])
+    row_cursor = data_start_row + 1
+
+    for r_idx, row in enumerate(rows):
+        first_val = str(row.get(headers[0], "")).strip() if headers else ""
+        is_total = first_val.upper() in ("TOTAL", "CORPORATE / SHARED")
+        is_sep = first_val.startswith("──")
+        is_alt = (r_idx % 2 == 1)
+
+        if is_sep:
+            ws.merge_range(row_cursor, 0, row_cursor, min(n_cols - 1, 3), first_val, fmts["subtitle"])
+            row_cursor += 1
+            continue
+
+        for c_idx, h in enumerate(headers):
+            val = row.get(h, "")
+            if val is None:
+                val = ""
+            cf = col_formats[c_idx] if c_idx < len(col_formats) else "text"
+            use_bold = (c_idx == 0) or is_total
+
+            # Build format key
+            fmt_key = cf + ("_bold" if use_bold else "") + ("_alt" if (is_alt and not is_total) else "")
+            cell_fmt = fmts.get(fmt_key, fmts["text"])
+
+            if val == "" or val == "—" or val == "N/A":
+                ws.write(row_cursor, c_idx, "—", cell_fmt)
+            elif isinstance(val, (int, float)):
+                ws.write_number(row_cursor, c_idx, val, cell_fmt)
+            else:
+                try:
+                    ws.write_number(row_cursor, c_idx, float(val), cell_fmt)
+                except (ValueError, TypeError):
+                    ws.write(row_cursor, c_idx, str(val), cell_fmt)
+
+        row_cursor += 1
+
+    # ── Freeze / autofilter / widths ──
+    ws.freeze_panes(data_start_row + 1, 0)
+    if rows:
+        ws.autofilter(data_start_row, 0, data_start_row + len(rows), n_cols - 1)
+
+    for c_idx, h in enumerate(headers):
+        max_len = len(h)
+        for row in rows[:50]:
+            val = row.get(h, "")
+            max_len = max(max_len, len(str(val or "")))
+        ws.set_column(c_idx, c_idx, min(max(max_len + 3, 8), 28))
+
+    # ── Source notes ──
+    row_cursor += 1
+    if source:
+        merge_end = min(n_cols - 1, 5)
+        if merge_end > 0:
+            ws.merge_range(row_cursor, 0, row_cursor, merge_end, source, fmts["source"])
+        else:
+            ws.write(row_cursor, 0, source, fmts["source"])
+        row_cursor += 1
+    ws.write(row_cursor, 0, "Confidential — Internal Use Only", fmts["confidential"])
+
+    ws.set_landscape()
+    ws.set_paper(1)
+    ws.fit_to_pages(1, 0)
+
+    return ws, len(rows)
+
+
+def _make_xlsx(
+    sheet_name: str,
+    headers: list[str],
+    rows: list[dict],
+    *,
+    report_type: str = "",
+    date_range_start: str = "",
+    date_range_end: str = "",
+    office_display: str = "",
+    user_email: str = "",
+    user_role: str = "",
+) -> bytes:
+    """Generate a branded Nu Dental single-sheet XLSX export."""
+    import xlsxwriter
+
+    buf = io.BytesIO()
+    wb = xlsxwriter.Workbook(buf, {"in_memory": True})
+    fmts = _create_xlsx_formats(wb)
+
+    _write_branded_sheet(
+        wb, fmts, sheet_name,
+        headers, rows,
+        report_type=report_type,
+        date_range_start=date_range_start,
+        date_range_end=date_range_end,
+        office_display=office_display,
+        user_email=user_email,
+        user_role=user_role,
+    )
+
+    wb.close()
+    return buf.getvalue()
+
+
+# ── Full Workbook XLSX ────────────────────────────────────────────────────
+
+# Sheet order and tab names for the full workbook
+FULL_WORKBOOK_SHEETS = [
+    ("executive_summary", "Executive Summary"),
+    ("pl_summary", "P&L Summary"),
+    ("expense_breakdown", "Expense Breakdown"),
+    ("goal_leaderboard", "Goal Leaderboard"),
+    ("period_comparison", "Period Comparison"),
+    ("provider_production_collections", "Provider Prod & Coll"),
+    ("office_comparison", "Office Comparison"),
+    ("treatment_plan_completion", "Tx Plan Completion"),
+    ("patient_flow", "Patient Flow"),
+]
+
+FULL_WORKBOOK_PERMISSION = "resources.reports.full_workbook.export"
+
+
+def _make_full_workbook_xlsx(
+    all_data: dict,  # {report_type: (headers, rows)}
+    *,
+    date_range_start: str,
+    date_range_end: str,
+    office_display: str,
+    user_email: str,
+    user_role: str,
+    extra_params: dict = None,
+) -> tuple[bytes, dict]:
+    """Generate a branded multi-sheet Full Workbook XLSX.
+
+    Returns (xlsx_bytes, row_counts_dict).
+    """
+    import xlsxwriter
+
+    extra_params = extra_params or {}
+    buf = io.BytesIO()
+    wb = xlsxwriter.Workbook(buf, {"in_memory": True})
+    fmts = _create_xlsx_formats(wb)
+
+    gen_ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    row_counts = {}
+
+    for rt, tab_name in FULL_WORKBOOK_SHEETS:
+        if rt not in all_data:
+            continue
+        headers, rows = all_data[rt]
+
+        _, n_rows = _write_branded_sheet(
+            wb, fmts, tab_name,
+            headers, rows,
+            report_type=rt,
+            date_range_start=date_range_start,
+            date_range_end=date_range_end,
+            office_display=office_display,
+            user_email=user_email,
+            user_role=user_role,
+            gen_ts=gen_ts,
+        )
+        row_counts[rt] = n_rows
+
+    # ── Source Notes sheet ──
+    ws = wb.add_worksheet("Source Notes")
+    ws.write(0, 0, "NU Dental — Full Workbook Export", fmts["title"])
+    ws.write(2, 0, f"Date Range: {date_range_start} — {date_range_end}", fmts["subtitle"])
+    ws.write(3, 0, f"Office: {office_display or 'All Offices'}", fmts["subtitle"])
+    ws.write(4, 0, f"Generated: {gen_ts}  |  By: {user_email} ({user_role})", fmts["subtitle"])
+    ws.write(5, 0, "Confidential — Internal Use Only", fmts["confidential"])
+
+    ws.write(7, 0, "Sheet", fmts["hdr"])
+    ws.write(7, 1, "Source", fmts["hdr"])
+    ws.write(7, 2, "Rows", fmts["hdr"])
+
+    r = 8
+    for rt, tab_name in FULL_WORKBOOK_SHEETS:
+        if rt not in all_data:
+            continue
+        source = XLSX_SOURCE_NOTES.get(rt, "—")
+        ws.write(r, 0, tab_name, fmts["text_bold"])
+        ws.write(r, 1, source, fmts["text"])
+        ws.write(r, 2, row_counts.get(rt, 0), fmts["int"])
+        r += 1
+
+    r += 1
+    ws.write(r, 0, "Data Integrity", fmts["text_bold"])
+    ws.write(r + 1, 0, "• All data sourced from Dentrix Ascend (SQLite) and Finance Expense Report (protected).", fmts["text"])
+    ws.write(r + 2, 0, "• No daily_entries, no MEA, no manual/EOD data.", fmts["text"])
+    ws.write(r + 3, 0, "• Aggregate-only — no patient-level PHI.", fmts["text"])
+    ws.write(r + 4, 0, "• phi_flag = false.", fmts["text"])
+
+    ws.set_column(0, 0, 24)
+    ws.set_column(1, 1, 80)
+    ws.set_column(2, 2, 10)
+    ws.set_landscape()
+
+    wb.close()
+    return buf.getvalue(), row_counts
+
+
+# ── Data Fetchers (one per report type) ──────────────────────────────────
+
+def _fetch_executive_summary(start: str, end: str, office_filter: list, api_key: str) -> tuple[list[str], list[dict]]:
+    """Executive Summary — top KPI cards."""
+    locs = _resolve_office_locations(office_filter)
+
+    # Fetch per-office and aggregate
+    rows = []
+    for loc_id in locs:
+        office_name = LOCATION_NAMES.get(loc_id, loc_id)
+        prod = _api_get(f"/v2/production/summary?startDate={start}&endDate={end}&locationId={loc_id}", api_key)
+        coll = _api_get(f"/v2/collections/summary?startDate={start}&endDate={end}&locationId={loc_id}", api_key)
+        exp = _api_get(f"/v2/expenses/summary?startDate={start}&endDate={end}&office={office_name}", api_key)
+        total_exp = exp.get("totals", {}).get("total_expenses", 0) or 0
+        total_coll = coll.get("totalCollections", 0) or 0
+
+        rows.append({
+            "Office": office_name,
+            "Gross Production": prod.get("grossProduction", 0),
+            "Net Production": prod.get("netProduction", 0),
+            "Adjustments": prod.get("adjustments", 0),
+            "Total Collections": total_coll,
+            "Patient Collections": coll.get("patientCollections", 0),
+            "Insurance Collections": coll.get("insuranceCollections", 0),
+            "Collection Rate %": coll.get("collectionRate", 0),
+            "Total Expenses": total_exp,
+            "Est. Net Profit": round(total_coll - total_exp, 2),
+            "Procedure Count": prod.get("procedureCount", 0),
+        })
+
+    headers = [
+        "Office", "Gross Production", "Net Production", "Adjustments",
+        "Total Collections", "Patient Collections", "Insurance Collections",
+        "Collection Rate %", "Total Expenses", "Est. Net Profit", "Procedure Count",
+    ]
+    return headers, rows
+
+
+def _fetch_pl_summary(start: str, end: str, office_filter: list, api_key: str) -> tuple[list[str], list[dict]]:
+    """P&L Summary — monthly production, collections, expenses."""
+    from datetime import date as _date
+    import calendar as _cal
+
+    s = _date.fromisoformat(start)
+    e = _date.fromisoformat(end)
+
+    if s > e:
+        raise HTTPException(status_code=400, detail="Report start date must not be after end date")
+    if office_filter:
+        names = _normalize_office_filter(office_filter)
+        if len(names) != len(office_filter) or any(name not in LOCATION_NAMES.values() for name in names):
+            raise HTTPException(status_code=400, detail="Unknown office in report filter")
+        locations = list(dict.fromkeys(_resolve_office_locations(office_filter)))
+    else:
+        locations = [None]  # Keep the existing all-office aggregate endpoint behavior.
+
+    rows = []
+    cur = s.replace(day=1)
+    while cur <= e:
+        last_day = _cal.monthrange(cur.year, cur.month)[1]
+        m_start = max(cur, s).isoformat()
+        m_end = min(_date(cur.year, cur.month, last_day), e).isoformat()
+        month_label = cur.strftime("%b %Y")
+
+        prod, coll, total_exp = {}, {}, 0
+        for location in locations:
+            location_query = f"&locationId={location}" if location else ""
+            office_query = f"&office={LOCATION_NAMES[location]}" if location else ""
+            p = _api_get(f"/v2/production/summary?startDate={m_start}&endDate={m_end}{location_query}", api_key)
+            c = _api_get(f"/v2/collections/summary?startDate={m_start}&endDate={m_end}{location_query}", api_key)
+            exp = _api_get(f"/v2/expenses/summary?startDate={m_start}&endDate={m_end}{office_query}", api_key)
+            if len(locations) == 1:
+                prod, coll = p, c
+            else:
+                for field in ("grossProduction", "netProduction"):
+                    prod[field] = prod.get(field, 0) + (p.get(field, 0) or 0)
+                for field in ("totalCollections", "patientCollections", "insuranceCollections"):
+                    coll[field] = coll.get(field, 0) + (c.get(field, 0) or 0)
+            total_exp += exp.get("totals", {}).get("total_expenses", 0) or 0
+        coll["collectionRate"] = c.get("collectionRate", 0) if len(locations) == 1 else (
+            round(coll["totalCollections"] / prod["netProduction"] * 100, 1) if prod["netProduction"] else 0
+        )
+        total_coll = coll.get("totalCollections", 0) or 0
+        net_prod = prod.get("netProduction", 0) or 0
+        net_profit = round(total_coll - total_exp, 2)
+        margin = round(net_profit / total_coll * 100, 1) if total_coll else 0
+
+        rows.append({
+            "Month": month_label,
+            "Gross Production": prod.get("grossProduction", 0),
+            "Net Production": net_prod,
+            "Total Collections": total_coll,
+            "Patient Collections": coll.get("patientCollections", 0),
+            "Insurance Collections": coll.get("insuranceCollections", 0),
+            "Collection Rate %": coll.get("collectionRate", 0),
+            "Total Expenses": total_exp,
+            "Net Profit": net_profit,
+            "Margin %": margin,
+        })
+
+        # Advance to next month
+        if cur.month == 12:
+            cur = cur.replace(year=cur.year + 1, month=1)
+        else:
+            cur = cur.replace(month=cur.month + 1)
+
+    headers = [
+        "Month", "Gross Production", "Net Production", "Total Collections",
+        "Patient Collections", "Insurance Collections", "Collection Rate %",
+        "Total Expenses", "Net Profit", "Margin %",
+    ]
+    return headers, rows
+
+
+def _fetch_expense_breakdown(start: str, end: str, office_filter: list, api_key: str) -> tuple[list[str], list[dict]]:
+    """Expense Breakdown — summary buckets."""
+    if office_filter and len(office_filter) == 1:
+        resolved_name = _resolve_office_name(office_filter[0])
+        exp = _api_get(f"/v2/expenses/summary?startDate={start}&endDate={end}&office={resolved_name}", api_key)
+    else:
+        exp = _api_get(f"/v2/expenses/summary?startDate={start}&endDate={end}", api_key)
+
+    totals = exp.get("totals", {})
+    rows = [
+        {"Category": "Payroll", "Amount": totals.get("payroll", 0)},
+        {"Category": "Payroll Taxes", "Amount": totals.get("payroll_taxes", 0)},
+        {"Category": "Benefits", "Amount": totals.get("benefits", 0)},
+        {"Category": "Contractors", "Amount": totals.get("contractors", 0)},
+        {"Category": "AmEx (Net)", "Amount": totals.get("amex", 0)},
+        {"Category": "AmEx Charges", "Amount": totals.get("amex_charges", 0)},
+        {"Category": "AmEx Credits/Refunds", "Amount": totals.get("amex_credits", 0)},
+        {"Category": "WF Banking", "Amount": totals.get("wf_banking", 0)},
+        {"Category": "Utilities", "Amount": totals.get("utilities", 0)},
+        {"Category": "Occupancy", "Amount": totals.get("occupancy", 0)},
+        {"Category": "Insurance", "Amount": totals.get("insurance", 0)},
+        {"Category": "Compliance", "Amount": totals.get("compliance", 0)},
+        {"Category": "Manual/Other", "Amount": totals.get("manual_other", 0)},
+        {"Category": "TOTAL EXPENSES", "Amount": totals.get("total_expenses", 0)},
+    ]
+    headers = ["Category", "Amount"]
+    return headers, rows
+
+
+def _fetch_goal_leaderboard(start: str, end: str, office_filter: list, api_key: str) -> tuple[list[str], list[dict]]:
+    """Goal Leaderboard — office goals vs collections actuals."""
+    locs = _resolve_office_locations(office_filter)
+    s_date = date.fromisoformat(start)
+
+    rows = []
+    for loc_id in locs:
+        office_name = LOCATION_NAMES.get(loc_id, loc_id)
+
+        # Fetch goals
+        goals = _api_get(f"/v2/goals?locationId={loc_id}&year={s_date.year}&month={s_date.month}", api_key)
+        coll_goal = goals.get("collectionsGoal", 0) or 0
+        prod_goal = goals.get("productionGoal", 0) or 0
+
+        # Fetch actuals
+        coll = _api_get(f"/v2/collections/summary?startDate={start}&endDate={end}&locationId={loc_id}", api_key)
+        prod = _api_get(f"/v2/production/summary?startDate={start}&endDate={end}&locationId={loc_id}", api_key)
+
+        coll_actual = coll.get("totalCollections", 0) or 0
+        prod_actual = prod.get("grossProduction", 0) or 0
+
+        coll_pct = round(coll_actual / coll_goal * 100, 1) if coll_goal else 0
+        prod_pct = round(prod_actual / prod_goal * 100, 1) if prod_goal else 0
+
+        rows.append({
+            "Office": office_name,
+            "Collections Goal": coll_goal,
+            "Collections Actual": coll_actual,
+            "Collections Achievement %": coll_pct,
+            "Production Goal": prod_goal,
+            "Production Actual": prod_actual,
+            "Production Achievement %": prod_pct,
+        })
+
+    # Sort by collections achievement descending
+    rows.sort(key=lambda x: x["Collections Achievement %"], reverse=True)
+
+    headers = [
+        "Office", "Collections Goal", "Collections Actual", "Collections Achievement %",
+        "Production Goal", "Production Actual", "Production Achievement %",
+    ]
+    return headers, rows
+
+
+def _fetch_period_comparison(
+    start: str, end: str, office_filter: list, api_key: str,
+    period_a_start: str = None, period_a_end: str = None,
+    period_b_start: str = None, period_b_end: str = None,
+) -> tuple[list[str], list[dict]]:
+    """Period Comparison — Period A vs Period B."""
+    pa_start = period_a_start or start
+    pa_end = period_a_end or end
+
+    if not period_b_start or not period_b_end:
+        # Default: same length period immediately before A
+        from datetime import date as _d, timedelta
+        a_s = _d.fromisoformat(pa_start)
+        a_e = _d.fromisoformat(pa_end)
+        delta = (a_e - a_s).days + 1
+        pb_end_d = a_s - timedelta(days=1)
+        pb_start_d = pb_end_d - timedelta(days=delta - 1)
+        period_b_start = pb_start_d.isoformat()
+        period_b_end = pb_end_d.isoformat()
+
+    def _period_data(ps, pe):
+        prod = _api_get(f"/v2/production/summary?startDate={ps}&endDate={pe}", api_key)
+        coll = _api_get(f"/v2/collections/summary?startDate={ps}&endDate={pe}", api_key)
+        exp = _api_get(f"/v2/expenses/summary?startDate={ps}&endDate={pe}", api_key)
+        total_exp = (exp.get("totals", {}).get("total_expenses", 0)) or 0
+        total_coll = coll.get("totalCollections", 0) or 0
+        return {
+            "Gross Production": prod.get("grossProduction", 0) or 0,
+            "Net Production": prod.get("netProduction", 0) or 0,
+            "Total Collections": total_coll,
+            "Total Expenses": total_exp,
+            "Est. Net Profit": round(total_coll - total_exp, 2),
+            "Procedure Count": prod.get("procedureCount", 0) or 0,
+        }
+
+    a_data = _period_data(pa_start, pa_end)
+    b_data = _period_data(period_b_start, period_b_end)
+
+    metrics = ["Gross Production", "Net Production", "Total Collections",
+               "Total Expenses", "Est. Net Profit", "Procedure Count"]
+    rows = []
+    for m in metrics:
+        a_val = a_data[m]
+        b_val = b_data[m]
+        change = round(a_val - b_val, 2)
+        pct = round(change / abs(b_val) * 100, 1) if b_val else 0
+        rows.append({
+            "Metric": m,
+            f"Period A ({pa_start} to {pa_end})": a_val,
+            f"Period B ({period_b_start} to {period_b_end})": b_val,
+            "Change": change,
+            "Change %": pct,
+        })
+
+    headers = list(rows[0].keys()) if rows else []
+    return headers, rows
+
+
+def _fetch_provider_production_collections(start: str, end: str, office_filter: list, api_key: str) -> tuple[list[str], list[dict]]:
+    """Provider Production & Collections."""
+    if office_filter:
+        names = _normalize_office_filter(office_filter)
+        if len(names) != len(office_filter) or any(name not in LOCATION_NAMES.values() for name in names):
+            raise HTTPException(status_code=400, detail="Unknown office in report filter")
+        locations = list(dict.fromkeys(_resolve_office_locations(office_filter)))
+    else:
+        locations = [None]
+
+    rows = []
+    for location in locations:
+        query = f"&locationId={location}" if location else ""
+        data = _api_get(f"/v2/reports/provider-performance?startDate={start}&endDate={end}{query}", api_key)
+        # Activity is scoped by the API, not by a provider's primary office.
+        for p in data.get("providers", []):
+            rows.append({
+                "Provider": p.get("providerName", ""),
+                "Office": LOCATION_NAMES[location] if location else (p.get("officeName") or p.get("office", "")),
+                "Provider Type": p.get("providerType", ""),
+                "Specialty": p.get("specialtyLabel", ""),
+                "Gross Production": p.get("grossProduction", 0),
+                "Adjustments": p.get("adjustments", 0),
+                "Net Production": p.get("netProduction", 0),
+                "Patient Collections": p.get("patientCollections", 0),
+                "Insurance Collections": p.get("insuranceCollections", 0),
+                "Total Collections": p.get("collections", 0),
+                "Collection Rate %": p.get("collectionRate", 0),
+                "Procedure Count": p.get("procedureCount", 0),
+                "Patients": p.get("patients", 0),
+            })
+
+    headers = [
+        "Provider", "Office", "Provider Type", "Specialty",
+        "Gross Production", "Adjustments", "Net Production",
+        "Patient Collections", "Insurance Collections", "Total Collections",
+        "Collection Rate %", "Procedure Count", "Patients",
+    ]
+    return headers, rows
+
+
+def _fetch_office_comparison(start: str, end: str, office_filter: list, api_key: str) -> tuple[list[str], list[dict]]:
+    """Office Comparison — collections, expenses, net profit by office."""
+    locs = _resolve_office_locations(office_filter)
+
+    rows = []
+    for loc_id in locs:
+        office_name = LOCATION_NAMES.get(loc_id, loc_id)
+        prod = _api_get(f"/v2/production/summary?startDate={start}&endDate={end}&locationId={loc_id}", api_key)
+        coll = _api_get(f"/v2/collections/summary?startDate={start}&endDate={end}&locationId={loc_id}", api_key)
+        exp = _api_get(f"/v2/expenses/summary?startDate={start}&endDate={end}&office={office_name}", api_key)
+
+        total_coll = coll.get("totalCollections", 0) or 0
+        total_exp = (exp.get("totals", {}).get("total_expenses", 0)) or 0
+        net_profit = round(total_coll - total_exp, 2)
+        margin = round(net_profit / total_coll * 100, 1) if total_coll else 0
+
+        rows.append({
+            "Office": office_name,
+            "Gross Production": prod.get("grossProduction", 0),
+            "Net Production": prod.get("netProduction", 0),
+            "Total Collections": total_coll,
+            "Total Expenses": total_exp,
+            "Net Profit": net_profit,
+            "Margin %": margin,
+            "Collection Rate %": coll.get("collectionRate", 0),
+            "Procedure Count": prod.get("procedureCount", 0),
+        })
+
+    # Add Corporate/Shared expense row
+    exp_all = _api_get(f"/v2/expenses/summary?startDate={start}&endDate={end}", api_key)
+    unalloc = exp_all.get("totals", {}).get("total_expenses", 0) or 0
+    office_exp_sum = sum(r["Total Expenses"] for r in rows)
+    corp_shared = round(unalloc - office_exp_sum, 2)
+    if abs(corp_shared) > 1:
+        rows.append({
+            "Office": "Corporate / Shared",
+            "Gross Production": 0,
+            "Net Production": 0,
+            "Total Collections": 0,
+            "Total Expenses": corp_shared,
+            "Net Profit": round(-corp_shared, 2),
+            "Margin %": 0,
+            "Collection Rate %": 0,
+            "Procedure Count": 0,
+        })
+
+    rows.sort(key=lambda x: x["Total Collections"], reverse=True)
+
+    headers = [
+        "Office", "Gross Production", "Net Production", "Total Collections",
+        "Total Expenses", "Net Profit", "Margin %", "Collection Rate %", "Procedure Count",
+    ]
+    return headers, rows
+
+
+def _fetch_treatment_plan_completion(start: str, end: str, office_filter: list, api_key: str,
+                                      completion_window_days: int = 90) -> tuple[list[str], list[dict]]:
+    """Treatment Plan Completion — summary + by-office + by-provider."""
+    all_offices = "true" if not office_filter or len(office_filter) >= len(LOCATION_NAMES) else "false"
+
+    loc_param = ""
+    if all_offices == "false" and office_filter:
+        # Resolve UUID/name/location ID to Dentrix location ID
+        locs = _resolve_office_locations(office_filter)
+        if locs and locs[0] in LOCATION_NAMES:
+            loc_param = f"&locationId={locs[0]}"
+
+    url = (f"/v2/eod/treatment-plan-completion?"
+           f"plannedStartDate={start}&plannedEndDate={end}"
+           f"&completionWindowDays={completion_window_days}"
+           f"&allOffices={all_offices}{loc_param}")
+    data = _api_get(url, api_key)
+
+    summary = data.get("summary", {})
+    by_office = data.get("by_office", [])
+    by_provider = data.get("by_planning_provider", [])
+
+    # Build rows: summary row + by_office rows + by_provider rows
+    rows = []
+
+    # Summary row
+    rows.append({
+        "Section": "SUMMARY",
+        "Name": "All",
+        "Planned Count": summary.get("planned_procedure_count"),
+        "Planned Value": summary.get("planned_value"),
+        "Completed Count": summary.get("completed_procedure_count"),
+        "Completed Value": summary.get("completed_value"),
+        "Completion Rate (Count)": summary.get("completion_rate_by_count"),
+        "Completion Rate (Value)": summary.get("completion_rate_by_value"),
+        "Open Value": summary.get("open_value"),
+        "Unscheduled Value": summary.get("unscheduled_value"),
+        "Scheduled Not Completed": summary.get("scheduled_not_completed_value"),
+        "Avg Days": summary.get("avg_days_to_completion"),
+        "Median Days": summary.get("median_days_to_completion"),
+    })
+
+    for o in by_office:
+        rows.append({
+            "Section": "BY OFFICE",
+            "Name": o.get("office_name", ""),
+            "Planned Count": o.get("planned_count"),
+            "Planned Value": o.get("planned_value"),
+            "Completed Count": o.get("completed_count"),
+            "Completed Value": o.get("completed_value"),
+            "Completion Rate (Count)": o.get("completion_rate_by_count"),
+            "Completion Rate (Value)": o.get("completion_rate_by_value"),
+            "Open Value": o.get("open_value"),
+            "Unscheduled Value": o.get("unscheduled_value"),
+            "Scheduled Not Completed": o.get("scheduled_not_completed_value"),
+            "Avg Days": o.get("avg_days_to_completion"),
+            "Median Days": o.get("median_days_to_completion"),
+        })
+
+    for p in by_provider:
+        rows.append({
+            "Section": "BY PLANNING PROVIDER",
+            "Name": p.get("provider_name", ""),
+            "Planned Count": p.get("planned_count"),
+            "Planned Value": p.get("planned_value"),
+            "Completed Count": p.get("completed_count"),
+            "Completed Value": p.get("completed_value"),
+            "Completion Rate (Count)": p.get("completion_rate_by_count"),
+            "Completion Rate (Value)": p.get("completion_rate_by_value"),
+            "Open Value": p.get("open_value"),
+            "Unscheduled Value": None,
+            "Scheduled Not Completed": None,
+            "Avg Days": p.get("avg_days_to_completion"),
+            "Median Days": p.get("median_days_to_completion"),
+        })
+
+    headers = [
+        "Section", "Name", "Planned Count", "Planned Value",
+        "Completed Count", "Completed Value",
+        "Completion Rate (Count)", "Completion Rate (Value)",
+        "Open Value", "Unscheduled Value", "Scheduled Not Completed",
+        "Avg Days", "Median Days",
+    ]
+    return headers, rows
+
+
+def _fetch_patient_flow(start: str, end: str, office_filter: list, api_key: str) -> tuple[list[str], list[dict]]:
+    """Patient Flow — new/active patients + appointment status metrics.
+
+    Sources (same as frontend V585):
+      - /v2/patients/summary   → newPatients, uniquePatients
+      - /v2/appointments/summary → totalScheduled, completed, noShow, cancelled, broken
+
+    No daily_entries, no MEA, no manual/EOD data. No patient-level PHI.
+    """
+    from datetime import date as _date
+    import calendar as _cal
+
+    locs = _resolve_office_locations(office_filter)
+
+    # ── Per-office summary rows ──
+    office_rows = []
+    for loc_id in locs:
+        office_name = LOCATION_NAMES.get(loc_id, loc_id)
+        pts = _api_get(f"/v2/patients/summary?startDate={start}&endDate={end}&locationId={loc_id}", api_key)
+        appts = _api_get(f"/v2/appointments/summary?startDate={start}&endDate={end}&locationId={loc_id}", api_key)
+
+        total_sched = appts.get("totalScheduled") or 0
+        completed = appts.get("completed")
+        no_show = appts.get("noShow") or 0
+        cancelled = appts.get("cancelled") or 0
+        broken = appts.get("broken") or 0
+
+        # Show Rate = completed / totalScheduled
+        show_rate = None
+        if completed is not None and total_sched > 0:
+            show_rate = round(completed / total_sched * 100, 1)
+
+        # Missed Rate = (cancelled + broken + noShow) / totalScheduled
+        missed_total = cancelled + broken + no_show
+        missed_rate = None
+        if total_sched > 0:
+            missed_rate = round(missed_total / total_sched * 100, 1)
+
+        office_rows.append({
+            "Office": office_name,
+            "New Patients": pts.get("newPatients") if pts.get("newPatients") is not None else "—",
+            "Active Patients": pts.get("uniquePatients") if pts.get("uniquePatients") is not None else "—",
+            "Total Scheduled": total_sched if total_sched else "—",
+            "Completed": completed if completed is not None else "—",
+            "No-Shows": no_show if no_show else "—",
+            "Cancelled": cancelled if cancelled else "—",
+            "Broken": broken if broken else "—",
+            "Show Rate %": show_rate if show_rate is not None else "—",
+            "Missed Rate %": missed_rate if missed_rate is not None else "—",
+        })
+
+    # ── Summary / total row ──
+    def _safe_sum(key):
+        vals = [r[key] for r in office_rows if isinstance(r[key], (int, float))]
+        return sum(vals) if vals else "—"
+
+    total_sched_all = _safe_sum("Total Scheduled")
+    completed_all = _safe_sum("Completed")
+    no_show_all = _safe_sum("No-Shows")
+    cancelled_all = _safe_sum("Cancelled")
+    broken_all = _safe_sum("Broken")
+
+    show_rate_all = "—"
+    if isinstance(completed_all, (int, float)) and isinstance(total_sched_all, (int, float)) and total_sched_all > 0:
+        show_rate_all = round(completed_all / total_sched_all * 100, 1)
+
+    missed_rate_all = "—"
+    if isinstance(total_sched_all, (int, float)) and total_sched_all > 0:
+        missed_num = sum(v for v in [no_show_all, cancelled_all, broken_all] if isinstance(v, (int, float)))
+        missed_rate_all = round(missed_num / total_sched_all * 100, 1)
+
+    summary_row = {
+        "Office": "TOTAL",
+        "New Patients": _safe_sum("New Patients"),
+        "Active Patients": _safe_sum("Active Patients"),
+        "Total Scheduled": total_sched_all,
+        "Completed": completed_all,
+        "No-Shows": no_show_all,
+        "Cancelled": cancelled_all,
+        "Broken": broken_all,
+        "Show Rate %": show_rate_all,
+        "Missed Rate %": missed_rate_all,
+    }
+
+    # ── Monthly trend rows (if date range spans multiple months) ──
+    s_date = _date.fromisoformat(start)
+    e_date = _date.fromisoformat(end)
+    monthly_rows = []
+
+    # Only build monthly buckets if range > 35 days
+    if (e_date - s_date).days > 35:
+        cur = s_date.replace(day=1)
+        while cur <= e_date:
+            last_day = _cal.monthrange(cur.year, cur.month)[1]
+            m_start = max(cur, s_date).isoformat()
+            m_end = min(_date(cur.year, cur.month, last_day), e_date).isoformat()
+            month_label = cur.strftime("%b %Y")
+
+            pts_m = _api_get(f"/v2/patients/summary?startDate={m_start}&endDate={m_end}", api_key)
+            appts_m = _api_get(f"/v2/appointments/summary?startDate={m_start}&endDate={m_end}", api_key)
+
+            ts = appts_m.get("totalScheduled") or 0
+            comp = appts_m.get("completed")
+            ns = appts_m.get("noShow") or 0
+            canc = appts_m.get("cancelled") or 0
+            brk = appts_m.get("broken") or 0
+
+            sr = None
+            if comp is not None and ts > 0:
+                sr = round(comp / ts * 100, 1)
+
+            mr = None
+            if ts > 0:
+                mr = round((canc + brk + ns) / ts * 100, 1)
+
+            monthly_rows.append({
+                "Office": month_label,
+                "New Patients": pts_m.get("newPatients") if pts_m.get("newPatients") is not None else "—",
+                "Active Patients": pts_m.get("uniquePatients") if pts_m.get("uniquePatients") is not None else "—",
+                "Total Scheduled": ts if ts else "—",
+                "Completed": comp if comp is not None else "—",
+                "No-Shows": ns if ns else "—",
+                "Cancelled": canc if canc else "—",
+                "Broken": brk if brk else "—",
+                "Show Rate %": sr if sr is not None else "—",
+                "Missed Rate %": mr if mr is not None else "—",
+            })
+
+            # Advance month
+            if cur.month == 12:
+                cur = cur.replace(year=cur.year + 1, month=1)
+            else:
+                cur = cur.replace(month=cur.month + 1)
+
+    # ── Assemble final rows ──
+    rows = []
+    if len(locs) > 1:
+        rows.extend(office_rows)
+        rows.append(summary_row)
+    else:
+        # Single office — just the one row (labeled with office name)
+        rows.extend(office_rows)
+
+    if monthly_rows:
+        # Separator row
+        rows.append({h: "" for h in ["Office", "New Patients", "Active Patients",
+                                      "Total Scheduled", "Completed", "No-Shows",
+                                      "Cancelled", "Broken", "Show Rate %", "Missed Rate %"]})
+        rows[len(rows) - 1]["Office"] = "── Monthly Trend ──"
+        rows.extend(monthly_rows)
+
+    headers = [
+        "Office", "New Patients", "Active Patients", "Total Scheduled",
+        "Completed", "No-Shows", "Cancelled", "Broken",
+        "Show Rate %", "Missed Rate %",
+    ]
+    return headers, rows
+
+
+# ── Fetcher dispatch ──────────────────────────────────────────────────────
+
+FETCHERS = {
+    "executive_summary": _fetch_executive_summary,
+    "pl_summary": _fetch_pl_summary,
+    "expense_breakdown": _fetch_expense_breakdown,
+    "goal_leaderboard": _fetch_goal_leaderboard,
+    "period_comparison": None,  # special case — needs extra params
+    "provider_production_collections": _fetch_provider_production_collections,
+    "office_comparison": _fetch_office_comparison,
+    "treatment_plan_completion": None,  # special case — needs extra params
+    "patient_flow": _fetch_patient_flow,
+}
+
+
+# ── Main endpoint ─────────────────────────────────────────────────────────
+
+def _handle_full_workbook_export(
+    *,
+    body: dict = None,
+    date_range_start: str,
+    date_range_end: str,
+    office_filter: list,
+    user_id: str,
+    user_email: str,
+    user_role: str,
+    api_key: str,
+):
+    """Fetch all 9 report types and generate a branded multi-sheet XLSX."""
+    from fastapi.responses import Response
+
+    office_label = _office_label(office_filter)
+    office_display = _office_display(office_filter)
+    office_names = _normalize_office_filter(office_filter)
+    body = body or {}
+
+    # Fetch all report data
+    all_data = {}
+    sheets_exported = []
+    fetch_errors = {}
+
+    for rt, _tab in FULL_WORKBOOK_SHEETS:
+        try:
+            if rt == "period_comparison":
+                h, r = _fetch_period_comparison(
+                    date_range_start, date_range_end, office_filter, api_key,
+                    period_a_start=body.get("period_a_start"),
+                    period_a_end=body.get("period_a_end"),
+                    period_b_start=body.get("period_b_start"),
+                    period_b_end=body.get("period_b_end"),
+                )
+            elif rt == "treatment_plan_completion":
+                h, r = _fetch_treatment_plan_completion(
+                    date_range_start, date_range_end, office_filter, api_key,
+                    completion_window_days=body.get("completion_window_days", 90),
+                )
+            else:
+                fetcher = FETCHERS.get(rt)
+                if not fetcher:
+                    continue
+                h, r = fetcher(date_range_start, date_range_end, office_filter, api_key)
+
+            all_data[rt] = (h, r)
+            sheets_exported.append(rt)
+        except Exception as e:
+            logger.warning(f"Full workbook: failed to fetch {rt}: {e}")
+            fetch_errors[rt] = str(e)
+
+    if not all_data:
+        raise HTTPException(status_code=500, detail=f"All report fetches failed: {fetch_errors}")
+
+    # Generate workbook
+    try:
+        xlsx_bytes, row_counts = _make_full_workbook_xlsx(
+            all_data,
+            date_range_start=date_range_start,
+            date_range_end=date_range_end,
+            office_display=office_display,
+            user_email=user_email,
+            user_role=user_role,
+            extra_params=body,
+        )
+    except Exception as e:
+        logger.exception("Failed to generate full workbook XLSX")
+        raise HTTPException(status_code=500, detail=f"Workbook generation failed: {str(e)}")
+
+    filename = f"nu_reports_full_workbook_{date_range_start}_{date_range_end}_{office_label}.xlsx"
+
+    # Audit (before returning file)
+    audit_id = _audit_log(
+        user_id=user_id,
+        user_email=user_email,
+        user_role=user_role,
+        report_type="full_workbook",
+        export_format="xlsx",
+        date_range_start=date_range_start,
+        date_range_end=date_range_end,
+        office_filter=office_filter,
+        sheets_exported=sheets_exported,
+        row_counts=row_counts,
+        source_notes="Dentrix/FastAPI + Finance Expense Report protected sources; aggregate-only workbook",
+        metadata={
+            "endpoint": "/v2/reports/export",
+            "file_name": filename,
+            "office_names": office_names,
+            "office_display": office_display,
+            "sheets_included": sheets_exported,
+            "sheets_failed": fetch_errors if fetch_errors else None,
+            "filters": {
+                "office_filter_raw": office_filter,
+                "office_filter_resolved": office_names,
+                "period_a": body.get("period_a_start"),
+                "period_b": body.get("period_b_start"),
+                "completion_window_days": body.get("completion_window_days"),
+            },
+        },
+    )
+
+    return Response(
+        content=xlsx_bytes,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "X-Audit-Id": audit_id,
+            "X-PHI-Flag": "false",
+            "X-Row-Count": str(sum(row_counts.values())),
+            "X-Sheet-Count": str(len(sheets_exported)),
+        },
+    )
+
+
+@router.post("/export", dependencies=[Depends(_verify_api_key)])
+def export_report(
+    body: dict = Body(...),
+    x_api_key: str = Header(..., alias="X-API-Key"),
+):
+    """
+    Export an individual Reports section as CSV or XLSX.
+    Aggregate-only — no patient-level PHI.
+
+    Required body fields:
+      report_type, export_format, date_range_start, date_range_end,
+      user_id, user_email, user_role
+
+    Optional body fields:
+      office_filter (list of office names),
+      period_a_start, period_a_end, period_b_start, period_b_end,
+      completion_window_days
+    """
+    # ── Parse request ──
+    report_type = body.get("report_type", "").strip()
+    export_format = body.get("export_format", "csv").strip().lower()
+    date_range_start = body.get("date_range_start", "").strip()
+    date_range_end = body.get("date_range_end", "").strip()
+    office_filter_raw = body.get("office_filter")
+    office_filter = _coerce_office_filter(office_filter_raw)
+    user_id = body.get("user_id", "").strip()
+    user_email = body.get("user_email", "").strip()
+    user_role = body.get("user_role", "").strip()
+
+    # ── Validate ──
+    if not report_type:
+        raise HTTPException(status_code=400, detail="report_type is required")
+    if not date_range_start or not date_range_end:
+        raise HTTPException(status_code=400, detail="date_range_start and date_range_end are required")
+    if not user_id or not user_email or not user_role:
+        raise HTTPException(status_code=400, detail="user_id, user_email, and user_role are required")
+
+    # Unsupported reports
+    if report_type in UNSUPPORTED_REPORT_TYPES:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "unsupported_report_type",
+                "report_type": report_type,
+                "reason": UNSUPPORTED_REPORT_TYPES[report_type],
+            }
+        )
+
+    if report_type not in SUPPORTED_REPORT_TYPES:
+        raise HTTPException(status_code=400, detail=f"Unknown report_type: {report_type}")
+
+    if export_format not in SUPPORTED_FORMATS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported export_format: {export_format}. Supported: {', '.join(SUPPORTED_FORMATS)}"
+        )
+
+    # ── RBAC ──
+    if report_type == "full_workbook":
+        _check_rbac_full_workbook(user_id, user_email, user_role)
+    else:
+        _check_rbac(user_id, user_email, user_role)
+
+    # ── Full Workbook branch ──
+    if report_type == "full_workbook":
+        if export_format != "xlsx":
+            raise HTTPException(status_code=400, detail="full_workbook only supports xlsx format in this phase.")
+        return _handle_full_workbook_export(
+            body=body,
+            date_range_start=date_range_start,
+            date_range_end=date_range_end,
+            office_filter=office_filter,
+            user_id=user_id,
+            user_email=user_email,
+            user_role=user_role,
+            api_key=x_api_key,
+        )
+
+    # ── Fetch data (individual reports) ──
+    try:
+        if report_type == "period_comparison":
+            headers, rows = _fetch_period_comparison(
+                date_range_start, date_range_end, office_filter, x_api_key,
+                period_a_start=body.get("period_a_start"),
+                period_a_end=body.get("period_a_end"),
+                period_b_start=body.get("period_b_start"),
+                period_b_end=body.get("period_b_end"),
+            )
+        elif report_type == "treatment_plan_completion":
+            headers, rows = _fetch_treatment_plan_completion(
+                date_range_start, date_range_end, office_filter, x_api_key,
+                completion_window_days=body.get("completion_window_days", 90),
+            )
+        else:
+            fetcher = FETCHERS[report_type]
+            headers, rows = fetcher(date_range_start, date_range_end, office_filter, x_api_key)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"Failed to fetch data for {report_type}")
+        raise HTTPException(status_code=500, detail=f"Data fetch failed: {str(e)}")
+
+    # ── Audit log (BEFORE returning file) ──
+    office_label = _office_label(office_filter)          # sanitized for filename
+    office_display = _office_display(office_filter)      # human-readable for PDF header
+    office_names = _normalize_office_filter(office_filter)  # resolved names list
+    filename = f"nu_reports_{report_type}_{date_range_start}_{date_range_end}_{office_label}.{export_format}"
+
+    source_map = {
+        "executive_summary": "Dentrix/FastAPI production+collections+expense summaries",
+        "pl_summary": "Dentrix/FastAPI monthly production+collections, expense summary",
+        "expense_breakdown": "Finance Expense Report protected summary buckets",
+        "goal_leaderboard": "office_goals targets + Dentrix/FastAPI collections actuals",
+        "period_comparison": "Dentrix/FastAPI production+collections+expense summaries (two periods)",
+        "provider_production_collections": "/v2/reports/provider-performance",
+        "office_comparison": "Dentrix/FastAPI collections+production + expense summary per office",
+        "treatment_plan_completion": "/v2/eod/treatment-plan-completion",
+        "patient_flow": "/v2/patients/summary + /v2/appointments/summary (Dentrix Ascend SQLite, no daily_entries/MEA/manual)",
+    }
+
+    audit_id = _audit_log(
+        user_id=user_id,
+        user_email=user_email,
+        user_role=user_role,
+        report_type=report_type,
+        export_format=export_format,
+        date_range_start=date_range_start,
+        date_range_end=date_range_end,
+        office_filter=office_filter,
+        sheets_exported=[report_type],
+        row_counts={report_type: len(rows)},
+        source_notes=source_map.get(report_type, ""),
+        metadata={
+            "endpoint": "/v2/reports/export",
+            "file_name": filename,
+            "office_names": office_names,
+            "office_display": office_display,
+            "filters": {
+                "office_filter_raw": office_filter,
+                "office_filter_resolved": office_names,
+                "period_a": body.get("period_a_start"),
+                "period_b": body.get("period_b_start"),
+                "completion_window_days": body.get("completion_window_days"),
+            },
+        },
+    )
+
+    # ── Generate file ──
+    from fastapi.responses import Response
+
+    report_title_display = REPORT_DISPLAY_TITLES.get(report_type, report_type.replace("_", " ").title())
+    source_note = source_map.get(report_type, "")
+
+    if export_format == "csv":
+        content = _make_csv(
+            headers, rows,
+            report_title=report_title_display,
+            date_range_start=date_range_start,
+            date_range_end=date_range_end,
+            office_display=office_display,
+            source_notes=source_note,
+            user_email=user_email,
+            user_role=user_role,
+        )
+        return Response(
+            content=content,
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "X-Audit-Id": audit_id,
+                "X-PHI-Flag": "false",
+                "X-Row-Count": str(len(rows)),
+            },
+        )
+    elif export_format == "xlsx":
+        content = _make_xlsx(
+            report_type.replace("_", " ").title(), headers, rows,
+            report_type=report_type,
+            date_range_start=date_range_start,
+            date_range_end=date_range_end,
+            office_display=office_display,
+            user_email=user_email,
+            user_role=user_role,
+        )
+        return Response(
+            content=content,
+            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "X-Audit-Id": audit_id,
+                "X-PHI-Flag": "false",
+                "X-Row-Count": str(len(rows)),
+            },
+        )
+    elif export_format == "pdf":
+        from report_pdf import generate_pdf
+        pdf_meta = {
+            "completion_window_days": body.get("completion_window_days", 90),
+            "period_a_start": body.get("period_a_start"),
+            "period_a_end": body.get("period_a_end"),
+            "period_b_start": body.get("period_b_start"),
+            "period_b_end": body.get("period_b_end"),
+        }
+        content = generate_pdf(
+            report_type=report_type,
+            headers=headers,
+            rows=rows,
+            date_range_start=date_range_start,
+            date_range_end=date_range_end,
+            office_label=office_display,
+            user_email=user_email,
+            user_role=user_role,
+            metadata=pdf_meta,
+        )
+        return Response(
+            content=content,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "X-Audit-Id": audit_id,
+                "X-PHI-Flag": "false",
+                "X-Row-Count": str(len(rows)),
+            },
+        )
