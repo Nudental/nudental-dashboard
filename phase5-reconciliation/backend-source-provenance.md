@@ -29,3 +29,16 @@ Read-only Phase5 inventory; no backend module was imported or started locally.
 - Full worker source is468,221 characters and includes unrelated legacy/manual HTML. It was checked within the connector without returning full source or HTML into the task. Cloudflare's retained immutable version and script ETag identify it; full source is not copied into this repository.
 
 Outstanding: complete environment/default/file-input inventory, confirm runtime file dependencies, sanitize only configuration representation for canonical source as needed, rerun retained backend suites, and retain the current production execution behavior. No services, bindings, routing, credentials, or source financial records changed.
+
+## Retained verification checkpoint
+
+- All17 retained backend suites PASS against the SHA-verified middleware snapshot using the existing Python3.12.3 virtual environment. The summary-function extracts used by one suite were first compared against the actual deployed source AST.
+- Test processes used synthetic SQLite fixtures or mocked readers/ASGI handlers. A test-only startup wrapper blocked external connections, child processes, non-fixture SQLite paths, and production data/configuration files. Final run:0 blocked attempts,17/17 PASS. The production application was never imported or started by this runner.
+- Initial wrapper run:16/17 PASS. Its Python function wrapper acquired method-binding behavior when a retained test saved `sqlite3.connect` as a class attribute. Corrected the wrapper to a callable object, preserving the original builtin calling behavior, and admitted read-only file URIs only inside the synthetic fixture directory. The complete second run passed. This was a test-harness correction, not an application defect or financial-data change.
+- Evidence remains at `/home/openclaw/.cache/nudashboard-phase5-20260913/retained-backend-checks-v2`; the first-run evidence is preserved separately.
+- The86 observed Python package pins are retained in `backend-requirements.observed.txt`. Every line was validated as a package/version pin with no private URL or filesystem path; file SHA256:`aae380d20af7af8f8e182eb7b5dfc93ee92b8a4503058deec8c8db89fc7985ec`.
+- Static closure now accounts for14 source modules, including the parent Ascend client. Three dynamic imports in the entry refer only to standard-library `pathlib`/`datetime`.
+- The client default points at `sandbox.json`, whose environment selector is `sandbox`. Live `ascend_service` and `sync` explicitly override it with `production.json`, whose selector is `production`. Only those selector fields were returned; no credentials were exposed and neither provider environment was contacted. The existing sandbox file is not yet evidence of dedicated synthetic QA data or authorization for positive provider operations.
+- The static scan records47 file/path literals for continued runtime-input review. A source filename or an environment label alone does not establish QA isolation.
+
+Remaining backend work: canonical configuration representation, complete file-input requirements, and future QA-only execution guards. Production behavior/configuration remains unchanged.
