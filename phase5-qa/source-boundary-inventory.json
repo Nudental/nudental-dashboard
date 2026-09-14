@@ -1,0 +1,755 @@
+{
+  "scope": "Inventory only; migration history is not an executable QA seed",
+  "declaredRoles": [
+    "admin",
+    "office_manager",
+    "regional_clinical_manager",
+    "regional_manager",
+    "staff",
+    "super_admin"
+  ],
+  "migrationFiles": 109,
+  "migrationsContainingDataWrites": 70,
+  "connectionHosts": {
+    "api.nudashboard.com": [
+      "src/components/payroll/comparison/ComparisonRoot.jsx",
+      "src/hooks/gusto/useGustoComparison.js",
+      "src/hooks/gusto/useGustoContractors.js",
+      "src/hooks/gusto/useGustoEmployees.js",
+      "src/hooks/gusto/useGustoPayrollRuns.js",
+      "src/hooks/gusto/useGustoSummaryTotals.js",
+      "src/lib/gusto/gustoImportHelpers.js",
+      "src/pages/daily-entry-form/components/UnscheduledTreatmentTab.jsx",
+      "src/pages/financial-analytics/ExpenseReport.jsx",
+      "src/pages/payroll/components/ProviderCompensationNew.jsx",
+      "src/pages/rcm/components/VerifiedArTrendChart.jsx",
+      "src/pages/sync-dashboard/index.jsx",
+      "src/services/ascendApi.js",
+      "src/services/eodReportService.js",
+      "src/services/eodTreatmentService.js",
+      "src/services/expenseReportService.js",
+      "src/services/kpiService.js",
+      "src/services/operationsService.js",
+      "src/services/otpAuthService.js",
+      "src/services/rcmService.js",
+      "src/services/reportExportService.js"
+    ],
+    "insurance-verification-request-mxb2g01.public.builtwithrocket.new": [
+      "src/pages/insurance-verify/index.jsx"
+    ],
+    "nudashboard.com": [
+      "src/pages/forgot-password/components/ForgotPasswordForm.jsx",
+      "src/services/alertRulesService.js",
+      "src/services/ascendSyncService.js",
+      "src/services/notificationEventsService.js"
+    ],
+    "nudentalr1699.builtwithrocket.new": [
+      "src/pages/audit-reports/index.jsx",
+      "src/pages/executive-overview/components/ScheduleYearComparisonModal.jsx",
+      "src/services/actionItemsService.js",
+      "src/services/emailService.js",
+      "src/services/frontDeskInventoryService.js",
+      "src/services/orderRequestService.js",
+      "src/services/rcmEmailService.js"
+    ],
+    "siwtadgdqtvxoztnxzhx.functions.supabase.co": [
+      "src/services/dentrixUploadService.js"
+    ]
+  },
+  "environmentNames": {
+    "VITE_ASCEND_API_KEY": [
+      "src/pages/daily-entry-form/components/UnscheduledTreatmentTab.jsx",
+      "src/pages/executive-overview/components/RevenueSummarySection.jsx",
+      "src/pages/financial-analytics/ExpenseReport.jsx",
+      "src/pages/rcm/components/VerifiedArTrendChart.jsx",
+      "src/pages/sync-dashboard/index.jsx",
+      "src/services/ascendApi.js",
+      "src/services/dentrixIngestionService.js",
+      "src/services/eodReportService.js",
+      "src/services/eodTreatmentService.js",
+      "src/services/expenseReportService.js",
+      "src/services/kpiService.js",
+      "src/services/rcmService.js",
+      "src/services/reportExportService.js"
+    ],
+    "VITE_SUPABASE_ANON_KEY": [
+      "src/lib/supabase.js",
+      "src/pages/huddle-approvals/index.jsx",
+      "src/pages/inventory-dashboard/components/FrontDeskInventoryTab.jsx",
+      "src/pages/pending-approvals/index.jsx",
+      "src/services/ascendSyncService.js",
+      "src/services/boneTissueService.js",
+      "src/services/huddleService.js",
+      "src/services/supplyRequestService.js"
+    ],
+    "VITE_SUPABASE_URL": [
+      "src/lib/supabase.js",
+      "src/pages/daily-entry-form/index.jsx",
+      "src/pages/daily-morning-huddle/index.jsx",
+      "src/pages/huddle-approvals/index.jsx",
+      "src/pages/inventory-dashboard/components/FrontDeskInventoryTab.jsx",
+      "src/pages/pending-approvals/index.jsx",
+      "src/services/ascendSyncService.js",
+      "src/services/boneTissueService.js",
+      "src/services/frontDeskInventoryService.js",
+      "src/services/huddleService.js",
+      "src/services/supplyRequestService.js"
+    ]
+  },
+  "migrationInventory": [
+    {
+      "file": "20260228000001_management_settings.sql",
+      "createsTables": 6,
+      "createsPolicies": 13,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260228020000_offices_location_details.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260228030000_providers_profile_fields.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260228040000_user_profiles_extended_fields.sql",
+      "createsTables": 0,
+      "createsPolicies": 2,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260228050000_roles_permissions_user_offices.sql",
+      "createsTables": 3,
+      "createsPolicies": 6,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260228060000_invite_only_access_control.sql",
+      "createsTables": 0,
+      "createsPolicies": 8,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260228070000_audit_triggers.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260228080000_office_goals.sql",
+      "createsTables": 1,
+      "createsPolicies": 4,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260228090000_operational_metrics.sql",
+      "createsTables": 2,
+      "createsPolicies": 5,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260228100000_office_manager_role_alerts.sql",
+      "createsTables": 1,
+      "createsPolicies": 4,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260228110000_morning_huddle.sql",
+      "createsTables": 4,
+      "createsPolicies": 14,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260228120000_action_items.sql",
+      "createsTables": 1,
+      "createsPolicies": 4,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260305130000_set_admin_role_active_status.sql",
+      "createsTables": 0,
+      "createsPolicies": 1,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305140000_provider_id_daily_entries_super_admin.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305150000_fix_super_admin_creation.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305160000_six_provider_blocks.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305170000_seed_providers_all_offices.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305180000_rbac_admin_all_offices_om_scoped.sql",
+      "createsTables": 0,
+      "createsPolicies": 13,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305190000_fix_user_office_assignments_rls.sql",
+      "createsTables": 0,
+      "createsPolicies": 4,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260305200000_remove_fake_providers.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305210000_remove_duplicate_providers.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305220000_rename_offices_brick_eatontown.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305230000_add_ny_velez_admin.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305240000_add_new_roles.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305250000_add_payroll_gusto_cost_drivers.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305260000_add_back_staff_orders_expenses.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305270000_cleanup_back_staff_orders_dedup.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305280000_dedup_cost_drivers_unique_index.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260305290000_service_categories.sql",
+      "createsTables": 1,
+      "createsPolicies": 2,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260306160000_add_provider_name_daily_entries.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260306170000_dedup_offices_cleanup.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260306200000_bone_tissue_inventory.sql",
+      "createsTables": 2,
+      "createsPolicies": 11,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260306210000_bone_tissue_stock.sql",
+      "createsTables": 1,
+      "createsPolicies": 3,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260306220000_implant_inventory.sql",
+      "createsTables": 9,
+      "createsPolicies": 21,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260306230000_bulk_inventory_import.sql",
+      "createsTables": 3,
+      "createsPolicies": 7,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260307000000_supply_request_module.sql",
+      "createsTables": 11,
+      "createsPolicies": 22,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260307100000_rcm_weekly_digest_cron.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260307110000_add_phone_to_user_profiles.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260307120000_fix_bone_tissue_stock_columns.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260307130000_fix_bone_tissue_stock_missing_columns.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260307140000_add_expiration_date_to_bone_tissue_stock.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260307150000_add_expiration_date_bone_tissue_stock.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260308000000_department_category_supply.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260308010000_front_desk_inventory.sql",
+      "createsTables": 1,
+      "createsPolicies": 4,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260308020000_fix_fdi_get_user_office.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260308030000_create_front_desk_inventory_table.sql",
+      "createsTables": 1,
+      "createsPolicies": 4,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260308040000_bone_tissue_usage_log.sql",
+      "createsTables": 1,
+      "createsPolicies": 4,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260309000000_order_requests_notifications.sql",
+      "createsTables": 1,
+      "createsPolicies": 3,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260310000000_management_contacts_office_constraints.sql",
+      "createsTables": 1,
+      "createsPolicies": 2,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260311000000_phone_otp_verification.sql",
+      "createsTables": 1,
+      "createsPolicies": 2,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260312000000_supply_chain_permissions.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260313000000_rbac_new_permissions.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260313100000_add_theme_to_user_profiles.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260314000000_office_rls_data_isolation.sql",
+      "createsTables": 0,
+      "createsPolicies": 17,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260315000000_executive_overview_permission.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260316000000_add_regional_clinical_manager_role.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260317000000_daily_entries_upsert_constraint.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260318000000_auto_entity_creation_bulk_import.sql",
+      "createsTables": 1,
+      "createsPolicies": 2,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260318100000_add_date_of_birth_to_user_profiles.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260319000000_multi_office_bulk_import_distribution.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260320000000_multi_day_import_indexes.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260321000000_monthly_executive_email_cron.sql",
+      "createsTables": 1,
+      "createsPolicies": 2,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260322000000_executive_monthly_analytics.sql",
+      "createsTables": 1,
+      "createsPolicies": 4,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260323000000_office_goals_extended_columns.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260323000001_rcm_module.sql",
+      "createsTables": 6,
+      "createsPolicies": 12,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260325000000_notification_center_events.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260326000000_alert_rules_audit_access_control.sql",
+      "createsTables": 2,
+      "createsPolicies": 5,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260326200000_fix_eod_approval_office_id_uuid.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260326210000_fix_eod_approval_on_conflict_text.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260326220000_fix_mea_office_id_to_uuid_final.sql",
+      "createsTables": 0,
+      "createsPolicies": 4,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260326230000_eod_post_approval_workflow.sql",
+      "createsTables": 0,
+      "createsPolicies": 2,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260327000000_eod_approval_workflow_fix.sql",
+      "createsTables": 1,
+      "createsPolicies": 4,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260328000000_eod_approval_analytics_trigger.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260329000000_eod_reminder_cron.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260330000000_add_service_category_to_daily_entries.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260331000000_add_username_to_user_profiles.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260331170000_error_logs_table.sql",
+      "createsTables": 1,
+      "createsPolicies": 4,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260331180000_error_log_notification_trigger.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260409140000_fix_users_management_rls.sql",
+      "createsTables": 0,
+      "createsPolicies": 6,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260410100000_data_pipeline_audit_tables.sql",
+      "createsTables": 5,
+      "createsPolicies": 5,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260410200000_dentrix_import_audit.sql",
+      "createsTables": 2,
+      "createsPolicies": 2,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260418000000_ucr_production_adjustment_separation.sql",
+      "createsTables": 1,
+      "createsPolicies": 4,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260418200000_payroll_rbac.sql",
+      "createsTables": 2,
+      "createsPolicies": 2,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260418210000_payroll_schedule_seed.sql",
+      "createsTables": 1,
+      "createsPolicies": 1,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260418220000_provider_payroll_mapping_layer.sql",
+      "createsTables": 5,
+      "createsPolicies": 8,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260419000000_canonical_provider_seed_and_alias_fix.sql",
+      "createsTables": 0,
+      "createsPolicies": 8,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260419100000_gusto_payroll_tables.sql",
+      "createsTables": 10,
+      "createsPolicies": 20,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260419200000_gusto_time_attendance_tables.sql",
+      "createsTables": 5,
+      "createsPolicies": 10,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260419300000_expense_facts_gusto_payroll_layer.sql",
+      "createsTables": 2,
+      "createsPolicies": 4,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260419400000_office_normalization_canonical_layer.sql",
+      "createsTables": 1,
+      "createsPolicies": 2,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260419500000_expense_report_module.sql",
+      "createsTables": 10,
+      "createsPolicies": 22,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260419600000_amex_payments_ledger.sql",
+      "createsTables": 1,
+      "createsPolicies": 1,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260423100000_benchmark_eassist_reconciliation.sql",
+      "createsTables": 1,
+      "createsPolicies": 1,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260423220000_backfill_production_collections_ar_48months.sql",
+      "createsTables": 1,
+      "createsPolicies": 2,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260429000000_payroll_report_sent_log.sql",
+      "createsTables": 1,
+      "createsPolicies": 1,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260429100000_reseed_office_production_goals.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260429110000_fix_may2024_collection_goal_null.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260502000000_service_category_goals.sql",
+      "createsTables": 1,
+      "createsPolicies": 4,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260504000000_rbac_phase1a_permission_keys.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260504100000_rbac_phase1c_admin_safety_seed.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260524150000_fix_supply_item_categories.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260526100000_staff_directory_phase2a.sql",
+      "createsTables": 1,
+      "createsPolicies": 2,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260526110000_staff_directory_dedup.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260526120000_staff_directory_phase4a.sql",
+      "createsTables": 1,
+      "createsPolicies": 6,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260526130000_staff_directory_phase4a_seed.sql",
+      "createsTables": 0,
+      "createsPolicies": 0,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260527200000_role_permission_audit_log.sql",
+      "createsTables": 2,
+      "createsPolicies": 2,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260605000000_profile_photos_self_upload_rls.sql",
+      "createsTables": 0,
+      "createsPolicies": 3,
+      "containsDataWrites": false
+    },
+    {
+      "file": "20260605010000_staff_directory_self_photo_upload.sql",
+      "createsTables": 0,
+      "createsPolicies": 4,
+      "containsDataWrites": true
+    },
+    {
+      "file": "20260605020000_restore_staff_directory_photo_read_policy.sql",
+      "createsTables": 0,
+      "createsPolicies": 1,
+      "containsDataWrites": false
+    }
+  ]
+}
