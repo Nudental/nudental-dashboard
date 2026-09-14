@@ -63,8 +63,7 @@ const HuddleAnalytics = () => {
   }, [userProfile]);
 
   useEffect(() => {
-    if (!userProfile) return;
-    loadAnalytics();
+    if (userProfile) loadAnalytics();
     return () => { requestGeneration.current += 1; };
   }, [selectedOfficeId, selectedPreset, userProfile]);
 

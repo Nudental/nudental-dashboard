@@ -1,0 +1,13 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
+const root=path.resolve(__dirname,'../recovered-frontend'),runtime=process.env.NDASH_PARSER_ROOT||root,parser=require(path.join(runtime,'node_modules/@babel/parser')),gen=require(path.join(runtime,'node_modules/@babel/generator')).default;
+function find(n,p){if(!n||typeof n!=='object')return null;if(p(n))return n;for(const v of Object.values(n)){const r=find(v,p);if(r)return r;}return null;}
+const source=parser.parse(fs.readFileSync(path.join(root,'src/pages/huddle-analytics/index.jsx'),'utf8'),{sourceType:'module',plugins:['jsx']});
+const sourceEffect=find(source,n=>n.type==='CallExpression'&&n.callee.name==='useEffect'&&find(n.arguments[0],x=>x.type==='CallExpression'&&x.callee.name==='loadAnalytics')).arguments[0];
+let productionEffect;
+if(process.env.NDASH_PRODUCTION_ENTRY){const bytes=fs.readFileSync(process.env.NDASH_PRODUCTION_ENTRY);assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),'0230990f6d6c765c9b9b80b24c50e2ca1d4b9c6b828701622500841a20da01e8');const ast=parser.parse(bytes.toString(),{sourceType:'module'}),page=find(ast,n=>n.type==='VariableDeclarator'&&n.id.name==='i4t').init;productionEffect=find(page,n=>n.type==='CallExpression'&&n.callee.property?.name==='useEffect'&&find(n.arguments[0],x=>x.type==='AssignmentExpression'&&x.left?.property?.name==='current')).arguments[0];assert.ok(productionEffect);}
+function run(node,original,loggedIn,unmount){let loads=0;const generation={current:4},ctx={};
+ if(original){const logic=find(node,n=>n.type==='LogicalExpression'&&n.operator==='&&'&&n.left.type==='Identifier'&&n.right.type==='CallExpression'),update=find(node,n=>n.type==='AssignmentExpression'&&n.left?.property?.name==='current');assert.ok(logic);ctx[logic.left.name]=loggedIn?{id:'QA-USER'}:null;ctx[logic.right.callee.name]=()=>loads++;ctx[update.left.object.name]=generation;}
+ else Object.assign(ctx,{userProfile:loggedIn?{id:'QA-USER'}:null,loadAnalytics:()=>loads++,requestGeneration:generation});
+ const cleanup=vm.runInNewContext('('+gen(node).code+')',ctx,{timeout:1000})();if(unmount&&typeof cleanup==='function')cleanup();return {loads,cleanup:typeof cleanup==='function',generation:generation.current};
+}
+for(const loggedIn of [true,false])for(const unmount of [false,true])test(`Huddle effect parity: loggedIn=${loggedIn} cleanup=${unmount}`,{skip:!productionEffect},()=>{const actual=run(sourceEffect,false,loggedIn,unmount),expected=run(productionEffect,true,loggedIn,unmount);assert.deepEqual(actual,expected);assert.equal(actual.loads,loggedIn?1:0);assert.equal(actual.generation,unmount?5:4);});
