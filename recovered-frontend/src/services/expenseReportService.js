@@ -851,26 +851,27 @@ async function fetchExpenseSummary({ startDate, endDate, officeIds = [] } = {}) 
   try {
     let amexQuery = supabase
       ?.from('expenses')
-      ?.select('amount')
+      ?.select('id, amount', { count: 'exact' })
       ?.in('source_type', ['amex_api', 'amex_statement_import'])
       ?.eq('expense_status', 'posted')
       ?.neq('source_tab', 'Banking')
       ?.gte('expense_date', startDate)
-      ?.lte('expense_date', endDate);
+      ?.lte('expense_date', endDate)
+      ?.order('id', { ascending: true });
 
     const activeOffices = (officeIds || [])?.filter(o => o && o !== 'all');
     if (activeOffices?.length > 0) {
       amexQuery = amexQuery?.in('office_id', activeOffices);
     }
 
-    const { data: amexRows, error: amexErr } = await amexQuery?.range(0, 9999);
+    const { data: amexRows, error: amexErr } = await readCompleteExpenseQuery(amexQuery);
 
     if (amexErr) {
       console.warn('[expenseReportService] fetchExpenseSummary Supabase fallback error:', amexErr?.message);
     } else {
       supabaseAmex = (amexRows || [])?.reduce((sum, r) => {
         const amt = parseFloat(r?.amount);
-        return isNaN(amt) || amt <= 0 ? sum : sum + amt;
+        return isNaN(amt) ? sum : sum + amt;
       }, 0);
       console.log('[expenseReportService] fetchExpenseSummary: Supabase posted-AmEx =', supabaseAmex, '(', (amexRows || [])?.length, 'rows)');
     }
