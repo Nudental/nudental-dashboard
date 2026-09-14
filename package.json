@@ -4,10 +4,12 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "dev": "npm --prefix recovered-frontend run start",
+    "build": "npm --prefix recovered-frontend run build",
+    "preview": "npm --prefix recovered-frontend run serve",
+    "setup:frontend": "npm --prefix recovered-frontend ci --ignore-scripts --force",
+    "test": "node tools/test-dashboard.cjs",
+    "lint:legacy": "eslint ."
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.103.0",

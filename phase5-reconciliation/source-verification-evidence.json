@@ -1,0 +1,102 @@
+{
+  "scope": "NuDental Dashboard Phase5 source reconciliation",
+  "privateEvidence": [
+    {
+      "file": "clean-build-verification.json",
+      "sha256": "746a6a875f548c1e3773f40b257710fb3400f0b8087b60f7393e4dadf7ca4d1b",
+      "bytes": 449
+    },
+    {
+      "file": "help-build-delta.json",
+      "sha256": "22e80341bacd9d2640135ee548c5d4d089c4ab92149294fd5cb4c6bcc4968dce",
+      "bytes": 1254
+    },
+    {
+      "file": "huddle-build-delta.json",
+      "sha256": "4b628922dc54089fc3f06a0c91868b711b51b7364dcec8ee46b91003ac58dd2c",
+      "bytes": 1266
+    },
+    {
+      "file": "closed-binding-edges.json",
+      "sha256": "f524bff18e108c3633ef7a2e3c7730bdc17c0f9a08e3ef71c7847f6917494f43",
+      "bytes": 158518
+    },
+    {
+      "file": "reviewed-equivalence-closure.json",
+      "sha256": "3b544dcf423aa6002c19bab857a1f6a4723a8a808f07c56964eb58395a04babd",
+      "bytes": 161809
+    },
+    {
+      "file": "global-mutation-verification.json",
+      "sha256": "7d57d0b2e1a1c677b738718168d5bd9847d946004d7c8e7d3250dce7d74a46a9",
+      "bytes": 93
+    },
+    {
+      "file": "startup-remainders-verification.json",
+      "sha256": "90cc0049005eab403e5982d94dd9ec2bdcb195905050b8ec98efa790a6ed7b71",
+      "bytes": 510
+    },
+    {
+      "file": "service-remainders-verification.json",
+      "sha256": "4c9a0f79a43665a795f0ee6c16ff7ca35a2f5901ae77867628aeab165e30dc31",
+      "bytes": 105
+    },
+    {
+      "file": "factored-helper-verification.json",
+      "sha256": "8528f19d8c7931336ff94999e71b909c7a13ea45039d0685d614ef511c66032b",
+      "bytes": 3998
+    },
+    {
+      "file": "helper-global-usage.json",
+      "sha256": "85026d39d96dda8896bb7958ba26b953f55652ddc37f11162abd93a9a4a462d8",
+      "bytes": 2365
+    },
+    {
+      "file": "react-interop-verification.json",
+      "sha256": "19da923fd4b9907c28778d4d9961bad3cfbf57900ef5c655e3d02a30c4a2a0aa",
+      "bytes": 520
+    },
+    {
+      "file": "lazy-module-verification.json",
+      "sha256": "1346523d29cae6358565ab3c1dd7c11f866cfb8e6fec50a53747899ca0c9ea11",
+      "bytes": 2102
+    },
+    {
+      "file": "final-source-regressions.log",
+      "sha256": "dc81b9fc712b1692f051d3c7ef109382a35419ab048cd93451970eade634ec9e",
+      "bytes": 201009
+    },
+    {
+      "file": "remaining-parity-with-ar.log",
+      "sha256": "b61335d53efefefaa95d392ce19b2175b32c305e1e13dc59bbc27ee34a2a5cef",
+      "bytes": 10269
+    },
+    {
+      "file": "runtime-manifest-safe.json",
+      "sha256": "3f18c81ecb0381562b1cb6d20c4e857249fd140b287d218ed6eee5163ba0eaf7",
+      "bytes": 2705
+    },
+    {
+      "file": "runtime-paths-safe.json",
+      "sha256": "4396eec6c4c67ccd1912324004e71fabb7670686dfff6d203e4b3618006532be",
+      "bytes": 4528
+    },
+    {
+      "file": "service-python-entry-safe.json",
+      "sha256": "a66522ff7b43147e9cb9e16cde446dce9f63cb9d3d167fff8d26b401427be090",
+      "bytes": 1590
+    }
+  ],
+  "frontendTests": {
+    "passed": 996,
+    "failed": 0,
+    "skipped": 0,
+    "durationSeconds": 115.411
+  },
+  "backendSuites": {
+    "passed": 17,
+    "runtime": "Python3.14.6 virtual environment"
+  },
+  "materializerTests": 13,
+  "productionDeploymentPerformed": false
+}

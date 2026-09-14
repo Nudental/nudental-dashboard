@@ -1,0 +1,9 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),crypto=require('node:crypto');
+const root=path.resolve(__dirname,'../recovered-frontend'),runtime=process.env.NDASH_PARSER_ROOT||root,parser=require(path.join(runtime,'node_modules/@babel/parser')),gen=require(path.join(runtime,'node_modules/@babel/generator')).default;
+function find(n,p){if(!n||typeof n!=='object')return null;if(p(n))return n;for(const v of Object.values(n)){const r=find(v,p);if(r)return r;}return null;}
+const source=parser.parse(fs.readFileSync(path.join(root,'src/components/HelpCenter/helpArticles.js'),'utf8'),{sourceType:'module'});
+const sourceData=find(source,n=>n.type==='VariableDeclarator'&&n.id.name==='HELP_ARTICLES').init;
+let productionData;
+if(process.env.NDASH_PRODUCTION_ENTRY){const bytes=fs.readFileSync(process.env.NDASH_PRODUCTION_ENTRY);assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),'0230990f6d6c765c9b9b80b24c50e2ca1d4b9c6b828701622500841a20da01e8');const ast=parser.parse(bytes.toString(),{sourceType:'module'});productionData=find(ast,n=>n.type==='VariableDeclarator'&&n.id.name==='HS').init;assert.ok(productionData);}
+function data(node){assert.equal(node.type,'ArrayExpression');assert.equal(find(node,n=>['CallExpression','NewExpression','FunctionExpression','ArrowFunctionExpression','MemberExpression','AssignmentExpression'].includes(n.type)),null);return JSON.parse(JSON.stringify(vm.runInNewContext('('+gen(node).code+')',{}, {timeout:1000})));}
+test('Help article collection exactly matches deployed content and order',{skip:!productionData},()=>{const a=data(sourceData),b=data(productionData),hash=v=>crypto.createHash('sha256').update(JSON.stringify(v)).digest('hex');assert.deepEqual(a.map(x=>x.id),b.map(x=>x.id),'Help article IDs differ');assert.equal(hash(a),hash(b),'Help article content differs');});

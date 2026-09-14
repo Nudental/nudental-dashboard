@@ -1,16 +1,30 @@
-# React + Vite
+# NuDental Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The current Dashboard frontend is **recovered-frontend/**. Restored backend
+source is **recovered-backend/**. Root development, build and preview commands
+delegate to the current frontend. The older root src/, Vite configuration and
+dependency manifests remain as preserved historical work; they are not the
+production build entry.
 
-Currently, two official plugins are available:
+Use Node22.22.1/npm10.9.4. Install the current frontend with
+`npm run setup:frontend`, then use `npm run build`. Setup uses the committed
+frontend lockfile; `--force` accepts the preserved peer dependency combination
+and `--ignore-scripts` avoids dependency lifecycle execution. The production
+output is recovered-frontend/build/. No command here deploys it.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Build inputs are environment-specific: VITE_SUPABASE_URL,
+VITE_SUPABASE_ANON_KEY and VITE_ASCEND_API_KEY. Supply values privately.
+Never reuse a production build or its environment file for QA. A static
+production reference build must not be served as a QA environment.
 
-## React Compiler
+`npm test` runs the retained Phase4 and Phase5 frontend tests. Artifact parity
+checks additionally require NDASH_PRODUCTION_ENTRY to point to the privately
+preserved, checksum-verified deployment entry. NDASH_PARSER_ROOT can point to
+the independent installed reference frontend. A run with skipped artifact
+checks is not sufficient for source promotion. Backend reconstruction and
+isolated test instructions are in recovered-backend/README.md and
+phase5-reconciliation/backend-source-provenance.md.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+See phase5-reconciliation/source-closure.md for source/build equivalence and
+phase5-reconciliation/README.md for the Phase5 checkpoint. Production remains
+on its existing verified deployment. A Git push does not replace it.

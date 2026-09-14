@@ -190,14 +190,6 @@ const HELP_ARTICLES = [
     keywords: ["payroll","gusto","compensation","provider","pay","salary","benefits","employees","time","attendance","admin","import history"],
     content: "Payroll shows provider compensation data from two sources: Dentrix Ascend (clinical production) and Gusto (HR/payroll). Use the source tabs to switch. Gusto data requires a successful import from Gusto — if Gusto tabs are empty, check Import History tab for latest sync status. The Dentrix tab is the primary source for clinical production payroll. Send Collection Report opens a modal and sends email via edge function. Admin/Super Admin only."
   },
-  // ─── PROVIDER COMPENSATION DATE OFFSET ───────────────────────────────────
-  {
-    id: 34,
-    tab: "Finance",
-    title: "Provider Compensation — Gusto / Dentrix Ascend one-day date offset rule",
-    keywords: ["provider compensation","gusto","dentrix","offset","one day","date","pay period","collection","august","start minus one","end minus one","business rule","date mapping","compensation date"],
-    content: "INTENTIONAL BUSINESS RULE (approved by Dr. G, Sep 2026):\n\nFor provider compensation, Gusto payroll dates and Dentrix Ascend collection dates intentionally differ by one day.\n\nMapping rule:\n• Dentrix Ascend collection start = Gusto pay period start − 1 day\n• Dentrix Ascend collection end   = Gusto pay period end   − 1 day\n\nExample:\n• Gusto pay period: Aug 17 – Aug 30, 2026\n• Dentrix Ascend collections queried: Aug 16 – Aug 29, 2026\n\nThis offset applies to every regular provider-compensation pay period without exception. It exists because Dentrix Ascend posts collections one day before the corresponding Gusto pay period date.\n\nIMPLEMENTATION STATUS — ACTIVE:\nThe one-day offset is implemented and applied automatically. The Provider Compensation UI shows both the Gusto pay period (unchanged, for payroll/audit) and the shifted Dentrix Ascend collection window side by side.\n\nThe offset uses timezone-safe calendar arithmetic (no UTC conversion). It applies ONLY to the provider-compensation Dentrix collection query. It does NOT change Gusto payroll totals, the Gusto Payroll Overview, payroll runs, employee data, taxes, deductions, benefits, or any other date filter."
-  },
   // ─── RCM ──────────────────────────────────────────────────────────────────
   {
     id: 25,
