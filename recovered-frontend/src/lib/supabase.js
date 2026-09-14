@@ -14,3 +14,20 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
   }
 });
+
+let userInvitationClient;
+export function createUserInvitationClient() {
+  // signUp may return a new session. Keep it away from the administrator's
+  // persistent client, which performs the authorized profile write afterward.
+  if (!userInvitationClient) {
+    userInvitationClient = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        storageKey: 'nu-dashboard-invitation',
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      },
+    });
+  }
+  return userInvitationClient;
+}

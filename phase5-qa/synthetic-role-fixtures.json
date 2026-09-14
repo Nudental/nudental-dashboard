@@ -1,0 +1,5707 @@
+{
+  "schema_version": 1,
+  "label": "NUDENTAL DASHBOARD \u2014 QA / NONPRODUCTION",
+  "source": "Role/schema configuration only; all identities, offices and providers are synthetic",
+  "provisioned": false,
+  "offices": [
+    {
+      "id": "9219b493-5765-5da0-939f-221c7f9944d9",
+      "name": "QA / Office A",
+      "is_active": true
+    },
+    {
+      "id": "873fd448-c507-5a1d-aebe-4b22278b3a28",
+      "name": "QA / Office B",
+      "is_active": true
+    }
+  ],
+  "providers": [
+    {
+      "id": "4a505f1f-da84-5ecc-8ac8-1ee8ebecf7d9",
+      "name": "QA / Provider A",
+      "provider_type": "doctor",
+      "office_id": "9219b493-5765-5da0-939f-221c7f9944d9",
+      "is_active": true
+    },
+    {
+      "id": "59c4d045-973f-5331-b137-2d09ac64e1f7",
+      "name": "QA / Provider B",
+      "provider_type": "doctor",
+      "office_id": "873fd448-c507-5a1d-aebe-4b22278b3a28",
+      "is_active": true
+    }
+  ],
+  "actors": [
+    {
+      "fixture_key": "staff",
+      "email": "qa-staff@nudashboard.example.test",
+      "full_name": "QA / Staff",
+      "role": "staff",
+      "office_id": "9219b493-5765-5da0-939f-221c7f9944d9",
+      "all_offices": false,
+      "is_active": true,
+      "is_approved": true,
+      "status": "Active",
+      "must_change_password": false
+    },
+    {
+      "fixture_key": "admin",
+      "email": "qa-admin@nudashboard.example.test",
+      "full_name": "QA / Admin",
+      "role": "admin",
+      "office_id": "9219b493-5765-5da0-939f-221c7f9944d9",
+      "all_offices": false,
+      "is_active": true,
+      "is_approved": true,
+      "status": "Active",
+      "must_change_password": false
+    },
+    {
+      "fixture_key": "super_admin",
+      "email": "qa-super-admin@nudashboard.example.test",
+      "full_name": "QA / Super Admin",
+      "role": "super_admin",
+      "office_id": "9219b493-5765-5da0-939f-221c7f9944d9",
+      "all_offices": true,
+      "is_active": true,
+      "is_approved": true,
+      "status": "Active",
+      "must_change_password": false
+    },
+    {
+      "fixture_key": "office_manager",
+      "email": "qa-office-manager@nudashboard.example.test",
+      "full_name": "QA / Office Manager",
+      "role": "office_manager",
+      "office_id": "9219b493-5765-5da0-939f-221c7f9944d9",
+      "all_offices": false,
+      "is_active": true,
+      "is_approved": true,
+      "status": "Active",
+      "must_change_password": false
+    },
+    {
+      "fixture_key": "regional_clinical_manager",
+      "email": "qa-regional-clinical-manager@nudashboard.example.test",
+      "full_name": "QA / Regional Clinical Manager",
+      "role": "regional_clinical_manager",
+      "office_id": "9219b493-5765-5da0-939f-221c7f9944d9",
+      "all_offices": false,
+      "is_active": true,
+      "is_approved": true,
+      "status": "Active",
+      "must_change_password": false
+    },
+    {
+      "fixture_key": "regional_manager",
+      "email": "qa-regional-manager@nudashboard.example.test",
+      "full_name": "QA / Regional Manager",
+      "role": "regional_manager",
+      "office_id": "9219b493-5765-5da0-939f-221c7f9944d9",
+      "all_offices": false,
+      "is_active": true,
+      "is_approved": true,
+      "status": "Active",
+      "must_change_password": false
+    },
+    {
+      "fixture_key": "insurance_verifier",
+      "email": "qa-insurance-verifier@nudashboard.example.test",
+      "full_name": "QA / Insurance Verifier",
+      "role": "insurance_verifier",
+      "office_id": "9219b493-5765-5da0-939f-221c7f9944d9",
+      "all_offices": false,
+      "is_active": true,
+      "is_approved": true,
+      "status": "Active",
+      "must_change_password": false
+    },
+    {
+      "fixture_key": "marketing",
+      "email": "qa-marketing@nudashboard.example.test",
+      "full_name": "QA / Marketing",
+      "role": "marketing",
+      "office_id": "9219b493-5765-5da0-939f-221c7f9944d9",
+      "all_offices": false,
+      "is_active": true,
+      "is_approved": true,
+      "status": "Active",
+      "must_change_password": false
+    },
+    {
+      "fixture_key": "office_manager_b",
+      "email": "qa-office-manager-b@nudashboard.example.test",
+      "full_name": "QA / Office Manager B",
+      "role": "office_manager",
+      "office_id": "873fd448-c507-5a1d-aebe-4b22278b3a28",
+      "all_offices": false,
+      "is_active": true,
+      "is_approved": true,
+      "status": "Active",
+      "must_change_password": false
+    },
+    {
+      "fixture_key": "staff_b",
+      "email": "qa-staff-b@nudashboard.example.test",
+      "full_name": "QA / Staff B",
+      "role": "staff",
+      "office_id": "873fd448-c507-5a1d-aebe-4b22278b3a28",
+      "all_offices": false,
+      "is_active": true,
+      "is_approved": true,
+      "status": "Active",
+      "must_change_password": false
+    },
+    {
+      "fixture_key": "inactive_staff",
+      "email": "qa-inactive-staff@nudashboard.example.test",
+      "full_name": "QA / Inactive Staff",
+      "role": "staff",
+      "office_id": "9219b493-5765-5da0-939f-221c7f9944d9",
+      "all_offices": false,
+      "is_active": false,
+      "is_approved": true,
+      "status": "Pending",
+      "must_change_password": false
+    },
+    {
+      "fixture_key": "unapproved_staff",
+      "email": "qa-unapproved-staff@nudashboard.example.test",
+      "full_name": "QA / Unapproved Staff",
+      "role": "staff",
+      "office_id": "9219b493-5765-5da0-939f-221c7f9944d9",
+      "all_offices": false,
+      "is_active": true,
+      "is_approved": false,
+      "status": "Pending",
+      "must_change_password": false
+    }
+  ],
+  "role_permissions": [
+    {
+      "role": "admin",
+      "permission": "admin.alert_thresholds.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "admin.data_health.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "admin.import_audit.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "admin.manual_entry.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "admin.providers.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "admin.reconciliation.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "admin.settings.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "admin.sync.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "admin.system.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "admin.users.role_editor.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "admin.users.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "analytics:financial_view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "approve_entries",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "dashboard:executive_overview",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "edit_entries",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.alerts.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.audit_log.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.audit_reports.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.audit.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.compliance.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.error_logs.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.expenses.amex_payments.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.expenses.amex.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.expenses.import.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.expenses.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.expenses.transactions.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.expenses.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.finance.analytics.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.finance.collections.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.finance.production.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.finance.reconciliation.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.finance.service_categories.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.finance.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.heatmap.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll_audit.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll_sync.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll.comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll.dentrix_ascend.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll.gusto.benefits.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll.gusto.contractors.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll.gusto.employees.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll.gusto.import_history.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll.gusto.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll.gusto.pay_schedules.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll.gusto.payroll_runs.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll.gusto.time_attendance.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll.gusto.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll.provider_compensation.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.payroll.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.rcm.adjustment.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.rcm.ar_aging.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.rcm.claims.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.rcm.daily_comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.rcm.dashboard.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.rcm.eassist_daily.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.rcm.payment.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.rcm.pos.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.rcm.refund.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.rcm.statements.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "finance.rcm.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "home.overview.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "huddle:edit",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "huddle:view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "inventory:edit",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "inventory:view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "manage_categories",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "manage_users",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "office_scoped",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance:office_view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "performance:provider_view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.kpis.main.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "performance.kpis.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.kpis.specialty_providers.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.kpis.specialty.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.kpis.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "performance.monthly_trends.import_export.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.monthly_trends.manual_override.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.monthly_trends.summary.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.monthly_trends.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.office_performance.expenses.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.office_performance.productivity.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.office_performance.revenue.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.office_performance.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.operations.ar_aging.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.operations.cancellations.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.operations.marketing.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.operations.offices.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "performance.operations.payors.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.operations.performance.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.operations.production.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "performance.operations.providers.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "performance.operations.scorecards.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "performance.operations.services.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.operations.trends.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.operations.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "performance.provider_performance.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "performance.regional_manager.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "receive_pace_alerts",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "reports:financial_view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "request:back_staff_order",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "request:front_desk_order",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.directory.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "resources.inventory.bone_tissue.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.inventory.bulk_import.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.inventory.front_desk.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.inventory.implant.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.inventory.monthly_supply.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.inventory.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.inventory.reports.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.inventory.settings.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.inventory.usage_log.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.inventory.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.reports.full_workbook.export",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.reports.goal_leaderboard.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.reports.individual_export",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.reports.office_breakdown.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.reports.period_comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.reports.pl_summary.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.reports.revenue_by_provider.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "resources.reports.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "view_all_offices",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "view_audit_logs",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "view_goals",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "view_reports",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "workflow.approvals.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "workflow.eod_queue.view",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "workflow.eod.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "workflow.huddle_queue.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "workflow.huddle.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "workflow.insurance.assign",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "workflow.insurance.cancel",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "workflow.insurance.complete",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "workflow.insurance.email_office",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "workflow.insurance.mark_uploaded",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "workflow.insurance.submit",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "workflow.insurance.upload_to_dentrix",
+      "enabled": false
+    },
+    {
+      "role": "admin",
+      "permission": "workflow.insurance.view",
+      "enabled": true
+    },
+    {
+      "role": "admin",
+      "permission": "workflow.tasks.view",
+      "enabled": true
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "admin.alert_thresholds.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "admin.data_health.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "admin.import_audit.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "admin.manual_entry.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "admin.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "admin.reconciliation.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "admin.settings.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "admin.sync.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "admin.system.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "admin.users.role_editor.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "admin.users.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "analytics:financial_view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "approve_entries",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "dashboard:executive_overview",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "edit_entries",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.alerts.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.audit_log.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.audit_reports.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.audit.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.compliance.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.error_logs.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.expenses.amex_payments.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.expenses.amex.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.expenses.import.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.expenses.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.expenses.transactions.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.expenses.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.finance.analytics.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.finance.collections.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.finance.production.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.finance.reconciliation.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.finance.service_categories.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.finance.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.heatmap.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll_audit.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll_sync.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll.comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll.dentrix_ascend.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll.gusto.benefits.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll.gusto.contractors.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll.gusto.employees.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll.gusto.import_history.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll.gusto.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll.gusto.pay_schedules.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll.gusto.payroll_runs.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll.gusto.time_attendance.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll.gusto.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll.provider_compensation.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.payroll.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.rcm.adjustment.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.rcm.ar_aging.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.rcm.claims.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.rcm.daily_comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.rcm.dashboard.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.rcm.eassist_daily.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.rcm.payment.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.rcm.pos.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.rcm.refund.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.rcm.statements.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "finance.rcm.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "home.overview.view",
+      "enabled": true
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "huddle:edit",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "huddle:view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "inventory:edit",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "inventory:view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "manage_categories",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "manage_users",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "office_scoped",
+      "enabled": true
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance:office_view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance:provider_view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.kpis.main.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.kpis.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.kpis.specialty_providers.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.kpis.specialty.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.kpis.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.monthly_trends.import_export.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.monthly_trends.manual_override.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.monthly_trends.summary.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.monthly_trends.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.office_performance.expenses.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.office_performance.productivity.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.office_performance.revenue.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.office_performance.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.operations.ar_aging.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.operations.cancellations.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.operations.marketing.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.operations.offices.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.operations.payors.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.operations.performance.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.operations.production.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.operations.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.operations.scorecards.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.operations.services.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.operations.trends.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.operations.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.provider_performance.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "performance.regional_manager.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "receive_pace_alerts",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "reports:financial_view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "request:back_staff_order",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "request:front_desk_order",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.directory.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.inventory.bone_tissue.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.inventory.bulk_import.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.inventory.front_desk.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.inventory.implant.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.inventory.monthly_supply.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.inventory.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.inventory.reports.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.inventory.settings.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.inventory.usage_log.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.inventory.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.reports.full_workbook.export",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.reports.goal_leaderboard.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.reports.individual_export",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.reports.office_breakdown.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.reports.period_comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.reports.pl_summary.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.reports.revenue_by_provider.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "resources.reports.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "view_all_offices",
+      "enabled": true
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "view_audit_logs",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "view_goals",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "view_reports",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "workflow.approvals.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "workflow.eod_queue.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "workflow.eod.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "workflow.huddle_queue.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "workflow.huddle.view",
+      "enabled": false
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "workflow.insurance.assign",
+      "enabled": true
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "workflow.insurance.cancel",
+      "enabled": true
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "workflow.insurance.complete",
+      "enabled": true
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "workflow.insurance.email_office",
+      "enabled": true
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "workflow.insurance.mark_uploaded",
+      "enabled": true
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "workflow.insurance.submit",
+      "enabled": true
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "workflow.insurance.upload_to_dentrix",
+      "enabled": true
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "workflow.insurance.view",
+      "enabled": true
+    },
+    {
+      "role": "insurance_verifier",
+      "permission": "workflow.tasks.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "admin.alert_thresholds.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "admin.data_health.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "admin.import_audit.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "admin.manual_entry.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "admin.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "admin.reconciliation.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "admin.settings.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "admin.sync.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "admin.system.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "admin.users.role_editor.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "admin.users.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "analytics:financial_view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "approve_entries",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "dashboard:executive_overview",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "edit_entries",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.alerts.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.audit_log.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.audit_reports.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.audit.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.compliance.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.error_logs.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.expenses.amex_payments.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.expenses.amex.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.expenses.import.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.expenses.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.expenses.transactions.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.expenses.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.finance.analytics.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.finance.collections.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.finance.production.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.finance.reconciliation.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.finance.service_categories.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.finance.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.heatmap.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll_audit.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll_sync.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll.comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll.dentrix_ascend.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll.gusto.benefits.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll.gusto.contractors.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll.gusto.employees.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll.gusto.import_history.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll.gusto.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll.gusto.pay_schedules.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll.gusto.payroll_runs.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll.gusto.time_attendance.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll.gusto.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll.provider_compensation.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.payroll.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.rcm.adjustment.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.rcm.ar_aging.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.rcm.claims.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.rcm.daily_comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.rcm.dashboard.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.rcm.eassist_daily.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.rcm.payment.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.rcm.pos.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.rcm.refund.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.rcm.statements.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "finance.rcm.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "home.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "huddle:edit",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "huddle:view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "inventory:edit",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "inventory:view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "manage_categories",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "manage_users",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "office_scoped",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance:office_view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance:provider_view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.kpis.main.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.kpis.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.kpis.specialty_providers.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.kpis.specialty.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.kpis.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.monthly_trends.import_export.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.monthly_trends.manual_override.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.monthly_trends.summary.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.monthly_trends.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.office_performance.expenses.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.office_performance.productivity.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.office_performance.revenue.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.office_performance.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.operations.ar_aging.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.operations.cancellations.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.operations.marketing.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.operations.offices.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.operations.payors.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.operations.performance.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.operations.production.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.operations.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.operations.scorecards.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.operations.services.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.operations.trends.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.operations.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.provider_performance.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "performance.regional_manager.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "receive_pace_alerts",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "reports:financial_view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "request:back_staff_order",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "request:front_desk_order",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.directory.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.inventory.bone_tissue.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.inventory.bulk_import.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.inventory.front_desk.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.inventory.implant.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.inventory.monthly_supply.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.inventory.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.inventory.reports.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.inventory.settings.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.inventory.usage_log.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.inventory.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.reports.full_workbook.export",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.reports.goal_leaderboard.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.reports.individual_export",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.reports.office_breakdown.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.reports.period_comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.reports.pl_summary.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.reports.revenue_by_provider.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "resources.reports.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "view_all_offices",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "view_audit_logs",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "view_goals",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "view_reports",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "workflow.approvals.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "workflow.eod_queue.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "workflow.eod.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "workflow.huddle_queue.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "workflow.huddle.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "workflow.insurance.assign",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "workflow.insurance.cancel",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "workflow.insurance.complete",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "workflow.insurance.email_office",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "workflow.insurance.mark_uploaded",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "workflow.insurance.submit",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "workflow.insurance.upload_to_dentrix",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "workflow.insurance.view",
+      "enabled": false
+    },
+    {
+      "role": "marketing",
+      "permission": "workflow.tasks.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "admin.alert_thresholds.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "admin.data_health.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "admin.import_audit.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "admin.manual_entry.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "admin.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "admin.reconciliation.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "admin.settings.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "admin.sync.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "admin.system.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "admin.users.role_editor.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "admin.users.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "analytics:financial_view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "approve_entries",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "dashboard:executive_overview",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "edit_entries",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.alerts.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.audit_log.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.audit_reports.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.audit.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.compliance.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.error_logs.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.expenses.amex_payments.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.expenses.amex.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.expenses.import.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.expenses.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.expenses.transactions.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.expenses.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.finance.analytics.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.finance.collections.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.finance.production.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.finance.reconciliation.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.finance.service_categories.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.finance.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.heatmap.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll_audit.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll_sync.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll.comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll.dentrix_ascend.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll.gusto.benefits.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll.gusto.contractors.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll.gusto.employees.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll.gusto.import_history.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll.gusto.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll.gusto.pay_schedules.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll.gusto.payroll_runs.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll.gusto.time_attendance.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll.gusto.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll.provider_compensation.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.payroll.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.rcm.adjustment.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.rcm.ar_aging.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.rcm.claims.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.rcm.daily_comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.rcm.dashboard.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.rcm.eassist_daily.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.rcm.payment.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.rcm.pos.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.rcm.refund.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.rcm.statements.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "finance.rcm.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "home.overview.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "huddle:edit",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "huddle:view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "inventory:edit",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "inventory:view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "manage_categories",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "manage_users",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "office_scoped",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance:office_view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance:provider_view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.kpis.main.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.kpis.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.kpis.specialty_providers.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.kpis.specialty.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.kpis.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.monthly_trends.import_export.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.monthly_trends.manual_override.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.monthly_trends.summary.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.monthly_trends.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.office_performance.expenses.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.office_performance.productivity.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.office_performance.revenue.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.office_performance.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.operations.ar_aging.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.operations.cancellations.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.operations.marketing.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.operations.offices.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.operations.payors.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.operations.performance.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.operations.production.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.operations.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.operations.scorecards.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.operations.services.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.operations.trends.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.operations.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.provider_performance.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "performance.regional_manager.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "receive_pace_alerts",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "reports:financial_view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "request:back_staff_order",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "request:front_desk_order",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.directory.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.inventory.bone_tissue.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.inventory.bulk_import.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.inventory.front_desk.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.inventory.implant.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.inventory.monthly_supply.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.inventory.overview.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.inventory.reports.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.inventory.settings.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.inventory.usage_log.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.inventory.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.reports.full_workbook.export",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.reports.goal_leaderboard.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.reports.individual_export",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.reports.office_breakdown.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.reports.period_comparison.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.reports.pl_summary.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.reports.revenue_by_provider.view",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "resources.reports.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "view_all_offices",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "view_audit_logs",
+      "enabled": false
+    },
+    {
+      "role": "office_manager",
+      "permission": "view_goals",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "view_reports",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "workflow.approvals.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "workflow.eod_queue.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "workflow.eod.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "workflow.huddle_queue.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "workflow.huddle.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "workflow.insurance.assign",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "workflow.insurance.cancel",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "workflow.insurance.complete",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "workflow.insurance.email_office",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "workflow.insurance.mark_uploaded",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "workflow.insurance.submit",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "workflow.insurance.upload_to_dentrix",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "workflow.insurance.view",
+      "enabled": true
+    },
+    {
+      "role": "office_manager",
+      "permission": "workflow.tasks.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "admin.alert_thresholds.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "admin.data_health.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "admin.import_audit.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "admin.manual_entry.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "admin.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "admin.reconciliation.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "admin.settings.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "admin.sync.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "admin.system.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "admin.users.role_editor.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "admin.users.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "analytics:financial_view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "approve_entries",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "dashboard:executive_overview",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "edit_entries",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.alerts.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.audit_log.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.audit_reports.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.audit.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.compliance.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.error_logs.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.expenses.amex_payments.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.expenses.amex.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.expenses.import.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.expenses.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.expenses.transactions.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.expenses.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.finance.analytics.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.finance.collections.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.finance.production.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.finance.reconciliation.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.finance.service_categories.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.finance.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.heatmap.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll_audit.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll_sync.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll.comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll.dentrix_ascend.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll.gusto.benefits.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll.gusto.contractors.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll.gusto.employees.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll.gusto.import_history.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll.gusto.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll.gusto.pay_schedules.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll.gusto.payroll_runs.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll.gusto.time_attendance.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll.gusto.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll.provider_compensation.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.payroll.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.rcm.adjustment.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.rcm.ar_aging.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.rcm.claims.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.rcm.daily_comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.rcm.dashboard.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.rcm.eassist_daily.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.rcm.payment.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.rcm.pos.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.rcm.refund.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.rcm.statements.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "finance.rcm.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "home.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "huddle:edit",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "huddle:view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "inventory:edit",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "inventory:view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "manage_categories",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "manage_users",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "office_scoped",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance:office_view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance:provider_view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.kpis.main.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.kpis.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.kpis.specialty_providers.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.kpis.specialty.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.kpis.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.monthly_trends.import_export.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.monthly_trends.manual_override.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.monthly_trends.summary.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.monthly_trends.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.office_performance.expenses.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.office_performance.productivity.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.office_performance.revenue.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.office_performance.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.operations.ar_aging.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.operations.cancellations.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.operations.marketing.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.operations.offices.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.operations.payors.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.operations.performance.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.operations.production.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.operations.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.operations.scorecards.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.operations.services.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.operations.trends.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.operations.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.provider_performance.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "performance.regional_manager.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "receive_pace_alerts",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "reports:financial_view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "request:back_staff_order",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "request:front_desk_order",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.directory.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.inventory.bone_tissue.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.inventory.bulk_import.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.inventory.front_desk.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.inventory.implant.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.inventory.monthly_supply.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.inventory.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.inventory.reports.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.inventory.settings.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.inventory.usage_log.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.inventory.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.reports.full_workbook.export",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.reports.goal_leaderboard.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.reports.individual_export",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.reports.office_breakdown.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.reports.period_comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.reports.pl_summary.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.reports.revenue_by_provider.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "resources.reports.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "view_all_offices",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "view_audit_logs",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "view_goals",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "view_reports",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "workflow.approvals.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "workflow.eod_queue.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "workflow.eod.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "workflow.huddle_queue.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "workflow.huddle.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "workflow.insurance.assign",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "workflow.insurance.cancel",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "workflow.insurance.complete",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "workflow.insurance.email_office",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "workflow.insurance.mark_uploaded",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "workflow.insurance.submit",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "workflow.insurance.upload_to_dentrix",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "workflow.insurance.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_clinical_manager",
+      "permission": "workflow.tasks.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "admin.alert_thresholds.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "admin.data_health.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "admin.import_audit.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "admin.manual_entry.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "admin.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "admin.reconciliation.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "admin.settings.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "admin.sync.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "admin.system.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "admin.users.role_editor.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "admin.users.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "analytics:financial_view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "approve_entries",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "dashboard:executive_overview",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "edit_entries",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.alerts.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.audit_log.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.audit_reports.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.audit.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.compliance.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.error_logs.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.expenses.amex_payments.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.expenses.amex.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.expenses.import.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.expenses.overview.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.expenses.transactions.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.expenses.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.finance.analytics.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.finance.collections.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.finance.production.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.finance.reconciliation.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.finance.service_categories.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.finance.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.heatmap.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll_audit.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll_sync.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll.comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll.dentrix_ascend.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll.gusto.benefits.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll.gusto.contractors.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll.gusto.employees.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll.gusto.import_history.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll.gusto.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll.gusto.pay_schedules.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll.gusto.payroll_runs.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll.gusto.time_attendance.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll.gusto.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll.provider_compensation.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.payroll.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.rcm.adjustment.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.rcm.ar_aging.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.rcm.claims.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.rcm.daily_comparison.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.rcm.dashboard.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.rcm.eassist_daily.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.rcm.payment.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.rcm.pos.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.rcm.refund.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.rcm.statements.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "finance.rcm.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "home.overview.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "huddle:edit",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "huddle:view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "inventory:edit",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "inventory:view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "manage_categories",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "manage_users",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "office_scoped",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance:office_view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance:provider_view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.kpis.main.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.kpis.providers.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.kpis.specialty_providers.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.kpis.specialty.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.kpis.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.monthly_trends.import_export.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.monthly_trends.manual_override.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.monthly_trends.summary.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.monthly_trends.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.office_performance.expenses.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.office_performance.productivity.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.office_performance.revenue.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.office_performance.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.operations.ar_aging.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.operations.cancellations.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.operations.marketing.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.operations.offices.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.operations.payors.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.operations.performance.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.operations.production.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.operations.providers.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.operations.scorecards.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.operations.services.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.operations.trends.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.operations.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.provider_performance.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "performance.regional_manager.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "receive_pace_alerts",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "reports:financial_view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "request:back_staff_order",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "request:front_desk_order",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.directory.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.inventory.bone_tissue.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.inventory.bulk_import.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.inventory.front_desk.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.inventory.implant.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.inventory.monthly_supply.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.inventory.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.inventory.reports.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.inventory.settings.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.inventory.usage_log.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.inventory.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.reports.full_workbook.export",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.reports.goal_leaderboard.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.reports.individual_export",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.reports.office_breakdown.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.reports.period_comparison.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.reports.pl_summary.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.reports.revenue_by_provider.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "resources.reports.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "view_all_offices",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "view_audit_logs",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "view_goals",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "view_reports",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "workflow.approvals.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "workflow.eod_queue.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "workflow.eod.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "workflow.huddle_queue.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "workflow.huddle.view",
+      "enabled": true
+    },
+    {
+      "role": "regional_manager",
+      "permission": "workflow.insurance.assign",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "workflow.insurance.cancel",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "workflow.insurance.complete",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "workflow.insurance.email_office",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "workflow.insurance.mark_uploaded",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "workflow.insurance.submit",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "workflow.insurance.upload_to_dentrix",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "workflow.insurance.view",
+      "enabled": false
+    },
+    {
+      "role": "regional_manager",
+      "permission": "workflow.tasks.view",
+      "enabled": true
+    },
+    {
+      "role": "staff",
+      "permission": "admin.alert_thresholds.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "admin.data_health.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "admin.import_audit.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "admin.manual_entry.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "admin.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "admin.reconciliation.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "admin.settings.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "admin.sync.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "admin.system.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "admin.users.role_editor.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "admin.users.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "analytics:financial_view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "approve_entries",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "dashboard:executive_overview",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "edit_entries",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.alerts.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.audit_log.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.audit_reports.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.audit.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.compliance.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.error_logs.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.expenses.amex_payments.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.expenses.amex.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.expenses.import.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.expenses.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.expenses.transactions.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.expenses.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.finance.analytics.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.finance.collections.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.finance.production.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.finance.reconciliation.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.finance.service_categories.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.finance.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.heatmap.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll_audit.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll_sync.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll.comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll.dentrix_ascend.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll.gusto.benefits.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll.gusto.contractors.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll.gusto.employees.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll.gusto.import_history.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll.gusto.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll.gusto.pay_schedules.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll.gusto.payroll_runs.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll.gusto.time_attendance.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll.gusto.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll.provider_compensation.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.payroll.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.rcm.adjustment.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.rcm.ar_aging.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.rcm.claims.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.rcm.daily_comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.rcm.dashboard.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.rcm.eassist_daily.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.rcm.payment.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.rcm.pos.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.rcm.refund.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.rcm.statements.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "finance.rcm.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "home.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "huddle:edit",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "huddle:view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "inventory:edit",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "inventory:view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "manage_categories",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "manage_users",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "office_scoped",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance:office_view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance:provider_view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.kpis.main.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.kpis.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.kpis.specialty_providers.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.kpis.specialty.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.kpis.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.monthly_trends.import_export.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.monthly_trends.manual_override.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.monthly_trends.summary.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.monthly_trends.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.office_performance.expenses.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.office_performance.productivity.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.office_performance.revenue.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.office_performance.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.operations.ar_aging.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.operations.cancellations.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.operations.marketing.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.operations.offices.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.operations.payors.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.operations.performance.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.operations.production.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.operations.providers.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.operations.scorecards.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.operations.services.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.operations.trends.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.operations.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.provider_performance.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "performance.regional_manager.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "receive_pace_alerts",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "reports:financial_view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "request:back_staff_order",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "request:front_desk_order",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.directory.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.inventory.bone_tissue.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.inventory.bulk_import.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.inventory.front_desk.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.inventory.implant.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.inventory.monthly_supply.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.inventory.overview.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.inventory.reports.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.inventory.settings.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.inventory.usage_log.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.inventory.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.reports.full_workbook.export",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.reports.goal_leaderboard.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.reports.individual_export",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.reports.office_breakdown.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.reports.period_comparison.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.reports.pl_summary.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.reports.revenue_by_provider.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "resources.reports.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "view_all_offices",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "view_audit_logs",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "view_goals",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "view_reports",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "workflow.approvals.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "workflow.eod_queue.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "workflow.eod.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "workflow.huddle_queue.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "workflow.huddle.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "workflow.insurance.assign",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "workflow.insurance.cancel",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "workflow.insurance.complete",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "workflow.insurance.email_office",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "workflow.insurance.mark_uploaded",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "workflow.insurance.submit",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "workflow.insurance.upload_to_dentrix",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "workflow.insurance.view",
+      "enabled": false
+    },
+    {
+      "role": "staff",
+      "permission": "workflow.tasks.view",
+      "enabled": false
+    },
+    {
+      "role": "super_admin",
+      "permission": "admin.alert_thresholds.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "admin.data_health.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "admin.import_audit.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "admin.manual_entry.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "admin.providers.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "admin.reconciliation.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "admin.settings.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "admin.sync.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "admin.system.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "admin.users.role_editor.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "admin.users.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "analytics:financial_view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "approve_entries",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "dashboard:executive_overview",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "edit_entries",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.alerts.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.audit_log.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.audit_reports.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.audit.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.compliance.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.error_logs.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.expenses.amex_payments.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.expenses.amex.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.expenses.import.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.expenses.overview.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.expenses.transactions.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.expenses.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.finance.analytics.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.finance.collections.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.finance.production.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.finance.reconciliation.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.finance.service_categories.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.finance.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.heatmap.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll_audit.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll_sync.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll.comparison.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll.dentrix_ascend.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll.gusto.benefits.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll.gusto.contractors.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll.gusto.employees.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll.gusto.import_history.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll.gusto.overview.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll.gusto.pay_schedules.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll.gusto.payroll_runs.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll.gusto.time_attendance.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll.gusto.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll.provider_compensation.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.payroll.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.rcm.adjustment.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.rcm.ar_aging.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.rcm.claims.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.rcm.daily_comparison.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.rcm.dashboard.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.rcm.eassist_daily.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.rcm.payment.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.rcm.pos.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.rcm.refund.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.rcm.statements.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "finance.rcm.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "home.overview.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "huddle:edit",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "huddle:view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "inventory:edit",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "inventory:view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "manage_categories",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "manage_users",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "office_scoped",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance:office_view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance:provider_view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.kpis.main.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.kpis.providers.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.kpis.specialty_providers.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.kpis.specialty.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.kpis.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.monthly_trends.import_export.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.monthly_trends.manual_override.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.monthly_trends.summary.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.monthly_trends.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.office_performance.expenses.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.office_performance.productivity.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.office_performance.revenue.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.office_performance.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.operations.ar_aging.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.operations.cancellations.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.operations.marketing.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.operations.offices.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.operations.payors.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.operations.performance.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.operations.production.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.operations.providers.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.operations.scorecards.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.operations.services.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.operations.trends.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.operations.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.provider_performance.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "performance.regional_manager.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "receive_pace_alerts",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "reports:financial_view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "request:back_staff_order",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "request:front_desk_order",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.directory.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.inventory.bone_tissue.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.inventory.bulk_import.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.inventory.front_desk.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.inventory.implant.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.inventory.monthly_supply.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.inventory.overview.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.inventory.reports.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.inventory.settings.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.inventory.usage_log.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.inventory.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.reports.full_workbook.export",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.reports.goal_leaderboard.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.reports.individual_export",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.reports.office_breakdown.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.reports.period_comparison.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.reports.pl_summary.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.reports.revenue_by_provider.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "resources.reports.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "view_all_offices",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "view_audit_logs",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "view_goals",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "view_reports",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "workflow.approvals.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "workflow.eod_queue.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "workflow.eod.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "workflow.huddle_queue.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "workflow.huddle.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "workflow.insurance.assign",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "workflow.insurance.cancel",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "workflow.insurance.complete",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "workflow.insurance.email_office",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "workflow.insurance.mark_uploaded",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "workflow.insurance.submit",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "workflow.insurance.upload_to_dentrix",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "workflow.insurance.view",
+      "enabled": true
+    },
+    {
+      "role": "super_admin",
+      "permission": "workflow.tasks.view",
+      "enabled": true
+    }
+  ],
+  "unsupported_roles": [
+    "provider",
+    "read_only"
+  ],
+  "unsupported_role_note": "No separate provider/read-only enum role exists; do not create one. Staff and explicit existing permissions provide restricted test cases."
+}

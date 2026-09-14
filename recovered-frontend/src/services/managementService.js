@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase, createUserInvitationClient } from '../lib/supabase';
 import { readCompleteAuditEntries } from './auditReadService';
 
 // ─── DIFF LOGIC ────────────────────────────────────────────────────────────
@@ -194,8 +194,8 @@ export const usersService = {
     // Use provided tempPassword or generate one
     const tempPassword = payload?.tempPassword?.trim() || (crypto.randomUUID() + 'Aa1!');
 
-    // Create auth user with signUp using the provided/generated password
-    const { data: signUpData, error: signUpError } = await supabase?.auth?.signUp({
+    // Signup must not replace the administrator session used for the profile write.
+    const { data: signUpData, error: signUpError } = await createUserInvitationClient().auth.signUp({
       email: payload?.email,
       password: tempPassword,
       options: {

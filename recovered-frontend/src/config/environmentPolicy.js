@@ -1,6 +1,8 @@
 // Configuration validation only. Never prints credentials or contacts a service.
 export const QA_BANNER = 'NUDENTAL DASHBOARD — QA / NONPRODUCTION';
 export const PRODUCTION_PROJECT = 'siwtadgdqtvxoztnxzhx';
+// Existing Collaboration QA is a different product and must never be reused.
+const RESERVED_PROJECTS = new Set([PRODUCTION_PROJECT, 'loozjtlmpaenwckushwu']);
 export const QA_FRONTEND_HOST = 'nudashboard-qa.pages.dev';
 export const QA_API_ORIGIN = 'https://nudashboard-qa-api.nuholdingllc.com';
 
@@ -28,7 +30,7 @@ export function resolveDashboardEnvironment(values, hostname = '') {
     throw new Error('QA configuration requires a QA hostname');
   }
   const ref = values.VITE_QA_SUPABASE_PROJECT_REF;
-  if (!/^[a-z]{20}$/.test(ref || '') || ref === PRODUCTION_PROJECT) {
+  if (!/^[a-z]{20}$/.test(ref || '') || RESERVED_PROJECTS.has(ref)) {
     throw new Error('A separate QA database project is required');
   }
   if (originOnly(values.VITE_SUPABASE_URL) !== `https://${ref}.supabase.co`) {

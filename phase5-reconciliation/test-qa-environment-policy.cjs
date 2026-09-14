@@ -10,3 +10,5 @@ for(const host of ['nudashboard.com','nudashboard.pages.dev','nudashboard-qa.pag
 test('Production settings cannot load on QA hostname',()=>assert.throws(()=>policy.resolveDashboardEnvironment({},policy.QA_FRONTEND_HOST)));
 test('Production mode rejects QA configuration',()=>assert.throws(()=>policy.resolveDashboardEnvironment({...valid,VITE_APP_ENV:'production'},'nudashboard.com')));
 test('Banner unambiguously identifies nonproduction',()=>assert.equal(policy.QA_BANNER,'NUDENTAL DASHBOARD — QA / NONPRODUCTION'));
+
+test('Dashboard QA rejects the existing Collaboration QA database',()=>assert.throws(()=>policy.resolveDashboardEnvironment({...valid,VITE_QA_SUPABASE_PROJECT_REF:'loozjtlmpaenwckushwu',VITE_SUPABASE_URL:'https://loozjtlmpaenwckushwu.supabase.co'},policy.QA_FRONTEND_HOST)));

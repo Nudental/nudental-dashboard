@@ -1,5 +1,9 @@
 # Isolated Dashboard QA preparation
 
+Latest preparation, reproduced authorization gaps, offline candidates and test
+results are recorded in [FINDINGS.md](FINDINGS.md). The earlier observations below
+remain historical evidence. The hosted QA environment is still not provisioned.
+
 Canonical main:61c224b1bf9ec53d91ab69a8eb00e563204bf76d.
 Original reconciliation:909edf99ec2454801a5add8f63b23440ce5f6f44.
 Application source baseline:5f052fd47d68d581090163cc888c9614d82d2090.

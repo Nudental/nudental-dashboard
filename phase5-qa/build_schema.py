@@ -23,6 +23,21 @@ def literal(value):
 def qualified(value):
     return 'public.' + ident(value)
 
+
+def sequence_integer(value):
+    # Browser JSON serializers round integers beyond 2**53. Large catalog values
+    # must be captured with an explicit SQL ::text cast, not repaired by guessing.
+    if isinstance(value, bool) or not isinstance(value, (str, int)):
+        raise ValueError('Invalid sequence integer')
+    if isinstance(value, int) and abs(value) > 2**53 - 1:
+        raise ValueError('Sequence integer requires an exact text catalog export')
+    if not re.fullmatch(r'-?[0-9]+', str(value)):
+        raise ValueError('Invalid sequence integer')
+    result = int(value)
+    if not -(2**63) <= result <= 2**63 - 1:
+        raise ValueError('Sequence integer exceeds PostgreSQL bigint range')
+    return str(result)
+
 def grants(object_type, name, acl):
     result=[]
     for item in acl or []:
@@ -100,6 +115,9 @@ created_at timestamptz NOT NULL DEFAULT now(), mocked boolean NOT NULL DEFAULT t
     for e in data['enums']:
         statements.append(f"CREATE TYPE {qualified(e['typname'])} AS ENUM ({','.join(map(literal,e['labels']))});")
     for s in data['sequences']:
+        if s['data_type'] not in ('bigint', 'integer', 'smallint') or type(s['cycle']) is not bool:
+            raise ValueError('Invalid sequence definition')
+        s = {**s, **{k: sequence_integer(s[k]) for k in ('increment_by', 'min_value', 'max_value', 'start_value', 'cache_size')}}
         statements.append(f"CREATE SEQUENCE {qualified(s['sequencename'])} AS {s['data_type']} INCREMENT BY {s['increment_by']} MINVALUE {s['min_value']} MAXVALUE {s['max_value']} START WITH {s['start_value']} CACHE {s['cache_size']} {'CYCLE' if s['cycle'] else 'NO CYCLE'};")
     columns={r['relname']:[] for r in data['relations']}
     for c in data['columns']: columns[c['relname']].append(c)
@@ -165,7 +183,10 @@ created_at timestamptz NOT NULL DEFAULT now(), mocked boolean NOT NULL DEFAULT t
         elif t['tgenabled']!='O': raise ValueError('Nondefault trigger enablement requires review')
     # No pg_net, vault configuration, job schedules or source secrets are copied.
     statements.extend(['COMMIT;'])
-    sql='\n\n'.join(statements)+'\n'
+    # Catalog function definitions can contain CRLF from the exported editor.
+    # Use one documented source-file newline convention across platforms.
+    sql='\n\n'.join(statements).replace('\r\n','\n')+'\n'
+    sql=re.sub(r'(?m)^[ \t]+$', '', sql)
     if re.search(r'https?://|net\.http|dblink|eyJ[A-Za-z0-9_-]{20}',sql,re.I):
         raise ValueError('External endpoint or credential marker remains; inspect privately')
     return sql
@@ -175,9 +196,16 @@ if __name__=='__main__':
     p.add_argument('--catalog',type=Path,required=True)
     p.add_argument('--supplement',type=Path,required=True)
     p.add_argument('--ownership',type=Path,required=True)
+    p.add_argument('--sequences',type=Path,help='Exact-text pg_sequences export; required for integers exceeding JavaScript safe precision')
     p.add_argument('--output',type=Path,required=True)
     args=p.parse_args()
     if args.output.exists(): raise SystemExit('Output exists; refusing to overwrite evidence')
-    sql=build(json.loads(args.catalog.read_text(encoding='utf8')),json.loads(args.supplement.read_text(encoding='utf8')),json.loads(args.ownership.read_text(encoding='utf8')))
+    data=json.loads(args.catalog.read_text(encoding='utf8'))
+    if args.sequences:
+        sequences=json.loads(args.sequences.read_text(encoding='utf8'))
+        if {s['sequencename'] for s in sequences}!={s['sequencename'] for s in data['sequences']}:
+            raise SystemExit('Exact sequence export does not match the original catalog')
+        data['sequences']=sequences
+    sql=build(data,json.loads(args.supplement.read_text(encoding='utf8')),json.loads(args.ownership.read_text(encoding='utf8')))
     args.output.write_text(sql,encoding='utf8',newline='\n')
     print(json.dumps({'bytes':len(sql.encode()),'sha256':hashlib.sha256(sql.encode()).hexdigest(),'databaseContacted':False,'mockedFunctions':sorted(MOCK_FUNCTIONS)}))

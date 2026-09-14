@@ -1,0 +1,7 @@
+{
+  "name": "nudashboard-offline-qa-tests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Offline PostgreSQL validation only; not a replacement QA backend",
+  "dependencies": { "@electric-sql/pglite": "0.5.8" }
+}
