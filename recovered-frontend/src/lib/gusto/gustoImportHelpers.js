@@ -1,3 +1,4 @@
+import { DASHBOARD_API_ORIGIN } from '../../config/dashboardEnvironment';
 import { supabase } from '../../lib/supabase';
 
 
@@ -232,9 +233,9 @@ export async function upsertGustoPaySchedules(schedules) {
  */
 export async function saveCrosswalkMapping(mapping) {
   try {
-    const r2 = await fetch('https://api.nudashboard.com/v2/payroll/crosswalk', {
+    const r2 = await fetch(DASHBOARD_API_ORIGIN + "/v2/payroll/crosswalk", {
       method: 'POST',
-      headers: { 'X-API-Key': 'nudashboard_prod_key', 'Content-Type': 'application/json' },
+      headers: { 'X-API-Key': (import.meta.env?.VITE_ASCEND_API_KEY || ''), 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...mapping,
         updated_at: new Date()?.toISOString(),
@@ -543,8 +544,8 @@ export async function aggregateGustoHoursSummary(companyId, year) {
  */
 export async function triggerExpenseFactsSync() {
   try {
-    const r1 = await fetch('https://api.nudashboard.com/v2/payroll/expense-facts', {
-      headers: { 'X-API-Key': 'nudashboard_prod_key' },
+    const r1 = await fetch(DASHBOARD_API_ORIGIN + "/v2/payroll/expense-facts", {
+      headers: { 'X-API-Key': (import.meta.env?.VITE_ASCEND_API_KEY || '') },
     });
     const expenseFacts = (await r1?.json())?.data;
     if (!r1?.ok) {

@@ -1,3 +1,4 @@
+import { DASHBOARD_API_ORIGIN } from '../config/dashboardEnvironment';
 import { supabase } from '../lib/supabase';
 import { ascendApi } from './ascendApi';
 import { LOCATION_ID_MAP } from '../constants/offices';
@@ -575,7 +576,7 @@ export const fetchMarketingAdSpendFromAmex = async ({ startYear, startMonth, end
     params?.set('locationId', officeIds?.[0]);
   }
 
-  const url = `https://api.nudashboard.com/v2/marketing/amex-spend?${params?.toString()}`;
+  const url = `${DASHBOARD_API_ORIGIN}/v2/marketing/amex-spend?${params?.toString()}`;
 
   const response = await fetch(url);
   if (!response?.ok) {

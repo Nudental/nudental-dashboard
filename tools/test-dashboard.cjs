@@ -7,7 +7,10 @@ const files = ['phase4-audit', 'phase5-reconciliation'].flatMap(folder =>
     .sort().map(name => path.join(root, folder, name))
 );
 const result = spawnSync(process.execPath, ['--test', '--test-concurrency=1', ...files], {
-  cwd: root, stdio: 'inherit', env: process.env
+  cwd: root, stdio: 'inherit', env: {
+    ...process.env,
+    NDASH_PARSER_ROOT: process.env.NDASH_PARSER_ROOT || path.join(root, 'recovered-frontend')
+  }
 });
 if (result.error) throw result.error;
 process.exit(result.status ?? 1);

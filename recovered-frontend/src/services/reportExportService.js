@@ -1,3 +1,4 @@
+import { DASHBOARD_API_ORIGIN } from '../config/dashboardEnvironment';
 /**
  * reportExportService.js
  * V582 — Individual report export via POST /v2/reports/export
@@ -13,7 +14,7 @@
  * - Missing values are whatever backend returns — no fake zeros
  */
 
-const API_BASE = 'https://api.nudashboard.com/v2';
+const API_BASE = DASHBOARD_API_ORIGIN + "/v2";
 const API_KEY = import.meta.env?.VITE_ASCEND_API_KEY || '';
 
 /**

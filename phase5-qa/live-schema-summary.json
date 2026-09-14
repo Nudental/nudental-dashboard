@@ -1,0 +1,16 @@
+{
+  "project": "NU-Dental-Revenue-Portal",
+  "projectRef": "siwtadgdqtvxoztnxzhx",
+  "source": "read-only PostgreSQL catalog queries in the signed-in Supabase SQL editor",
+  "date": "2026-09-14",
+  "businessRecordsRead": false,
+  "databaseModified": false,
+  "schema": "public",
+  "tables": 219,
+  "viewsAndMaterializedViews": 13,
+  "functionsAndProcedures": 112,
+  "policies": 382,
+  "supportedRoles": ["staff", "admin", "super_admin", "office_manager", "regional_clinical_manager", "regional_manager", "insurance_verifier", "marketing"],
+  "sourceMigrationsMissingRoles": ["insurance_verifier", "marketing"],
+  "fullStructureExportComplete": false
+}

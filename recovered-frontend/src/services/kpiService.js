@@ -1,3 +1,4 @@
+import { DASHBOARD_API_ORIGIN } from '../config/dashboardEnvironment';
 import { supabase } from '../lib/supabase';
 import { ascendApi } from './ascendApi';
 import { getLocationIdByOfficeId } from '../constants/offices';
@@ -175,8 +176,8 @@ export const fetchKpiOffices = async () => {
 
 export const fetchAppointmentsSummary = async ({ startDate, endDate, locationId = null }) => {
   try {
-    const API_BASE = 'https://api.nudashboard.com/v2';
-    const API_KEY = import.meta.env?.VITE_ASCEND_API_KEY || 'nudashboard_prod_key';
+    const API_BASE = DASHBOARD_API_ORIGIN + "/v2";
+    const API_KEY = import.meta.env?.VITE_ASCEND_API_KEY || '';
     let url = `${API_BASE}/appointments/summary?startDate=${startDate}&endDate=${endDate}`;
     if (locationId) url += `&locationId=${locationId}`;
     const res = await fetch(url, {

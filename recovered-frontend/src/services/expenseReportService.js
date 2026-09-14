@@ -1,3 +1,4 @@
+import { DASHBOARD_API_ORIGIN } from '../config/dashboardEnvironment';
 /**
  * expenseReportService.js — CENTRALIZED EXPENSE REPORT SERVICE
  *
@@ -684,7 +685,7 @@ export function resolveSourceTypeLabel(r) {
 }
 
 // ── MIDDLEWARE API BASE ───────────────────────────────────────────────────────
-const MIDDLEWARE_API_BASE = 'https://api.nudashboard.com/v2';
+const MIDDLEWARE_API_BASE = DASHBOARD_API_ORIGIN + "/v2";
 
 // V564: Module-level store for extra summary fields returned by fetchExpenseSummary.
 // These are populated during the API call and consumed by fetchExpenseKPIs.

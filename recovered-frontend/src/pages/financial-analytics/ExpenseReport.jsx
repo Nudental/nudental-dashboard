@@ -1,3 +1,4 @@
+import { DASHBOARD_API_ORIGIN } from '../../config/dashboardEnvironment';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Breadcrumb from '../../components/layout/Breadcrumb';
 import Icon from '../../components/AppIcon';
@@ -132,7 +133,7 @@ function debugFilterState(label, appliedFilters, serviceParams) {
 // Dentrix is never an expense source.
 async function fetchDentrixDenominators({ startDate, endDate, officeIds = [] }) {
   try {
-    const API_BASE = 'https://api.nudashboard.com/v2';
+    const API_BASE = DASHBOARD_API_ORIGIN + "/v2";
     const API_KEY = import.meta.env?.VITE_ASCEND_API_KEY || '';
     const headers = { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' };
 

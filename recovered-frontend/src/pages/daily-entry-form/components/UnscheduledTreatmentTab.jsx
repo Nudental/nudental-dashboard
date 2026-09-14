@@ -1,3 +1,4 @@
+import { DASHBOARD_API_ORIGIN } from '../../../config/dashboardEnvironment';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
 import { fetchUnscheduledTreatment } from '../../../services/eodTreatmentService';
@@ -13,7 +14,7 @@ import {
 } from '../../../services/eodReportService';
 
 const NA = '—';
-const API_BASE = 'https://api.nudashboard.com/v2';
+const API_BASE = DASHBOARD_API_ORIGIN + "/v2";
 const API_KEY = import.meta.env?.VITE_ASCEND_API_KEY || '';
 
 const buildHeaders = () => ({
