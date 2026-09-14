@@ -845,7 +845,7 @@ export default function PayrollPage() {
   const [activeSection, setActiveSection] = useState('both');
   // ── Applied Dentrix query window (for Active badge and export) ─────────────
   // Tracks the actual startDate/endDate sent to fetchPayrollData (shifted dates
-  // for a real run, or raw dates for custom range). Updated on every successful
+  // for a real run or custom range). Updated on every successful
   // or attempted load so the badge always reflects the real query.
   const [appliedDentrixWindow, setAppliedDentrixWindow] = useState(null);
 
@@ -934,8 +934,8 @@ export default function PayrollPage() {
       // Canonical example:
       //   Gusto Aug 17–Aug 30, 2026  →  Dentrix fetch Aug 16–Aug 29, 2026
       //
-      // For custom date ranges the user has explicitly chosen the dates, so no
-      // offset is applied — the raw dates are used as-is.
+      // Reconciliation preserves the deployed service's one-day offset for
+      // custom ranges too. Display/input dates remain unchanged.
       let dentrixFetchStart = activeDateRange?.startDate;
       let dentrixFetchEnd   = activeDateRange?.endDate;
 
@@ -951,6 +951,10 @@ export default function PayrollPage() {
           // Malformed pay period dates — fall back to raw Gusto dates and log
           console.warn('[Payroll] getDentrixCollectionWindow failed, using raw Gusto dates:', offsetErr?.message);
         }
+      } else if (useCustomRange) {
+        const win = getDentrixCollectionWindow(dentrixFetchStart, dentrixFetchEnd);
+        dentrixFetchStart = win.dentrixStart;
+        dentrixFetchEnd = win.dentrixEnd;
       }
 
       // Record the window actually sent to the API so the Active badge and

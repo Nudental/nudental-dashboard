@@ -146,27 +146,16 @@ calls.forEach((w, i) => {
   assert(`call ${i + 1} end   stable`, w.dentrixEnd,   '2026-08-29');
 });
 
-// ─── V734: Custom-range bypass ───────────────────────────────────────────────
-// When useCustomRange is true, the payroll page passes the raw dates directly
-// to fetchPayrollData without calling getDentrixCollectionWindow. This test
-// verifies the helper is NOT called for custom ranges by confirming that the
-// raw dates are preserved (i.e., the helper would shift them if called, so
-// the test proves the bypass works by checking the raw dates are unchanged).
-console.log('\nV734: custom-range bypass — raw dates must NOT be shifted');
-// Simulate what payroll/index.jsx does for custom range:
+// Custom queries retain the deployed one-day offset; input dates stay intact.
+// The actual page callback and deployed service are compared in the Phase5 suite.
+console.log('\nCustom range — preserve deployed query and original input dates');
 const customStart = '2026-07-01';
 const customEnd   = '2026-07-31';
-const useCustomRange = true; // flag that bypasses the helper
-let dentrixFetchStart = customStart;
-let dentrixFetchEnd   = customEnd;
-if (!useCustomRange) {
-  // This branch is NOT taken for custom range
-  const win = getDentrixCollectionWindow(customStart, customEnd);
-  dentrixFetchStart = win.dentrixStart;
-  dentrixFetchEnd   = win.dentrixEnd;
-}
-assert('custom-range start is NOT shifted (raw date preserved)', dentrixFetchStart, '2026-07-01');
-assert('custom-range end   is NOT shifted (raw date preserved)', dentrixFetchEnd,   '2026-07-31');
+const customWindow = getDentrixCollectionWindow(customStart, customEnd);
+assert('custom query start matches deployed offset', customWindow.dentrixStart, '2026-06-30');
+assert('custom query end matches deployed offset', customWindow.dentrixEnd, '2026-07-30');
+assert('custom input start is unchanged', customStart, '2026-07-01');
+assert('custom input end is unchanged', customEnd, '2026-07-31');
 
 // ─── V734: Real-run offset is applied ────────────────────────────────────────
 // Simulate what payroll/index.jsx does for a real payroll run:

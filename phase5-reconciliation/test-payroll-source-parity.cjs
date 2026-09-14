@@ -37,6 +37,27 @@ function auditHarness(start, end) {
   return { run, requests, rows, load };
 }
 
+function customPayrollHarness(start, end) {
+  const source = fs.readFileSync(path.join(root, 'src/pages/payroll/index.jsx'), 'utf8');
+  const ast = parser.parse(source, { sourceType: 'module', plugins: ['jsx'] });
+  const callback = find(ast, n => n.type === 'VariableDeclarator' && n.id.name === 'loadPayroll').init.arguments[0];
+  const requests = [], state = {};
+  const range = { startDate: start, endDate: end };
+  const env = {
+    isSuperAdmin: true, useCustomRange: true, selectedRun: null,
+    activeDateRange: range, payrollRequestId: { current: 0 },
+    selectedOffice: 'QA-OFFICE-ONE', selectedProvider: '', selectedProviderType: 'all',
+    getDentrixCollectionWindow: loadWindowHelper(), getMappingStats: async () => ({}),
+    console: { warn() {} },
+    async fetchPayrollData(args) { requests.push(args); return { doctors: [], hygienists: [] }; },
+  };
+  for (const key of ['Doctors', 'Hygienists', 'Placeholders', 'ResolvedPlaceholders', 'Summary', 'Loading', 'Error', 'DataSource', 'DataSourceWarning', 'AppliedDentrixWindow', 'MappingStats']) {
+    env['set' + key] = value => { state[key] = value; };
+  }
+  const load = vm.runInNewContext('(' + source.slice(callback.start, callback.end) + ')', env);
+  return { requests, state, range, load };
+}
+
 function queryPrelude(source, functionName, apiName) {
   const ast = parser.parse(source, { sourceType: 'module' });
   const fn = find(ast, n => n.type === 'FunctionDeclaration' && n.id.name === functionName);
@@ -81,6 +102,23 @@ for (const [name, start, end, expectedStart, expectedEnd] of [
     if (productionQuery) {
       const deployedQuery = await productionQuery({ startDate: start, endDate: end, locationId: 'QA-OFFICE-ONE' });
       assert.deepEqual(Array.from(actualQuery), Array.from(deployedQuery));
+    }
+  });
+  test('Custom Payroll retains the current production query: ' + name, async () => {
+    const h = customPayrollHarness(start, end);
+    await h.load();
+    assert.equal(h.requests.length, 1);
+    assert.equal(h.requests[0].startDate, expectedStart);
+    assert.equal(h.requests[0].endDate, expectedEnd);
+    assert.equal(h.requests[0].payrollRun, null);
+    assert.equal(h.range.startDate, start);
+    assert.equal(h.range.endDate, end);
+    assert.equal(h.state.AppliedDentrixWindow.start, expectedStart);
+    assert.equal(h.state.AppliedDentrixWindow.end, expectedEnd);
+    const query = await sourceQuery(h.requests[0]);
+    assert.deepEqual(Array.from(query), [expectedStart, expectedEnd, 'QA-OFFICE-ONE']);
+    if (productionQuery) {
+      assert.deepEqual(Array.from(query), Array.from(await productionQuery({ startDate: start, endDate: end, locationId: 'QA-OFFICE-ONE' })));
     }
   });
 }
