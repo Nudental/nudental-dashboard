@@ -2,6 +2,20 @@
 
 Scope: NuDental Dashboard only. Complete source reconciliation before QA/role/write testing and Expense authority resolution. Do not repeat Phase4 or modify the Collaboration Platform. Do not promote/deploy the full recovered frontend before semantic differences and all157 repair guards are verified.
 
+## Latest checkpoint — aligned source and libraries
+
+The production baseline is still being reconciled; GitHub main and production remain unchanged. The sections below this checkpoint retain earlier investigation history and their older counts/build names.
+
+- Frontend production build PASS on Node22.22.1:44.30s, private entry `index-B4ss0_dI.js`,8,821,623bytes, SHA256 `e743824ad4bbd852918c3d3f80a6da438c45f2ba1609a364f16a6986b3f4bc86`. It includes the current query/display alignment and pinned production-matching libraries. It has never been served or deployed.
+- All862 frontend checks PASS,0 failed/0 skipped:837 retained Phase4 +9 payroll query parity +5 payroll display/export parity +11 monthly-growth production/source parity. Runtime54.13s. Backend17 retained suites and13 materializer checks previously passed; those source files are unchanged.
+- Actual production identifies Papa Parse5.5.4, Floating UI DOM1.7.6 and utils0.2.11; the candidate previously resolved5.7.0/1.8.0/0.2.12. The607-entry dependency lock now pins these versions and compatible core1.7.5, preserving the prior peer-package model. No core code is emitted, so its original historical version is not inferable from the artifact.
+- Undeployed Rocket payroll notices/debug additions and changed scheduled CSV naming are retained in the existing Phase4 recovery branch, while the reconciliation candidate now reproduces the deployed display/export behavior. The deployed Provider Compensation explanatory caption is preserved. The earlier calendar-query alignment remains in place and verified.
+- Expense export's two missing disabled-style classes are restored. No financial values or export data change.
+- Monthly-growth production factory and source module agree on synthetic outputs, request scope/order, failures, concurrency limit and duplicate prevention. Four older functions left in the compiled artifact have0 incoming binding references; source omits those unused helpers.
+- Backend source reconstruction remains exact for16 source/schema files with71 private configuration slots; no business database was copied. See `recovered-backend/README.md` and `backend-source-provenance.md`.
+- The previous42 comparison reports are preserved privately in `comparison-before-ui-library-alignment`. Fresh build comparison is in progress. Older binding/module proofs apply to the earlier reference build until regenerated; they are not full-app equivalence certificates.
+- Read-only browser check still shows Revenue Cycle Management at the existing Dashboard URL. No Phase5 production deployment, source promotion, QA provisioning, role creation or production write occurred.
+
 ## Preserved starting state
 
 - Local Phase4 closure:70fe45250c8ef672b9bbce1ce4861278b876fc4a; repair source/tests7f1e7529797e32d1c92525ddde0154b99eb3367e.

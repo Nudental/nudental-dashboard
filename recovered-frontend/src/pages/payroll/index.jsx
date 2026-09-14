@@ -843,11 +843,6 @@ export default function PayrollPage() {
   const [dataSource, setDataSource] = useState(null);
   const [dataSourceWarning, setDataSourceWarning] = useState(null);
   const [activeSection, setActiveSection] = useState('both');
-  // ── Applied Dentrix query window (for Active badge and export) ─────────────
-  // Tracks the actual startDate/endDate sent to fetchPayrollData (shifted dates
-  // for a real run or custom range). Updated on every successful
-  // or attempted load so the badge always reflects the real query.
-  const [appliedDentrixWindow, setAppliedDentrixWindow] = useState(null);
 
   // ── Mapping review state ───────────────────────────────────────────────────
   const [showMappingTool, setShowMappingTool] = useState(false);
@@ -917,7 +912,6 @@ export default function PayrollPage() {
     setSummary({});
     setDataSource(null);
     setDataSourceWarning(null);
-    setAppliedDentrixWindow(null);
     if (!isSuperAdmin || !activeDateRange?.startDate || !activeDateRange?.endDate) {
       setLoading(false);
       setError(isSuperAdmin ? 'Choose a payroll run or enter both custom dates.' : null);
@@ -956,10 +950,6 @@ export default function PayrollPage() {
         dentrixFetchStart = win.dentrixStart;
         dentrixFetchEnd = win.dentrixEnd;
       }
-
-      // Record the window actually sent to the API so the Active badge and
-      // export reflect the real query parameters, not the display dates.
-      setAppliedDentrixWindow({ start: dentrixFetchStart, end: dentrixFetchEnd });
 
       const result = await fetchPayrollData({
         startDate: dentrixFetchStart,
@@ -1042,12 +1032,7 @@ export default function PayrollPage() {
   };
 
   const handleExportCSV = () => {
-    // Include the Dentrix query window in the export filename/label so the CSV
-    // is self-documenting about which dates were actually queried.
-    const dentrixLabel = (!useCustomRange && appliedDentrixWindow?.start && appliedDentrixWindow?.end)
-      ? `dentrix_${appliedDentrixWindow?.start}_${appliedDentrixWindow?.end}`
-      : null;
-    exportPayrollCSV(doctors, hygienists, selectedRun, useCustomRange ? `${customStart}_${customEnd}` : dentrixLabel);
+    exportPayrollCSV(doctors, hygienists, selectedRun, useCustomRange ? `${customStart}_${customEnd}` : null);
   };
 
   // ── RBAC Gate ──────────────────────────────────────────────────────────────
@@ -1459,78 +1444,6 @@ export default function PayrollPage() {
         customStart={customStart}
         customEnd={customEnd}
       />
-      {/* ── Gusto / Dentrix Ascend Date-Offset Business Rule Notice — Active Sep 2026 ── */}
-      {selectedRun && !useCustomRange && (() => {
-        // Use appliedDentrixWindow (the dates actually sent to the API) for the
-        // Active badge. This proves the badge reflects the real query, not a
-        // display-only calculation.
-        const dentrixDisplayStart = appliedDentrixWindow?.start ?? '';
-        const dentrixDisplayEnd   = appliedDentrixWindow?.end   ?? '';
-        return (
-          <div className="rounded-xl border border-emerald-300 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 overflow-hidden">
-            {/* Header row */}
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-emerald-200 dark:border-emerald-700">
-              <Icon name="CheckCircle" size={15} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-              <span className="text-sm font-bold text-emerald-800 dark:text-emerald-300">
-                Provider Compensation — Gusto / Dentrix Ascend Date-Offset Applied
-              </span>
-              <span className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-600">
-                Active
-              </span>
-            </div>
-            {/* Body */}
-            <div className="px-4 py-3 space-y-3">
-              <p className="text-xs text-emerald-700 dark:text-emerald-400">
-                <strong>Business Rule (approved by Dr. G, Sep 2026):</strong> Gusto payroll pay-period dates and Dentrix Ascend
-                collection dates intentionally differ by one calendar day. The provider-compensation Dentrix query uses
-                <strong> start − 1 day</strong> and <strong>end − 1 day</strong> relative to the Gusto pay period.
-                Gusto payroll totals, payroll runs, and all other date filters are unaffected.
-              </p>
-              {/* Side-by-side date table */}
-              <div className="overflow-x-auto">
-                <table className="text-xs w-full border-collapse">
-                  <thead>
-                    <tr className="bg-emerald-100 dark:bg-emerald-800/40">
-                      <th className="px-3 py-2 text-left font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider whitespace-nowrap">Period</th>
-                      <th className="px-3 py-2 text-left font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider whitespace-nowrap">Start Date</th>
-                      <th className="px-3 py-2 text-left font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider whitespace-nowrap">End Date</th>
-                      <th className="px-3 py-2 text-left font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider whitespace-nowrap">Purpose</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-emerald-100 dark:divide-emerald-800/30">
-                    {/* Canonical example row */}
-                    <tr className="bg-white/60 dark:bg-emerald-900/10">
-                      <td className="px-3 py-2 text-emerald-700 dark:text-emerald-400 font-medium whitespace-nowrap">Canonical Example</td>
-                      <td className="px-3 py-2 font-mono text-gray-700 dark:text-gray-300 whitespace-nowrap">Aug 17, 2026</td>
-                      <td className="px-3 py-2 font-mono text-gray-700 dark:text-gray-300 whitespace-nowrap">Aug 30, 2026</td>
-                      <td className="px-3 py-2 text-gray-500 dark:text-gray-400 whitespace-nowrap">Gusto Pay Period (display / audit)</td>
-                    </tr>
-                    <tr className="bg-emerald-50/80 dark:bg-emerald-900/20">
-                      <td className="px-3 py-2 text-emerald-700 dark:text-emerald-400 font-medium whitespace-nowrap">Canonical Example</td>
-                      <td className="px-3 py-2 font-mono font-semibold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">Aug 16, 2026</td>
-                      <td className="px-3 py-2 font-mono font-semibold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">Aug 29, 2026</td>
-                      <td className="px-3 py-2 text-gray-500 dark:text-gray-400 whitespace-nowrap">Dentrix Ascend Collection Window (−1 day)</td>
-                    </tr>
-                    {/* Live selected period row */}
-                    <tr className="bg-white/60 dark:bg-emerald-900/10 border-t-2 border-emerald-300 dark:border-emerald-600">
-                      <td className="px-3 py-2 text-violet-700 dark:text-violet-400 font-semibold whitespace-nowrap">Selected Run</td>
-                      <td className="px-3 py-2 font-mono text-gray-700 dark:text-gray-300 whitespace-nowrap">{selectedRun?.pay_period_start}</td>
-                      <td className="px-3 py-2 font-mono text-gray-700 dark:text-gray-300 whitespace-nowrap">{selectedRun?.pay_period_end}</td>
-                      <td className="px-3 py-2 text-gray-500 dark:text-gray-400 whitespace-nowrap">Gusto Pay Period (display / audit)</td>
-                    </tr>
-                    <tr className="bg-emerald-50/80 dark:bg-emerald-900/20">
-                      <td className="px-3 py-2 text-violet-700 dark:text-violet-400 font-semibold whitespace-nowrap">Selected Run</td>
-                      <td className="px-3 py-2 font-mono font-bold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">{dentrixDisplayStart}</td>
-                      <td className="px-3 py-2 font-mono font-bold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">{dentrixDisplayEnd}</td>
-                      <td className="px-3 py-2 text-gray-500 dark:text-gray-400 whitespace-nowrap">Dentrix Ascend Collection Window (−1 day) — <strong>actual query dates</strong></td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
       {/* Error Banner */}
       {error && (
         <div className="flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
@@ -1658,9 +1571,7 @@ export default function PayrollPage() {
         <div>
           <strong className="text-gray-600 dark:text-gray-300">Data Source:</strong>{' '}
           Provider identity (Name, Office, Type) is resolved through the Staff Management mapping layer.
-          Dentrix Ascend provider-compensation data uses a <strong>−1 calendar day offset</strong> from the Gusto pay period
-          (e.g. Gusto Aug 17–Aug 30 → Dentrix query Aug 16–Aug 29). Gusto payroll totals and all other date filters are unaffected.
-          Rows with <span className="text-amber-600 dark:text-amber-400 font-semibold">Needs Mapping</span> badges
+          Dentrix Ascend data is filtered by <strong>pay period dates</strong> (not payday). Rows with <span className="text-amber-600 dark:text-amber-400 font-semibold">Needs Mapping</span> badges
           use raw imported names — use <strong>Provider Mapping</strong> to resolve them.
           Raw imported values are preserved for audit traceability.
         </div>

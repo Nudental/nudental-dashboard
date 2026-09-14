@@ -724,7 +724,7 @@ const ExpenseTable = ({ rows = [], loading = false, onExportCSV, isAmexMode = fa
             <button
               onClick={handleExport}
               disabled={loading || !viewRows?.length}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-muted transition-colors"
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Icon name="Download" size={13} />
               Export CSV

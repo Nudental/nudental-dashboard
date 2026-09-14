@@ -1105,12 +1105,8 @@ function DebugPanel({ debugInfo, providers, isAdmin }) {
         <div className="px-4 pb-4 space-y-3 text-xs">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-amber-200 dark:border-amber-700">
-              <div className="font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wider">Gusto Pay Period (display)</div>
-              <div className="text-gray-800 dark:text-gray-200">{debugInfo?.gustoStart} → {debugInfo?.gustoEnd}</div>
-            </div>
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-emerald-200 dark:border-emerald-700">
-              <div className="font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wider">Dentrix Collection Window (−1 day offset)</div>
-              <div className="text-emerald-700 dark:text-emerald-400">{debugInfo?.startDate} → {debugInfo?.endDate}</div>
+              <div className="font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wider">Selected Pay Period</div>
+              <div className="text-gray-800 dark:text-gray-200">{debugInfo?.startDate} → {debugInfo?.endDate}</div>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-amber-200 dark:border-amber-700">
               <div className="font-bold text-gray-600 dark:text-gray-400 mb-1 uppercase tracking-wider">Selected Office / LocationId</div>
@@ -1620,7 +1616,6 @@ export default function ProviderCompensationNew() {
     const { dentrixStart, dentrixEnd } = getDentrixCollectionWindow(startDate, endDate);
 
     console.log('[ProviderComp] selectedPayPeriod', { id: selectedPeriod?.id, startDate, endDate, payday: selectedPeriod?.payday });
-    console.log('[ProviderComp] dentrixCollectionWindow', { dentrixStart, dentrixEnd });
     console.log('[ProviderComp] officeFilter', { selectedOffice, locationId });
 
     setLoading(true);
@@ -1730,10 +1725,8 @@ export default function ProviderCompensationNew() {
       const totalColl = compensationProviders?.reduce((s, p) => s + p?.collections, 0);
 
       const dbg = {
-        startDate: dentrixStart,
-        endDate: dentrixEnd,
-        gustoStart: startDate,
-        gustoEnd: endDate,
+        startDate,
+        endDate,
         selectedOffice: selectedOffice || 'All Offices',
         locationId,
         dataSource: result?.dataSource || 'dentrix_fastapi',
@@ -1967,7 +1960,7 @@ export default function ProviderCompensationNew() {
             Provider Compensation
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Pay-period compensation from Dentrix Ascend provider performance data — same source as Dentrix Ascend tab.
+            Pay-period compensation from Dentrix Ascend provider performance data. The Ascend reporting window is one day earlier than the displayed payroll period.
           </p>
         </div>
         {/* CSV Export button */}
@@ -2055,72 +2048,6 @@ export default function ProviderCompensationNew() {
           </span>
         </div>
       )}
-
-      {/* ── Gusto / Dentrix Ascend Date-Offset Business Rule Notice — v731 active Sep 2026 ── */}
-      {selectedPeriod && (() => {
-        // getDentrixCollectionWindow: Gusto start/end − 1 calendar day each (timezone-safe)
-        // Canonical: Gusto Aug 17–Aug 30 → Dentrix Aug 16–Aug 29
-        let dentrixDisplayStart = '';
-        let dentrixDisplayEnd = '';
-        try {
-          const win = getDentrixCollectionWindow(
-            selectedPeriod?.pay_period_start,
-            selectedPeriod?.pay_period_end
-          );
-          dentrixDisplayStart = win?.dentrixStart ?? '';
-          dentrixDisplayEnd   = win?.dentrixEnd ?? '';
-        } catch { /* invalid period — leave blank */ }
-        return (
-          <div className="rounded-xl border border-emerald-300 dark:border-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 overflow-hidden">
-            {/* Header row */}
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-emerald-200 dark:border-emerald-700">
-              <Icon name="CheckCircle" size={15} className="text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
-              <span className="text-sm font-bold text-emerald-800 dark:text-emerald-300">
-                Provider Compensation — Gusto / Dentrix Ascend Date-Offset Applied
-              </span>
-              <span className="ml-auto text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-800 text-emerald-700 dark:text-emerald-300">
-                Active
-              </span>
-            </div>
-
-            {/* Rule explanation */}
-            <div className="px-4 py-3 space-y-2 text-sm text-emerald-800 dark:text-emerald-300">
-              <p>
-                <strong>Intentional business rule (approved by Dr. G, Sep 2026):</strong> Gusto payroll dates and
-                Dentrix Ascend collection dates intentionally differ by one day. The Dentrix Ascend collection
-                window is <strong>start − 1 day</strong> through <strong>end − 1 day</strong>.
-                This offset is applied automatically to every provider-compensation query.
-              </p>
-
-              {/* Live date window comparison for the selected period */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg border border-emerald-200 dark:border-emerald-700 px-3 py-2 text-xs font-mono">
-                <div className="grid grid-cols-2 gap-x-6 gap-y-1">
-                  <span className="text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider">Gusto Pay Period (unchanged)</span>
-                  <span className="text-gray-500 dark:text-gray-400 font-semibold uppercase tracking-wider">Dentrix Ascend Collections Queried</span>
-                  {/* Canonical example row */}
-                  <span className="text-gray-400 dark:text-gray-500 italic">Aug 17 – Aug 30, 2026</span>
-                  <span className="text-emerald-700 dark:text-emerald-400 italic">Aug 16 – Aug 29, 2026</span>
-                  {/* Live selected period row */}
-                  <span className="text-gray-800 dark:text-gray-200 font-semibold">
-                    {selectedPeriod?.pay_period_start} – {selectedPeriod?.pay_period_end}
-                  </span>
-                  <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
-                    {dentrixDisplayStart} – {dentrixDisplayEnd}
-                  </span>
-                </div>
-              </div>
-
-              <p className="text-xs text-emerald-700 dark:text-emerald-400">
-                Gusto pay period dates are displayed above unchanged for payroll and audit purposes.
-                The Dentrix Ascend collection query uses the shifted window shown in the right column.
-                This offset applies only to provider-compensation collection queries — not to Gusto
-                payroll totals, payroll runs, employee data, taxes, deductions, benefits, or any other
-                date filter.
-              </p>
-            </div>
-          </div>
-        );
-      })()}
 
       {/* ── Error ── */}
       {error && (

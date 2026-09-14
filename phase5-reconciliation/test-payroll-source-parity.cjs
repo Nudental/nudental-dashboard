@@ -113,8 +113,6 @@ for (const [name, start, end, expectedStart, expectedEnd] of [
     assert.equal(h.requests[0].payrollRun, null);
     assert.equal(h.range.startDate, start);
     assert.equal(h.range.endDate, end);
-    assert.equal(h.state.AppliedDentrixWindow.start, expectedStart);
-    assert.equal(h.state.AppliedDentrixWindow.end, expectedEnd);
     const query = await sourceQuery(h.requests[0]);
     assert.deepEqual(Array.from(query), [expectedStart, expectedEnd, 'QA-OFFICE-ONE']);
     if (productionQuery) {
