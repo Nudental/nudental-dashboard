@@ -696,7 +696,9 @@ const PendingApprovalsPage = () => {
     setActionLoading(true);
     try {
       const approverName = userProfile?.full_name || userProfile?.email || 'Unknown';
-      const { error } = await supabase
+      const reviewedEntries = entries?.filter(entry => selectedIds?.includes(entry?.id) && ['pending', 'pending_review', 'pending_reapproval']?.includes(entry?.status)) || [];
+      if (!reviewedEntries?.length) throw new Error('These EOD reports have changed. Refresh and review their current status.');
+      const { data: updatedEntries, error } = await supabase
         ?.from('daily_entries')
         ?.update({
           status: 'rejected',
@@ -708,17 +710,21 @@ const PendingApprovalsPage = () => {
           status_changed_by: userProfile?.id,
           status_changed_by_name: approverName,
         })
-        ?.in('id', selectedIds);
+        ?.in('id', selectedIds)
+        ?.or(reviewedEntries?.map(entry => `and(id.eq.${entry?.id},status.eq.${entry?.status})`)?.join(','))
+        ?.select('id');
       if (error) throw error;
-      await Promise.all(selectedIds?.map(id => {
-        const entry = entries?.find(e => e?.id === id);
+      if (!updatedEntries?.length) throw new Error('These EOD reports have changed. Refresh and review their current status.');
+      await Promise.all(updatedEntries?.map(({ id }) => {
+        const entry = reviewedEntries?.find(e => e?.id === id);
         return logStatusChange({
           entryId: id, fromStatus: entry?.status, toStatus: 'rejected',
           changedBy: userProfile?.id, changerName: approverName, changerRole: userProfile?.role,
           note, rejectionReason: note, eventType: 'bulk_rejection',
         });
       }));
-      success('Bulk Rejected', `${selectedIds?.length} entries rejected.`);
+      const skipped = selectedIds?.length - updatedEntries?.length;
+      success('Bulk Rejected', `${updatedEntries?.length} entr${updatedEntries?.length === 1 ? 'y' : 'ies'} rejected.${skipped ? ` ${skipped} skipped because they changed; refresh and review them.` : ''}`);
       setBulkRejectOpen(false);
       setBulkRejectReason('');
       setSelectedIds([]);

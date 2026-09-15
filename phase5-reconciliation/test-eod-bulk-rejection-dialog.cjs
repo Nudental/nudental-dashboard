@@ -7,7 +7,7 @@ const fn=find(tree,n=>n.type==='VariableDeclarator'&&n.id.name==='handleBulkReje
 const code='('+source.slice(fn.start,fn.end)+')';
 function run(reason){
  const state={writes:0,closed:[],reasons:[],success:0,errors:0};
- const query={in(){return this;},then(resolve){state.writes++;return Promise.resolve({error:null}).then(resolve);}};
+ const query={in(){return this;},or(){return this;},select(){return this;},then(resolve){state.writes++;return Promise.resolve({data:[{id:'qa-only'}],error:null}).then(resolve);}};
  const invoke=vm.runInNewContext(code,{selectedIds:['qa-only'],entries:[{id:'qa-only',status:'pending'}],bulkRejectReason:reason,
   window:{prompt(){throw new Error('prompt() is not supported');}},userProfile:{id:'qa-reviewer'},
   supabase:{from(){return {update(){return query;}};}},setActionLoading(){},setSelectedIds(){},fetchEntries(){},fetchFullCounts(){},
