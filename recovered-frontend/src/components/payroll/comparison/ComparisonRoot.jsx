@@ -1,3 +1,4 @@
+import { dashboardFetch as fetch } from '../../../lib/dashboardFetch';
 import { DASHBOARD_API_ORIGIN } from '../../../config/dashboardEnvironment';
 import React, { useState, useMemo } from 'react';
 import { useGustoComparison, useGustoCrosswalk } from '../../../hooks/gusto/useGustoComparison';

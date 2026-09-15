@@ -1,5 +1,11 @@
 # Isolated Dashboard QA preparation
 
+Current status supersedes the historical preparation notes below:
+[Hosted validation, September 14](hosted-validation-20260914.md). The separately
+approved Supabase project is created, its structure is verified, and the profile
+and office guards have passed hosted database probes. API/frontend deployment
+and full live write/identity tests remain outstanding.
+
 Latest preparation, reproduced authorization gaps, offline candidates and test
 results are recorded in [FINDINGS.md](FINDINGS.md). The earlier observations below
 remain historical evidence. The hosted QA environment is still not provisioned.

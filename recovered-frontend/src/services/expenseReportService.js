@@ -1,3 +1,4 @@
+import { dashboardFetch as fetch } from '../lib/dashboardFetch';
 import { DASHBOARD_API_ORIGIN } from '../config/dashboardEnvironment';
 /**
  * expenseReportService.js — CENTRALIZED EXPENSE REPORT SERVICE

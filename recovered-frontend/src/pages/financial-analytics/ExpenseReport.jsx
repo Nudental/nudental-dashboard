@@ -1,3 +1,4 @@
+import { dashboardFetch as fetch } from '../../lib/dashboardFetch';
 import { DASHBOARD_API_ORIGIN } from '../../config/dashboardEnvironment';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Breadcrumb from '../../components/layout/Breadcrumb';

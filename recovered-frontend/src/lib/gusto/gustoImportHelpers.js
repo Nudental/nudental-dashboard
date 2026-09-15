@@ -1,3 +1,4 @@
+import { dashboardFetch as fetch } from '../dashboardFetch';
 import { DASHBOARD_API_ORIGIN } from '../../config/dashboardEnvironment';
 import { supabase } from '../../lib/supabase';
 

@@ -1,5 +1,10 @@
 # Phase5 QA preparation and findings
 
+See [hosted validation](hosted-validation-20260914.md) for the current status.
+The new Supabase project is approved/provisioned; AUTH-002 and AUTH-004 now have
+hosted before/after database evidence. Earlier statements below that project
+approval or hosted schema/repair application is pending are historical.
+
 This branch is not deployed. Production remains at the verified PH5-EXP-001
 release. No production authentication, policy, data or runtime change accompanies
 these candidates.
