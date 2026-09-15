@@ -18,6 +18,7 @@ They are not part of any production deployment workflow.
 |010-notification-audit-coverage.sql|Notification read changes persist without audit history|Repeated UI read changes had zero audit entries|7 of 7 pass|Applied; live read/archive, owner scope and temporary creation/deletion history pass|
 |011-huddle-review-permission.sql|Office managers/staff can bypass reviewer roles through Huddle API writes|4 of 8 live expectations fail; all temporary fixtures cleaned|32 of 32 pass, 13 original bypasses reproduced|Candidate only; deployment and live retest pending browser access|
 |012-implant-office-boundary.sql|Other-office/inactive reads and linked stock deduction bypass office access|9 of 11 live expectations fail; all temporary fixtures cleaned|21 of 21 pass, 13 original failures reproduced|Candidate only; deployment and live retest pending browser access|
+|013-task-identity-boundary.sql|Creator and lifecycle metadata can be forged through task API writes|7 of 12 live expectations fail; fixtures cleaned and permission restored|26 of 26 pass, 12 negative-control bypasses|Candidate only; deployment and live retest pending browser access|
 
 See [September 14 hosted validation](../hosted-validation-20260914.md) for 001/002
 and [September 15 EOD audit validation](../eod-audit-validation-20260915.md) for 003.
