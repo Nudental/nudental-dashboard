@@ -12,14 +12,7 @@ const BulkActionsBar = ({ selectedCount, offices, onBulkActivate, onBulkDeactiva
     { value: 'regional_manager', label: 'Regional Manager' },
     { value: 'regional_clinical_manager', label: 'Regional Clinical Mgr' },
     { value: 'admin', label: 'Admin' },
-    { value: 'doctor', label: 'Doctor / Provider' },
-    { value: 'hygienist', label: 'Hygienist' },
-    { value: 'dental_assistant', label: 'Dental Assistant' },
-    { value: 'front_desk', label: 'Front Desk' },
     { value: 'office_manager', label: 'Office Manager' },
-    { value: 'treatment_coordinator', label: 'Treatment Coordinator' },
-    { value: 'rda', label: 'RDA' },
-    { value: 'clinical_manager', label: 'Clinical Manager' },
     { value: 'staff', label: 'Staff' },
   ];
 
