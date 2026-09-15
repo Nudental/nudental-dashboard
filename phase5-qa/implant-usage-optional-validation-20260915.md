@@ -21,3 +21,13 @@ passes environment/credential checks. Candidate entry `index-JKgbgv3V.js`,
 
 Live deployment/repeat pending. Production remains unchanged. Original evidence:
 `qa-implant-ui-20260915.json`, stage `manual_usage_attempt`.
+
+Live repeat PASS on QA deployment 5bdea17e-2405-4e0a-8982-ae1739809335,
+source105566cf93e80743d7762ea103f42c4e79a52dcb. The original manual entry saves
+one usage record, records one usage audit, and decrements stock exactly once
+from7to6. Refresh preserves all three; no duplicate record is present.
+All17hosted checks PASS; previousQA884da3bc retained and production unchanged.
+Evidence stagesmanual_usage_repaired/manual_usage_repaired_refreshed in
+qa-implant-ui-20260915.json. Separate confirmed display defects are queued:
+procedure_date2026-09-15 rendersSep14 inNewYork; UsedThisMonth remains0 instead
+of1 even after refresh. These do not negate the verified save/deduction repair.
