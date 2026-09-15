@@ -21,5 +21,12 @@ skipped reports. An entirely stale selection produces a refresh/review error.
   fddbf388685bf78ec22726d24a09498fed6d3ff7575819d541e7720e01733de9.
 - Archive SHA256 c05405921773b3be7e713d1c49c322c17b235a9b06a4258d541677f09f481649.
 
-QA deployment and fresh live repeat pending. Production deployment is not requested.
+QA deployment 5f74d4ca-6c92-4986-86e7-cc197a2bf375 from 03e09c8257 succeeded.
+All 17 hosted artifact/environment checks PASS, including unchanged production.
+The fresh two-view repeat PASS: the screen reported one approval and one skipped
+report. A's full row/history/audit snapshot was unchanged; B gained exactly one
+approval/history event. Refresh retained pending=1/approved=2, and B's visible
+Audit Trail showed Bulk approval. Both fixtures were cleaned, restoring the
+original counts and retaining three row-audit events per fixture.
+Production deployment was not performed.
 Bulk rejection and other stale-write paths remain separate, unverified cases.
