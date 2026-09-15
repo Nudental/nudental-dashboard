@@ -4,7 +4,7 @@ import ImplantStatusBadge from './ImplantStatusBadge';
 import UseImplantModal from './UseImplantModal';
 
 const PAGE_SIZES = [10, 25, 50];
-const formatDate = (d) => d ? new Date(d)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
+const formatDate = (d) => d ? new Date(d)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' }) : '—';
 
 const ImplantUsageLogTab = ({ records, loading, offices, providers, staff, companies, systems, platformSizes, lengths, diameters, userId, userName, isAdmin, isSuperAdmin, onRefresh }) => {
   const [page, setPage] = useState(1);
