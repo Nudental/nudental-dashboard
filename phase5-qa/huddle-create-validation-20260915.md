@@ -22,3 +22,14 @@ PASS, no skips. QA build/source/environment validation PASS. Entry
 index-DKzXh5P5.js, 8,826,819 bytes, SHA256
 118fbdc990130d5e10013e0c880cc03d26f80c5618ae425487171dd3c0e30ddf.
 Archive SHA256 f640a15445b5220f42514d2cc03fd7c908638890751e24ef044b9740813b3de5.
+
+QA deployment bdf04822-2a60-46ba-8d98-3e46e80f7b5b from
+15be4ed7ae912f86404d5231d0e25813d730fd60 succeeded; all 17 hosted checks PASS.
+Original labeled draft and its own four blocks/nineteen checklist items were
+cleaned; the two original audit events were preserved in the evidence file before
+normal cascade cleanup. Repeating first load from an empty QA Huddles table
+opened Draft without a duplicate error. Exactly one Huddle, four provider blocks,
+nineteen checklist items and one creation event exist. QA TEMP label saved with
+one edit event. New temporary draft b8b304b1-0815-4ce2-baba-fdfc6f13ddf9 is retained
+for the next bounded workflow tests and tracked in its private-workspace manifest;
+cleanup remains due after those tests. Production remains unchanged.
