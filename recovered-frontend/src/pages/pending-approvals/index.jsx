@@ -1334,7 +1334,7 @@ const PendingApprovalsPage = () => {
               )}
 
               {/* Comment field for pending entries — only for non-api-synced */}
-              {!isApiSyncedRow(reviewEntry) && ['pending', 'pending_review']?.includes(reviewEntry?.status) && (
+              {!isApiSyncedRow(reviewEntry) && ['pending', 'pending_review', 'pending_reapproval']?.includes(reviewEntry?.status) && (
                 <div>
                   <label className="text-xs font-medium text-foreground mb-1.5 block">
                     Comment <span className="text-muted-foreground font-normal">(required for rejection)</span>
@@ -1351,7 +1351,7 @@ const PendingApprovalsPage = () => {
             </div>
 
             {/* Footer actions — only for non-api-synced pending entries */}
-            {!isApiSyncedRow(reviewEntry) && ['pending', 'pending_review']?.includes(reviewEntry?.status) && (
+            {!isApiSyncedRow(reviewEntry) && ['pending', 'pending_review', 'pending_reapproval']?.includes(reviewEntry?.status) && (
               <div className="flex items-center gap-3 px-5 py-4 border-t border-border bg-muted/30 flex-shrink-0">
                 <button
                   onClick={() => handleApprove(reviewEntry, reviewNote)}
