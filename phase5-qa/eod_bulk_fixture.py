@@ -53,7 +53,7 @@ def main():
     for suffix, raw_id in data['ids'].items():
         row_id = str(uuid.UUID(raw_id))
         path = '/rest/v1/daily_entries?id=eq.' + row_id
-        rows = api.request(path + '&select=id,office_id,submitted_by,status,notes,approved_by,rejection_reason')
+        rows = api.request(path + '&select=id,office_id,submitted_by,status,notes,provider_name,edit_reason,approved_by,rejection_reason')
         assert len(rows) == 1 and rows[0]['notes'] == label + ' ' + suffix
         assert rows[0]['office_id'] == OFFICE and rows[0]['submitted_by'] == actor['id']
         history = api.request('/rest/v1/eod_status_history?entry_id=eq.' + row_id

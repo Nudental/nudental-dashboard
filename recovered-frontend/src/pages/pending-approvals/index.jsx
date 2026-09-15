@@ -625,12 +625,15 @@ const PendingApprovalsPage = () => {
       updatePayload.status_changed_by = userProfile?.id;
       updatePayload.status_changed_by_name = actorName;
 
-      const { error } = await supabase
+      const { data: updatedEntry, error } = await supabase
         ?.from('daily_entries')
         ?.update(updatePayload)
         ?.eq('id', entry?.id)
-        ?.eq('status', 'approved');
+        ?.eq('status', 'approved')
+        ?.select('id')
+        ?.maybeSingle();
       if (error) throw error;
+      if (!updatedEntry) throw new Error('This EOD report has changed. Refresh and review its current status.');
 
       await logStatusChange({
         entryId: entry?.id, fromStatus: 'approved', toStatus: 'pending_reapproval',
