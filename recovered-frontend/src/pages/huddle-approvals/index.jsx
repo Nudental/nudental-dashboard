@@ -1392,7 +1392,7 @@ const HuddleApprovalsPage = () => {
       // rejected_by, rejected_at, rejection_by_name, rejection_reason
       // Does NOT stamp approved_by / approver_name / approved_at on a rejection.
       // Does NOT set approval_note on rejection.
-      const { error } = await supabase
+      const { data: updatedEntry, error } = await supabase
         ?.from('daily_entries')
         ?.update({
           status: 'rejected',
@@ -1403,8 +1403,12 @@ const HuddleApprovalsPage = () => {
           status_changed_by: userProfile?.id,
           status_changed_by_name: rejectorName,
         })
-        ?.eq('id', entry?.id);
+        ?.eq('id', entry?.id)
+        ?.eq('status', fromStatus)
+        ?.select('id')
+        ?.maybeSingle();
       if (error) throw error;
+      if (!updatedEntry) throw new Error('This Daily Report changed while you were reviewing it. Refresh and review its current status.');
 
       // eod_status_history write — same pattern as EOD Queue
       await logDRStatusChange({
