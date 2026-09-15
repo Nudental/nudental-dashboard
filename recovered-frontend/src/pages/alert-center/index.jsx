@@ -12,6 +12,7 @@ const TYPE_CONFIG = {
   entry_submitted: { label: 'Entry Submitted', icon: 'Send', color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20' },
   profile_update: { label: 'Profile Update', icon: 'UserCheck', color: 'text-indigo-600', bg: 'bg-indigo-50', border: 'border-indigo-200' },
   birthday_reminder: { label: 'Birthday', icon: 'Gift', color: 'text-pink-600', bg: 'bg-pink-50', border: 'border-pink-200' },
+  task_assigned: { label: 'Task Assigned', icon: 'ClipboardList', color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20' },
   system: { label: 'System', icon: 'Bell', color: 'text-muted-foreground', bg: 'bg-muted/50', border: 'border-border' },
 };
 
@@ -23,6 +24,7 @@ const TYPE_FILTER_OPTIONS = [
   { value: 'entry_submitted', label: 'Submissions' },
   { value: 'profile_update', label: 'Profile Updates' },
   { value: 'birthday_reminder', label: 'Birthdays' },
+  { value: 'task_assigned', label: 'Task Assignments' },
   { value: 'system', label: 'System' },
 ];
 
