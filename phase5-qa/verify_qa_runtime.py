@@ -50,7 +50,7 @@ def main():
         assert actor['email'].endswith('@nudashboard.example.test')
         token = api.request('/auth/v1/token?grant_type=password', method='POST', public=True,
                             body={'email': actor['email'], 'password': actor['password']})['access_token']
-        tests.append({'name': name + '-closed-business-route', 'path': '/v2/offices', 'status': 403, 'token': token})
+        tests.append({'name': name + '-unreviewed-business-route', 'path': '/v2/providers', 'status': 403, 'token': token})
     # Quoted program is source code only; private request tokens are stdin data.
     command = 'python3 -c ' + "'" + REMOTE.replace("'", "'\"'\"'") + "'"
     result = subprocess.run([

@@ -19,7 +19,7 @@ The initial release `cd870ca2036cc962631e1f65970b5cb56e9c28201b4604a3fd2bd18e83d
 denied every business route. Fifteen live bootstrap/identity probes passed using
 all 12 synthetic QA accounts. It remains recoverable.
 
-Current QA release:
+First EOD-enabled QA release (preserved):
 `2153f5020d75ccfd06daf66fffb943bc4170ab1a4ce3fe880786c0dbfc2f39b5`.
 Only `GET /v2/daily-entries` is enabled after individual review. Every other
 business endpoint remains denied, including for super administrators. Fresh
@@ -54,3 +54,9 @@ Persistent hosting is now deployed and verified. See
 `hosting-validation-20260915.md` for the exact dedicated tunnel, Pages release,
 public-endpoint tests, production check, and remaining API readiness limit.
 No shared tunnel or production routing has been changed.
+
+The subsequent office-catalogue integration is deployed as
+`8f86280efb3f08521ebaefba04a8a2f4412f08880b533365a0c2d8186dc4898b`.
+Two exact GET routes are now enabled: daily entries and scoped office metadata.
+See [office API validation](office-api-validation-20260915.md): 92 backend
+checks and 60 public API checks pass. Remaining routes stay closed.

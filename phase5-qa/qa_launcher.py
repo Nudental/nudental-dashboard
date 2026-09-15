@@ -66,6 +66,15 @@ def main():
         raise RuntimeError('QA database broker readback failed')
     app = main_candidate.app
     route_count = len(app.routes)
+    from qa_offices import seed_offices, install_office_route
+    from sync import get_db
+    main_candidate.init_db()
+    qa_database = get_db()
+    try:
+        seed_offices(qa_database)
+    finally:
+        qa_database.close()
+    install_office_route(app)
     # Preserve recovered handlers, replacing only public health diagnostics and
     # production CORS configuration in this explicitly QA-only launcher.
     app.router.routes = [r for r in app.router.routes if getattr(r, 'path', None) not in ('/', '/health')]

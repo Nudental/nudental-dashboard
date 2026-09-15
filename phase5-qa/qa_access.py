@@ -2,7 +2,7 @@
 
 Unreviewed routes remain denied, including for super_admin. Enabled permissions
 and office assignments are read fresh from the existing application tables.
-Only the reviewed EOD read route is enabled in this first integration stage.
+Only individually reviewed EOD and office-catalogue reads are enabled.
 """
 from dataclasses import dataclass
 from urllib.parse import parse_qsl, urlencode
@@ -77,15 +77,22 @@ class QaAccessResolver(SupabaseIdentity):
 
 class ReviewedRoutes:
     """No prefix grants: an endpoint is usable only after an exact review."""
-    enabled = {('GET', '/v2/daily-entries'): (
-        'workflow.eod.view', 'workflow.eod_queue.view', 'workflow.approvals.view')}
+    enabled = {
+        ('GET', '/v2/daily-entries'): (
+            'workflow.eod.view', 'workflow.eod_queue.view', 'workflow.approvals.view'),
+        # Basic location metadata is available to verified active accounts,
+        # restricted to their existing office assignments in the response.
+        ('GET', '/v2/offices'): (),
+    }
 
     def __call__(self, actor, scope):
         if not isinstance(actor, ApiAccess):
             return False
         route = (scope.get('method'), scope.get('path'))
-        required = self.enabled.get(route)
-        if not required or not any(actor.allows(p) for p in required):
+        if route not in self.enabled:
+            return False
+        required = self.enabled[route]
+        if required and not any(actor.allows(p) for p in required):
             return False
         try:
             raw = scope.get('query_string', b'').decode('ascii')
@@ -108,6 +115,10 @@ class ReviewedRoutes:
             resolved.add(office)
         if len(resolved) > 1:
             return False
+        if route == ('GET', '/v2/offices'):
+            allowed = set(OFFICE_LOCATIONS) if actor.all_offices else actor.office_ids.intersection(OFFICE_LOCATIONS)
+            scope.setdefault('state', {})['qa_catalog_office_ids'] = tuple(sorted(resolved or allowed))
+            return True
         if resolved:
             # The recovered EOD handler accepts a UUID reliably through officeId.
             # Normalize both aliases to that contract so a checked locationId
