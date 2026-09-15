@@ -1,8 +1,8 @@
-"""QA-only patient-flow CSV adapter around the recovered report formatter.
+"""QA-only patient-flow adapter around the recovered report formatters.
 
 Synthetic aggregates never invoke a provider. Identity/office scope comes from
 the existing QA session gate; exports retain the real QA report audit table.
-Other report types and formats remain unavailable until individually reviewed.
+Other report types remain unavailable until individually reviewed.
 """
 import asyncio
 from contextlib import contextmanager
@@ -38,8 +38,8 @@ def normalized_payload(body, actor, profile_reader):
         raise HTTPException(403, 'Report export is not permitted')
     if not isinstance(body, dict):
         raise HTTPException(400, 'A report object is required')
-    if body.get('report_type') != 'patient_flow' or body.get('export_format', 'csv') != 'csv':
-        raise HTTPException(503, 'Only synthetic Patient Flow CSV export is reviewed for QA')
+    if body.get('report_type') != 'patient_flow' or body.get('export_format', 'csv') not in ('csv', 'xlsx', 'pdf'):
+        raise HTTPException(503, 'Only synthetic Patient Flow CSV, XLSX and PDF exports are reviewed for QA')
     try:
         start, end = (date.fromisoformat(body[key]) for key in ('date_range_start', 'date_range_end'))
         if start > end or (end-start).days > 366:
@@ -118,6 +118,8 @@ def synthetic_api_get(path, api_key):
 
 def install_report_route(app, module):
     from fastapi import HTTPException, Request
+    import report_pdf
+    from reportlab.platypus import Paragraph
     routes = [route for route in app.router.routes if getattr(route, 'path', None) == '/v2/reports/export'
               and getattr(route, 'methods', None) == {'POST'}]
     if len(routes) != 1:
@@ -129,6 +131,27 @@ def install_report_route(app, module):
     module.OFFICE_UUID_TO_LOCATION_ID = dict(OFFICE_LOCATIONS)
     module.OFFICE_UUID_TO_NAME = {key: NAMES[loc] for key, loc in OFFICE_LOCATIONS.items()}
     module._api_get = synthetic_api_get
+    module.XLSX_SOURCE_NOTES['patient_flow'] = SOURCE_NOTE
+    module.REPORT_DISPLAY_TITLES['patient_flow'] = 'QA / SYNTHETIC Patient Flow'
+    report_pdf.REPORT_TITLES['patient_flow'] = 'QA / SYNTHETIC Patient Flow'
+
+    def qa_patient_flow_pdf(headers, rows, meta, styles):
+        # Use the recovered layout and calculations; replace its fixed production
+        # provenance only inside this isolated QA process.
+        elements = report_pdf._build_patient_flow(headers, rows, meta, styles)
+        matches = [index for index, element in enumerate(elements)
+                   if isinstance(element, Paragraph) and element.text.startswith(
+                       'Source: /v2/patients/summary + /v2/appointments/summary')]
+        if len(matches) != 1:
+            raise RuntimeError('Expected Patient Flow source note was not found')
+        elements[matches[0]] = Paragraph(
+            SOURCE_NOTE + '. Aggregate-only synthetic data. '
+            'Show Rate = Completed / Total Scheduled x 100. '
+            'Missed Rate = (Cancelled + Broken + No-Shows) / Total Scheduled x 100.',
+            styles['SourceNote'])
+        return elements
+
+    report_pdf.BUILDERS['patient_flow'] = qa_patient_flow_pdf
     original_audit = module._audit_log
     original_csv = module._make_csv
 

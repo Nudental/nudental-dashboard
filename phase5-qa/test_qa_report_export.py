@@ -7,6 +7,8 @@ import io
 import json
 import os
 import unittest
+import zipfile
+from xml.etree import ElementTree as ET
 from unittest.mock import patch
 from uuid import uuid4
 from fastapi import FastAPI
@@ -122,7 +124,7 @@ class ReportExportTests(unittest.TestCase):
         self.assertEqual(self.audit,[])
 
     def test_unreviewed_type_or_format_cannot_reach_data_or_audit(self):
-        for change in ({'report_type':'full_workbook'},{'report_type':'expense_breakdown'},{'export_format':'xlsx'},{'export_format':'pdf'}):
+        for change in ({'report_type':'full_workbook'},{'report_type':'expense_breakdown'},{'export_format':'html'},{'export_format':None}):
             self.assertEqual(self.request(changes=change).status_code,503)
         self.assertEqual(self.audit,[])
 
@@ -175,6 +177,65 @@ class ReportExportTests(unittest.TestCase):
             self.assertEqual(rows[0]['Office'],'QA / Office A' if role=='manager' else 'QA / Office B')
             self.assertEqual(rows[0]['Total Scheduled'],'12' if role=='manager' else '120')
         self.assertEqual(len(self.audit),6)
+
+    def test_actual_xlsx_package_values_labels_and_scope(self):
+        response=self.request(changes={'export_format':'xlsx'})
+        self.assertEqual(response.status_code,200,response.content[:250])
+        self.assertIn('.xlsx',response.headers['content-disposition'])
+        with zipfile.ZipFile(io.BytesIO(response.content)) as book:
+            self.assertIsNone(book.testzip())
+            self.assertFalse(any('externalLinks' in name or 'vbaProject' in name for name in book.namelist()))
+            ns={'s':'http://schemas.openxmlformats.org/spreadsheetml/2006/main'}
+            texts=[''.join(item.itertext()) for item in ET.fromstring(book.read('xl/sharedStrings.xml'))]
+            self.assertIn(SOURCE_NOTE,texts);self.assertIn('QA / SYNTHETIC Patient Flow',texts)
+            self.assertIn('QA / Office A',texts);self.assertNotIn('QA / Office B',texts)
+            self.assertFalse(any('Dentrix Ascend SQLite' in text for text in texts))
+            sheet=ET.fromstring(book.read('xl/worksheets/sheet1.xml'))
+            rows=[]
+            for row in sheet.findall('s:sheetData/s:row',ns):
+                values=[]
+                for cell in row.findall('s:c',ns):
+                    value=cell.findtext('s:v','',ns)
+                    values.append(texts[int(value)] if cell.get('t')=='s' else value)
+                rows.append(values)
+            row=next(row for row in rows if row and row[0]=='QA / Office A')
+            self.assertEqual(row[:5],['QA / Office A','3','6','12','6'])
+        self.assertEqual(len(self.audit),1);self.assertEqual(self.audit[0]['export_format'],'xlsx')
+        self.assertEqual(self.audit[0]['office_filter'],['qa-location-a'])
+
+    def test_actual_pdf_uses_recovered_layout_and_synthetic_source(self):
+        import report_pdf
+        captured=[]
+        original=report_pdf.BUILDERS['patient_flow']
+        def capture(headers,rows,meta,styles):
+            elements=original(headers,rows,meta,styles)
+            captured.extend(element.text for element in elements if hasattr(element,'text'))
+            self.assertEqual(rows[0]['Office'],'QA / Office A')
+            self.assertEqual(rows[0]['Total Scheduled'],12)
+            return elements
+        with patch.dict(report_pdf.BUILDERS,{'patient_flow':capture}):
+            response=self.request(changes={'export_format':'pdf'})
+        self.assertEqual(response.status_code,200,response.content[:250])
+        self.assertTrue(response.content.startswith(b'%PDF-'));self.assertIn(b'%%EOF',response.content[-50:])
+        self.assertIn('.pdf',response.headers['content-disposition'])
+        self.assertTrue(any(SOURCE_NOTE in text for text in captured))
+        self.assertFalse(any('Dentrix Ascend SQLite' in text for text in captured))
+        self.assertEqual(len(self.audit),1);self.assertEqual(self.audit[0]['export_format'],'pdf')
+        self.assertEqual(self.audit[0]['office_filter'],['qa-location-a'])
+
+    def test_download_formats_retain_denial_and_audit_requirements(self):
+        for fmt in ('xlsx','pdf'):
+            with self.subTest(fmt=fmt):
+                self.assertEqual(self.request('denied',{'export_format':fmt}).status_code,403)
+                self.assertEqual(self.request(changes={'export_format':fmt,'office_filter':[B]}).status_code,403)
+                self.assertEqual(self.request(changes={'export_format':fmt,'user_role':'admin'}).status_code,403)
+                self.assertEqual(self.audit,[])
+                self.audit_empty=True
+                try:
+                    response=self.request(changes={'export_format':fmt})
+                    self.assertEqual(response.status_code,503)
+                    self.assertNotIn('content-disposition',response.headers)
+                finally:self.audit_empty=False
 
 
 if __name__=='__main__':unittest.main()
