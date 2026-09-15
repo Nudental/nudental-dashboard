@@ -482,7 +482,7 @@ const PendingApprovalsPage = () => {
     try {
       const approverName = userProfile?.full_name || userProfile?.email || 'Unknown';
       const fromStatus = entry?.status;
-      const { error } = await supabase
+      const { data: updatedEntry, error } = await supabase
         ?.from('daily_entries')
         ?.update({
           status: 'rejected',
@@ -494,8 +494,12 @@ const PendingApprovalsPage = () => {
           status_changed_by: userProfile?.id,
           status_changed_by_name: approverName,
         })
-        ?.eq('id', entry?.id);
+        ?.eq('id', entry?.id)
+        ?.eq('status', fromStatus)
+        ?.select('id')
+        ?.maybeSingle();
       if (error) throw error;
+      if (!updatedEntry) throw new Error('This EOD report has changed. Refresh and review its current status.');
       await logStatusChange({
         entryId: entry?.id, fromStatus, toStatus: 'rejected',
         changedBy: userProfile?.id, changerName: approverName, changerRole: userProfile?.role,
