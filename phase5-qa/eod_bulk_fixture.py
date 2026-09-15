@@ -17,7 +17,7 @@ def main():
                                          'approved-edit-original', 'approved-edit-repaired',
                                          'approved-reversal-original', 'approved-reversal-repaired', 'history-guard', 'caption-regression',
                                          'huddle-approve-original', 'huddle-approve-repaired',
-                                         'huddle-reject-original', 'huddle-reject-repaired'), required=True)
+                                         'huddle-reject-original', 'huddle-reject-repaired', 'huddle-notification'), required=True)
     parser.add_argument('--action', choices=('seed', 'inspect', 'cleanup'), required=True)
     parser.add_argument('--stage', choices=('seed', 'before', 'after', 'refresh', 'cleanup'), required=True)
     args = parser.parse_args()

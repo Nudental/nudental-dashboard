@@ -22,3 +22,12 @@ Entry index-DkQAsry5.js, 8,826,335 bytes, SHA256
 69cf14a639a02961f3dc89cea0f17adee2f71f29fc5a9ca249534b2260836240.
 Archive SHA256 ff3ae8367c1ee5262126ba0650c2de0933ac36ad5bdf5a4f5fc8593328e427bb.
 Original pair cleaned; baseline counts restored, four/two audit events retained.
+
+QA deployment 24e8c2ad-7d10-49e7-9c9e-33d8e23e148d from
+8c8271c4f3d48a1df4bf294d50d83c510cf373c0 PASS; all 17 hosted checks PASS.
+Live stale repeat reported Rejection Failed and preserved exact rows, histories,
+audits and counters. Cancel closed the form. Normal B rejection saved the QA
+reason once. Refresh showed Pending Approval 1 / Workflow Approved 1 / Rejected 1,
+and Daily Reviews 1. Both temporary records had one history event. Cleanup
+restored baseline counts, retaining three audit events each. Production unchanged.
+The separately documented notification-feedback defect remains pending.
