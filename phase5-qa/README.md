@@ -1,21 +1,41 @@
 # Isolated Dashboard QA preparation
 
-Current status supersedes the historical preparation notes below:
-[Hosted validation, September 14](hosted-validation-20260914.md). The separately
-approved Supabase project is created, its structure is verified, and the profile
-and office guards have passed hosted database probes. API/frontend deployment
-and full live write/identity tests remain outstanding.
+Current status, September 15, supersedes the historical preparation notes below.
+The existing $10/month NU-Dashboard-Staging-QA Supabase project
+`hvtxjfayenqnwtaisoaw` was approved and created September 14. No additional
+database project or subscription is required. See
+[hosted database validation](hosted-validation-20260914.md).
 
-Latest preparation, reproduced authorization gaps, offline candidates and test
-results are recorded in [FINDINGS.md](FINDINGS.md). The earlier observations below
-remain historical evidence. The hosted QA environment is still not provisioned.
+The isolated [QA frontend](https://nudashboard-qa.pages.dev) and
+[QA API](https://nudashboard-qa-api.nuholdingllc.com/health) are live. Twelve
+synthetic identities cover all eight supported roles plus scope/account variants.
+The API has two reviewed read routes; other recovered routes remain closed while
+authorization and safe adapters are verified. This is not a completed API audit.
+Production and Collaboration Platform remain separate.
+
+QA database repairs 001–010 are deployed; see [repair status](repairs/README.md).
+The temporary staff task permission was restored to its original disabled value.
+The frontend currently retains verified release `37eafbcf` (source `4fe088a3`).
+The Huddle submit candidate passes 1,238 tests but its live retest is pending;
+[the loading failure and rollback are documented](huddle-submit-validation-20260915.md).
+Browser access is currently unavailable while the owner is away. API/source work
+continues; no production deployment is pending merely because QA source changed.
+
+Phase 5 remains incomplete. Remaining work includes Huddle review, other safe
+write workflows, role/scope coverage, API adapter integration, bounded browser
+performance measurement, and the previously presented Expense authority decision.
+
+## Historical preparation record
+
+The following notes preserve conditions at initial preparation, not current
+provisioning or billing requirements.
 
 Canonical main:61c224b1bf9ec53d91ab69a8eb00e563204bf76d.
 Original reconciliation:909edf99ec2454801a5add8f63b23440ce5f6f44.
 Application source baseline:5f052fd47d68d581090163cc888c9614d82d2090.
 This worktree is feature/nudental-dashboard-qa-phase5. It is not deployed.
 
-## Pending resource approval
+## Initial resource approval request — resolved September 14
 
 QA-DB-001: The NU Dental Supabase organization has only the production Dashboard
 project and the Collaboration QA project. Neither may be reused for Dashboard
