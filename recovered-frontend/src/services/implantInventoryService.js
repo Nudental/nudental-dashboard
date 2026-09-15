@@ -158,10 +158,16 @@ export const fetchInventorySummary = async () => {
   const in30 = new Date(today); in30?.setDate(today?.getDate() + 30);
   const in60 = new Date(today); in60?.setDate(today?.getDate() + 60);
   const in90 = new Date(today); in90?.setDate(today?.getDate() + 90);
+  const monthStart = new Date(Date.UTC(today.getFullYear(), today.getMonth(), 1)).toISOString().slice(0, 10);
+  const nextMonth = new Date(Date.UTC(today.getFullYear(), today.getMonth() + 1, 1)).toISOString().slice(0, 10);
+  const { count: usedCount, error: usageError } = await supabase?.from('implant_usage_logs')
+    ?.select('id', { count: 'exact', head: true })?.eq('item_status', 'used')
+    ?.gte('procedure_date', monthStart)?.lt('procedure_date', nextMonth);
+  if (usageError) throw usageError;
 
   const summary = {
     totalInStock: 0,
-    usedThisMonth: 0,
+    usedThisMonth: usedCount ?? 0,
     lowStock: 0,
     expired: 0,
     expiringSoon: 0,
@@ -174,15 +180,11 @@ export const fetchInventorySummary = async () => {
     byLocation: {},
   };
 
-  const thisMonth = new Date();
-  thisMonth?.setDate(1);
-
   (data || [])?.forEach(item => {
     if (item?.item_status === 'in_stock') {
       summary.totalInStock += (item?.quantity_in_stock || 0);
       if ((item?.quantity_in_stock || 0) <= (item?.minimum_stock_level || 2)) summary.lowStock++;
     }
-    if (item?.item_status === 'used') summary.usedThisMonth++;
 
     const loc = item?.office_name || 'Unknown';
     summary.byLocation[loc] = (summary?.byLocation?.[loc] || 0) + 1;
