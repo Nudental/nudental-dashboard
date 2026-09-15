@@ -25,3 +25,22 @@ and live retest pending.
 
 This policy addresses writer identity and office authorization. It does not make
 status/history writes atomic or certify historical claims by an authorized writer.
+
+Applied only to QA project hvtxjfayenqnwtaisoaw, with the completed installation
+marker checked first. The catalog confirms exactly the new RESTRICTIVE INSERT
+policy. Saved migration SHA256:
+bb6a5d322b365b53a96b53a680c29137fb117c410d1ed66cc21328290e2140b9.
+
+All thirteen real-account write checks now pass; all seven bypasses are denied.
+Seven separate real-account visibility checks also pass: own-office staff and
+managers retain history, regional read remains available, other-office and
+inactive/unapproved users remain blocked. All temporary probe records cleaned.
+
+Normal browser approval through both EOD Queue and Huddle Daily Reviews succeeded
+and refreshed correctly. Each wrote one history entry with the current regional
+reviewer's identity, one row update and accurate counters. Both UI fixtures were
+cleaned, the original baseline restored, and three row-audit events each retained.
+The frontend release remains a833b27e; no frontend, API-runtime or production
+deployment accompanied this QA database rule.
+
+Post-change read-only API regression: all 22 EOD office/role checks and all 15 identity/execution-boundary checks PASS.

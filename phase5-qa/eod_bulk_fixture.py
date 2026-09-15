@@ -15,7 +15,7 @@ def main():
     parser.add_argument('--case', choices=('approve-original', 'reject-original', 'approve-repaired', 'reject-repaired', 'reject-positive',
                                          'individual-reject-original', 'individual-reject-repaired',
                                          'approved-edit-original', 'approved-edit-repaired',
-                                         'approved-reversal-original', 'approved-reversal-repaired'), required=True)
+                                         'approved-reversal-original', 'approved-reversal-repaired', 'history-guard'), required=True)
     parser.add_argument('--action', choices=('seed', 'inspect', 'cleanup'), required=True)
     parser.add_argument('--stage', choices=('seed', 'before', 'after', 'refresh', 'cleanup'), required=True)
     args = parser.parse_args()

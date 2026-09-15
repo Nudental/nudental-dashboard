@@ -11,11 +11,13 @@ They are not part of any production deployment workflow.
 |003-eod-audit-coverage.sql|EOD submissions and edits omit the existing row audit|Missing INSERT audit reproduced|6 checks pass|Applied; browser submission and 7 live checks pass; temporary fixture cleaned|
 |004-eod-insert-boundary.sql|Permissive insert rule bypasses active profile, submitter and office checks|4 of 7 permission expectations failed|7 of 7 pass|Applied; identical 7 live probes and 7 browser/audit regression checks pass; temporary fixtures cleaned|
 |005-eod-workflow-integrity.sql|Ordinary users can change approval state/metadata, edit approved rows and retarget office scope|10 local failures; 8 live bypass cases|27 of 27 pass|Applied; 14 live checks and 7 browser/audit regression checks pass; temporary fixtures cleaned|
+|006-eod-history-identity.sql|Ordinary/cross-office history writes and forged reviewer identity fields|7 hosted bypasses plus one inconsistent inactive-profile offline case|24 of 24 write/read checks pass|Applied; 13 Auth/PostgREST writes, 7 visibility checks and both approval UI paths pass; temporary fixtures cleaned|
 
 See [September 14 hosted validation](../hosted-validation-20260914.md) for 001/002
 and [September 15 EOD audit validation](../eod-audit-validation-20260915.md) for 003.
 The [EOD insertion validation](../eod-insert-validation-20260915.md) covers 004.
 The [EOD workflow validation](../eod-workflow-integrity-validation-20260915.md) covers 005.
+The [EOD history authorization validation](../eod-history-access-validation-20260915.md) covers 006.
 These deployments affect only the isolated Dashboard QA project.
 
 The second candidate adds restrictive policies on Huddles, action items and
