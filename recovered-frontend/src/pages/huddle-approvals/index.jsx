@@ -1245,7 +1245,8 @@ const HuddleApprovalsPage = () => {
           approved_by: userProfile?.id,
           approved_at: new Date()?.toISOString(),
           updated_at: new Date()?.toISOString(),
-        })?.eq('id', huddle?.id);
+        })?.eq('id', huddle?.id)?.eq('status', huddle?.status)?.select('id')?.single();
+      if (error?.code === 'PGRST116') throw new Error('This Huddle changed since it was reviewed. Refresh and review its current status.');
       if (error) throw error;
 
       await supabase?.from('huddle_audit_log')?.insert({
