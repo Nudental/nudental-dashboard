@@ -171,11 +171,19 @@ const AccordionSection = ({ title, icon, iconColor, isOpen, onToggle, children, 
 );
 
 const DailyEntryForm = () => {
+  const { canAccess, loading: rbacLoading } = useRbacGuard();
+  if (rbacLoading) return null;
+  if (!canAccess('workflow.eod.view')) {
+    return <AccessDenied title="EOD Report" message="You don't have permission to access EOD Report. Contact your administrator." />;
+  }
+  return <DailyEntryContent />;
+};
+
+const DailyEntryContent = () => {
   const { userProfile, user } = useAuth();
   const { selectedOfficeId, canSwitchOffice, offices } = useOffice();
   const navigate = useNavigate();
   const goHome = useHomeNavigation();
-  const { canAccess, loading: rbacLoading } = useRbacGuard();
   const [form, setForm] = useState(INITIAL_FORM);
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -200,12 +208,6 @@ const DailyEntryForm = () => {
   const isSuperAdmin = userProfile?.role === 'super_admin';
   const canViewApprovals = ['super_admin', 'admin', 'regional_manager', 'regional_clinical_manager']?.includes(userProfile?.role);
 
-  // ─── RBAC page guard ──────────────────────────────────────────────────────
-  if (rbacLoading) return null;
-  if (!canAccess('workflow.eod.view')) {
-    return <AccessDenied title="EOD Report" message="You don't have permission to access EOD Report. Contact your administrator." />;
-  }
-
   const breadcrumbItems = [
     { label: 'Home', path: '/executive-overview' },
     { label: 'Operations', path: null },
@@ -217,7 +219,7 @@ const DailyEntryForm = () => {
 
   const performAutoSave = useCallback(() => {
     if (isLocked) return;
-    const serialized = JSON.stringify(form);
+    const serialized = JSON.stringify({ ...form, attestation });
     if (serialized === lastSavedRef?.current) return;
     setSaveStatus('saving');
     setTimeout(() => {
@@ -230,14 +232,16 @@ const DailyEntryForm = () => {
         setSaveStatus('idle');
       }
     }, 500);
-  }, [form, isLocked]);
+  }, [form, attestation, isLocked]);
 
   useEffect(() => {
     try {
       const draft = localStorage.getItem('daily_entry_draft');
       if (draft) {
         const parsed = JSON.parse(draft);
-        setForm(prev => ({ ...prev, ...parsed, entryDate: parsed?.entryDate || getTodayStr() }));
+        const { attestation: savedAttestation, ...savedForm } = parsed;
+        setForm(prev => ({ ...prev, ...savedForm, entryDate: savedForm?.entryDate || getTodayStr() }));
+        setAttestation(savedAttestation || {});
       }
     } catch {}
   }, []);
