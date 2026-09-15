@@ -34,3 +34,18 @@ Candidate entry `index-CEQWBUg0.js`, 8,828,417 bytes, SHA256
 Live QA migration/release and atomic/concurrent-save repeat are pending.
 Production remains unchanged. Original evidence:
 `qa-implant-consume-original-20260915.json` (cleanup complete).
+
+QA migration016 is live; saved snippet0f592e95-55ce-4bdd-bb7c-324cfb10c7dd.
+The actual service live repeat PASS: one-unit deduction, five-unit insufficient
+batch fully rejected with no stock/usage change, three-unit consumption with
+three unique per-unit rows, and two competing consumers of the last unit produce
+exactly one success and one rejection. Final probe stock0/statusused, usage5,
+audit3 (one per successful consume action). All probe records were cleaned.
+Evidence:qa-implant-consume-repaired-20260915.json. No camera permission granted.
+
+Frontend deploymenta801c897-7869-4033-ac46-f33b7b4fdb1a is live with sourceca59d2c28b4c87eedc1ab6b93717cbe87ac9a8b2.
+All17hosted checks PASS; browser reload retains original fixturestock6/monthly1.
+PreviousQA63ad5b56 and production1f1f91bc are preserved. Actual scanner save
+service was verified directly using the existing QA account; camera/physical
+barcode capture is intentionally untested. Regular non-camera usage UI has its
+separate successful save, audit, refresh and stock-deduction evidence.
