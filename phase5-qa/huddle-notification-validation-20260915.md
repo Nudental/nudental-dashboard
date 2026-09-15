@@ -23,3 +23,13 @@ PASS with no skips. QA build, source match and environment checks PASS.
 Entry index-QMPe93jL.js, 8,826,544 bytes, SHA256
 9653597cdb6b2c64f9422bdf0344eb9ddb8fe5dd0b9ee929380fcd01ec6f09d8.
 Archive SHA256 a6712cd45df8a63abed8b5b78f0543097cf60c1aa25a50ce47bb792e2743183c.
+
+QA deployment 0daa0bdc-23ee-4bf5-af24-b6200901ed90 from
+c85ecf4786047a62948b699f80471149a7656415 succeeded; 17/17 hosted checks PASS.
+Live dialog now describes requesting notification without guaranteeing delivery.
+Normal temporary A rejection displayed: Daily Report rejected. Notification could
+not be confirmed. Persisted reason/history/audit and refresh counters PASS
+(Pending 2, Rejected 1, Daily Reviews 2). No duplicate record/history was created.
+Both temporary fixtures cleaned; baseline counts restored, three/two row-audit
+events retained. Positive provider acceptance tested offline with a mock only;
+QA has no operational notification provider. No external mail or production write.
