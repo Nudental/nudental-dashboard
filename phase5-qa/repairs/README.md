@@ -19,6 +19,7 @@ They are not part of any production deployment workflow.
 |011-huddle-review-permission.sql|Office managers/staff can bypass reviewer roles through Huddle API writes|4 of 8 live expectations fail; all temporary fixtures cleaned|32 of 32 pass, 13 original bypasses reproduced|Candidate only; deployment and live retest pending browser access|
 |012-implant-office-boundary.sql|Other-office/inactive reads and linked stock deduction bypass office access|9 of 11 live expectations fail; all temporary fixtures cleaned|21 of 21 pass, 13 original failures reproduced|Candidate only; deployment and live retest pending browser access|
 |013-task-identity-boundary.sql|Creator and lifecycle metadata can be forged through task API writes|7 of 12 live expectations fail; fixtures cleaned and permission restored|26 of 26 pass, 12 negative-control bypasses|Candidate only; deployment and live retest pending browser access|
+|014-task-row-audit.sql|Direct task writes omit database audit records|Ten successful disposable QA mutations had zero matching row audits|9 of 9 pass, including create/lifecycle/cleanup history|Candidate only; hosted validation pending|
 
 See [September 14 hosted validation](../hosted-validation-20260914.md) for 001/002
 and [September 15 EOD audit validation](../eod-audit-validation-20260915.md) for 003.
