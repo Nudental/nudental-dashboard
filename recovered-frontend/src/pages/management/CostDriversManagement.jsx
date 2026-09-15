@@ -79,10 +79,10 @@ const CostDriversManagement = () => {
   const handleAdd = () => { setEditRow(null); setModalOpen(true); };
   const handleEdit = (row) => { setEditRow(row); setModalOpen(true); };
   const handleDelete = (row) => setDeleteRow(row);
-  const handleToggleActive = async (row) => {
+  const handleToggleActive = async (id, isActive) => {
     setSaving(true);
     try {
-      await costDriversService?.update(row?.id, { is_active: !row?.is_active });
+      await costDriversService?.update(id, { is_active: isActive });
       await loadData();
     } catch (err) {
       setError(err?.message || 'Failed to update cost driver status');
