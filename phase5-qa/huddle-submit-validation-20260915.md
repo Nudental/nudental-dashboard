@@ -26,3 +26,19 @@ The isolated schema has no notification_events table (PGRST205), although the
 legacy service attempts an optional insert there. That existing optional path
 and QA-only unavailable mail functions were not changed as part of this repair.
 The actual Huddle row and narrative audit are the submission evidence.
+
+First hosted candidate 8da890c6 passed static checks but produced a blank QA
+page, so it was not accepted as live verified. Last verified files were restored
+through the existing publisher as 37eafbcf. Production was unchanged. The first
+artifact renders and authenticates in the same QA configuration on loopback;
+hosted identity/gzip bytes and JavaScript syntax match. The exact hosted startup
+cause remains unproven. No additional submission occurred.
+
+A fresh equivalent candidate reverses only the order of the two editable status
+values; membership and behavior are unchanged. All 1238 tests pass without skips,
+and all 510 source files match the build input. Environment/secret checks pass.
+Entry index-CDEarjji.js, 8,827,762 bytes, SHA256 ff53e7e02fc16b174d25cfbd46bfc02b52baad8d2f9d065bec0b37917ecdbbca.
+Archive SHA256 991fe63e856c4a6878f30a95fc1490d8ab04db4a3c98f918d80bb0157a44d550.
+Browser controls became unavailable before publication. Candidate publication
+and original two-view live retest remain pending; QA stays on verified 37eafbcf.
+Temporary diagnostic tabs were signed out/closed; ports 8772/8773 no longer listen.
