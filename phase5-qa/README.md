@@ -1,30 +1,37 @@
-# Isolated Dashboard QA preparation
+# Isolated Dashboard QA
 
-Current status, September 15, supersedes the historical preparation notes below.
+Current status, September 15, supersedes historical preparation notes below.
 The existing $10/month NU-Dashboard-Staging-QA Supabase project
-`hvtxjfayenqnwtaisoaw` was approved and created September 14. No additional
-database project or subscription is required. See
-[hosted database validation](hosted-validation-20260914.md).
+`hvtxjfayenqnwtaisoaw` is live; no additional project or subscription is needed.
 
-The isolated [QA frontend](https://nudashboard-qa.pages.dev) and
-[QA API](https://nudashboard-qa-api.nuholdingllc.com/health) are live. Twelve
-synthetic identities cover all eight supported roles plus scope/account variants.
-The API has two reviewed read routes; other recovered routes remain closed while
-authorization and safe adapters are verified. This is not a completed API audit.
-Production and Collaboration Platform remain separate.
+The [QA frontend](https://nudashboard-qa.pages.dev) and
+[QA API](https://nudashboard-qa-api.nuholdingllc.com/health) are isolated from
+production and Collaboration Platform. Twelve synthetic identities cover all
+eight actual roles plus account/office variants. Three API routes are positively
+reviewed (office read, EOD read, synthetic Patient Flow export); other operational
+routes remain closed. Closed-route denials are not positive workflow coverage.
 
-QA database repairs 001–010 are deployed; see [repair status](repairs/README.md).
-The temporary staff task permission was restored to its original disabled value.
-The frontend currently retains verified release `37eafbcf` (source `4fe088a3`).
-The Huddle submit candidate passes 1,238 tests but its live retest is pending;
-[the loading failure and rollback are documented](huddle-submit-validation-20260915.md).
-Browser access is currently unavailable while the owner is away. API/source work
-continues; no production deployment is pending merely because QA source changed.
+QA schema repairs 001–018 are applied. Latest QA frontend release
+`0dbd298d-1cf5-446c-b843-e43156643dd6` uses source
+`3b943a3d14d4b8c99d90d89faec6fd9ed1172e80`. All 1,336 retained frontend tests
+pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
+publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
-Phase 5 remains incomplete. Remaining work includes Huddle review, other safe
-write workflows, role/scope coverage, API adapter integration, bounded browser
-performance measurement, and the previously presented Expense authority decision.
+Recent live checks/repairs: [office assignment](user-office-transaction-validation-20260915.md),
+[office administration](office-ui-validation-20260915.md),
+[providers](provider-ui-validation-20260915.md),
+[cost drivers](cost-driver-toggle-validation-20260915.md), and
+[service/vendor categories](service-category-toggle-validation-20260915.md).
+Temporary records from those checks and the completed implant/import checks are
+cleaned; audit evidence retained. Original Huddle/EOD/task fixture cleanup remains
+pending until remaining workflow checks finish.
 
+Phase 5 is incomplete. Continue monthly/service goals, remaining safe write/role
+checks, operational mock integration, bounded performance investigation, final
+production read-only regression, and cleanup. The previously presented Expense
+accounting-owner decision remains pending; other work continues independently.
+Browser and server access currently work. Camera access was not granted and is
+not needed; use manual inventory entry.
 ## Historical preparation record
 
 The following notes preserve conditions at initial preparation, not current
