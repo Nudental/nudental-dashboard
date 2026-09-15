@@ -32,6 +32,19 @@ before publication. Project name and branch stay fixed, previous artifacts and
 deployment receipts remain preserved, and production deployment is checked for
 change. No hosting configuration is changed.
 
-Deployment and live verification: PENDING. The remaining unreviewed API routes
-stay denied. This repair does not establish end-to-end report readiness or resolve
-any separate office-display-name behavior in the child tabs.
+Deployment a101df8f-f343-4034-a9d6-1ee908bc373e succeeded from a06fff39.
+Live verification PASS: Dentrix Closeout now displays QA / Office A, enables
+Refresh, and receives the date changed in the attestation form. Unscheduled
+Treatment also receives that date. After the existing 30-second autosave, refresh
+restores the changed date; the temporary date was subsequently restored. Reloading
+before autosave completed correctly retained the last saved value.
+
+17/17 hosted artifact, header, CORS/session boundary, and unchanged-production
+checks PASS. No new database record was created by these date tests. Production
+deployment remains 1f1f91bc-5dbd-4500-8bfd-d4e2039ba601. Prior QA deployment
+b547e61e-10a4-4650-ba49-5fd72cb76a5d remains recoverable.
+
+Unreviewed report API routes still return the expected denial. This repair does
+not establish end-to-end report readiness. Two treatment tabs still display
+Unknown Office because they use a fixed office catalogue; that separate defect
+was reproduced again on the new release and is being handled next.
