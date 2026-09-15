@@ -16,5 +16,11 @@ All 1231 retained regression checks PASS, no skips. QA build, 510 source-file
 comparisons and environment/secret checks PASS. Entry index-CPSVXCsq.js,
 8,827,705 bytes, SHA256 927aca37c60e74f00f9ff5ea651619c758c76077a9d40d1e512f9f2804417701.
 Archive SHA256 4b05322bb3c16c5aa8caca647b16707c6950ff90b2f78e3d48fcbb0d6b3f38b0.
-Publication and live verification pending. The tracked archived notification
-remains available only for the repeated test and final cleanup.
+QA deployment 611bde88-11ad-4797-9b44-6efe20ac4914 from
+4fe088a3ff3e22a4553f7746f9130a11bedbeae8 succeeded; all 17 hosted checks PASS.
+The browser script was confirmed before testing. Archived All Types displays
+Task Assigned; Task Assignments retains the saved record, including with Today.
+System correctly shows no matching record, and All Types restores it. The
+notification was then deleted using its existing QA owner, with four audit
+entries retained. After refresh, Active and Archived are empty and the header
+has no unread badge. Production unchanged.

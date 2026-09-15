@@ -23,4 +23,8 @@ appeared in Archived with no unread badge. This UI has no unarchive control.
 The original notification remains tracked briefly for the next category/filter
 consistency test; the extra audit fixture is fully cleaned. Frontend remains
 bb8e9f63 from 29b672c, 1231 regression checks and 17 hosted checks PASS.
-Production unchanged.
+After the category/filter regression, the original tracked notification was also
+cleaned using the QA owner. Its three UPDATE entries and final DELETE entry remain
+available, with actor and before/after data. Both notification fixtures are fully
+cleaned; Active/Archived and unread count are empty after refresh. Production
+unchanged.
