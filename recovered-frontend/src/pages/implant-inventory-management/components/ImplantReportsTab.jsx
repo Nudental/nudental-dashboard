@@ -74,13 +74,20 @@ const ImplantReportsTab = ({ inventoryRecords, usageRecords, offices }) => {
   const chartData = Object.entries(reportData)?.map(([k, v]) => ({ name: k?.replace('Nu Dental of ', ''), count: v?.length }));
 
   const exportCSV = () => {
-    const headers = ['Date', 'Location', 'Provider', 'Patient', 'Company', 'System', 'Platform', 'Length', 'Diameter', 'ID Number', 'Lot #', 'Status'];
-    const rows = filteredUsage?.map(r => [
+    const isUsageReport = activeReport?.startsWith('by_');
+    const headers = isUsageReport
+      ? ['Date', 'Location', 'Provider', 'Patient', 'Company', 'System', 'Platform', 'Length', 'Diameter', 'ID Number', 'Lot #', 'Status']
+      : ['Location', 'Company', 'System', 'Platform', 'Length', 'ID Number', 'Qty', 'Expiration', 'Status'];
+    const rows = Object.values(reportData)?.flat()?.map(r => isUsageReport ? [
       r?.procedure_date, r?.office_name, r?.provider_name, r?.patient_name,
       r?.company_name, r?.system_name, r?.platform_size_name, r?.length_label,
       r?.diameter_label, r?.identification_number, r?.lot_number, r?.item_status,
+    ] : [
+      r?.office_name, r?.company_name, r?.system_name, r?.platform_size_name,
+      r?.length_label, r?.identification_number, r?.quantity_in_stock,
+      r?.expiration_date, r?.item_status,
     ]);
-    const csv = [headers, ...rows]?.map(row => row?.map(v => `"${v || ''}"`)?.join(','))?.join('\n');
+    const csv = [headers, ...rows]?.map(row => row?.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`)?.join(','))?.join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a'); a.href = url;
