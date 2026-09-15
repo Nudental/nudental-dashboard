@@ -25,3 +25,11 @@ with no patient body and no data writes. Evidence:
 Candidate entry `index-DdaVZR0l.js`, 8,828,707 bytes, SHA256
 `5ef9f16afd9dc21ce3f314aaf89b59ea241c56b887524400f2d604d860b1398f`.
 Live frontend repeat pending; production remains unchanged.
+
+Live frontend verification PASS on63ad5b56-6aeb-4b95-b287-2b0cff365465,
+source34d9711d27d65701816583d87db81eb2a3b6c467. The refreshed dashboard shows
+Total In Stock6 and Used This Month1; the single usage row still displays
+Sep15,2026. Independent readback confirms one usage, one usage audit, and stock6.
+All17hosted checks pass. PreviousQA349013df and production1f1f91bc are preserved.
+No further write was needed for the verification. Existing test-fixture cleanup
+is still tracked with the remaining inventory workflow tests.
