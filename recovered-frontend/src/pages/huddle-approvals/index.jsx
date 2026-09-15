@@ -1270,7 +1270,8 @@ const HuddleApprovalsPage = () => {
   const handleUnlock = async (huddle, reason) => {
     setActionLoading(true);
     try {
-      const { error } = await supabase?.from('huddles')?.update({ status: 'unlocked', updated_at: new Date()?.toISOString() })?.eq('id', huddle?.id);
+      const { error } = await supabase?.from('huddles')?.update({ status: 'unlocked', updated_at: new Date()?.toISOString() })?.eq('id', huddle?.id)?.eq('status', huddle?.status)?.select('id')?.single();
+      if (error?.code === 'PGRST116') throw new Error('This Huddle changed since it was reviewed. Refresh and review its current status.');
       if (error) throw error;
 
       await supabase?.from('huddle_audit_log')?.insert({
@@ -1294,7 +1295,8 @@ const HuddleApprovalsPage = () => {
   const handleReject = async (huddle, reason) => {
     setActionLoading(true);
     try {
-      const { error } = await supabase?.from('huddles')?.update({ status: 'rejected', updated_at: new Date()?.toISOString() })?.eq('id', huddle?.id);
+      const { error } = await supabase?.from('huddles')?.update({ status: 'rejected', updated_at: new Date()?.toISOString() })?.eq('id', huddle?.id)?.eq('status', huddle?.status)?.select('id')?.single();
+      if (error?.code === 'PGRST116') throw new Error('This Huddle changed since it was reviewed. Refresh and review its current status.');
       if (error) throw error;
 
       await supabase?.from('huddle_audit_log')?.insert({
