@@ -249,7 +249,9 @@ export const usersService = {
 
   async toggleActive(id, isActive) {
     const { data: old } = await supabase?.from('user_profiles')?.select('*')?.eq('id', id)?.single();
-    const { data, error } = await supabase?.from('user_profiles')?.update({ is_active: isActive })?.eq('id', id)?.select()?.single();
+    const { data, error } = await supabase?.from('user_profiles')?.update({
+      is_active: isActive, is_approved: isActive, status: isActive ? 'Active' : 'Deactivated',
+    })?.eq('id', id)?.select()?.single();
     if (error) throw error;
     await logAudit('TOGGLE_ACTIVE', 'user_profiles', id, old, data, old?.full_name);
     return data;
