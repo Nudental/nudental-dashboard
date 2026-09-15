@@ -273,7 +273,11 @@ export const fetchUsageLogs = async (filters = {}) => {
 };
 
 export const createUsageLog = async (payload) => {
-  const { data, error } = await supabase?.from('implant_usage_logs')?.insert(payload)?.select()?.single();
+  const normalized = { ...payload };
+  for (const field of ['implant_inventory_id', 'provider_id', 'staff_assistant_id', 'company_id', 'system_id', 'platform_size_id', 'length_id', 'diameter_id']) {
+    if (normalized[field] === '') normalized[field] = null;
+  }
+  const { data, error } = await supabase?.from('implant_usage_logs')?.insert(normalized)?.select()?.single();
   if (error) throw error;
   return data;
 };
