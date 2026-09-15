@@ -47,6 +47,11 @@ export const huddleService = {
         created_by: userId,
       })?.select()?.single();
 
+    if (createError?.code === '23505') {
+      const { data: concurrentHuddle, error: retryError } = await supabase?.from('huddles')?.select('*')?.eq('office_id', officeId)?.eq('huddle_date', date)?.maybeSingle();
+      if (retryError) throw retryError;
+      if (concurrentHuddle) return concurrentHuddle;
+    }
     if (createError) throw createError;
 
     // Create default provider blocks — 2 doctor + 2 hygienist (block_order 1–4)
