@@ -142,7 +142,7 @@ export const huddleService = {
         submitted_by: userId,
         submitted_at: new Date()?.toISOString(),
         updated_at: new Date()?.toISOString(),
-      })?.eq('id', huddleId)?.select('*, offices(name)')?.single();
+      })?.eq('id', huddleId)?.in('status', ['draft', 'unlocked'])?.select('*, offices(name)')?.single();
     if (error) throw error;
 
     await supabase?.from('huddle_audit_log')?.insert({
