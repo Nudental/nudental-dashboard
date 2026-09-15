@@ -11,15 +11,16 @@ from hosted_client import HostedQa, PROJECT
 
 REMOTE = r'''
 import http.client,json,socket,sys
-tests=json.load(sys.stdin)
+payload=json.load(sys.stdin);tests=payload['tests']
 result=[]
 for test in tests:
- c=http.client.HTTPConnection('qa',timeout=25)
+ c=(http.client.HTTPSConnection('nudashboard-qa-api.nuholdingllc.com',timeout=25)
+    if payload.get('public') else http.client.HTTPConnection('qa',timeout=25))
  def connect():
   c.sock=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM)
   c.sock.settimeout(25)
   c.sock.connect('/run/nudashboard-qa/api.sock')
- c.connect=connect
+ if not payload.get('public'):c.connect=connect
  headers={'Authorization':'Bearer '+test['token']} if test.get('token') else {}
  try:
   c.request('GET',test['path'],headers=headers)
@@ -37,6 +38,7 @@ print(json.dumps(result))
 
 def main():
     p = argparse.ArgumentParser(); p.add_argument('--connection', type=Path, required=True)
+    p.add_argument('--public', action='store_true', help='Use only the fixed published QA hostname')
     args = p.parse_args()
     api = HostedQa(json.loads(args.connection.read_text()))
     identities = json.loads((args.connection.parent / 'identities.private.json').read_text())
@@ -55,12 +57,13 @@ def main():
         'C:/Windows/System32/OpenSSH/ssh.exe', '-i', 'C:/Users/admas/.ssh/codex_collaboration_platform_ed25519',
         '-o', 'IdentitiesOnly=yes', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes',
         '-o', 'HostKeyAlias=yadon-abem-01.tail54918b.ts.net', '-o', 'ConnectTimeout=8',
-        'openclaw@137.184.165.120', command], input=json.dumps(tests), text=True,
+        'openclaw@137.184.165.120', command], input=json.dumps({'tests': tests, 'public': args.public}), text=True,
         capture_output=True, timeout=180)
     if result.returncode:
         raise SystemExit('QA runtime verification could not complete; private transport details suppressed')
     report = json.loads(result.stdout)
-    out = args.connection.parent.parent / 'qa-api-bootstrap-verification-20260915.json'
+    suffix = '-public' if args.public else ''
+    out = args.connection.parent.parent / ('qa-api-bootstrap-verification' + suffix + '-20260915.json')
     out.write_text(json.dumps(report, indent=2))
     print(json.dumps({'checks': len(report), 'passed': sum(r['pass'] for r in report),
                       'failed': [r['test'] for r in report if not r['pass']]}))

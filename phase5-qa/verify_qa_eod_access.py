@@ -12,11 +12,12 @@ REMOTE = r'''
 import http.client,json,socket,sys
 payload=json.load(sys.stdin);result=[]
 for test in payload['tests']:
- c=http.client.HTTPConnection('qa',timeout=30)
+ c=(http.client.HTTPSConnection('nudashboard-qa-api.nuholdingllc.com',timeout=30)
+    if payload.get('public') else http.client.HTTPConnection('qa',timeout=30))
  def connect():
   c.sock=socket.socket(socket.AF_UNIX,socket.SOCK_STREAM);c.sock.settimeout(30)
   c.sock.connect('/run/nudashboard-qa/api.sock')
- c.connect=connect
+ if not payload.get('public'):c.connect=connect
  headers={'Authorization':'Bearer '+payload['tokens'][test['actor']]}
  if not test.get('omit_key'):headers['X-API-Key']=payload['api_key']
  try:
@@ -46,6 +47,7 @@ print(json.dumps(result))
 
 def main():
     p = argparse.ArgumentParser(); p.add_argument('--connection', type=Path, required=True)
+    p.add_argument('--public', action='store_true', help='Use only the fixed published QA hostname')
     args = p.parse_args(); config = json.loads(args.connection.read_text()); api = HostedQa(config)
     identities = json.loads((args.connection.parent / 'identities.private.json').read_text())
     assert identities['project_ref'] == PROJECT
@@ -75,7 +77,7 @@ def main():
     for who in ('admin', 'super_admin', 'regional_manager'):
         add('global-role-' + who, who, 200, must_include=TEMP_ID)
     add('api-key-still-required', 'office_manager', 401, omit_key=True)
-    payload = {'tests': tests, 'tokens': tokens, 'api_key': config['api_key']}
+    payload = {'tests': tests, 'tokens': tokens, 'api_key': config['api_key'], 'public': args.public}
     assert all(t['actor'] in tokens for t in tests), 'A named synthetic actor is missing'
     command = 'python3 -c ' + "'" + REMOTE.replace("'", "'\"'\"'") + "'"
     result = subprocess.run(['C:/Windows/System32/OpenSSH/ssh.exe',
@@ -87,7 +89,8 @@ def main():
     if result.returncode:
         raise SystemExit('QA EOD verification could not complete; transport details suppressed')
     report = json.loads(result.stdout)
-    (args.connection.parent.parent / 'qa-api-eod-access-20260915.json').write_text(json.dumps(report, indent=2))
+    suffix = '-public' if args.public else ''
+    (args.connection.parent.parent / ('qa-api-eod-access' + suffix + '-20260915.json')).write_text(json.dumps(report, indent=2))
     print(json.dumps({'checks': len(report), 'passed': sum(r['pass'] for r in report),
                       'failed': [r for r in report if not r['pass']]}))
     if not all(r['pass'] for r in report):

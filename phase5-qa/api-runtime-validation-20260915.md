@@ -46,11 +46,11 @@ The QA boundary canonicalizes checked office aliases to the supported UUID
 unfiltered service-role query. This is covered by offline and live probes.
 
 Still required: authorization and mock integration for remaining routes,
-persistent QA hostname/frontend, all write-workflow and UI role checks, EOD
+all write-workflow and UI role checks, EOD
 submission/approval audit history investigation and temporary-record cleanup.
 Health continues to report `product_api_ready: false` intentionally.
 
-Hosting read-only check: no `nudashboard-qa` Pages project or tunnel exists.
-The existing token can list tunnels, but the proposed DNS-zone query returned
-403; resolve the exact zone/access through existing signed-in Cloudflare access.
+Persistent hosting is now deployed and verified. See
+`hosting-validation-20260915.md` for the exact dedicated tunnel, Pages release,
+public-endpoint tests, production check, and remaining API readiness limit.
 No shared tunnel or production routing has been changed.
