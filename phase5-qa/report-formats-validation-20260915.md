@@ -26,5 +26,19 @@ notes and footers are readable and unclipped. Existing zero/undefined display
 conventions remain unchanged. Poppler emitted font fallback notices; the
 rendered output had no missing text or glyphs in these scenarios.
 
-Deployment and live-format checks are pending. Browser save and Reports UI
-checks remain pending the existing Work browser connection.
+Deployed only to the existing isolated QA API from source
+`9fbd78730b6cea54a3673cf1a86074ee18e83ed1`, release
+`175529879803a51646cd8985474c2a0fdb4087ea9cb1eb47a9eb8160913039b3`.
+Prior release `581c259b50e6bce9cf6f1f14f88cfa51070c548ca9f07ae3afd80c38117daccd`
+and a fresh rollback archive remain recoverable. QA configuration and the
+production entry were unchanged; no frontend or production deployment occurred.
+
+Live verification: **78/78 PASS**. Eight deliberate XLSX/PDF downloads covered
+admin all-office, office-manager scope, monthly trend and repeated download.
+Every file was saved, reopened and parsed, then cleaned up. Eight distinct audit
+records remain as legitimate QA history. The temporary manager export permission
+was restored to false and denial was confirmed again for both formats. Missing
+session, ordinary staff, wrong office, forged identity and unreviewed report
+requests were rejected. **205 closed-route regressions PASS** after deployment.
+Browser save and Reports UI checks remain pending the existing Work browser
+connection; API file readback is not evidence of a browser save.
