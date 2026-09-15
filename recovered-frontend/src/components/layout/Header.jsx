@@ -118,17 +118,17 @@ const Header = ({ onMobileMenuToggle, mobileMenuOpen, onOpenCommandPalette }) =>
       setUnreadCount(count);
     };
     loadCount();
+    window.addEventListener('notifications:changed', loadCount);
 
-    // Subscribe to new notifications
+    // Recount saved changes, including read/archive updates.
     let channel = null;
     try {
-      channel = notificationsService?.subscribeToNotifications(user?.id, () => {
-        setUnreadCount(prev => prev + 1);
-      });
+      channel = notificationsService?.subscribeToNotifications(user?.id, loadCount);
     } catch (err) {
       console.error('Failed to subscribe to notifications:', err);
     }
     return () => {
+      window.removeEventListener('notifications:changed', loadCount);
       if (channel) {
         try {
           notificationsService?.unsubscribe(channel);

@@ -23,4 +23,7 @@ repair. The current frontend's 1218 tests and 17 hosted checks passed earlier.
 
 The task and its notification remain tracked for cleanup. Its linked Huddle stays
 available for submission/review tests. The temporary QA Staff task-page permission
-must still be restored to false after the bounded tests. Production unchanged.
+was restored to its original false value after the bounded tests. All eight live
+page/API permission checks passed again; the staff UI again denies Team
+Assignments. Restoration is recorded in the temporary-permission journal.
+Production unchanged.
