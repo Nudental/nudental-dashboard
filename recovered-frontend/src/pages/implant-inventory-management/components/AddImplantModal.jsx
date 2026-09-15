@@ -62,6 +62,9 @@ const AddImplantModal = ({ record, offices, companies, systems, platformSizes, l
   const [showScanner, setShowScanner] = useState(false);
   const [attachFile, setAttachFile] = useState(null);
   const [attachPreview, setAttachPreview] = useState(null);
+  const isPdfAttachment = attachFile
+    ? attachFile.type === 'application/pdf' || /\.pdf$/i.test(attachFile.name || '')
+    : /\.pdf(?:[?#]|$)/i.test(form?.attachment_url || '');
   const [auditOpen, setAuditOpen] = useState(false);
   const [toast, setToast] = useState('');
 
@@ -364,7 +367,9 @@ const AddImplantModal = ({ record, offices, companies, systems, platformSizes, l
               </Field>
               <Field label="Attachment (sticker, label, package photo)" error={undefined}>
                 <input type="file" accept="image/*,application/pdf" onChange={e => { const f = e?.target?.files?.[0]; if (f) { setAttachFile(f); setAttachPreview(URL.createObjectURL(f)); } }} className="text-xs text-muted-foreground" />
-                {attachPreview && <img src={attachPreview} alt="Attachment preview" className="mt-2 max-h-24 rounded-lg border border-border object-contain" />}
+                {attachPreview && (isPdfAttachment
+                  ? <a href={attachPreview} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block text-sm text-primary underline">Open PDF attachment</a>
+                  : <img src={attachPreview} alt="Attachment preview" className="mt-2 max-h-24 rounded-lg border border-border object-contain" />)}
               </Field>
             </div>
           )}
