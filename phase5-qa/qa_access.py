@@ -2,7 +2,7 @@
 
 Unreviewed routes remain denied, including for super_admin. Enabled permissions
 and office assignments are read fresh from the existing application tables.
-Only individually reviewed EOD and office-catalogue reads are enabled.
+Only individually reviewed EOD/office reads and synthetic report export are enabled.
 """
 from dataclasses import dataclass
 from urllib.parse import parse_qsl, urlencode
@@ -83,6 +83,7 @@ class ReviewedRoutes:
         # Basic location metadata is available to verified active accounts,
         # restricted to their existing office assignments in the response.
         ('GET', '/v2/offices'): (),
+        ('POST', '/v2/reports/export'): ('resources.reports.individual_export',),
     }
 
     def __call__(self, actor, scope):
@@ -91,6 +92,11 @@ class ReviewedRoutes:
         route = (scope.get('method'), scope.get('path'))
         if route not in self.enabled:
             return False
+        if route == ('POST', '/v2/reports/export'):
+            # The report wrapper checks the bounded body and exact office list.
+            # Retain the existing Reports UI's admin/super-admin export allowance.
+            from qa_report_export import can_export
+            return can_export(actor)
         required = self.enabled[route]
         if required and not any(actor.allows(p) for p in required):
             return False

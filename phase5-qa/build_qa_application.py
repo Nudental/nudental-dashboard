@@ -127,7 +127,7 @@ def build(output):
         outputs[relative] = content
         report.append({'file': str(relative).replace('\\', '/'), 'sha256': hashlib.sha256(content).hexdigest(),
                        'qa_overrides': changes})
-    for name in ('qa_launcher.py', 'qa_transport.py', 'runtime_policy.py', 'api_identity.py', 'qa_access.py', 'qa_offices.py'):
+    for name in ('qa_launcher.py', 'qa_transport.py', 'runtime_policy.py', 'api_identity.py', 'qa_access.py', 'qa_offices.py', 'qa_report_export.py'):
         outputs[Path(name)] = (HERE / name).read_bytes()
     output.mkdir(parents=True)
     (output / 'middleware/static').mkdir(parents=True)

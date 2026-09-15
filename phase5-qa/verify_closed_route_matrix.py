@@ -17,12 +17,14 @@ SYNTHETIC_ID = '00000000-0000-4000-8000-000000000005'
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--connection', type=Path, required=True)
+    parser.add_argument('--report-adapter', action='store_true', help='Verify the reviewed Patient Flow CSV stage')
     args = parser.parse_args()
     config = json.loads(args.connection.read_text())
     api = HostedQa(config)
     identities = json.loads((args.connection.parent / 'identities.private.json').read_text())
     assert identities['project_ref'] == PROJECT
-    output = args.connection.parent.parent / 'qa-closed-route-matrix-20260915.json'
+    suffix = '-report-adapter' if args.report_adapter else ''
+    output = args.connection.parent.parent / ('qa-closed-route-matrix'+suffix+'-20260915.json')
     assert not output.exists(), 'Preserve the existing report'
     tokens, results = {}, []
 
@@ -53,7 +55,7 @@ def main():
         status, health = request('GET', '/health')
         assert status == 200 and health['environment'] == 'qa' and health['project_ref'] == PROJECT
         assert health['external_execution'] == 'disabled' and health['product_api_ready'] is False
-        assert health['reviewed_route_methods'] == 2
+        assert health['reviewed_route_methods'] == (3 if args.report_adapter else 2)
         for key in ('internet_sockets_blocked', 'production_home_hidden', 'root_home_hidden',
                     'recovered_application_loaded', 'qa_database_connected'):
             assert health[key] is True, key
@@ -72,6 +74,8 @@ def main():
         for route in routes:
             method, path = route['method'], route['path']
             if method == 'OPTIONS' or (method, path) in exempt:
+                continue
+            if args.report_adapter and role == 'super_admin' and (method, path) == ('POST', '/v2/reports/export'):
                 continue
             if role == 'staff' and method == 'GET' and not path.startswith(('/v2/reports', '/v2/admin', '/plaid')):
                 continue

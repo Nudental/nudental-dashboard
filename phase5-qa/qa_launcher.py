@@ -75,6 +75,9 @@ def main():
     finally:
         qa_database.close()
     install_office_route(app)
+    import report_export
+    from qa_report_export import install_report_route
+    install_report_route(app, report_export)
     # Preserve recovered handlers, replacing only public health diagnostics and
     # production CORS configuration in this explicitly QA-only launcher.
     app.router.routes = [r for r in app.router.routes if getattr(r, 'path', None) not in ('/', '/health')]
@@ -94,6 +97,8 @@ def main():
                          allow_origins=['https://nudashboard-qa.pages.dev', 'http://127.0.0.1:8770'],
                          allow_methods=['GET', 'HEAD', 'POST', 'PATCH', 'PUT', 'DELETE', 'OPTIONS'],
                          allow_headers=['Authorization', 'Content-Type', 'X-API-Key', 'Idempotency-Key'],
+                         expose_headers=['Content-Disposition', 'X-Audit-Id', 'X-PHI-Flag',
+                                         'X-Row-Count', 'X-NuDental-Environment', 'X-QA-Synthetic'],
                          allow_credentials=True)
     uvicorn.run(cors, fd=3, loop='asyncio', http='h11', ws='none', lifespan='on',
                 access_log=False, log_level='warning', proxy_headers=False)
