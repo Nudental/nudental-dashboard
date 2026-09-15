@@ -219,6 +219,8 @@ const PendingApprovalsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
   const [actionLoading, setActionLoading] = useState(false);
+  const [bulkRejectOpen, setBulkRejectOpen] = useState(false);
+  const [bulkRejectReason, setBulkRejectReason] = useState('');
 
   // ─── Full-scope counts (independent of active status filter) ───────────────
   const [fullCounts, setFullCounts] = useState({
@@ -689,7 +691,7 @@ const PendingApprovalsPage = () => {
   // ─── Bulk reject ───────────────────────────────────────────────────────────
   const handleBulkReject = async () => {
     if (selectedIds?.length === 0) return;
-    const note = window.prompt('Rejection reason (required for all selected):');
+    const note = bulkRejectReason;
     if (!note?.trim()) return;
     setActionLoading(true);
     try {
@@ -717,6 +719,8 @@ const PendingApprovalsPage = () => {
         });
       }));
       success('Bulk Rejected', `${selectedIds?.length} entries rejected.`);
+      setBulkRejectOpen(false);
+      setBulkRejectReason('');
       setSelectedIds([]);
       fetchEntries();
       fetchFullCounts();
@@ -949,7 +953,7 @@ const PendingApprovalsPage = () => {
           <button onClick={handleBulkApprove} disabled={actionLoading} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50">
             <Icon name="CheckCheck" size={16} />Approve All
           </button>
-          <button onClick={handleBulkReject} disabled={actionLoading} className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50">
+          <button onClick={() => { setBulkRejectReason(''); setBulkRejectOpen(true); }} disabled={actionLoading} className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50">
             <Icon name="XCircle" size={16} />Reject All
           </button>
           <button onClick={() => setSelectedIds([])} className="text-sm text-muted-foreground hover:text-foreground">Clear</button>
@@ -1173,6 +1177,24 @@ const PendingApprovalsPage = () => {
           <div className="flex gap-2">
             <button disabled={pageView.page <= 1} onClick={() => { setSelectedIds([]); setDisplayPage(pageView.page - 1); }} className="px-3 py-2 rounded-lg border border-border disabled:opacity-50">Previous page</button>
             <button disabled={pageView.page >= pageView.pageCount} onClick={() => { setSelectedIds([]); setDisplayPage(pageView.page + 1); }} className="px-3 py-2 rounded-lg border border-border disabled:opacity-50">Next page</button>
+          </div>
+        </div>
+      )}
+      {bulkRejectOpen && (
+        <div className="fixed inset-0 z-[400] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="bulk-reject-title">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="relative w-full max-w-md bg-popover border border-border rounded-xl shadow-2xl p-5 space-y-4">
+            <h2 id="bulk-reject-title" className="text-base font-bold text-foreground">Reject selected reports</h2>
+            <p className="text-sm text-muted-foreground">Provide a reason for all {selectedIds?.length} selected reports.</p>
+            <label htmlFor="bulk-reject-reason" className="block text-sm font-medium text-foreground">Rejection reason (required)</label>
+            <textarea id="bulk-reject-reason" value={bulkRejectReason} onChange={e => setBulkRejectReason(e?.target?.value)} rows={3} autoFocus disabled={actionLoading}
+              className="w-full px-3 py-2 text-sm bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <div className="flex gap-3">
+              <button onClick={() => { setBulkRejectOpen(false); setBulkRejectReason(''); }} disabled={actionLoading}
+                className="flex-1 py-2 border border-border rounded-lg text-sm disabled:opacity-50">Cancel</button>
+              <button onClick={handleBulkReject} disabled={actionLoading || !bulkRejectReason?.trim()}
+                className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm disabled:opacity-50">{actionLoading ? 'Processing...' : 'Reject selected'}</button>
+            </div>
           </div>
         </div>
       )}
