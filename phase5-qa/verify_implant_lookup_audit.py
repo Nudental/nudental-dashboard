@@ -57,6 +57,9 @@ def main():
                 api.request(path,method='DELETE',token=tokens['admin'])
             check(f['table']+' temporary cleanup',api.request(path+'&select=id')==[])
             f['audit_after_cleanup']=audit(f['table'],f['id'])
+            if a.stage=='repaired':
+                rows=f['audit_after_cleanup']
+                check(f['table']+' cleanup retains actor and prior values',len(rows)==4 and any(r['action']=='DELETE' and r['user_id']==actors['admin']['id'] and r['old_values'][f['field']]==f['label'] for r in rows))
         report['cleanup']=True;save()
     failed=[r['test'] for r in report['results'] if not r['pass']]
     print(json.dumps({'stage':a.stage,'checks':len(report['results']),'failed':failed,'cleanup':report['cleanup']}))
