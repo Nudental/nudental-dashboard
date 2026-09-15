@@ -13,7 +13,7 @@ export const useAuth = () => {
 }
 
 // Profile fields required for the gate — no raw UUIDs exposed in UI
-const PROFILE_GATE_FIELDS = 'id, email, full_name, username, role, status, is_active, is_approved, must_change_password, profile_photo_url, phone, phone_number, phone_verified'
+const PROFILE_GATE_FIELDS = 'id, email, full_name, username, role, office_id, status, is_active, is_approved, must_change_password, profile_photo_url, phone, phone_number, phone_verified'
 
 // Evaluate the gate result from a profile row.
 // Returns: 'blocked' | 'must_change_password' | 'ok'
