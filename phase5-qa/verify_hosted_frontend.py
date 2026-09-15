@@ -8,8 +8,8 @@ import urllib.request
 QA = 'https://nudashboard-qa.pages.dev'
 API = 'https://nudashboard-qa-api.nuholdingllc.com'
 PRODUCTION = 'https://nudashboard.com'
-ENTRY = '/assets/index-DKzXh5P5.js'
-SHA = '118fbdc990130d5e10013e0c880cc03d26f80c5618ae425487171dd3c0e30ddf'
+ENTRY = '/assets/index-IbeDC0R9.js'
+SHA = 'caea163d6c11a937048e6cb5acaead2735e6050558c7b8280aff9b19b419a65c'
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):

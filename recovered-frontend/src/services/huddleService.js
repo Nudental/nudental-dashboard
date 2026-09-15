@@ -95,11 +95,13 @@ export const huddleService = {
     const { data: blocks } = await supabase?.from('huddle_provider_blocks')?.select('*')?.eq('huddle_id', huddleId)?.order('block_order');
 
     const { data: checklist } = await supabase?.from('huddle_checklist_items')?.select('*')?.eq('huddle_id', huddleId)?.order('item_number');
+    const { data: linkedTasks } = await supabase?.from('action_items')?.select('checklist_item_id')?.eq('huddle_id', huddleId);
+    const taskItemIds = new Set((linkedTasks || []).map(task => task.checklist_item_id));
 
     return {
       ...huddle,
       providerBlocks: blocks || [],
-      checklistItems: checklist || [],
+      checklistItems: (checklist || []).map(item => ({ ...item, has_task: taskItemIds.has(item.id) })),
     };
   },
 
