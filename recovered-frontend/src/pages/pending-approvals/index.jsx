@@ -1508,7 +1508,7 @@ const PendingApprovalsPage = () => {
                 <ul className="list-disc list-inside text-xs space-y-0.5 mt-1">
                   <li>Editing moves this record to <strong>Pending Re-Approval</strong></li>
                   <li>Full audit trail of all changes is preserved</li>
-                  <li>Record must be re-approved to post to analytics</li>
+                  <li>Record must be re-approved to complete its review workflow</li>
                 </ul>
               </div>
               <div className="bg-muted/40 rounded-lg p-3 text-xs text-muted-foreground">
