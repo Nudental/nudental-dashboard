@@ -11,7 +11,7 @@ eight actual roles plus account/office variants. Three API routes are positively
 reviewed (office read, EOD read, synthetic Patient Flow export); other operational
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
-QA schema repairs 001–018 are applied. Latest QA frontend release
+QA schema repairs 001–019 are applied. Latest QA frontend release
 `0dbd298d-1cf5-446c-b843-e43156643dd6` uses source
 `3b943a3d14d4b8c99d90d89faec6fd9ed1172e80`. All 1,336 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
@@ -21,12 +21,13 @@ Recent live checks/repairs: [office assignment](user-office-transaction-validati
 [office administration](office-ui-validation-20260915.md),
 [providers](provider-ui-validation-20260915.md),
 [cost drivers](cost-driver-toggle-validation-20260915.md), and
-[service/vendor categories](service-category-toggle-validation-20260915.md).
+[service/vendor categories](service-category-toggle-validation-20260915.md), and
+[monthly goals and goal office access](office-goal-validation-20260915.md).
 Temporary records from those checks and the completed implant/import checks are
 cleaned; audit evidence retained. Original Huddle/EOD/task fixture cleanup remains
 pending until remaining workflow checks finish.
 
-Phase 5 is incomplete. Continue monthly/service goals, remaining safe write/role
+Phase 5 is incomplete. Continue service-goal generation, remaining safe write/role
 checks, operational mock integration, bounded performance investigation, final
 production read-only regression, and cleanup. The previously presented Expense
 accounting-owner decision remains pending; other work continues independently.
