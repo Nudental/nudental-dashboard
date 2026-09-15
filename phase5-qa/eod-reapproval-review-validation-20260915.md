@@ -19,6 +19,12 @@ remain unchanged. No database, handler, calculation, or execution change is made
 - Archive SHA256
   16a00910917650968ce9bf35f40fe66933eae2e52d1bc4836fe9e9616d2195ec.
 
-QA publication/live verification PENDING. Existing test fixture is tracked by
-eod_approval_flow_fixture.py; it will be cleaned after the approval/cancellation/
-repeat-action workflow checks. Prior production and QA releases are preserved.
+QA deployment b50c0f45-c19d-400b-a307-c967393dadbe succeeded from f7950fa5.
+17/17 hosted checks PASS; production deployment remains unchanged. Both QA test
+views now show the note and Approve/Reject controls for pending reapproval.
+Approving through Review persisted as approved, updated the counters, and added
+one reapproval event with the correct regional-manager actor: live PASS.
+
+The subsequent stale-view repeat exposed a separate duplicate-history defect,
+now being repaired. The fixture is tracked by eod_approval_flow_fixture.py and
+will be cleaned after the repeat/rejection checks. Earlier releases are preserved.

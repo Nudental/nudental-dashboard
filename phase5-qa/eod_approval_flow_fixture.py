@@ -61,7 +61,10 @@ def main():
         report['counts_after_cleanup'] = counts()
         assert report['counts_after_cleanup'] == data['before']
     manifest.with_name('qa-eod-approval-flow-'+args.action+'-'+row['status']+'-20260915.json').write_text(json.dumps(report,indent=2))
-    print(json.dumps(report))
+    print(json.dumps({'fixture_id':row_id,'status':row['status'],'counts':report['counts'],
+                      'history_events':len(history),'audit_events':len(audit),
+                      'last_history_event':history[-1] if history else None,
+                      'cleanup':report['cleanup'],'production_connected':False}))
 
 if __name__ == '__main__':
     main()
