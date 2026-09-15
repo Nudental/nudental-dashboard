@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { OFFICE_LIST } from '../constants/offices';
+import { dashboardEnvironment } from '../config/dashboardEnvironment';
 
 export const OFFICE_NAMES = [
   'Nu Dental of Eatontown',
@@ -17,6 +18,11 @@ export const IMPLANT_STATUS_LABELS = { in_stock: 'In Stock', used: 'Used', retur
 
 // ── Fetch offices ─────────────────────────────────────────────────────────
 export const fetchOfficesForImport = async () => {
+  if (dashboardEnvironment.isQa) {
+    const { data, error } = await supabase?.from('offices')?.select('id, name')?.eq('is_active', true)?.order('name');
+    if (error) throw error;
+    return data || [];
+  }
   // Use the central OFFICE_LIST constant (single source of truth for the 4 Nu Dental offices).
   // This avoids the mismatch where the DB stores short names ('Eatontown') but
   // OFFICE_NAMES_LOWER expected full names ('nu dental of eatontown'), causing an empty result.
