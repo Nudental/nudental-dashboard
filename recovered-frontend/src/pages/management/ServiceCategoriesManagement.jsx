@@ -313,10 +313,10 @@ const ServiceCategoriesManagement = () => {
   const handleEdit = (row) => { setEditRow(row); setModalOpen(true); };
   const handleDelete = (row) => setDeleteRow(row);
 
-  const handleToggleActive = async (row) => {
+  const handleToggleActive = async (id, isActive) => {
     setSaving(true);
     try {
-      await serviceCategoriesService?.toggleActive(row?.id, !row?.is_active);
+      await serviceCategoriesService?.toggleActive(id, isActive);
       await loadData();
     } catch (err) {
       setError(err?.message || 'Failed to update status');
