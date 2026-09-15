@@ -10,16 +10,16 @@ import { format, parseISO } from 'date-fns';
 // ─── Send EOD rejection email to Office Manager ───────────────────────────────
 const sendRejectionEmail = async ({ entry, rejectionReason, rejectedByName }) => {
   try {
-    if (!entry?.submitted_by) return;
+    if (!entry?.submitted_by) return false;
     const { data: omProfile } = await supabase
       ?.from('user_profiles')
       ?.select('email, full_name')
       ?.eq('id', entry?.submitted_by)
       ?.maybeSingle();
-    if (!omProfile?.email) return;
+    if (!omProfile?.email) return false;
     const SUPABASE_URL = import.meta.env?.VITE_SUPABASE_URL;
     const SUPABASE_ANON_KEY = import.meta.env?.VITE_SUPABASE_ANON_KEY;
-    await fetch(`${SUPABASE_URL}/functions/v1/eod-rejection-notification`, {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/eod-rejection-notification`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
       body: JSON.stringify({
@@ -32,8 +32,12 @@ const sendRejectionEmail = async ({ entry, rejectionReason, rejectedByName }) =>
         entry_id: entry?.id,
       }),
     });
+    if (!response?.ok) return false;
+    const result = await response.json();
+    return result?.success === true && typeof result?.id === 'string' && result.id.trim().length > 0;
   } catch (err) {
     console.warn('[eod-rejection-email] Failed to send rejection email:', err?.message);
+    return false;
   }
 };
 
@@ -505,8 +509,8 @@ const PendingApprovalsPage = () => {
         changedBy: userProfile?.id, changerName: approverName, changerRole: userProfile?.role,
         note, rejectionReason: note, eventType: 'rejection',
       });
-      await sendRejectionEmail({ entry, rejectionReason: note, rejectedByName: approverName });
-      success('Rejected', 'Entry rejected. Office Manager has been notified.');
+      const notificationAccepted = await sendRejectionEmail({ entry, rejectionReason: note, rejectedByName: approverName });
+      success('Rejected', `Entry rejected. ${notificationAccepted ? 'Notification request accepted.' : 'Notification could not be confirmed.'}`);
       setReviewEntry(null);
       setReviewNote('');
       fetchEntries();
@@ -558,8 +562,8 @@ const PendingApprovalsPage = () => {
         oldValues: { status: 'approved', approved_by: entry?.approved_by, approved_at: entry?.approved_at },
         newValues: { status: 'rejected_after_approval', rejected_by: userProfile?.id },
       });
-      await sendRejectionEmail({ entry, rejectionReason: rejectAfterApprovalReason, rejectedByName: actorName });
-      success('Approval Reversed', 'Record changed to Rejected After Approval.');
+      const notificationAccepted = await sendRejectionEmail({ entry, rejectionReason: rejectAfterApprovalReason, rejectedByName: actorName });
+      success('Approval Reversed', `Record changed to Rejected After Approval. ${notificationAccepted ? 'Notification request accepted.' : 'Notification could not be confirmed.'}`);
       setShowRejectWarning(false);
       setRejectAfterApprovalEntry(null);
       setRejectAfterApprovalReason('');
