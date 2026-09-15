@@ -7,7 +7,7 @@ from pathlib import Path
 from urllib.parse import quote
 from hosted_client import HostedQa, PROJECT
 
-LABEL = 'QA TEMP PH5-TASK concurrent status 20260915'
+LABEL = 'QA TEMP PH5-TASK concurrent status repaired 20260915'
 OFFICE = '9219b493-5765-5da0-939f-221c7f9944d9'
 
 def main():
@@ -20,7 +20,7 @@ def main():
     actors = json.loads((args.connection.parent / 'identities.private.json').read_text())
     assert actors['project_ref'] == PROJECT
     actors = actors['actors']
-    manifest = root / 'qa-task-status-concurrency-20260915-manifest.json'
+    manifest = root / 'qa-task-status-concurrency-repaired-20260915-manifest.json'
     if args.stage == 'prepare':
         assert not manifest.exists(), 'Existing fixture manifest must be preserved'
         assert api.request('/rest/v1/action_items?select=id&action_required=eq.' + quote(LABEL)) == []

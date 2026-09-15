@@ -14,6 +14,7 @@ They are not part of any production deployment workflow.
 |006-eod-history-identity.sql|Ordinary/cross-office history writes and forged reviewer identity fields|7 hosted bypasses plus one inconsistent inactive-profile offline case|24 of 24 write/read checks pass|Applied; 13 Auth/PostgREST writes, 7 visibility checks and both approval UI paths pass; temporary fixtures cleaned|
 |007-huddle-child-audit-coverage.sql|Provider/checklist edits persist without audit history|Both table gaps reproduced live and offline|10 of 10 pass|Applied; 11 live UI/Auth/PostgREST/audit/cleanup checks pass; extra fixtures cleaned|
 |008-task-page-permission.sql|Disabled task-page permission still allows direct API reads|QA staff UI denied but API returned assigned task|11 of 11 pass|Applied; 8 live role/read/write checks pass; temporary QA staff permission test requires restoration|
+|009-task-field-permission.sql|Assigned staff can edit manager-only priority through the API|Live priority edit bypass reproduced and restored|14 of 14 pass|Applied; 9 live permission checks and ordinary staff UI completion/readback pass|
 
 See [September 14 hosted validation](../hosted-validation-20260914.md) for 001/002
 and [September 15 EOD audit validation](../eod-audit-validation-20260915.md) for 003.
