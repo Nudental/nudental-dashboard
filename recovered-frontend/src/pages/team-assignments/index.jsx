@@ -177,7 +177,7 @@ const TeamAssignmentsContent = () => {
         { actorId: user?.id, existingTask: task }
       );
       if (err) throw err;
-      setTasks(prev => prev?.map(t => t?.id === taskId ? { ...t, ...data } : t));
+      await loadTasks();
     } catch (err) {
       setError('Failed to update task status');
     } finally {
@@ -195,7 +195,7 @@ const TeamAssignmentsContent = () => {
         { actorId: user?.id, existingTask }
       );
       if (err) throw err;
-      setTasks(prev => prev?.map(t => t?.id === taskId ? { ...t, ...data } : t));
+      await loadTasks();
       setEditingTask(null);
     } catch (err) {
       setError('Failed to save task');
