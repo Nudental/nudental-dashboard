@@ -1,5 +1,6 @@
 """Actual recovered report formatter, FastAPI and QA scope adapter; no network."""
 import csv
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import replace
 import importlib
 import io
@@ -154,6 +155,26 @@ class ReportExportTests(unittest.TestCase):
     def test_empty_office_assignments_fail_without_unfiltered_export(self):
         self.actors['manager']=replace(self.actors['manager'],office_ids=frozenset())
         self.assertEqual(self.request().status_code,403);self.assertEqual(self.audit,[])
+
+    def test_missing_mismatched_or_nonsynthetic_profile_blocks_export(self):
+        for rows in ([], [None], [{'id':ADMIN,'email':'qa-admin@nudashboard.example.test'}],
+                     [{'id':MANAGER,'email':'not-a-qa-identity@example.com'}]):
+            with self.subTest(rows=rows):
+                self.module._sb_rest=lambda *args, **kwargs:rows
+                self.assertEqual(self.request().status_code,503)
+        self.assertEqual(self.audit,[])
+
+    def test_parallel_office_exports_do_not_share_request_scope(self):
+        self.actors['manager_b']=replace(self.actors['manager'],
+            id='00000000-0000-4000-8000-000000000003',office_id=B,office_ids=frozenset((B,)))
+        roles=['manager','manager_b']*3
+        with ThreadPoolExecutor(max_workers=4) as pool:
+            responses=list(pool.map(self.request,roles))
+        for role,response in zip(roles,responses):
+            rows=self.rows(response);self.assertEqual(len(rows),1)
+            self.assertEqual(rows[0]['Office'],'QA / Office A' if role=='manager' else 'QA / Office B')
+            self.assertEqual(rows[0]['Total Scheduled'],'12' if role=='manager' else '120')
+        self.assertEqual(len(self.audit),6)
 
 
 if __name__=='__main__':unittest.main()

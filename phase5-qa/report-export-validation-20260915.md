@@ -18,10 +18,10 @@ file delivery. Requests are limited to 16 KB and a 366-day date interval. Files
 are generated in memory; no delivery or provider connection occurs. The existing
 QA CORS policy exposes only the download/audit metadata headers needed by the UI.
 
-All 107 retained/new QA backend tests PASS using the server's pinned dependencies,
-with no skips. Fifteen new tests exercise the actual recovered CSV generator,
+All 109 retained/new QA backend tests PASS using the server's pinned dependencies,
+with no skips. Seventeen new tests exercise the actual recovered CSV generator,
 role and office boundaries, identity forgery, date/size validation, explicit QA
-labeling, audit failure and request-scope cleanup. The first test archive omitted
+labeling, audit failure, parallel office isolation and request-scope cleanup. The first test archive omitted
 two preserved fixtures needed by old tests; its 8 setup errors were resolved by
 including those fixtures in the full run. No application test assertions were
 weakened.
