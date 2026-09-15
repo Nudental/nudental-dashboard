@@ -26,11 +26,12 @@ checks pass, including stock readback, own-office use, admin cross-office use,
 inactive/unapproved denial, unlinked usage and retained admin/staff edit roles.
 Every temporary write rolls back; both inventory quantities finish at five.
 
-Deployment and hosted repaired verification are PENDING because the existing QA
-SQL editor/browser connection is unavailable. The retained live verifier includes
-own-office stock persistence and repeated-identity protection for the repaired
-run. Browser workflow/counter/audit checks remain PENDING. This candidate is not
-a deployed or live-verified repair, and no production system was contacted.
+Deployed only to the isolated QA project after browser access returned. Saved
+SQL snippet `f83480ec-0da8-4d9c-aecf-16085d12e25a` confirms both new policies are
+restrictive. **14/14 hosted cases PASS**, including own-office stock persistence,
+repeated-identity protection, cross-office denial and inactive/unapproved denial.
+All disposable inventory and usage records were cleaned. Broader inventory UI,
+counter and audit workflows remain pending. No production system was changed.
 
 Combined installation rehearsal also PASS: all twelve QA repair migrations
 install together, both new scripts reject execution without the QA environment

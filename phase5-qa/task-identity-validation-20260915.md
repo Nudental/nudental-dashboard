@@ -28,5 +28,9 @@ all five supported manager creators, staff lifecycle transitions, denied metadat
 forgery, historical-value preservation, ordinary manager edits and office scope.
 Test records were rolled back. Original schema/templates remain unchanged.
 
-**Candidate only.** Hosted deployment and the identical live retest are pending
-access to the existing QA SQL editor. No production database or policy changed.
+Deployed only to the existing isolated QA database. SQL snippet
+`ebfabe7a-6a2a-4bc5-acdc-16cbb469b00d` confirms the trigger enabled. The identical
+**12/12 live cases PASS**, with no unexpected allows. All temporary fixtures were
+cleaned and the staff permission was restored. The manager task page still loads
+its original single completed task, correct counters and New Task/Edit controls.
+No production database or policy changed.

@@ -27,10 +27,12 @@ The in-memory PostgreSQL negative control reproduces 13 bypass cases. All 32
 repaired checks pass, including the four reviewer roles, ordinary edits, inserts,
 submitted unlock and cross-office denial. All test transactions roll back.
 
-Deployment: PENDING. Browser access to the existing QA SQL editor is unavailable.
-Hosted repaired verification and UI regression remain PENDING. This is not a
-live-verified repair and has not been applied to production or hosted QA.
-Run the retained verifier with `--stage repaired` after the isolated deployment.
+Deployed to the existing isolated QA project after browser access returned.
+SQL snippet `734a7d11-ddcb-4469-8ad2-48dbfd9f152e` confirms the trigger enabled.
+The identical eight Auth/PostgREST cases now **PASS**, with no unexpected allows;
+all temporary fixtures were cleaned up. The ordinary manager Huddle history page
+still loads the original draft with the expected office and date. No production
+policy or data changed. Broader reviewer UI lifecycle testing continues separately.
 The separate concurrent-submit frontend candidate remains pending its own live
 verification and must be verified independently.
 

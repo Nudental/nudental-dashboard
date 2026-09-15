@@ -42,3 +42,15 @@ Archive SHA256 991fe63e856c4a6878f30a95fc1490d8ab04db4a3c98f918d80bb0157a44d550.
 Browser controls became unavailable before publication. Candidate publication
 and original two-view live retest remain pending; QA stays on verified 37eafbcf.
 Temporary diagnostic tabs were signed out/closed; ports 8772/8773 no longer listen.
+
+After browser access returned, the fresh candidate was deployed only to QA as
+`c5f7596c-0d48-4b06-a880-c8d5837b896b`, source
+`145914c74d5ea2c8e267537df5ea47e1f45c6451`. Both browser views loaded
+`index-CDEarjji.js` and rendered the same draft correctly. The first submission
+succeeded and added exactly one submit narrative (two preserved original entries
+became three). The stale second view displayed a submission error; independent
+readback confirmed that the complete submission record and all three narratives
+were unchanged. **Original two-view test PASS.** All **17 hosted artifact, header,
+CORS and production-entry checks PASS**. The prior QA deployment remains
+recoverable. Production was not deployed or changed. Broader Huddle review,
+notes, counter and final cleanup workflows continue separately.
