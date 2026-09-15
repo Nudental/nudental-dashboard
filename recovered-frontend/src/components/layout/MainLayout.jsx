@@ -265,12 +265,9 @@ const MainLayout = () => {
         }}
       >
         <div
-          className="hidden lg:block"
-          style={{ marginLeft: sidebarWidth }}
+          className="lg:ml-[var(--dashboard-sidebar-width)]"
+          style={{ '--dashboard-sidebar-width': `${sidebarWidth}px` }}
         >
-          <Outlet />
-        </div>
-        <div className="lg:hidden">
           <Outlet />
         </div>
       </main>
