@@ -16,7 +16,20 @@ Eight actual-handler tests: original code passes two and fails six. Tests cover
 four newer states, duplicate reviewers, missing/invisible rows, normal approval,
 and permission denial. All eight now pass, together with all 1,255 retained
 frontend regression tests, zero skips. QA build and all 510 source-file parity
-checks pass. Deployment and the repeated live test remain pending.
+checks pass.
+
+QA deployment `d58333fb-9b2e-42d6-b04c-d3810721062e` from source
+`b69bd2661053946daec5c1fc03f42d4d7cc2bd1e` passed. Both browser views verified
+`index-Bp307bP2.js`, SHA256
+`95339e881f9d68df87712cc7b516ccbc6c8abddc32911c78a42bb8589b988a30`.
+All 17 hosted health, boundary and unchanged-production checks passed.
+
+Repeated live test PASS: first approval saved once; the second view displayed
+Approve Failed with refresh/review guidance. Exact row and history snapshots
+remained unchanged, with one approval entry. The new synthetic Huddle was cleaned
+after evidence capture in `qa-huddle-approval-repaired-20260915.json`. Previous QA
+release `ab3fe6f4-ffe3-4eb2-91a9-d5868d9df226` remains recoverable. Production
+deployment remains `1f1f91bc-5dbd-4500-8bfd-d4e2039ba601`.
 
 Prior reviewer UI checks passed addendum save/readback/history, unlock mandatory
 reason and cancel, unlock persistence after refresh, and resubmission history.
