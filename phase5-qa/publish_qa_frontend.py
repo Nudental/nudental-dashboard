@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import subprocess
 import urllib.error
@@ -23,7 +24,14 @@ def main():
     parser.add_argument('--archive', type=Path, required=True)
     parser.add_argument('--sha256', required=True)
     parser.add_argument('--commit', required=True)
+    parser.add_argument('--entry', default=ENTRY)
+    parser.add_argument('--entry-sha256', default=ENTRY_SHA)
+    parser.add_argument('--expected-deployment', help='Required when updating the existing QA project')
     args = parser.parse_args()
+    if not re.fullmatch(r'assets/index-[A-Za-z0-9_-]+\.js', args.entry) or not re.fullmatch(r'[a-f0-9]{64}', args.entry_sha256):
+        raise SystemExit('Invalid verified entry identity')
+    if not re.fullmatch(r'[a-f0-9]{40}', args.commit):
+        raise SystemExit('An exact source commit is required')
     archive = args.archive.resolve()
     if not archive.is_relative_to(ROOT) or hashlib.sha256(archive.read_bytes()).hexdigest() != args.sha256:
         raise SystemExit('QA frontend archive location or digest mismatch')
@@ -48,7 +56,11 @@ def main():
     production_before = project('nudashboard')['canonical_deployment']['id']
     qa_before = project(PROJECT)
     if qa_before is not None:
-        raise SystemExit('The QA Pages project already exists; inspect before publishing')
+        if (qa_before.get('name') != PROJECT or qa_before.get('production_branch') != BRANCH
+                or qa_before.get('canonical_deployment', {}).get('id') != args.expected_deployment):
+            raise SystemExit('QA project or current deployment changed; inspect before publishing')
+    elif args.expected_deployment:
+        raise SystemExit('Expected QA deployment is missing; do not recreate its project')
     with zipfile.ZipFile(archive) as bundle:
         names = bundle.namelist()
         if len(names) > 100 or sum(item.file_size for item in bundle.infolist()) > 30_000_000:
@@ -58,7 +70,7 @@ def main():
                 raise SystemExit('Unsafe archive member')
             if item.filename in ('_worker.js', 'wrangler.toml', 'wrangler.jsonc') or item.filename.startswith(('functions/', '.')):
                 raise SystemExit('Static QA assets only')
-        if hashlib.sha256(bundle.read(ENTRY)).hexdigest() != ENTRY_SHA:
+        if hashlib.sha256(bundle.read(args.entry)).hexdigest() != args.entry_sha256:
             raise SystemExit('The tested frontend entry changed')
         headers = bundle.read('_headers').decode()
         if 'X-NuDental-Environment: qa' not in headers or 'https://nudashboard-qa-api.nuholdingllc.com' not in headers:
@@ -76,10 +88,13 @@ def main():
                 cwd=ROOT, env=env, stdout=stream, stderr=subprocess.STDOUT, timeout=240)
         if result.returncode:
             raise RuntimeError('QA Pages operation failed; inspect the bounded private log')
-    wrangler('project', 'create', PROJECT, '--production-branch', BRANCH)
+    if qa_before is None:
+        wrangler('project', 'create', PROJECT, '--production-branch', BRANCH)
     created = project(PROJECT)
     if created.get('name') != PROJECT or created.get('production_branch') != BRANCH:
         raise RuntimeError('New QA project identity mismatch')
+    if qa_before is not None and created.get('canonical_deployment', {}).get('id') != args.expected_deployment:
+        raise RuntimeError('QA deployment changed during validation; candidate was not published')
     wrangler('deploy', str(dest), '--project-name', PROJECT, '--branch', BRANCH,
              '--commit-hash', args.commit, '--commit-message', 'Phase 5 isolated Dashboard QA')
     current = project(PROJECT)
@@ -88,10 +103,11 @@ def main():
     report = {'project': PROJECT, 'branch': BRANCH, 'url': 'https://' + current['subdomain'],
               'deployment_id': deployment['id'], 'status': deployment.get('latest_stage', {}).get('status'),
               'source_commit': args.commit, 'archive_sha256': args.sha256,
-              'entry': ENTRY, 'entry_sha256': ENTRY_SHA,
+              'entry': args.entry, 'entry_sha256': args.entry_sha256,
+              'previous_qa_deployment': args.expected_deployment,
               'production_deployment_unchanged': production_before == production_after,
               'production_deployment': production_after, 'live_verification': 'PENDING'}
-    (ROOT / 'qa-pages-deployment-20260915.json').write_text(json.dumps(report, indent=2))
+    (ROOT / ('qa-pages-deployment-' + args.sha256[:16] + '.json')).write_text(json.dumps(report, indent=2))
     print(json.dumps(report))
     if report['status'] != 'success' or not report['production_deployment_unchanged']:
         raise SystemExit(1)

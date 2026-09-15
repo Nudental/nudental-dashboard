@@ -575,8 +575,8 @@ const DailyEntryContent = () => {
           {activeTab === 'dentrix' && (
             <div className="space-y-4">
               <DentrixDailyCloseoutTab
-                propOfficeId={form?.officeId || selectedOfficeId || ''}
-                propDate={form?.entryDate || ''}
+                selectedOfficeId={form?.officeId || selectedOfficeId || ''}
+                selectedDate={form?.entryDate || ''}
               />
             </div>
           )}
@@ -585,8 +585,8 @@ const DailyEntryContent = () => {
           {activeTab === 'unscheduled' && (
             <div className="space-y-4">
               <UnscheduledTreatmentTab
-                propOfficeId={form?.officeId || selectedOfficeId || ''}
-                propDate={form?.entryDate || ''}
+                selectedOfficeId={form?.officeId || selectedOfficeId || ''}
+                selectedDate={form?.entryDate || ''}
               />
             </div>
           )}
@@ -595,8 +595,8 @@ const DailyEntryContent = () => {
           {activeTab === 'tp_completion' && (
             <div className="space-y-4">
               <TreatmentPlanCompletionTab
-                propOfficeId={form?.officeId || selectedOfficeId || ''}
-                propDate={form?.entryDate || ''}
+                selectedOfficeId={form?.officeId || selectedOfficeId || ''}
+                selectedDate={form?.entryDate || ''}
               />
             </div>
           )}
@@ -605,9 +605,9 @@ const DailyEntryContent = () => {
           {activeTab === 'bulk' && isSuperAdmin && (
             <div className="bg-card border border-border rounded-xl p-5">
               <DailyBulkImportTab
-                propOfficeId={form?.officeId || selectedOfficeId || ''}
+                selectedOfficeId={form?.officeId || selectedOfficeId || ''}
                 selectedDate={form?.entryDate || getTodayStr()}
-                propOffices={offices || []}
+                offices={offices || []}
               />
             </div>
           )}
