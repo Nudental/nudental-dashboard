@@ -1329,7 +1329,7 @@ const HuddleApprovalsPage = () => {
       const isReapproval = fromStatus === 'pending_reapproval';
 
       // Field mapping reused from EOD Queue handleApprove
-      const { error } = await supabase
+      const { data: updatedEntry, error } = await supabase
         ?.from('daily_entries')
         ?.update({
           status: 'approved',
@@ -1341,8 +1341,11 @@ const HuddleApprovalsPage = () => {
           status_changed_by_name: approverName,
         })
         ?.eq('id', entry?.id)
-        ?.neq('status', 'approved');
+        ?.eq('status', fromStatus)
+        ?.select('id')
+        ?.maybeSingle();
       if (error) throw error;
+      if (!updatedEntry) throw new Error('This Daily Report changed while you were reviewing it. Refresh and review its current status.');
 
       // eod_status_history write — same pattern as EOD Queue
       await logDRStatusChange({
