@@ -60,6 +60,10 @@ def main():
         report['cleanup'] = True
         report['counts_after_cleanup'] = counts()
         assert report['counts_after_cleanup'] == data['before']
+        retained = api.request('/rest/v1/audit_logs?table_name=eq.daily_entries&record_id=eq.' + row_id
+                               + '&select=action&limit=40')
+        assert len(retained) == len(audit) + 1 and sum(r['action']=='DELETE' for r in retained) == 1
+        report['retained_audit_events'] = len(retained)
     manifest.with_name('qa-eod-approval-flow-'+args.action+'-'+row['status']+'-20260915.json').write_text(json.dumps(report,indent=2))
     print(json.dumps({'fixture_id':row_id,'status':row['status'],'counts':report['counts'],
                       'history_events':len(history),'audit_events':len(audit),

@@ -24,7 +24,18 @@ Roles, payload fields, history format and normal approval behavior stay unchange
 - Archive SHA256
   f57a31ef4a8636f7d25c433e22e1aab72ccab41c411c73b56396f6563143b274.
 
-QA publication and repeated two-view test PENDING. The existing labeled fixture
-was edited through the authorized UI back to pending_reapproval for that test.
+QA deployment d422a464-876a-4a7a-a4d9-53f5d0a46e92 succeeded from bdbbb0f3.
+All17 hosted checks PASS, including the exact new entry and unchanged production.
+The original two-view failure was repeated live: the first review approved and
+added one event; the stale second review showed Approval Failed with a clear
+refresh/review message. Complete before/after snapshots confirmed no change to
+state, counters, row audit or history on the stale attempt: PASS.
+
+The labeled fixture then passed authorized approval reversal with a required
+reason, refresh persistence, counter updates and visible status history. Cleanup
+removed only e1d11315-b4c9-4bab-b218-2bb28587fad7, restored the initial counters
+(one older pending QA fixture), and preserved eight row-audit events. The original
+duplicate-history evidence was saved before normal test-record cascade cleanup.
+
 Bulk approval, rejection concurrency and atomic history persistence remain
 separate audit cases; this repair covers the reproduced individual approval path.
