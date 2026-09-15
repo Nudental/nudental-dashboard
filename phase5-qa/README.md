@@ -24,10 +24,12 @@ Recent live checks/repairs: [office assignment](user-office-transaction-validati
 [service/vendor categories](service-category-toggle-validation-20260915.md), and
 [monthly goals and goal office access](office-goal-validation-20260915.md), and
 [single responsive page mount](single-layout-validation-20260915.md), and
-[insurance appointment validation](insurance-request-time-validation-20260915.md).
+[insurance appointment validation](insurance-request-time-validation-20260915.md),
+[insurance API scope](insurance-access-validation-20260915.md), and
+[private verification PDFs](insurance-pdf-storage-validation-20260915.md).
 Temporary records from completed administration, goals and implant/import checks
-are cleaned; audit evidence retained. Insurance, original Huddle/EOD/task fixture
-cleanup remains pending until their remaining workflow checks finish.
+and the insurance request/draft/PDF are cleaned; audit evidence retained. Original
+Huddle/EOD/task fixture cleanup remains pending until remaining workflow checks finish.
 
 Phase 5 is incomplete. Continue service-goal generation, remaining safe write/role
 checks, operational mock integration, bounded performance investigation, final

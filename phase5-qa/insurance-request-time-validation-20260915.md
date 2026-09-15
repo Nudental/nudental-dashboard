@@ -38,7 +38,7 @@ Automatic approval review blocked additional missing-time submits; those blocked
 attempts were not executed or counted as tests. No camera access was granted.
 
 Synthetic fixture `8582be7b-3f03-4e65-b9c7-1825f6fae517`, label
-`QA TEMP PH5-INSURANCE-20260915`, remains for the following draft/completion and
-permission tests. **Cleanup still required.** Receipt outside Git:
+`QA TEMP PH5-INSURANCE-20260915`, was used for following draft/completion and
+permission tests. **Cleanup completed**; see the PDF-storage validation report. Receipt outside Git:
 `qa-insurance-ui-20260915.json`. Remaining insurance workflow checks are not yet
 claimed as complete; no insurer submission, email, or Dentrix action was performed.

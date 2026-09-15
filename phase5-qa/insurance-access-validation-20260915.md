@@ -38,4 +38,5 @@ or production deployment was necessary for this database-only QA repair.
 
 Private operational receipts outside Git: `qa-insurance-scope-{original,reproduced,repaired}-20260915.json`,
 `qa-insurance-writes-{original,repaired}-20260915.json`.
-Fixture cleanup remains pending while the insurance PDF check is underway.
+Fixture cleanup completed after PDF verification; ten audit entries are retained
+with original fixture identifiers. See `insurance-pdf-storage-validation-20260915.md`.
