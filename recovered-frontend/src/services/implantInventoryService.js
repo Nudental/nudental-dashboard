@@ -410,31 +410,23 @@ export const consumeImplantByScan = async ({
   userName,
 }) => {
   // Lookup existing stock record
+  if (!Number.isInteger(quantityUsed) || quantityUsed < 1) throw new Error('Quantity must be a positive whole number.');
   const existing = await lookupImplantByLotOrId(identificationNumber, lotNumber);
   if (!existing) throw new Error('No matching in-stock implant found for this lot/ID. Please verify the item exists in inventory.');
 
   const newQty = (existing?.quantity_in_stock || 0) - quantityUsed;
   if (newQty < 0) throw new Error(`Insufficient stock. Available: ${existing?.quantity_in_stock}, requested: ${quantityUsed}`);
 
-  // Decrement stock
-  const newStatus = newQty === 0 ? 'used' : 'in_stock';
-  const { error: updateError } = await supabase?.from('implant_inventory')?.update({
-    quantity_in_stock: newQty,
-    item_status: newStatus,
-    updated_by: userId,
-    updated_at: new Date()?.toISOString(),
-  })?.eq('id', existing?.id);
-  if (updateError) throw updateError;
-
-  // Write usage log
+  // Existing schema records one unit per usage row. The database deducts stock
+  // inside this single insert transaction and rejects the entire batch on failure.
   const logPayload = {
     office_id: officeId || existing?.office_id,
     office_name: officeName || existing?.office_name,
     implant_inventory_id: existing?.id,
     provider_id: providerId || null,
     provider_name: providerName || null,
-    staff_id: staffId || null,
-    staff_name: staffName || null,
+    staff_assistant_id: staffId || null,
+    staff_assistant_name: staffName || null,
     patient_name: patientName || null,
     patient_chart_number: patientChartNumber || null,
     procedure_date: procedureDate || new Date()?.toISOString()?.split('T')?.[0],
@@ -443,14 +435,11 @@ export const consumeImplantByScan = async ({
     platform_size_name: platformSizeName || existing?.platform_size_name,
     identification_number: identificationNumber || existing?.identification_number,
     lot_number: lotNumber || existing?.lot_number,
-    sku_reference: skuReference || existing?.sku_reference,
-    expiration_date: expirationDate || existing?.expiration_date,
-    quantity_used: quantityUsed,
-    scan_method: scanMethod || 'manual',
-    notes: notes || null,
+    procedure_notes: notes || null,
     created_by: userId,
   };
-  const { data: logData, error: logError } = await supabase?.from('implant_usage_logs')?.insert(logPayload)?.select()?.single();
+  const { data: logData, error: logError } = await supabase?.from('implant_usage_logs')
+    ?.insert(Array.from({ length: quantityUsed }, () => ({ ...logPayload })))?.select();
   if (logError) throw logError;
 
   await logImplantAudit({
@@ -462,7 +451,7 @@ export const consumeImplantByScan = async ({
     newValues: { quantity_used: quantityUsed, new_total: newQty, patient: patientName, lot: lotNumber, scan_method: scanMethod },
   });
 
-  return logData;
+  return logData?.[0];
 };
 
 // ── Audit Logs ─────────────────────────────────────────────────────────────
