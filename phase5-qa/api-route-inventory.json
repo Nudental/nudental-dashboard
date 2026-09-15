@@ -1,0 +1,4450 @@
+[
+  {
+    "method": "GET",
+    "path": "/",
+    "file": "main_candidate.py",
+    "handler": "root",
+    "line": 274,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/health",
+    "file": "main_candidate.py",
+    "handler": "health",
+    "line": 279,
+    "parameters": []
+  },
+  {
+    "method": "POST",
+    "path": "/oauth2/token",
+    "file": "main_candidate.py",
+    "handler": "issue_token",
+    "line": 288,
+    "parameters": [
+      {
+        "name": "client_id",
+        "type": "str",
+        "default": "Body(..., embed=True)"
+      },
+      {
+        "name": "client_secret",
+        "type": "str",
+        "default": "Body(..., embed=True)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/stream",
+    "file": "main_candidate.py",
+    "handler": "stream_events",
+    "line": 320,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "x_api_key",
+        "type": "Optional[str]",
+        "default": "Header(None)"
+      },
+      {
+        "name": "lastEventId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Resume from this event ID')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/offices",
+    "file": "main_candidate.py",
+    "handler": "list_offices",
+    "line": 399,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/v2/providers",
+    "file": "main_candidate.py",
+    "handler": "list_providers",
+    "line": 414,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/v2/providers/email",
+    "file": "main_candidate.py",
+    "handler": "provider_email_lookup",
+    "line": 425,
+    "parameters": [
+      {
+        "name": "name",
+        "type": "str",
+        "default": "Query(..., description='Provider display name')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/providers/{provider_id}/schedule",
+    "file": "main_candidate.py",
+    "handler": "get_provider_schedule",
+    "line": 451,
+    "parameters": [
+      {
+        "name": "provider_id",
+        "type": "str",
+        "default": null
+      },
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/patients",
+    "file": "main_candidate.py",
+    "handler": "list_patients",
+    "line": 469,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "Query(100, le=1000)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/patients/summary",
+    "file": "main_candidate.py",
+    "handler": "patients_summary",
+    "line": 488,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/patients/demographics",
+    "file": "main_candidate.py",
+    "handler": "patients_demographics",
+    "line": 509,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "serviceCategory",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "mode",
+        "type": "Optional[str]",
+        "default": "Query('seen')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/appointments/summary",
+    "file": "main_candidate.py",
+    "handler": "appointments_summary",
+    "line": 717,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/appointments",
+    "file": "main_candidate.py",
+    "handler": "list_appointments",
+    "line": 737,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "providerId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "status",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/production/summary",
+    "file": "main_candidate.py",
+    "handler": "production_summary",
+    "line": 761,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "providerId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/production/monthly",
+    "file": "main_candidate.py",
+    "handler": "production_monthly",
+    "line": 779,
+    "parameters": [
+      {
+        "name": "year",
+        "type": "Optional[int]",
+        "default": "Query(None, description='Year (defaults to current year)')"
+      },
+      {
+        "name": "month",
+        "type": "Optional[int]",
+        "default": "Query(None, description='Month 1-12 (defaults to current month)')"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/production/by-provider",
+    "file": "main_candidate.py",
+    "handler": "production_by_provider",
+    "line": 847,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/hygiene/retention-metrics",
+    "file": "main_candidate.py",
+    "handler": "hygiene_retention_metrics",
+    "line": 864,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/hygiene/procedure-metrics",
+    "file": "main_candidate.py",
+    "handler": "hygiene_procedure_metrics",
+    "line": 886,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/production/by-cdt-category",
+    "file": "main_candidate.py",
+    "handler": "production_by_cdt_category",
+    "line": 908,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "providerId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "serviceCategory",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/production/by-provider-and-cdt-category",
+    "file": "main_candidate.py",
+    "handler": "production_by_provider_and_cdt_category",
+    "line": 931,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "providerType",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "specialtyGroup",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/production/by-service",
+    "file": "main_candidate.py",
+    "handler": "production_by_service",
+    "line": 957,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/collections/summary",
+    "file": "main_candidate.py",
+    "handler": "collections_summary",
+    "line": 978,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/collections/by-provider",
+    "file": "main_candidate.py",
+    "handler": "collections_by_provider",
+    "line": 995,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/payments",
+    "file": "main_candidate.py",
+    "handler": "list_payments",
+    "line": 1012,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/adjustments",
+    "file": "main_candidate.py",
+    "handler": "list_adjustments",
+    "line": 1030,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/adjustments/summary",
+    "file": "main_candidate.py",
+    "handler": "adjustments_summary",
+    "line": 1048,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/ledger/adjustments",
+    "file": "main_candidate.py",
+    "handler": "ledger_adjustments",
+    "line": 1065,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "ledgerType",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/write-offs",
+    "file": "main_candidate.py",
+    "handler": "write_offs",
+    "line": 1083,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "providerId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/accounts-receivable",
+    "file": "main_candidate.py",
+    "handler": "accounts_receivable",
+    "line": 1101,
+    "parameters": [
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "x_super_admin_key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-Super-Admin-Key')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/ar",
+    "file": "main_candidate.py",
+    "handler": "accounts_receivable_alias",
+    "line": 1153,
+    "parameters": [
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "x_super_admin_key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-Super-Admin-Key')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/ar/patients",
+    "file": "main_candidate.py",
+    "handler": "ar_patients",
+    "line": 1190,
+    "parameters": [
+      {
+        "name": "locationId",
+        "type": "str",
+        "default": "Query(...)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/ar/trend",
+    "file": "main_candidate.py",
+    "handler": "ar_trend",
+    "line": 1204,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Start date (YYYY-MM-DD)')"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None, description='End date (YYYY-MM-DD)')"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter by location ID (omit for all offices)')"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter by office UUID')"
+      },
+      {
+        "name": "granularity",
+        "type": "Optional[str]",
+        "default": "Query('daily', description='Granularity: daily (default)')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/reports/daily-summary",
+    "file": "main_candidate.py",
+    "handler": "daily_summary",
+    "line": 1298,
+    "parameters": [
+      {
+        "name": "date",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/reports/monthly-summary",
+    "file": "main_candidate.py",
+    "handler": "monthly_summary",
+    "line": 1314,
+    "parameters": [
+      {
+        "name": "year",
+        "type": "Optional[int]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "month",
+        "type": "Optional[int]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/reports/kpi-summary",
+    "file": "main_candidate.py",
+    "handler": "kpi_summary",
+    "line": 1331,
+    "parameters": [
+      {
+        "name": "year",
+        "type": "Optional[int]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/reports/provider-performance",
+    "file": "main_candidate.py",
+    "handler": "provider_performance",
+    "line": 1420,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/payroll/summary",
+    "file": "main_candidate.py",
+    "handler": "payroll_summary",
+    "line": 1438,
+    "parameters": [
+      {
+        "name": "payStart",
+        "type": "str",
+        "default": "Query(..., description='Pay period start YYYY-MM-DD')"
+      },
+      {
+        "name": "payEnd",
+        "type": "str",
+        "default": "Query(..., description='Pay period end YYYY-MM-DD')"
+      },
+      {
+        "name": "monthStart",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Monthly collections start (defaults to 1st of payStart month)')"
+      },
+      {
+        "name": "monthEnd",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Monthly collections end (defaults to last day of payEnd month)')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/auth/payroll-access",
+    "file": "main_candidate.py",
+    "handler": "payroll_access_check",
+    "line": 1631,
+    "parameters": [
+      {
+        "name": "userEmail",
+        "type": "str",
+        "default": "Query(...)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/reports/provider-compensation",
+    "file": "main_candidate.py",
+    "handler": "provider_compensation_report",
+    "line": 1638,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "str",
+        "default": "Query(..., description='Pay period start (YYYY-MM-DD)')"
+      },
+      {
+        "name": "endDate",
+        "type": "str",
+        "default": "Query(..., description='Pay period end (YYYY-MM-DD)')"
+      },
+      {
+        "name": "providerId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Single provider ID (omit for all)')"
+      },
+      {
+        "name": "format",
+        "type": "str",
+        "default": "Query('zip', description='Output format: zip | html | pdf')"
+      },
+      {
+        "name": "userEmail",
+        "type": "str",
+        "default": "Query(..., description='Authenticated user email \u2014 payroll access check')"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/v2/reports/provider-compensation/send",
+    "file": "main_candidate.py",
+    "handler": "send_provider_compensation_reports",
+    "line": 1713,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "str",
+        "default": "Query(...)"
+      },
+      {
+        "name": "endDate",
+        "type": "str",
+        "default": "Query(...)"
+      },
+      {
+        "name": "userEmail",
+        "type": "str",
+        "default": "Query(..., description='Must be a payroll-allowed email')"
+      },
+      {
+        "name": "dryRun",
+        "type": "bool",
+        "default": "Query(False, description='Preview without sending')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/provider-performance",
+    "file": "main_candidate.py",
+    "handler": "provider_performance_alias",
+    "line": 1743,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/goals",
+    "file": "main_candidate.py",
+    "handler": "list_goals",
+    "line": 1763,
+    "parameters": [
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "year",
+        "type": "Optional[int]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "month",
+        "type": "Optional[int]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/v2/goals",
+    "file": "main_candidate.py",
+    "handler": "create_goal",
+    "line": 1808,
+    "parameters": [
+      {
+        "name": "goal",
+        "type": "dict",
+        "default": "Body(...)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/daily-entries",
+    "file": "main_candidate.py",
+    "handler": "get_daily_entries",
+    "line": 1827,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "status",
+        "type": "Optional[str]",
+        "default": "Query('approved')"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "Query(200)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/reconciliation",
+    "file": "main_candidate.py",
+    "handler": "reconciliation_report",
+    "line": 1920,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/v2/cache/clear",
+    "file": "main_candidate.py",
+    "handler": "clear_cache",
+    "line": 1997,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/v2/sync/status",
+    "file": "main_candidate.py",
+    "handler": "sync_status",
+    "line": 2003,
+    "parameters": []
+  },
+  {
+    "method": "POST",
+    "path": "/v2/sync/trigger",
+    "file": "main_candidate.py",
+    "handler": "trigger_sync",
+    "line": 2019,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/v2/stream/status",
+    "file": "main_candidate.py",
+    "handler": "stream_status",
+    "line": 2034,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/v2/supabase/status",
+    "file": "main_candidate.py",
+    "handler": "supabase_status",
+    "line": 2059,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/v2/compliance",
+    "file": "main_candidate.py",
+    "handler": "compliance_status",
+    "line": 2078,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/v2/compliance/status",
+    "file": "main_candidate.py",
+    "handler": "compliance_status",
+    "line": 2078,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/twiml/nuholding-voicemail",
+    "file": "main_candidate.py",
+    "handler": "twiml_nuholding_voicemail",
+    "line": 2110,
+    "parameters": []
+  },
+  {
+    "method": "POST",
+    "path": "/twiml/nuholding-voicemail",
+    "file": "main_candidate.py",
+    "handler": "twiml_nuholding_voicemail",
+    "line": 2110,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/twiml/nuholding",
+    "file": "main_candidate.py",
+    "handler": "twiml_nuholding",
+    "line": 2127,
+    "parameters": []
+  },
+  {
+    "method": "POST",
+    "path": "/twiml/nuholding",
+    "file": "main_candidate.py",
+    "handler": "twiml_nuholding",
+    "line": 2127,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/gusto/callback",
+    "file": "main_candidate.py",
+    "handler": "gusto_callback",
+    "line": 2157,
+    "parameters": [
+      {
+        "name": "code",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "error",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "state",
+        "type": "str",
+        "default": "None"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/plaid/link-token",
+    "file": "main_candidate.py",
+    "handler": "plaid_create_link_token",
+    "line": 2258,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/plaid/exchange-token",
+    "file": "main_candidate.py",
+    "handler": "plaid_exchange_token",
+    "line": 2276,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/plaid/accounts",
+    "file": "main_candidate.py",
+    "handler": "plaid_get_accounts",
+    "line": 2360,
+    "parameters": [
+      {
+        "name": "include_pending",
+        "type": "bool",
+        "default": "False"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/plaid/transactions",
+    "file": "main_candidate.py",
+    "handler": "plaid_get_transactions",
+    "line": 2391,
+    "parameters": [
+      {
+        "name": "days",
+        "type": "int",
+        "default": "30"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/plaid/summary",
+    "file": "main_candidate.py",
+    "handler": "plaid_summary",
+    "line": 2458,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/v2/expenses/filters",
+    "file": "main_candidate.py",
+    "handler": "expense_filters",
+    "line": 2602,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/v2/expenses/summary",
+    "file": "main_candidate.py",
+    "handler": "expense_summary",
+    "line": 2643,
+    "parameters": [
+      {
+        "name": "date_from",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "date_to",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "startDate",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "endDate",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "month",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "quarter",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "year",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "office",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "officeId",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "department",
+        "type": "str",
+        "default": "None"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/expenses/lines",
+    "file": "main_candidate.py",
+    "handler": "expense_lines",
+    "line": 2820,
+    "parameters": [
+      {
+        "name": "date_from",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "date_to",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "month",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "quarter",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "year",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "office",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "department",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "category",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "cardholder",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "source_type",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "card_last4",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "expense_status",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "500"
+      },
+      {
+        "name": "offset",
+        "type": "int",
+        "default": "0"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/expenses/breakdown",
+    "file": "main_candidate.py",
+    "handler": "expense_breakdown",
+    "line": 2996,
+    "parameters": [
+      {
+        "name": "date_from",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "date_to",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "startDate",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "endDate",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "month",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "quarter",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "year",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "group_by",
+        "type": "str",
+        "default": "'category'"
+      },
+      {
+        "name": "office",
+        "type": "str",
+        "default": "None"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/expenses/amex",
+    "file": "main_candidate.py",
+    "handler": "expense_amex",
+    "line": 3096,
+    "parameters": [
+      {
+        "name": "date_from",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "date_to",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "month",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "quarter",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "year",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "office",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "department",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "cardholder",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "card_last4",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "category",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "500"
+      },
+      {
+        "name": "offset",
+        "type": "int",
+        "default": "0"
+      },
+      {
+        "name": "include_archived",
+        "type": "bool",
+        "default": "False"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/expenses/payroll",
+    "file": "main_candidate.py",
+    "handler": "expense_payroll",
+    "line": 3197,
+    "parameters": [
+      {
+        "name": "date_from",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "date_to",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "month",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "quarter",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "year",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "office",
+        "type": "str",
+        "default": "None"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/expenses/wf",
+    "file": "main_candidate.py",
+    "handler": "wf_expenses",
+    "line": 3278,
+    "parameters": [
+      {
+        "name": "date_from",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "date_to",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "startDate",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "endDate",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "month",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "quarter",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "year",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "office",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "pending",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "500"
+      },
+      {
+        "name": "offset",
+        "type": "int",
+        "default": "0"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/payroll/runs",
+    "file": "main_candidate.py",
+    "handler": "payroll_runs",
+    "line": 3445,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "off_cycle",
+        "type": "Optional[bool]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "status",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "run_by_user_name",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "sort",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "Query(200)"
+      },
+      {
+        "name": "offset",
+        "type": "int",
+        "default": "Query(0)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/payroll/contractors",
+    "file": "main_candidate.py",
+    "handler": "payroll_contractors",
+    "line": 3478,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "summaryOnly",
+        "type": "Optional[bool]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "search",
+        "type": "Optional[str]",
+        "default": "Query(None, max_length=100)"
+      },
+      {
+        "name": "wage_type",
+        "type": "Optional[str]",
+        "default": "Query(None, max_length=50)"
+      },
+      {
+        "name": "funded",
+        "type": "Optional[bool]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "cancelled",
+        "type": "Optional[bool]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "sort",
+        "type": "str",
+        "default": "Query('check_date:desc')"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "Query(50, ge=1, le=200)"
+      },
+      {
+        "name": "offset",
+        "type": "int",
+        "default": "Query(0, ge=0)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/payroll/employees",
+    "file": "main_candidate.py",
+    "handler": "payroll_employees",
+    "line": 3574,
+    "parameters": [
+      {
+        "name": "status",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "id",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "search",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "work_state",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "employment_type",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "benefits_enrolled",
+        "type": "Optional[bool]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "benefits_eligible",
+        "type": "Optional[bool]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "Query(200)"
+      },
+      {
+        "name": "offset",
+        "type": "int",
+        "default": "Query(0)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/payroll/expense-facts",
+    "file": "main_candidate.py",
+    "handler": "payroll_expense_facts",
+    "line": 3611,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "category",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "Query(500)"
+      },
+      {
+        "name": "offset",
+        "type": "int",
+        "default": "Query(0)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/payroll/crosswalk",
+    "file": "main_candidate.py",
+    "handler": "payroll_crosswalk",
+    "line": 3634,
+    "parameters": [
+      {
+        "name": "mappingStatus",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "gusto_employee_id",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "Query(500)"
+      },
+      {
+        "name": "offset",
+        "type": "int",
+        "default": "Query(0)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/payroll/comparison",
+    "file": "main_candidate.py",
+    "handler": "payroll_comparison",
+    "line": 3659,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "str",
+        "default": "Query(..., description='Pay period start (YYYY-MM-DD)')"
+      },
+      {
+        "name": "endDate",
+        "type": "str",
+        "default": "Query(..., description='Pay period end (YYYY-MM-DD)')"
+      },
+      {
+        "name": "providerId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter by Dentrix provider ID')"
+      },
+      {
+        "name": "providerType",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter by type: doctor | hygienist')"
+      },
+      {
+        "name": "checkDate",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Match Gusto actuals by check date instead of pay period')"
+      },
+      {
+        "name": "payrollRunId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Match Gusto actuals by payroll run ID')"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "Query(500)"
+      },
+      {
+        "name": "offset",
+        "type": "int",
+        "default": "Query(0)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/payroll/mappings",
+    "file": "main_candidate.py",
+    "handler": "payroll_mappings",
+    "line": 4008,
+    "parameters": [
+      {
+        "name": "mappingStatus",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "isIgnored",
+        "type": "Optional[bool]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "Query(500)"
+      },
+      {
+        "name": "offset",
+        "type": "int",
+        "default": "Query(0)"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/plaid/webhook",
+    "file": "main_candidate.py",
+    "handler": "plaid_webhook",
+    "line": 4037,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/claims",
+    "file": "main_candidate.py",
+    "handler": "rcm_claims",
+    "line": 4208,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "start",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "end",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1)"
+      },
+      {
+        "name": "pageSize",
+        "type": "int",
+        "default": "Query(500)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/claim-submissions",
+    "file": "main_candidate.py",
+    "handler": "rcm_claim_submissions",
+    "line": 4377,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "start",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "end",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "dateBasis",
+        "type": "Optional[str]",
+        "default": "Query('serviceDate')"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "status",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "payor",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1)"
+      },
+      {
+        "name": "pageSize",
+        "type": "int",
+        "default": "Query(100)"
+      },
+      {
+        "name": "asOfDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/patient-statements",
+    "file": "main_candidate.py",
+    "handler": "rcm_patient_statements",
+    "line": 4976,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "start",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "end",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1)"
+      },
+      {
+        "name": "pageSize",
+        "type": "int",
+        "default": "Query(500)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/payment-arrangements",
+    "file": "main_candidate.py",
+    "handler": "rcm_payment_arrangements",
+    "line": 5089,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "start",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "end",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1)"
+      },
+      {
+        "name": "pageSize",
+        "type": "int",
+        "default": "Query(500)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/pos-collections",
+    "file": "main_candidate.py",
+    "handler": "rcm_pos_collections",
+    "line": 5142,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "start",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "end",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1)"
+      },
+      {
+        "name": "pageSize",
+        "type": "int",
+        "default": "Query(500)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/collection-refunds",
+    "file": "main_candidate.py",
+    "handler": "rcm_collection_refunds",
+    "line": 5949,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "start",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "end",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "refundType",
+        "type": "Optional[str]",
+        "default": "Query(None, description='all|insurance_refund|patient_refund|credit_card_refund|refund_review')"
+      },
+      {
+        "name": "includeNonRefundAdjustments",
+        "type": "bool",
+        "default": "Query(False, description='Include write-off/balance-correction rows marked as non-refund review')"
+      },
+      {
+        "name": "minAmount",
+        "type": "Optional[float]",
+        "default": "Query(None, description='Minimum absolute refund amount')"
+      },
+      {
+        "name": "search",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Search patient name or note')"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1)"
+      },
+      {
+        "name": "pageSize",
+        "type": "int",
+        "default": "Query(500)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/adjustments-review",
+    "file": "main_candidate.py",
+    "handler": "rcm_adjustments_review",
+    "line": 6402,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "start",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "end",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1)"
+      },
+      {
+        "name": "pageSize",
+        "type": "int",
+        "default": "Query(500)"
+      },
+      {
+        "name": "includeVoided",
+        "type": "bool",
+        "default": "Query(False)"
+      },
+      {
+        "name": "adjustmentCategory",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "reviewFlag",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/ar-aging-official",
+    "file": "main_candidate.py",
+    "handler": "rcm_ar_aging_official",
+    "line": 7713,
+    "parameters": [
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Dashboard office UUID')"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Dentrix numeric location ID')"
+      },
+      {
+        "name": "x_super_admin_key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-Super-Admin-Key')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/ar-aging",
+    "file": "main_candidate.py",
+    "handler": "rcm_ar_aging",
+    "line": 7795,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1)"
+      },
+      {
+        "name": "pageSize",
+        "type": "int",
+        "default": "Query(500)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/patient-balances",
+    "file": "main_candidate.py",
+    "handler": "rcm_patient_balances",
+    "line": 8163,
+    "parameters": [
+      {
+        "name": "asOfDate",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Informational in live mode (YYYY-MM-DD). Default: today.')"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Dashboard office UUID \u2192 mapped to Dentrix location ID.')"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Dentrix numeric location ID (e.g. 14000000000433). Do NOT pass a UUID here.')"
+      },
+      {
+        "name": "balanceType",
+        "type": "str",
+        "default": "Query('patient_responsible', description='patient_responsible | unapplied_review | all')"
+      },
+      {
+        "name": "includeZeroBalances",
+        "type": "bool",
+        "default": "Query(False, description='Include patients with zero patient_responsible_balance and zero unapplied amounts.')"
+      },
+      {
+        "name": "includeUnappliedAmounts",
+        "type": "bool",
+        "default": "Query(False, description='Include unapplied amount row fields. super_admin only.')"
+      },
+      {
+        "name": "minBalance",
+        "type": "Optional[float]",
+        "default": "Query(None, description='Minimum patient_responsible_balance filter (applied after balanceType filter).')"
+      },
+      {
+        "name": "agingBucket",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter to aging bucket: current | b30 | b60 | b90.')"
+      },
+      {
+        "name": "search",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Search across patient name, chart number, patient ID, guarantor name.')"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1, ge=1)"
+      },
+      {
+        "name": "pageSize",
+        "type": "int",
+        "default": "Query(100, ge=1, le=500)"
+      },
+      {
+        "name": "x_super_admin_key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-Super-Admin-Key')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/payor-aging",
+    "file": "main_candidate.py",
+    "handler": "rcm_payor_aging",
+    "line": 8848,
+    "parameters": [
+      {
+        "name": "asOfDate",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Report date (YYYY-MM-DD). Returns most recent snapshot \u2264 this date.')"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter by Dentrix location_id')"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter by office UUID (maps to location_id)')"
+      },
+      {
+        "name": "reportType",
+        "type": "Optional[str]",
+        "default": "Query('over_90', description='Report type: over_90 (default) or 91_365')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/aging-receivables/by-payor",
+    "file": "main_candidate.py",
+    "handler": "rcm_payor_aging",
+    "line": 8848,
+    "parameters": [
+      {
+        "name": "asOfDate",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Report date (YYYY-MM-DD). Returns most recent snapshot \u2264 this date.')"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter by Dentrix location_id')"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter by office UUID (maps to location_id)')"
+      },
+      {
+        "name": "reportType",
+        "type": "Optional[str]",
+        "default": "Query('over_90', description='Report type: over_90 (default) or 91_365')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/aging-receivables-live",
+    "file": "main_candidate.py",
+    "handler": "rcm_payor_aging",
+    "line": 8848,
+    "parameters": [
+      {
+        "name": "asOfDate",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Report date (YYYY-MM-DD). Returns most recent snapshot \u2264 this date.')"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter by Dentrix location_id')"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter by office UUID (maps to location_id)')"
+      },
+      {
+        "name": "reportType",
+        "type": "Optional[str]",
+        "default": "Query('over_90', description='Report type: over_90 (default) or 91_365')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/aging-receivables/live",
+    "file": "main_candidate.py",
+    "handler": "rcm_payor_aging",
+    "line": 8848,
+    "parameters": [
+      {
+        "name": "asOfDate",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Report date (YYYY-MM-DD). Returns most recent snapshot \u2264 this date.')"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter by Dentrix location_id')"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter by office UUID (maps to location_id)')"
+      },
+      {
+        "name": "reportType",
+        "type": "Optional[str]",
+        "default": "Query('over_90', description='Report type: over_90 (default) or 91_365')"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/v2/rcm/contact-attempts",
+    "file": "main_candidate.py",
+    "handler": "create_contact_attempt",
+    "line": 9364,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/contact-attempts",
+    "file": "main_candidate.py",
+    "handler": "list_contact_attempts",
+    "line": 9413,
+    "parameters": [
+      {
+        "name": "patient_id",
+        "type": "str",
+        "default": "Query(..., description='Dentrix patient ID')"
+      },
+      {
+        "name": "location_id",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "Query(50, ge=1, le=500)"
+      },
+      {
+        "name": "include_resolved",
+        "type": "bool",
+        "default": "Query(True)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/contact-attempts/summary",
+    "file": "main_candidate.py",
+    "handler": "contact_attempts_summary",
+    "line": 9433,
+    "parameters": [
+      {
+        "name": "location_id",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "start_date",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter contacted_at >= this date')"
+      },
+      {
+        "name": "end_date",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter contacted_at <= this date')"
+      },
+      {
+        "name": "include_resolved",
+        "type": "bool",
+        "default": "Query(True)"
+      }
+    ]
+  },
+  {
+    "method": "PATCH",
+    "path": "/v2/rcm/contact-attempts/{attempt_id}",
+    "file": "main_candidate.py",
+    "handler": "update_contact_attempt",
+    "line": 9484,
+    "parameters": [
+      {
+        "name": "attempt_id",
+        "type": "str",
+        "default": null
+      },
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/dentrix-statements",
+    "file": "main_candidate.py",
+    "handler": "list_dentrix_statements",
+    "line": 9577,
+    "parameters": [
+      {
+        "name": "patient_id",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Dentrix patient ID')"
+      },
+      {
+        "name": "location_id",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Dentrix location ID')"
+      },
+      {
+        "name": "start_date",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter generatedDate >= (YYYY-MM-DD)')"
+      },
+      {
+        "name": "end_date",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter generatedDate <= (YYYY-MM-DD)')"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1, ge=1)"
+      },
+      {
+        "name": "page_size",
+        "type": "int",
+        "default": "Query(100, ge=1, le=500)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/dentrix-statements/summary",
+    "file": "main_candidate.py",
+    "handler": "dentrix_statements_summary",
+    "line": 9627,
+    "parameters": [
+      {
+        "name": "location_id",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Dentrix location ID')"
+      },
+      {
+        "name": "start_date",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter generatedDate >= (YYYY-MM-DD)')"
+      },
+      {
+        "name": "end_date",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter generatedDate <= (YYYY-MM-DD)')"
+      },
+      {
+        "name": "page_size",
+        "type": "int",
+        "default": "Query(500, ge=1, le=500, description='Fetch size per HS1 page')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/patient-balance-outreach-summary",
+    "file": "main_candidate.py",
+    "handler": "patient_balance_outreach_summary",
+    "line": 9708,
+    "parameters": [
+      {
+        "name": "location_id",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Dentrix location ID')"
+      },
+      {
+        "name": "start_date",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter date range start (YYYY-MM-DD)')"
+      },
+      {
+        "name": "end_date",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Filter date range end (YYYY-MM-DD)')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/dashboard",
+    "file": "main_candidate.py",
+    "handler": "rcm_dashboard",
+    "line": 9837,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "start",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "end",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/guarantor-reconciliation",
+    "file": "main_candidate.py",
+    "handler": "rcm_guarantor_reconciliation",
+    "line": 10200,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None, alias='start_date')"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None, alias='end_date')"
+      },
+      {
+        "name": "startDateAlt",
+        "type": "Optional[str]",
+        "default": "Query(None, alias='startDate')"
+      },
+      {
+        "name": "endDateAlt",
+        "type": "Optional[str]",
+        "default": "Query(None, alias='endDate')"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None, alias='location_id')"
+      },
+      {
+        "name": "locationIdAlt",
+        "type": "Optional[str]",
+        "default": "Query(None, alias='locationId')"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None, alias='officeId')"
+      },
+      {
+        "name": "min_days_outstanding",
+        "type": "int",
+        "default": "Query(5)"
+      },
+      {
+        "name": "only_balance_due",
+        "type": "bool",
+        "default": "Query(False)"
+      },
+      {
+        "name": "exclude_zero_portion",
+        "type": "bool",
+        "default": "Query(True)"
+      },
+      {
+        "name": "include_predeterminations",
+        "type": "bool",
+        "default": "Query(False)"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1, ge=1)"
+      },
+      {
+        "name": "page_size",
+        "type": "int",
+        "default": "Query(100, ge=1, le=500)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/financial/filter-options",
+    "file": "main_candidate.py",
+    "handler": "financial_filter_options",
+    "line": 10754,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/admin/executive-reconcile",
+    "file": "main_candidate.py",
+    "handler": "executive_reconcile",
+    "line": 11412,
+    "parameters": [
+      {
+        "name": "year",
+        "type": "int",
+        "default": "Query(2026)"
+      },
+      {
+        "name": "month",
+        "type": "Optional[int]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/v2/admin/recompute-month",
+    "file": "main_candidate.py",
+    "handler": "recompute_month_endpoint",
+    "line": 11543,
+    "parameters": [
+      {
+        "name": "year",
+        "type": "int",
+        "default": "Query(...)"
+      },
+      {
+        "name": "month",
+        "type": "int",
+        "default": "Query(...)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "force",
+        "type": "bool",
+        "default": "Query(False)"
+      },
+      {
+        "name": "all_offices",
+        "type": "bool",
+        "default": "Query(False)"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/v2/admin/backfill-history",
+    "file": "main_candidate.py",
+    "handler": "backfill_history",
+    "line": 11573,
+    "parameters": [
+      {
+        "name": "start_year",
+        "type": "int",
+        "default": "Query(2021)"
+      },
+      {
+        "name": "start_month",
+        "type": "int",
+        "default": "Query(1)"
+      },
+      {
+        "name": "end_year",
+        "type": "int",
+        "default": "Query(2025)"
+      },
+      {
+        "name": "end_month",
+        "type": "int",
+        "default": "Query(12)"
+      },
+      {
+        "name": "force",
+        "type": "bool",
+        "default": "Query(False)"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/v2/admin/seed-precomputed",
+    "file": "main_candidate.py",
+    "handler": "seed_precomputed",
+    "line": 11616,
+    "parameters": [
+      {
+        "name": "location_id",
+        "type": "str",
+        "default": "Query(...)"
+      },
+      {
+        "name": "year",
+        "type": "int",
+        "default": "Query(...)"
+      },
+      {
+        "name": "month",
+        "type": "int",
+        "default": "Query(...)"
+      },
+      {
+        "name": "net_production",
+        "type": "float",
+        "default": "Query(...)"
+      },
+      {
+        "name": "collections",
+        "type": "float",
+        "default": "Query(...)"
+      },
+      {
+        "name": "gross_production",
+        "type": "Optional[float]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "source",
+        "type": "str",
+        "default": "Query('pdf_manual')"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/plaid/item/{item_id}/activate",
+    "file": "main_candidate.py",
+    "handler": "plaid_activate_item",
+    "line": 11676,
+    "parameters": [
+      {
+        "name": "item_id",
+        "type": "str",
+        "default": null
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/plaid/update-mode",
+    "file": "main_candidate.py",
+    "handler": "plaid_update_mode",
+    "line": 11700,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      }
+    ]
+  },
+  {
+    "method": "DELETE",
+    "path": "/plaid/item/{item_id}",
+    "file": "main_candidate.py",
+    "handler": "plaid_remove_item",
+    "line": 11740,
+    "parameters": [
+      {
+        "name": "item_id",
+        "type": "str",
+        "default": null
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/plaid/item/{item_id}/status",
+    "file": "main_candidate.py",
+    "handler": "plaid_item_status",
+    "line": 11771,
+    "parameters": [
+      {
+        "name": "item_id",
+        "type": "str",
+        "default": null
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/plaid/health",
+    "file": "main_candidate.py",
+    "handler": "plaid_health_check",
+    "line": 11811,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/plaid/transactions/cursor",
+    "file": "main_candidate.py",
+    "handler": "plaid_transactions_cursor",
+    "line": 11865,
+    "parameters": [
+      {
+        "name": "item_id",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/marketing/amex-spend",
+    "file": "main_candidate.py",
+    "handler": "marketing_amex_spend",
+    "line": 11958,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "endDate",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "month",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "year",
+        "type": "int",
+        "default": "None"
+      },
+      {
+        "name": "locationId",
+        "type": "str",
+        "default": "None"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/metrics",
+    "file": "main_candidate.py",
+    "handler": "normalized_metrics",
+    "line": 12141,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "providerId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "paymentSource",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "claimStatus",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/admin/diagnostics",
+    "file": "main_candidate.py",
+    "handler": "admin_diagnostics",
+    "line": 12404,
+    "parameters": [
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "date",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/admin/data-freshness",
+    "file": "main_candidate.py",
+    "handler": "data_freshness",
+    "line": 12547,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/v2/admin/benchmark",
+    "file": "main_candidate.py",
+    "handler": "benchmark_reconciliation",
+    "line": 12592,
+    "parameters": [
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/eassist/daily",
+    "file": "main_candidate.py",
+    "handler": "eassist_daily_reports",
+    "line": 12678,
+    "parameters": [
+      {
+        "name": "reportDate",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Exact report date (YYYY-MM-DD)')"
+      },
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Start date (YYYY-MM-DD)')"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None, description='End date (YYYY-MM-DD)')"
+      },
+      {
+        "name": "office",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Office canonical (Barnegat/Brick/Eatontown/Staten Island)')"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Dentrix Ascend office_id if mapped')"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Supabase office UUID if mapped')"
+      },
+      {
+        "name": "parseStatus",
+        "type": "Optional[str]",
+        "default": "Query(None, description='parser_status filter')"
+      },
+      {
+        "name": "validationStatus",
+        "type": "Optional[str]",
+        "default": "Query(None, description='validation_status filter')"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1, ge=1)"
+      },
+      {
+        "name": "pageSize",
+        "type": "int",
+        "default": "Query(50, ge=1, le=500)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/eassist/ingest/status",
+    "file": "main_candidate.py",
+    "handler": "eassist_ingest_status",
+    "line": 12817,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/daily-comparison",
+    "file": "main_candidate.py",
+    "handler": "rcm_daily_comparison",
+    "line": 12924,
+    "parameters": [
+      {
+        "name": "date",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Selected day (YYYY-MM-DD), default today')"
+      },
+      {
+        "name": "startDate",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Explicit range start for monthly/year modes')"
+      },
+      {
+        "name": "endDate",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Explicit range end for monthly/year modes')"
+      },
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Dashboard UUID')"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Dentrix numeric location ID')"
+      },
+      {
+        "name": "providerId",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Provider filter')"
+      },
+      {
+        "name": "comparisonMode",
+        "type": "Optional[str]",
+        "default": "Query('daily', description='daily|mtd|monthly_yoy|yearly_yoy')"
+      },
+      {
+        "name": "comparisonYears",
+        "type": "int",
+        "default": "Query(3, description='Years for YOY, default 3, max 5')"
+      },
+      {
+        "name": "metrics",
+        "type": "Optional[str]",
+        "default": "Query(None, description='Comma-separated metric list, default all')"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1)"
+      },
+      {
+        "name": "pageSize",
+        "type": "int",
+        "default": "Query(500)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/huddle/prefill",
+    "file": "main_candidate.py",
+    "handler": "huddle_prefill",
+    "line": 14031,
+    "parameters": [
+      {
+        "name": "officeId",
+        "type": "str",
+        "default": "Query(..., description='Supabase office UUID')"
+      },
+      {
+        "name": "date",
+        "type": "Optional[str]",
+        "default": "Query(default=None, alias='date', description='YYYY-MM-DD, defaults to today in America/New_York')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/eod/daily-report",
+    "file": "main_candidate.py",
+    "handler": "eod_daily_report",
+    "line": 14402,
+    "parameters": [
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "date",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/eod/unscheduled-treatment",
+    "file": "main_candidate.py",
+    "handler": "eod_unscheduled_treatment",
+    "line": 14965,
+    "parameters": [
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "date",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "lookbackDays",
+        "type": "int",
+        "default": "Query(90, ge=1, le=2190)"
+      },
+      {
+        "name": "includeScheduled",
+        "type": "bool",
+        "default": "Query(False)"
+      },
+      {
+        "name": "includeReferredOut",
+        "type": "bool",
+        "default": "Query(False)"
+      },
+      {
+        "name": "providerId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "minValue",
+        "type": "Optional[float]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "search",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1, ge=1)"
+      },
+      {
+        "name": "pageSize",
+        "type": "int",
+        "default": "Query(50, ge=1, le=200)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/eod/unscheduled-treatment/{queue_id}/contacts",
+    "file": "main_candidate.py",
+    "handler": "eod_unscheduled_treatment_contact_history",
+    "line": 15640,
+    "parameters": [
+      {
+        "name": "queue_id",
+        "type": "str",
+        "default": null
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/eod/unscheduled-treatment/assignees",
+    "file": "main_candidate.py",
+    "handler": "eod_unscheduled_treatment_assignees",
+    "line": 15716,
+    "parameters": [
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/v2/eod/unscheduled-treatment/sync",
+    "file": "main_candidate.py",
+    "handler": "eod_unscheduled_treatment_sync",
+    "line": 15812,
+    "parameters": [
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "allOffices",
+        "type": "bool",
+        "default": "Query(False)"
+      },
+      {
+        "name": "date",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "lookbackDays",
+        "type": "int",
+        "default": "Query(90, ge=1, le=2190)"
+      },
+      {
+        "name": "includeScheduled",
+        "type": "bool",
+        "default": "Query(False)"
+      },
+      {
+        "name": "includeReferredOut",
+        "type": "bool",
+        "default": "Query(False)"
+      },
+      {
+        "name": "dry_run",
+        "type": "bool",
+        "default": "Query(True)"
+      },
+      {
+        "name": "limit",
+        "type": "Optional[int]",
+        "default": "Query(None, ge=1, le=5000)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/eod/treatment-plan-completion",
+    "file": "main_candidate.py",
+    "handler": "eod_treatment_plan_completion",
+    "line": 16525,
+    "parameters": [
+      {
+        "name": "officeId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "locationId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "allOffices",
+        "type": "bool",
+        "default": "Query(False)"
+      },
+      {
+        "name": "plannedStartDate",
+        "type": "str",
+        "default": "Query(..., description='YYYY-MM-DD')"
+      },
+      {
+        "name": "plannedEndDate",
+        "type": "str",
+        "default": "Query(..., description='YYYY-MM-DD')"
+      },
+      {
+        "name": "completionWindowDays",
+        "type": "int",
+        "default": "Query(90, ge=1, le=730)"
+      },
+      {
+        "name": "includeOpen",
+        "type": "bool",
+        "default": "Query(True)"
+      },
+      {
+        "name": "includeSameDay",
+        "type": "bool",
+        "default": "Query(False)"
+      },
+      {
+        "name": "providerId",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "providerRole",
+        "type": "Optional[str]",
+        "default": "Query('planning_provider', regex='^(planning_provider|completing_provider)$')"
+      },
+      {
+        "name": "category",
+        "type": "Optional[str]",
+        "default": "Query(None)"
+      },
+      {
+        "name": "minValue",
+        "type": "Optional[float]",
+        "default": "Query(None)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/amazon/status",
+    "file": "main_candidate.py",
+    "handler": "amazon_status",
+    "line": 17126,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/amazon/auth-url",
+    "file": "main_candidate.py",
+    "handler": "amazon_auth_url",
+    "line": 17135,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/amazon/auth",
+    "file": "main_candidate.py",
+    "handler": "amazon_auth",
+    "line": 17140,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/amazon/callback",
+    "file": "main_candidate.py",
+    "handler": "amazon_callback",
+    "line": 17151,
+    "parameters": [
+      {
+        "name": "code",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "state",
+        "type": "str",
+        "default": "None"
+      },
+      {
+        "name": "error",
+        "type": "str",
+        "default": "None"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/amazon/products/search",
+    "file": "main_candidate.py",
+    "handler": "amazon_product_search",
+    "line": 17166,
+    "parameters": [
+      {
+        "name": "q",
+        "type": "str",
+        "default": "Query(..., description='Search keywords')"
+      },
+      {
+        "name": "page",
+        "type": "int",
+        "default": "Query(1)"
+      },
+      {
+        "name": "page_size",
+        "type": "int",
+        "default": "Query(20)"
+      },
+      {
+        "name": "X_API_Key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-API-Key')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/amazon/products/{asin}",
+    "file": "main_candidate.py",
+    "handler": "amazon_product_detail",
+    "line": 17182,
+    "parameters": [
+      {
+        "name": "asin",
+        "type": "str",
+        "default": null
+      },
+      {
+        "name": "X_API_Key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-API-Key')"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/amazon/cart",
+    "file": "main_candidate.py",
+    "handler": "amazon_create_cart",
+    "line": 17193,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "X_API_Key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-API-Key')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/amazon/cart/{cart_id}",
+    "file": "main_candidate.py",
+    "handler": "amazon_get_cart",
+    "line": 17208,
+    "parameters": [
+      {
+        "name": "cart_id",
+        "type": "str",
+        "default": null
+      },
+      {
+        "name": "X_API_Key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-API-Key')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/amazon/orders/sync",
+    "file": "main_candidate.py",
+    "handler": "amazon_orders_sync",
+    "line": 17219,
+    "parameters": [
+      {
+        "name": "start_date",
+        "type": "str",
+        "default": "Query(None)"
+      },
+      {
+        "name": "end_date",
+        "type": "str",
+        "default": "Query(None)"
+      },
+      {
+        "name": "triggered_by",
+        "type": "str",
+        "default": "Query('manual')"
+      },
+      {
+        "name": "X_API_Key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-API-Key')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/amazon/orders/history",
+    "file": "main_candidate.py",
+    "handler": "amazon_orders_history",
+    "line": 17242,
+    "parameters": [
+      {
+        "name": "office",
+        "type": "str",
+        "default": "Query(None)"
+      },
+      {
+        "name": "month",
+        "type": "str",
+        "default": "Query(None)"
+      },
+      {
+        "name": "status",
+        "type": "str",
+        "default": "Query(None)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "Query(100)"
+      },
+      {
+        "name": "offset",
+        "type": "int",
+        "default": "Query(0)"
+      },
+      {
+        "name": "X_API_Key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-API-Key')"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/amazon/orders/place-direct",
+    "file": "main_candidate.py",
+    "handler": "amazon_place_direct",
+    "line": 17269,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "X_API_Key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-API-Key')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/amazon/order-requests",
+    "file": "main_candidate.py",
+    "handler": "list_order_requests",
+    "line": 17286,
+    "parameters": [
+      {
+        "name": "status",
+        "type": "str",
+        "default": "Query(None)"
+      },
+      {
+        "name": "office_id",
+        "type": "str",
+        "default": "Query(None)"
+      },
+      {
+        "name": "limit",
+        "type": "int",
+        "default": "Query(50)"
+      },
+      {
+        "name": "X_API_Key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-API-Key')"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/amazon/order-requests",
+    "file": "main_candidate.py",
+    "handler": "submit_order_request",
+    "line": 17309,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "X_API_Key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-API-Key')"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/amazon/order-requests/{request_id}/approve",
+    "file": "main_candidate.py",
+    "handler": "approve_order_request",
+    "line": 17352,
+    "parameters": [
+      {
+        "name": "request_id",
+        "type": "str",
+        "default": null
+      },
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "X_API_Key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-API-Key')"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/amazon/order-requests/{request_id}/reject",
+    "file": "main_candidate.py",
+    "handler": "reject_order_request",
+    "line": 17386,
+    "parameters": [
+      {
+        "name": "request_id",
+        "type": "str",
+        "default": null
+      },
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "X_API_Key",
+        "type": "Optional[str]",
+        "default": "Header(None, alias='X-API-Key')"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/gusto/status",
+    "file": "main_candidate.py",
+    "handler": "gusto_status",
+    "line": 17424,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/v2/admin/sync-dashboard",
+    "file": "main_candidate.py",
+    "handler": "admin_sync_dashboard",
+    "line": 17517,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/v2/rcm/ar-location-health",
+    "file": "main_candidate.py",
+    "handler": "rcm_ar_location_health",
+    "line": 17606,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/.well-known/oauth-authorization-server",
+    "file": "main_candidate.py",
+    "handler": "oauth_metadata",
+    "line": 17662,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/mcp/.well-known/oauth-authorization-server",
+    "file": "main_candidate.py",
+    "handler": "oauth_metadata_mcp",
+    "line": 17676,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/mcp/.well-known/oauth-protected-resource",
+    "file": "main_candidate.py",
+    "handler": "mcp_protected_resource_metadata",
+    "line": 17681,
+    "parameters": []
+  },
+  {
+    "method": "GET",
+    "path": "/mcp-auth/authorize",
+    "file": "main_candidate.py",
+    "handler": "mcp_oauth_authorize",
+    "line": 17691,
+    "parameters": [
+      {
+        "name": "response_type",
+        "type": "str",
+        "default": "Query('code')"
+      },
+      {
+        "name": "client_id",
+        "type": "str",
+        "default": "Query('')"
+      },
+      {
+        "name": "redirect_uri",
+        "type": "str",
+        "default": "Query('')"
+      },
+      {
+        "name": "state",
+        "type": "str",
+        "default": "Query('')"
+      },
+      {
+        "name": "scope",
+        "type": "str",
+        "default": "Query('')"
+      },
+      {
+        "name": "code_challenge",
+        "type": "str",
+        "default": "Query('')"
+      },
+      {
+        "name": "code_challenge_method",
+        "type": "str",
+        "default": "Query('')"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/mcp-auth/token",
+    "file": "main_candidate.py",
+    "handler": "mcp_oauth_token",
+    "line": 17720,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/mcp",
+    "file": "main_candidate.py",
+    "handler": "mcp_proxy",
+    "line": 17743,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "path",
+        "type": "str",
+        "default": "''"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/mcp",
+    "file": "main_candidate.py",
+    "handler": "mcp_proxy",
+    "line": 17743,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "path",
+        "type": "str",
+        "default": "''"
+      }
+    ]
+  },
+  {
+    "method": "OPTIONS",
+    "path": "/mcp",
+    "file": "main_candidate.py",
+    "handler": "mcp_proxy",
+    "line": 17743,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "path",
+        "type": "str",
+        "default": "''"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/mcp/{path:path}",
+    "file": "main_candidate.py",
+    "handler": "mcp_proxy",
+    "line": 17743,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "path",
+        "type": "str",
+        "default": "''"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/mcp/{path:path}",
+    "file": "main_candidate.py",
+    "handler": "mcp_proxy",
+    "line": 17743,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "path",
+        "type": "str",
+        "default": "''"
+      }
+    ]
+  },
+  {
+    "method": "OPTIONS",
+    "path": "/mcp/{path:path}",
+    "file": "main_candidate.py",
+    "handler": "mcp_proxy",
+    "line": 17743,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "path",
+        "type": "str",
+        "default": "''"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/v2/auth/check-trusted-device",
+    "file": "otp_auth.py",
+    "handler": "check_trusted_device",
+    "line": 375,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/v2/auth/send-login-otp",
+    "file": "otp_auth.py",
+    "handler": "send_login_otp",
+    "line": 491,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/v2/auth/verify-login-otp",
+    "file": "otp_auth.py",
+    "handler": "verify_login_otp",
+    "line": 604,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "otp_code",
+        "type": "str",
+        "default": "Body(..., embed=True)"
+      },
+      {
+        "name": "trust_device",
+        "type": "bool",
+        "default": "Body(True, embed=True)"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/v2/auth/revoke-trusted-device",
+    "file": "otp_auth.py",
+    "handler": "revoke_trusted_device",
+    "line": 778,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "device_id",
+        "type": "Optional[str]",
+        "default": "Body(None, embed=True)"
+      },
+      {
+        "name": "target_user_id",
+        "type": "Optional[str]",
+        "default": "Body(None, embed=True)"
+      },
+      {
+        "name": "revoke_all",
+        "type": "bool",
+        "default": "Body(False, embed=True)"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/auth/trusted-devices",
+    "file": "otp_auth.py",
+    "handler": "list_trusted_devices",
+    "line": 860,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "target_user_id",
+        "type": "Optional[str]",
+        "default": "None"
+      }
+    ]
+  },
+  {
+    "method": "GET",
+    "path": "/v2/auth/otp-config",
+    "file": "otp_auth.py",
+    "handler": "get_otp_config",
+    "line": 904,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/v2/auth/otp-config",
+    "file": "otp_auth.py",
+    "handler": "update_otp_config",
+    "line": 926,
+    "parameters": [
+      {
+        "name": "request",
+        "type": "Request",
+        "default": null
+      },
+      {
+        "name": "config_update",
+        "type": "dict",
+        "default": "Body(...)"
+      }
+    ]
+  },
+  {
+    "method": "POST",
+    "path": "/v2/reports/export",
+    "file": "report_export.py",
+    "handler": "export_report",
+    "line": 1403,
+    "parameters": [
+      {
+        "name": "body",
+        "type": "dict",
+        "default": "Body(...)"
+      },
+      {
+        "name": "x_api_key",
+        "type": "str",
+        "default": "Header(..., alias='X-API-Key')"
+      }
+    ]
+  }
+]
