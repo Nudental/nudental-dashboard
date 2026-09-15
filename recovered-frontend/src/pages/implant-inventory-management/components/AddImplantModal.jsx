@@ -171,7 +171,13 @@ const AddImplantModal = ({ record, offices, companies, systems, platformSizes, l
       if (attachFile) {
         attachUrl = await uploadImplantAttachment(attachFile, userId);
       }
-      const payload = { ...form, attachment_url: attachUrl, created_by: userId, updated_by: userId };
+      const payload = { ...form, attachment_url: attachUrl, created_by: userId, updated_by: userId,
+        system_id: form?.system_id || null,
+        platform_size_id: form?.platform_size_id || null,
+        length_id: form?.length_id || null,
+        diameter_id: form?.diameter_id || null,
+        expiration_date: form?.expiration_date || null,
+      };
       let saved;
       if (isEdit) {
         saved = await updateInventoryRecord(record?.id, payload);
