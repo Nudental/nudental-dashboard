@@ -25,6 +25,13 @@ catalogue offices.
 - Archive SHA256
   080bb2382379e00c9d551d471e87bb1dab94fe9c88666a6d25e7e68555413f7a.
 
-QA deployment and live verification: PENDING. Prior QA deployment
-a101df8f-f343-4034-a9d6-1ee908bc373e must remain recoverable. Production is not a
-deployment target. Report API readiness remains pending separate route review.
+QA deployment 6c81bf22-5f1c-46b2-97a8-ebcb7c1146de succeeded from 46d8cd28.
+Live verification PASS: after refresh, the existing synthetic office manager
+sees QA / Office A in both treatment tabs. Dentrix Closeout retains the correct
+office and restored September 15 date. Treatment Plan Completion retains its
+existing date defaults. All 17 hosted artifact and boundary checks PASS.
+
+No database fixture was added by this repair. Prior QA deployment
+a101df8f-f343-4034-a9d6-1ee908bc373e remains recoverable. Production deployment
+1f1f91bc-5dbd-4500-8bfd-d4e2039ba601 is unchanged. Report API readiness remains
+pending separate route review; no provider request or execution was enabled.

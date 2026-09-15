@@ -111,8 +111,11 @@ for the selected isolated Supabase architecture. [PGlite documentation](https://
 
 ## Blocking decisions
 
-QA-DB-001: approval for the separate NU-Dashboard-Staging-QA Supabase Micro project
-at an additional$10/month remains pending. Neither existing project can be reused.
+QA-DB-001 resolved: the user approved the additional $10/month, the separate
+NU-Dashboard-Staging-QA project hvtxjfayenqnwtaisoaw is live, and hosted synthetic
+role/database checks have passed. See hosted-validation-20260914.md and the
+September 15 hosting/API validation records. The initial preparation status
+earlier in this file is historical; no database approval is currently pending.
 The accounting-owner choice for official Expense reporting also remains pending;
 the detailed aggregate reconciliation is preserved privately. Do not repeat
 either pending question or choose financial authority by matching preferred totals.
