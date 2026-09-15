@@ -19,3 +19,9 @@ Entry `index-DIh69IfL.js`, 8,828,356 bytes, SHA256
 Live repeat pending. Existing test usage `cb95d4e3-b4db-4a34-8593-ce25f4dfdf24`
 is reused without another write. Production remains unchanged. The separate
 Used This Month count defect is queued for its own targeted correction.
+
+Live verification PASS: the same saved usage now displays Sep 15, 2026 in the
+browser. QA deployment349013df-b400-481a-bcc2-3926e0b77356, source947a682d7ea93500928235a6eb6de4a7063889e4.
+Independent readback confirms no new usage, unchanged procedure_date2026-09-15,
+stock6 and one usage audit. All17hosted checks pass. PriorQA5bdea17e remains
+recoverable; production remains1f1f91bc-5dbd-4500-8bfd-d4e2039ba601.
