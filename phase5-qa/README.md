@@ -11,7 +11,8 @@ eight actual roles plus account/office variants. Three API routes are positively
 reviewed (office read, EOD read, synthetic Patient Flow export); other operational
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
-QA schema repairs 001–031, 033, 036, 037 and 038 are applied; 032, 034, 035 and 039 remain unapplied access candidates awaiting approval. Latest QA frontend release
+QA schema repairs 001–039 are applied. The four explicitly approved access restrictions
+[pass live identity checks](access-restrictions-live-20260916.md). Latest QA frontend release
 `80c69cdc-8ebb-4f18-aece-d25364965521` uses source
 `847c1c6cbe01640753fa741c957215b8860ca710`. All 1,546 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
@@ -89,13 +90,13 @@ The [Current Inventory office columns](front-desk-current-offices-validation-202
 now display QA quantities correctly after refresh. Browser CSV file-save remains
 unverified. [Office Manager submission](front-desk-submission-validation-20260916.md)
 passes persistence, audit, scope and simulated notification checks; its review
-business rule needs clarification. Tested migration 032 remains unapplied while
-explicit approval for the catalog access restriction is pending.
+business rule is now confirmed: Regional Manager/Admin review only, no self-approval.
+Implementation and verification of that rule remain pending; no new role grants are implied.
+Migration 032 is applied and its live scope checks pass.
 The [catalog audit trigger](front-desk-catalog-audit-validation-20260916.md)
 passes live create/edit/replay/delete checks. Its separate temporary fixture is
-cleaned and three audit events are retained; the five-unit access-test fixture
-remains (now six units). All 68 candidate installation checks pass; this does not mean pending
-migration 032 has been applied.
+cleaned and three audit events are retained. The original six-unit access fixture is
+also cleaned after migration 032 verification, preserving seven audit events.
 The [catalog summary counters](front-desk-summary-validation-20260916.md) now
 refresh after saves while preserving the open category. Live quantity/create
 and full-refresh checks pass. The extra creation-counter fixture is cleaned,

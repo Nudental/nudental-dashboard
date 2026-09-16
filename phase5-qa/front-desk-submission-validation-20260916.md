@@ -21,7 +21,9 @@ was sent. The QA frontend remains acf10c88 at this checkpoint.
 
 The UI currently offers the Office Manager review actions on their own request,
 although its help text describes Regional Manager review. A business-rule
-clarification is pending; no approval or rejection was performed on this request.
+clarification was resolved by the user on September 16: Regional Manager/Admin only,
+with no self-approval. That rule still needs implementation and verification; no
+approval or rejection was performed on this request.
 The labeled fixture QA TEMP PH5-FRONTDESK-20260916 remains for that check and
 must be cleaned afterward. Its exact identifiers and snapshots are preserved
 privately in qa-frontdesk-ui-20260916.json; audit history must be retained.
