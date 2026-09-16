@@ -13,12 +13,14 @@ routes remain closed. Closed-route denials are not positive workflow coverage.
 
 QA schema repairs 001–040 are applied. The four explicitly approved access restrictions
 [pass live identity checks](access-restrictions-live-20260916.md). Latest QA frontend release
-`9fb1f39e-ce99-4791-969a-d552e792825f` uses source
-`39d89493bd7221c529a67f61702e06ef18995e20`. All 1,561 retained frontend tests
+`f2983c78-166c-4359-b0ea-4d9113ec0451` uses source
+`660aaa3a1ab8ff7df02606a5711a626bde45229e`. All 1,584 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
-Recent live checks/repairs: [Front Desk reviewer/no-self-approval rule](front-desk-review-boundary-validation-20260916.md),
+Recent live checks/repairs: [urgent office stock](urgent-office-stock-validation-20260916.md),
+[urgent catalog item names](urgent-catalog-name-validation-20260916.md),
+[Front Desk reviewer/no-self-approval rule](front-desk-review-boundary-validation-20260916.md),
 [urgent audit and notification simulations](urgent-audit-simulation-validation-20260916.md),
 [urgent-request optional fields](urgent-optional-fields-validation-20260916.md),
 [mobile urgent-request item selection](urgent-new-request-routing-validation-20260916.md),
