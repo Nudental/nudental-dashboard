@@ -12,8 +12,8 @@ reviewed (office read, EOD read, synthetic Patient Flow export); other operation
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
 QA schema repairs 001–029 are applied. Latest QA frontend release
-`197a2037-175f-42d9-a4bd-aa06115a8b73` uses source
-`03c5b2dec2025962e43513b38dcca708ea3c7b1d`. All 1,414 retained frontend tests
+`c5668e5e-7981-415b-ab1d-76a4a18e2ba7` uses source
+`95e18979810130ff298dc399e58c838c0f117954`. All 1,420 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
@@ -64,6 +64,9 @@ also passes live lifecycle/scope checks; both temporary fulfillment records are
 cleaned, with four audit events retained.
 The manual fulfillment [default date](supply-fulfillment-date-validation-20260915.md)
 now follows the user's local calendar day, verified live in the evening.
+The [Received By selector](supply-fulfillment-recipient-validation-20260915.md)
+also saves a real user ID and passes live persistence/audit checks. Its temporary
+fixture is cleaned, preserving two more audit events.
 ## Historical preparation record
 
 The following notes preserve conditions at initial preparation, not current
