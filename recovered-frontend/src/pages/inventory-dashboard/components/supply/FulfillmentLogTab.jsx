@@ -26,6 +26,15 @@ const CreateFulfillmentModal = ({ onClose, onSaved, departments }) => {
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [recipients, setRecipients] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    supplyRequestService.fetchFulfillmentRecipients()
+      .then(data => { if (mounted) setRecipients(data); })
+      .catch(() => { if (mounted) setError('Unable to load receiving users. Close and reopen this form to try again.'); });
+    return () => { mounted = false; };
+  }, []);
 
   const OFFICES = supplyRequestService?.getOffices();
   const setField = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
@@ -107,9 +116,12 @@ const CreateFulfillmentModal = ({ onClose, onSaved, departments }) => {
                 className="w-full px-3 py-2 border border-border rounded-xl text-sm bg-background focus:outline-none" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Received By</label>
-              <input type="text" value={form?.received_by} onChange={e => setField('received_by', e?.target?.value)}
-                className="w-full px-3 py-2 border border-border rounded-xl text-sm bg-background focus:outline-none" />
+              <label htmlFor="fulfillment-received-by" className="block text-xs font-semibold text-muted-foreground mb-1.5">Received By</label>
+              <select id="fulfillment-received-by" value={form?.received_by} onChange={e => setField('received_by', e?.target?.value)}
+                className="w-full px-3 py-2 border border-border rounded-xl text-sm bg-background focus:outline-none">
+                <option value="">Not recorded</option>
+                {recipients.map(recipient => <option key={recipient.id} value={recipient.id}>{recipient.full_name}</option>)}
+              </select>
             </div>
             <div>
               <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Date Received</label>

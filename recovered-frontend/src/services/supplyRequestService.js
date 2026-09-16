@@ -661,6 +661,13 @@ export const supplyRequestService = {
     return data || [];
   },
 
+  async fetchFulfillmentRecipients() {
+    const { data, error } = await supabase.from('user_profiles').select('id, full_name')
+      .eq('is_active', true).eq('is_approved', true).eq('status', 'Active').order('full_name');
+    if (error) throw error;
+    return data || [];
+  },
+
   async createFulfillmentLog(log) {
     const { data: { user } } = await supabase?.auth?.getUser();
     const payload = { ...log, supplied_by: user?.id };
