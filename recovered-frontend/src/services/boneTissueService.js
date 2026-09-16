@@ -78,15 +78,21 @@ export const checkDuplicateId = async (identificationNumber, excludeId = null) =
 };
 
 // ── Create record ──────────────────────────────────────────────────────────
+const normalizeOptionalInventoryFields = (payload) => Object.fromEntries(
+  Object.entries(payload).map(([key, value]) => [key,
+    ['provider_id', 'staff_assistant_id', 'expiration_date'].includes(key) && value === '' ? null : value,
+  ])
+);
+
 export const createInventoryRecord = async (payload) => {
-  const { data, error } = await supabase?.from('bone_tissue_inventory')?.insert(payload)?.select()?.single();
+  const { data, error } = await supabase?.from('bone_tissue_inventory')?.insert(normalizeOptionalInventoryFields(payload))?.select()?.single();
   if (error) throw error;
   return data;
 };
 
 // ── Update record ──────────────────────────────────────────────────────────
 export const updateInventoryRecord = async (id, payload) => {
-  const { data, error } = await supabase?.from('bone_tissue_inventory')?.update({ ...payload, updated_at: new Date()?.toISOString() })?.eq('id', id)?.select()?.single();
+  const { data, error } = await supabase?.from('bone_tissue_inventory')?.update({ ...normalizeOptionalInventoryFields(payload), updated_at: new Date()?.toISOString() })?.eq('id', id)?.select()?.single();
   if (error) throw error;
   return data;
 };
