@@ -11,7 +11,7 @@ eight actual roles plus account/office variants. Three API routes are positively
 reviewed (office read, EOD read, synthetic Patient Flow export); other operational
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
-QA schema repairs 001–027 are applied. Latest QA frontend release
+QA schema repairs 001–028 are applied. Latest QA frontend release
 `79d267a7-10ad-44bb-bfaf-0d12b9316018` uses source
 `55df462f7a4e46730cc662a31f873cb73f893284`. All 1,406 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
@@ -58,7 +58,8 @@ Clinical submission is live verified with durable simulated email/SMS intents;
 no provider is contacted. Review/fulfillment and Front Desk ordinary-role UI
 coverage remain in progress, with one labeled Office A request retained.
 The [manual fulfillment optional-field save](supply-fulfillment-optional-validation-20260915.md)
-is live verified after refresh. Its separate access/audit findings remain open;
+is live verified after refresh. Its [access boundary](supply-fulfillment-access-validation-20260915.md)
+now passes the live role/read/write checks; the audit finding remains open;
 one labeled fulfillment record is also retained for testing and cleanup.
 ## Historical preparation record
 
