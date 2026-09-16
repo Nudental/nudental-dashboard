@@ -1,0 +1,38 @@
+{
+  "project_ref": "hvtxjfayenqnwtaisoaw",
+  "production_records": false,
+  "database_writes": false,
+  "purpose": "Reusable synthetic in-stock, low-stock and critical-stock scenarios; preserve adjustment/import audit lineage",
+  "department_id": "85842066-4307-4f12-a33b-db441d68831b",
+  "subsection_id": "d3a64cab-2d0d-41fb-823a-324f2d5c2698",
+  "fixtures": [
+    {
+      "id": "ef0e6c3e-4a12-44ab-a6b4-d2b72b45de26",
+      "item_id": "cac03c19-a00e-473b-83e0-16fa10008d19",
+      "item_name": "QA TEMP Clinical Audit Check 20260916",
+      "office_id": "QA / Office A",
+      "quantity_on_hand": 2,
+      "inv_status": "critically_low",
+      "audit_events_retained": 1
+    },
+    {
+      "id": "ced6c2d9-ba2b-45c7-b70c-7b9e081c46c9",
+      "item_id": "0dc86c79-25ed-4b47-972a-b71eea48f134",
+      "item_name": "QA TEMP Clinical Duplicate Check 20260916",
+      "office_id": "QA / Office A",
+      "quantity_on_hand": 5,
+      "inv_status": "low",
+      "audit_events_retained": 2
+    },
+    {
+      "id": "f8fa7d62-ffe0-4c82-ad29-895d0ec9b7ba",
+      "item_id": "2bf931d5-ebdc-4656-9af6-87cd8485cf68",
+      "item_name": "QA TEMP Clinical Item 20260916",
+      "office_id": "QA / Office A",
+      "quantity_on_hand": 6,
+      "inv_status": "in_stock",
+      "audit_events_retained": 11
+    }
+  ],
+  "retention_reason": "Deleting inventory cascades its history. User-authorized reusable QA fixtures remain; no audit rows are erased."
+}

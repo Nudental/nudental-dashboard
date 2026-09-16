@@ -90,6 +90,9 @@ class ReviewedRoutes:
         if not isinstance(actor, ApiAccess):
             return False
         route = (scope.get('method'), scope.get('path'))
+        from qa_execution import route_kind, can_use
+        if route_kind(*route):
+            return can_use(actor) and not scope.get('query_string', b'')
         if route not in self.enabled:
             return False
         if route == ('POST', '/v2/reports/export'):
