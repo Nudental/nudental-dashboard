@@ -1,6 +1,6 @@
 # Fulfillment file retry validation
 
-PH5-SUPPLY-018 — live duplicate reproduced; QA candidate awaiting publication and live retest.
+PH5-SUPPLY-018 — live duplicate reproduced, repaired and verified in isolated QA.
 
 A small synthetic CSV had one valid Office A fulfillment and one invalid row without an office. Preview correctly showed one valid/one invalid. Back/Re-upload left the database unchanged. Import created one unlinked record, its transactional insert audit and one import-summary audit; refresh retained the record. Re-uploading the identical file created a second identical record and another pair of audits. Root cause: each imported row used a fresh generated primary key, with no stable identity for a file retry.
 
@@ -8,6 +8,10 @@ The targeted QA import adapter hashes the file bytes and original row position t
 
 Scope: byte-identical files, including renamed copies, receive the same identities. Different files or changed bytes are separate imports. Two equal rows at different positions in one file remain separate. This does not reconcile duplicates that predate the repair, infer business shipment identity, or deduplicate revised/reordered files. Historical imports remain unlinked to inventory/request transactions.
 
-Validation: 18 service/hash/error/concurrent-call simulations and seven actual UI handler/render checks pass; 1,528 retained frontend tests pass, zero skips. QA production build, 511-file source parity and artifact environment checks pass. No live simultaneous-browser claim yet.
+Validation: 18 service/hash/error/concurrent-call simulations and seven actual UI handler/render checks pass; 1,528 retained frontend tests pass, zero skips. QA production build, 511-file source parity, artifact environment checks and 17 hosted checks pass. No live simultaneous-browser claim.
 
-Evidence: `qa-fulfillment-import-20260916.json`. Both original duplicate records were removed using exact ID/label/office/snapshot guards. Their four record audit events and two import-summary events remain. Fixed live retest and final cleanup are still required.
+QA deployment `19f89e5b-d026-48d0-b6b2-3f6f4e3d62d3` uses source `df96282d5663ec5ddf477dbb190fe2e2d643f10c`, entry `assets/index-CyF78IGu.js` (SHA-256 `44805d3e07d0ea65f1d82cf620fec0292118fd2920c4c11dd2db176ddabedfa8`). Prior QA deployment `59f7e08c-9ad3-491f-8570-c8c01332db46` is preserved. Production deployment `1f1f91bc-5dbd-4500-8bfd-d4e2039ba601`, main and API configuration remain unchanged.
+
+Original live test PASS: first fixed import announced one new fulfillment, inserted one record and one creation audit. Re-uploading the identical CSV displayed “1 record already imported from this file; no duplicate created,” zero newly imported records and one validation skip. Full database readback confirmed the complete record and creation audit were unchanged. Import-summary history separately recorded the retry with success_count 0/duplicate_count 1. Full refresh showed exactly one persisted fulfillment.
+
+Evidence: `qa-fulfillment-import-20260916.json`. Both original duplicate records were removed using exact ID/label/office/snapshot guards, preserving four record audits and two original import summaries. Final fixed record cleanup passed with two more record audits preserved; repeat delete returned zero without another audit. All four import summaries remain. No stock/request records were linked or changed. Evidence now records `cleanup_required: false`.
