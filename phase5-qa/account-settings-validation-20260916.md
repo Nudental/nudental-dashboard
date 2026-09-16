@@ -34,3 +34,22 @@ Production deployment and main remain unchanged.
 
 Evidence outside Git: `qa-account-settings-20260916.json`. The original profile
 was snapshotted. Restore its empty title and retain the resulting audit history.
+
+## PH5-SETTINGS-004 — persisted theme and creation date omitted on reload
+
+Two live theme saves stored Warm Professional in the QA profile, but each full
+reload applied the default Nu Dental Brand. Member Since also showed a dash on
+both observations, while the stored creation date was present. These consumers
+use the same limited profile projection, which omitted `theme` and `created_at`.
+The follow-up adds exactly those two existing read fields. Theme writes, account
+gates, credentials and permissions remain unchanged.
+
+Four additional executed-source tests cover saved/default themes and
+present/missing creation dates. Both missing-field cases failed before. All seven
+profile readback tests now pass (the first date expectation was corrected to the
+existing long-month UI format). All 1,623 retained frontend tests and QA build /
+511-file source parity pass. Publication/live replay pending.
+
+Separate profile-workflow receipt: `qa-profile-settings-20260916.json`. Original
+theme is Nu Dental Brand and photo is unset. The original theme must be restored
+after verification. No photo uploaded yet; the QA profile-photo bucket is absent.
