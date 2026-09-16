@@ -12,8 +12,8 @@ reviewed (office read, EOD read, synthetic Patient Flow export); other operation
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
 QA schema repairs 001–031 are applied. Latest QA frontend release
-`acf10c88-7786-4edf-94da-49f096c9cf85` uses source
-`c7a1ca11c626dcfefeadb31cf7532f8e79dcc262`. All 1,425 retained frontend tests
+`0c221564-8d39-4893-a822-932699e91405` uses source
+`21b65d7702ed0c375fa94f47bb4ad89597a16518`. All 1,431 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
@@ -76,6 +76,12 @@ now accepts the two QA office names; 23 focused database and 64 installation
 checks pass. The ordinary Office Manager request submission and catalog
 lifecycle are in progress. Two labeled supply requests and one catalog item
 remain for these checks; cleanup is still owed.
+The [Current Inventory office columns](front-desk-current-offices-validation-20260916.md)
+now display QA quantities correctly after refresh. Browser CSV file-save remains
+unverified. [Office Manager submission](front-desk-submission-validation-20260916.md)
+passes persistence, audit, scope and simulated notification checks; its review
+business rule needs clarification. Tested migration 032 remains unapplied while
+explicit approval for the catalog access restriction is pending.
 ## Historical preparation record
 
 The following notes preserve conditions at initial preparation, not current
