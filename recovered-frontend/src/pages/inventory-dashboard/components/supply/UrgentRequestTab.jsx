@@ -544,14 +544,7 @@ const UrgentRequestTab = ({ isAdmin, isRCM, prefillItem }) => {
             </span>
           )}
         </div>
-        <button onClick={() => {
-            if (isMobile) {
-              setMobilePrefill(null);
-              setShowMobileModal(true);
-            } else {
-              setView('form');
-            }
-          }}
+        <button onClick={() => setView('form')}
           className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700">
           <Icon name="AlertTriangle" size={15} />New Urgent Request
         </button>
