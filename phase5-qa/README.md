@@ -12,8 +12,8 @@ reviewed (office read, EOD read, synthetic Patient Flow export); other operation
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
 QA schema repairs 001–021 are applied. Latest QA frontend release
-`4360213f-65b7-4b5a-8efc-827867bfa458` uses source
-`74f62e20484952481159ec1707f2497267e485c7`. All 1,375 retained frontend tests
+`9a99231f-5b40-49f3-b6c1-265be834820e` uses source
+`194a068957efe6b0ac66b2107f7476c14d0142fc`. All 1,375 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
