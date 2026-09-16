@@ -1,28 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Icon from '../../../components/AppIcon';
 import { supabase } from '../../../lib/supabase';
+import { frontDeskInventoryService } from '../../../services/frontDeskInventoryService';
 
-const OFFICES = [
-  'All Offices',
-  'Nu Dental of Eatontown',
-  'Nu Dental of Brick',
-  'Nu Dental of Barnegat',
-  'Nu Dental of Staten Island',
-];
+const OFFICE_KEYS = frontDeskInventoryService.getOffices();
+const OFFICES = ['All Offices', ...OFFICE_KEYS];
 
 const OFFICE_SHORT = {
+  'QA / Office A':             'QA / Office A',
+  'QA / Office B':             'QA / Office B',
   'Nu Dental of Eatontown':    'Eatontown',
   'Nu Dental of Brick':        'Brick',
   'Nu Dental of Barnegat':     'Barnegat',
   'Nu Dental of Staten Island':'Staten Island',
 };
-
-const OFFICE_KEYS = [
-  'Nu Dental of Eatontown',
-  'Nu Dental of Brick',
-  'Nu Dental of Barnegat',
-  'Nu Dental of Staten Island',
-];
 
 const CATEGORIES = [
   'All',
@@ -264,28 +255,14 @@ const FrontDeskCurrentInventory = () => {
       // Grouped export: one row per unique item with per-office columns
       const headers = [
         'Category', 'Item Name',
-        'Eatontown Qty', 'Eatontown Status',
-        'Brick Qty', 'Brick Status',
-        'Barnegat Qty', 'Barnegat Status',
-        'Staten Island Qty', 'Staten Island Status',
+        ...OFFICE_KEYS.flatMap(office => [`${OFFICE_SHORT[office] || office} Qty`, `${OFFICE_SHORT[office] || office} Status`]),
         'Worst Status', 'Priority', 'Min Qty', 'Notes',
       ];
       const rows = (filteredGrouped || [])?.map(g => {
-        const et = g?.offices?.['Nu Dental of Eatontown'] || {};
-        const br = g?.offices?.['Nu Dental of Brick'] || {};
-        const ba = g?.offices?.['Nu Dental of Barnegat'] || {};
-        const si = g?.offices?.['Nu Dental of Staten Island'] || {};
         return [
           `"${(g?.category || '')?.replace(/"/g, '""')}"`,
           `"${(g?.item_name || '')?.replace(/"/g, '""')}"`,
-          et?.current_qty != null ? et?.current_qty : '—',
-          et?.status || '—',
-          br?.current_qty != null ? br?.current_qty : '—',
-          br?.status || '—',
-          ba?.current_qty != null ? ba?.current_qty : '—',
-          ba?.status || '—',
-          si?.current_qty != null ? si?.current_qty : '—',
-          si?.status || '—',
+          ...OFFICE_KEYS.flatMap(office => [g?.offices?.[office]?.current_qty ?? '—', g?.offices?.[office]?.status || '—']),
           worstStatus(g?.allStatuses),
           g?.priority || '—',
           g?.min_required != null ? g?.min_required : '—',
