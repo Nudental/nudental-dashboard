@@ -12,8 +12,8 @@ reviewed (office read, EOD read, synthetic Patient Flow export); other operation
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
 QA schema repairs 001–020 are applied. Latest QA frontend release
-`3585cd6c-c7fe-47e6-a683-a03b8e138e5a` uses source
-`863d7789a8579f30d2fad6175d96da1f85ac266d`. All 1,342 retained frontend tests
+`70a2dd16-9e95-4d47-8e4a-3a6b7aee7ee4` uses source
+`d6a86a3f8d11f11f479f36ed5c4da6e39928f4ee`. All 1,358 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
@@ -26,10 +26,12 @@ Recent live checks/repairs: [office assignment](user-office-transaction-validati
 [single responsive page mount](single-layout-validation-20260915.md), and
 [insurance appointment validation](insurance-request-time-validation-20260915.md),
 [insurance API scope](insurance-access-validation-20260915.md), and
-[private verification PDFs](insurance-pdf-storage-validation-20260915.md).
+[private verification PDFs](insurance-pdf-storage-validation-20260915.md), and
+[stale Huddle review actions](huddle-review-state-validation-20260915.md).
 Temporary records from completed administration, goals and implant/import checks
 and the insurance request/draft/PDF are cleaned; audit evidence retained. Original
-Huddle/EOD/task fixture cleanup remains pending until remaining workflow checks finish.
+Huddle/EOD/task fixtures are also cleaned after their retained checks. Evidence and
+general audit rows remain; old fixture-dependent helpers need fresh fixtures before reuse.
 
 Phase 5 is incomplete. Continue service-goal generation, remaining safe write/role
 checks, operational mock integration, bounded performance investigation, final
