@@ -16,10 +16,11 @@ const STATUS_CONFIG = {
 
 const CreateFulfillmentModal = ({ onClose, onSaved, departments }) => {
   const { userProfile } = useAuth();
+  const today = new Date();
   const [form, setForm] = useState({
     office_id: '', request_type: 'monthly', item_name: '', item_id: '',
     department_id: '', qty_requested: 0, qty_approved: 0, qty_supplied: 1,
-    date_supplied: new Date()?.toISOString()?.split('T')?.[0],
+    date_supplied: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`,
     delivery_method: '', tracking_notes: '', received_by: '',
     date_received: '', log_fulfillment_status: 'completed',
   });
