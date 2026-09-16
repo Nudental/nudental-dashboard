@@ -4,6 +4,7 @@ import Icon from '../../../../components/AppIcon';
 import supplyRequestService from '../../../../services/supplyRequestService';
 import { useAuth } from '../../../../contexts/AuthContext';
 import MobileUrgentRequestModal from './MobileUrgentRequestModal';
+import { dashboardEnvironment } from '../../../../config/dashboardEnvironment';
 
 const PRIORITY_CONFIG = {
   urgent: { label: 'Urgent', color: 'bg-orange-100 text-orange-700', border: 'border-orange-200' },
@@ -349,7 +350,9 @@ const UrgentRequestTab = ({ isAdmin, isRCM, prefillItem }) => {
     setSaving(true);
     try {
       await supplyRequestService?.createUrgentRequest(form);
-      setSuccess('Urgent request submitted! Regional Clinical Manager has been notified.');
+      setSuccess(dashboardEnvironment.isQa
+        ? 'Urgent request submitted. QA notification simulations recorded; no email or SMS was sent.'
+        : 'Urgent request submitted! Regional Clinical Manager has been notified.');
       setTimeout(() => setSuccess(''), 5000);
       setView('list');
       load();
@@ -631,7 +634,9 @@ const UrgentRequestTab = ({ isAdmin, isRCM, prefillItem }) => {
             if (result?.offline) {
               setSuccess('Urgent request queued — will sync when back online');
             } else {
-              setSuccess('Urgent request submitted! Regional Clinical Manager has been notified.');
+              setSuccess(dashboardEnvironment.isQa
+                ? 'Urgent request submitted. QA notification simulations recorded; no email or SMS was sent.'
+                : 'Urgent request submitted! Regional Clinical Manager has been notified.');
               load();
             }
             setTimeout(() => setSuccess(''), 5000);

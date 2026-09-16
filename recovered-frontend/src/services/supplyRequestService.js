@@ -545,6 +545,8 @@ export const supplyRequestService = {
     }
     const { data, error } = await supabase?.from('urgent_supply_requests')?.insert(payload)?.select()?.single();
     if (error) throw error;
+    // Isolated QA records both notification simulations in the insert transaction.
+    if (dashboardEnvironment.isQa) return data;
 
     // ── Clinical Supply Urgent email notification ──────────────────────────
     // Replaces old notifyRCMUrgentRequest (which used generic send-email / onboarding@resend.dev).
