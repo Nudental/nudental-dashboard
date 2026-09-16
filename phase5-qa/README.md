@@ -1,6 +1,6 @@
 # Isolated Dashboard QA
 
-Current status, September 15, supersedes historical preparation notes below.
+Current status, September 16, supersedes historical preparation notes below.
 The existing $10/month NU-Dashboard-Staging-QA Supabase project
 `hvtxjfayenqnwtaisoaw` is live; no additional project or subscription is needed.
 
@@ -11,7 +11,7 @@ eight actual roles plus account/office variants. Three API routes are positively
 reviewed (office read, EOD read, synthetic Patient Flow export); other operational
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
-QA schema repairs 001–030 are applied. Latest QA frontend release
+QA schema repairs 001–031 are applied. Latest QA frontend release
 `acf10c88-7786-4edf-94da-49f096c9cf85` uses source
 `c7a1ca11c626dcfefeadb31cf7532f8e79dcc262`. All 1,425 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
@@ -71,6 +71,11 @@ The [standalone manual receipt](supply-receipt-persistence-validation-20260915.m
 now persists its count/date/actor/status instead of reporting success after a
 failed write. Its completed synthetic fixture is cleaned with three audit events
 retained. Linked stock, multi-item and offline receipt paths remain unverified.
+The [Front Desk synthetic office enum](front-desk-offices-validation-20260916.md)
+now accepts the two QA office names; 23 focused database and 64 installation
+checks pass. The ordinary Office Manager request submission and catalog
+lifecycle are in progress. Two labeled supply requests and one catalog item
+remain for these checks; cleanup is still owed.
 ## Historical preparation record
 
 The following notes preserve conditions at initial preparation, not current
