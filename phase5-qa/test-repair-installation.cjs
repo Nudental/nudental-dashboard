@@ -5,7 +5,7 @@ const {openSchema}=require('./offline_database.cjs');
  const {db}=await openSchema(),folder=path.join(__dirname,'repairs');
  const files=fs.readdirSync(folder).filter(name=>/^\d{3}.*\.sql$/.test(name)).sort();
  try{
-  assert.equal(files.length,22);
+  assert.equal(files.length,23);
   for(const file of files){
    let rejected=false;
    try{await db.exec(fs.readFileSync(path.join(folder,file),'utf8'));}
