@@ -7,7 +7,7 @@ const PAGE_SIZES = [10, 25, 50];
 
 const formatDate = (d) => {
   if (!d) return '—';
-  return new Date(d)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return new Date(d)?.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
 };
 
 const patientDisplay = (name) => {
