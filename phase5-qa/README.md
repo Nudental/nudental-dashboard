@@ -11,7 +11,7 @@ eight actual roles plus account/office variants. Three API routes are positively
 reviewed (office read, EOD read, synthetic Patient Flow export); other operational
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
-QA schema repairs 001–031 are applied. Latest QA frontend release
+QA schema repairs 001–031 and 033 are applied; 032 is pending approval. Latest QA frontend release
 `0c221564-8d39-4893-a822-932699e91405` uses source
 `21b65d7702ed0c375fa94f47bb4ad89597a16518`. All 1,431 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
@@ -82,6 +82,11 @@ unverified. [Office Manager submission](front-desk-submission-validation-2026091
 passes persistence, audit, scope and simulated notification checks; its review
 business rule needs clarification. Tested migration 032 remains unapplied while
 explicit approval for the catalog access restriction is pending.
+The [catalog audit trigger](front-desk-catalog-audit-validation-20260916.md)
+passes live create/edit/replay/delete checks. Its separate temporary fixture is
+cleaned and three audit events are retained; the five-unit access-test fixture
+remains. All 68 candidate installation checks pass; this does not mean pending
+migration 032 has been applied.
 ## Historical preparation record
 
 The following notes preserve conditions at initial preparation, not current
