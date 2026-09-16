@@ -11,9 +11,9 @@ eight actual roles plus account/office variants. Three API routes are positively
 reviewed (office read, EOD read, synthetic Patient Flow export); other operational
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
-QA schema repairs 001–029 are applied. Latest QA frontend release
-`c5668e5e-7981-415b-ab1d-76a4a18e2ba7` uses source
-`95e18979810130ff298dc399e58c838c0f117954`. All 1,420 retained frontend tests
+QA schema repairs 001–030 are applied. Latest QA frontend release
+`acf10c88-7786-4edf-94da-49f096c9cf85` uses source
+`c7a1ca11c626dcfefeadb31cf7532f8e79dcc262`. All 1,425 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
@@ -67,6 +67,10 @@ now follows the user's local calendar day, verified live in the evening.
 The [Received By selector](supply-fulfillment-recipient-validation-20260915.md)
 also saves a real user ID and passes live persistence/audit checks. Its temporary
 fixture is cleaned, preserving two more audit events.
+The [standalone manual receipt](supply-receipt-persistence-validation-20260915.md)
+now persists its count/date/actor/status instead of reporting success after a
+failed write. Its completed synthetic fixture is cleaned with three audit events
+retained. Linked stock, multi-item and offline receipt paths remain unverified.
 ## Historical preparation record
 
 The following notes preserve conditions at initial preparation, not current
