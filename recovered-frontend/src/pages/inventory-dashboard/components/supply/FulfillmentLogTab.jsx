@@ -336,7 +336,7 @@ const FulfillmentLogTab = ({ isAdmin, isRCM }) => {
                             <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${sCfg?.color}`}>{sCfg?.label}</span>
                           </td>
                           <td className="py-2.5 px-3">
-                            {isMobile && r?.log_fulfillment_status !== 'completed' && r?.log_fulfillment_status !== 'cancelled' && (
+                            {(isAdmin || isRCM) && isMobile && r?.log_fulfillment_status !== 'completed' && r?.log_fulfillment_status !== 'cancelled' && (
                               <button
                                 onClick={() => setMobileReceiveLog(r)}
                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-semibold hover:bg-emerald-700 whitespace-nowrap"
@@ -360,7 +360,7 @@ const FulfillmentLogTab = ({ isAdmin, isRCM }) => {
               onSaved={() => { setShowCreate(false); setSuccess('Fulfillment record created!'); setTimeout(() => setSuccess(''), 3000); load(); }}
             />
           )}
-          {mobileReceiveLog && (
+          {(isAdmin || isRCM) && mobileReceiveLog && (
             <MobileReceiveSuppliesModal
               fulfillmentBatch={mobileReceiveLog}
               onClose={() => setMobileReceiveLog(null)}
