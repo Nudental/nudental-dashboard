@@ -65,4 +65,15 @@ preserved. No write contract or financial source changed.
 Eight focused regressions cover unchanged/edited/mixed upserts, other providers,
 same provider names in separate offices, final duplicate-row values, incorrect
 saved amounts and snapshot identity. Six failed before; all eight pass after.
-Full regression/build, QA publication and live verification pending.
+All 1,616 frontend tests pass, zero skipped; build/511-source parity and 17 hosted
+checks pass. QA deployment `7d8772c3-980d-4e0f-bffb-fbd2e11a05c9` uses source
+`50a294f271838a4ade56e0c23213a9ee3c3a0bfc`. Original retry after full reload:
+one unchanged record, Clean report, Office OK and Date OK. Four save/update audit
+events exist. Production remains unchanged; rollback `62ce1227-8e60-4889-b78f-b19ce2a25f44`
+is retained.
+
+Cleanup PASS: the exact disposable entry was removed; all five independent
+audit events (including cleanup) remain. There was no cascading workflow history.
+Repeated cleanup returned zero and created no new audit. The receipt now has
+`cleanup_verified=true`. Simultaneous browser imports and interrupted network
+replay were not claimed by this sequential retry test.
