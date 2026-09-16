@@ -178,6 +178,15 @@ export const createVerificationRequest = async (formData, userProfile) => {
  * Does NOT send emails.
  */
 export const cancelVerificationRequest = async (requestId, cancelReason, userProfile) => {
+  const { data: current, error: readError } = await supabase
+    ?.from('insurance_verification_requests')
+    ?.select('status')
+    ?.eq('id', requestId)
+    ?.single();
+  if (readError) throw readError;
+  if (!current || ['cancelled', 'completed', 'uploaded_to_chart'].includes(current.status)) {
+    throw new Error('This request cannot be cancelled in its current state.');
+  }
   const now = new Date()?.toISOString();
 
   const { data, error } = await supabase
@@ -189,10 +198,12 @@ export const cancelVerificationRequest = async (requestId, cancelReason, userPro
       updated_at: now,
     })
     ?.eq('id', requestId)
+    ?.eq('status', current.status)
     ?.select()
-    ?.single();
+    ?.maybeSingle();
 
   if (error) throw error;
+  if (!data) throw new Error('This request changed. Refresh it before trying again.');
 
   // Attempt audit log — non-fatal if RLS blocks
   await insertAuditLog({
@@ -201,7 +212,7 @@ export const cancelVerificationRequest = async (requestId, cancelReason, userPro
     performedByUserId: userProfile?.id,
     performedByEmail: userProfile?.email,
     performedByName: userProfile?.full_name,
-    oldStatus: 'requested',
+    oldStatus: current.status,
     newStatus: 'cancelled',
     metadata: { cancel_reason: cancelReason },
   });
