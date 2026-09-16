@@ -11,9 +11,9 @@ eight actual roles plus account/office variants. Three API routes are positively
 reviewed (office read, EOD read, synthetic Patient Flow export); other operational
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
-QA schema repairs 001–020 are applied. Latest QA frontend release
-`70a2dd16-9e95-4d47-8e4a-3a6b7aee7ee4` uses source
-`d6a86a3f8d11f11f479f36ed5c4da6e39928f4ee`. All 1,358 retained frontend tests
+QA schema repairs 001–021 are applied. Latest QA frontend release
+`672ebed4-2af8-4b4b-8163-8023a8209ec7` uses source
+`29bf7fbb6d88c8ccae954d760126a4d245385a08`. All 1,370 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
@@ -39,6 +39,12 @@ production read-only regression, and cleanup. The previously presented Expense
 accounting-owner decision remains pending; other work continues independently.
 Browser and server access currently work. Camera access was not granted and is
 not needed; use manual inventory entry.
+
+Bone/Tissue [manual camera-free entry](bone-manual-entry-validation-20260915.md),
+[optional-field saves](bone-optional-fields-validation-20260915.md), and
+[active-account/audit scope](bone-access-validation-20260915.md) are repaired and
+verified live in QA. One labeled Bone/Tissue fixture remains for the remaining
+inventory date/stock/delete checks; it is not a permanent seed fixture.
 ## Historical preparation record
 
 The following notes preserve conditions at initial preparation, not current
