@@ -810,8 +810,8 @@ const DailyBulkImportTab = ({ selectedOfficeId, selectedDate, offices: propOffic
             <div className="bg-card border border-border rounded-xl p-4">
               <div className="flex items-center gap-2 mb-3">
                 <div className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                <p className="text-sm font-semibold text-foreground">Live Totals Recalculated</p>
-                <span className="text-xs text-muted-foreground ml-auto">All dashboards refreshed</span>
+                <p className="text-sm font-semibold text-foreground">Legacy Totals</p>
+                <span className="text-xs text-muted-foreground ml-auto">Official Dentrix totals unchanged</span>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div className="bg-muted/40 rounded-lg p-3">
@@ -850,7 +850,7 @@ const DailyBulkImportTab = ({ selectedOfficeId, selectedDate, offices: propOffic
                 </div>
                 <div className="bg-muted/40 rounded-lg p-3">
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-2">Year-to-Date</p>
-                  <div className="space-y-1">
+                  {ytdData?.ytd ? <div className="space-y-1">
                     <div className="flex justify-between text-xs">
                       <span className="text-muted-foreground">Production</span>
                       <span className="font-semibold text-foreground">{formatCurrency(ytdData?.ytd?.production)}</span>
@@ -863,7 +863,7 @@ const DailyBulkImportTab = ({ selectedOfficeId, selectedDate, offices: propOffic
                       <span className="text-muted-foreground">Rate</span>
                       <span className="font-semibold text-foreground">{ytdData?.ytd?.collectionRate}%</span>
                     </div>
-                  </div>
+                  </div> : <p className="text-xs text-muted-foreground">Year-to-date totals unavailable</p>}
                 </div>
               </div>
               {/* Per-office MTD breakdown */}
