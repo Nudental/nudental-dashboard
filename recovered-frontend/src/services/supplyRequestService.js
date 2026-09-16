@@ -663,7 +663,11 @@ export const supplyRequestService = {
 
   async createFulfillmentLog(log) {
     const { data: { user } } = await supabase?.auth?.getUser();
-    const { data, error } = await supabase?.from('supply_fulfillment_logs')?.insert({ ...log, supplied_by: user?.id })?.select()?.single();
+    const payload = { ...log, supplied_by: user?.id };
+    for (const field of ['item_id', 'department_id', 'received_by', 'date_supplied', 'date_received']) {
+      if (payload[field] === '') payload[field] = null;
+    }
+    const { data, error } = await supabase?.from('supply_fulfillment_logs')?.insert(payload)?.select()?.single();
     if (error) throw error;
 
     // Auto-update inventory if item_id and office_id provided
