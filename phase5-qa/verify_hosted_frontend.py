@@ -8,8 +8,8 @@ import urllib.request
 QA = 'https://nudashboard-qa.pages.dev'
 API = 'https://nudashboard-qa-api.nuholdingllc.com'
 PRODUCTION = 'https://nudashboard.com'
-ENTRY = '/assets/index-Chu8_EXX.js'
-SHA = '8b080a49f91d27ac3dff2648b7685615cc89a4a4778059e9c7b05eb3f257a94d'
+ENTRY = '/assets/index-DuOd-S-R.js'
+SHA = '4dcc4ae207560b7912f084734b26cd1468a7a06dfda218c8fab6ee513119b7b8'
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -44,6 +44,10 @@ def main():
         check('qa-connection-policy-' + path,
               set(connections.split()[1:]) == {"'self'", API,
                 'https://hvtxjfayenqnwtaisoaw.supabase.co', 'wss://hvtxjfayenqnwtaisoaw.supabase.co'})
+        images = next((x for x in policy.split(';') if x.strip().startswith('img-src ')), '')
+        check('qa-image-policy-' + path,
+              set(images.split()[1:]) == {"'self'", 'data:', 'blob:',
+                'https://hvtxjfayenqnwtaisoaw.supabase.co/storage/v1/object/sign/'})
     status, _, body = fetch(QA + ENTRY, maximum=9_000_000)
     check('deployed-entry-digest', status == 200 and hashlib.sha256(body).hexdigest() == SHA)
     check('deployed-qa-banner', b'QA / NONPRODUCTION' in body)
