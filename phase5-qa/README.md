@@ -12,8 +12,8 @@ reviewed (office read, EOD read, synthetic Patient Flow export); other operation
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
 QA schema repairs 001–031 and 033 are applied; 032 is pending approval. Latest QA frontend release
-`0c221564-8d39-4893-a822-932699e91405` uses source
-`21b65d7702ed0c375fa94f47bb4ad89597a16518`. All 1,431 retained frontend tests
+`5c99d0a5-108e-4a19-95ac-3c825ca82bf5` uses source
+`4d185e2dd9063631c10d2b93b6d3a0b2e25ac0bd`. All 1,443 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
@@ -85,8 +85,12 @@ explicit approval for the catalog access restriction is pending.
 The [catalog audit trigger](front-desk-catalog-audit-validation-20260916.md)
 passes live create/edit/replay/delete checks. Its separate temporary fixture is
 cleaned and three audit events are retained; the five-unit access-test fixture
-remains. All 68 candidate installation checks pass; this does not mean pending
+remains (now six units). All 68 candidate installation checks pass; this does not mean pending
 migration 032 has been applied.
+The [catalog summary counters](front-desk-summary-validation-20260916.md) now
+refresh after saves while preserving the open category. Live quantity/create
+and full-refresh checks pass. The extra creation-counter fixture is cleaned,
+preserving two audit events. Production is unchanged.
 ## Historical preparation record
 
 The following notes preserve conditions at initial preparation, not current
