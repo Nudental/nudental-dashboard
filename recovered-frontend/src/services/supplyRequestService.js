@@ -219,8 +219,9 @@ export const supplyRequestService = {
 
   async adjustInventory(inventoryId, newQty, reason, notes) {
     const { data: { user } } = await supabase?.auth?.getUser();
-    const { data: current, error: fetchErr } = await supabase?.from('office_supply_inventory')?.select('quantity_on_hand, office_id')?.eq('id', inventoryId)?.single();
+    const { data: current, error: fetchErr } = await supabase?.from('office_supply_inventory')?.select('*')?.eq('id', inventoryId)?.single();
     if (fetchErr) throw fetchErr;
+    if (newQty === current?.quantity_on_hand) return current;
 
     const { data, error } = await supabase?.from('office_supply_inventory')?.update({ quantity_on_hand: newQty, last_updated_by: user?.id, updated_at: new Date()?.toISOString() })?.eq('id', inventoryId)?.select()?.single();
     if (error) throw error;
