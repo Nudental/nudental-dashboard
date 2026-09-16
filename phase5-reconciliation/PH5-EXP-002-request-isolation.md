@@ -19,7 +19,15 @@ and reader using synthetic transports. The first compiled harness run lacked the
 build's renamed QA fetch wrapper; identifying that binding corrected the harness,
 without changing application code or enabling real network requests.
 
-QA publication and served-artifact replay pending. This is deterministic request-
+QA release `7e91a103-ef44-4f3a-a667-447e112e6997`, source
+`be846c8dfbd6020be0d7b212df5e5e77b0078105`, is published. All 20 hosted checks
+pass. The downloaded live entry's SHA-256 is
+`b356cf0ec85764dddfcd7277abba2b375bd32158cf4c34f54a9ace7a8c75085d`;
+all six cases pass against those exact served bytes. The temporary download was
+removed. Previous QA release `3f7a8c68-5505-4101-8f88-130fa0bdd2d2` remains
+recoverable. The production deployment is unchanged.
+
+This is deterministic request-
 isolation testing, not certification of real accounting totals or a claim of
 interactive browser race timing. The QA operational Expense summary route remains
 closed. Production is not being deployed for this candidate.

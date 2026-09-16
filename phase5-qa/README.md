@@ -1,76 +1,31 @@
 # Isolated Dashboard QA
 
-Current status, September 16, supersedes historical preparation notes below.
-The existing $10/month NU-Dashboard-Staging-QA Supabase project
-`hvtxjfayenqnwtaisoaw` is live; no additional project or subscription is needed.
+Current status: [Phase 5 checkpoint — September 16](phase5-checkpoint-20260916.md).
+That report supersedes the historical preparation notes below.
 
-The [QA frontend](https://nudashboard-qa.pages.dev) and
-[QA API](https://nudashboard-qa-api.nuholdingllc.com/health) are isolated from
-production and Collaboration Platform. Twelve synthetic identities cover all
-eight actual roles plus account/office variants. Three API routes are positively
-reviewed (office read, EOD read, synthetic Patient Flow export); other operational
-routes remain closed. Closed-route denials are not positive workflow coverage.
+- The existing approved $10/month QA project is `hvtxjfayenqnwtaisoaw`.
+- [QA frontend](https://nudashboard-qa.pages.dev): release
+  `7e91a103-ef44-4f3a-a667-447e112e6997`, deployed source
+  `be846c8dfbd6020be0d7b212df5e5e77b0078105`.
+- [QA API](https://nudashboard-qa-api.nuholdingllc.com/health): isolated release
+  `585313aa7a2c2f5ee8e4aeeabe0767f6a7a7d76f0a6ddcc2daf6302d6f06d012`.
+- 12 synthetic identities, eight actual roles, two offices and two providers;
+  public schema repairs 001–042 and the dedicated storage policies are applied.
+- 1,630 frontend tests, 49 QA database suites and the latest retained 142 QA
+  backend tests pass. Build/511-file parity, 20 hosted checks, 15 runtime checks,
+  54 live photo checks and six served-artifact Expense overlap checks pass.
+- The supported safe workflows are tested and cleaned. Reusable fixtures and
+  audit history remain. The operational API remains deliberately incomplete:
+  denied routes and execution-intent simulations are not real provider coverage.
+- Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
+  Production remains at `1f1f91bc-5dbd-4500-8bfd-d4e2039ba601`, read-only healthy.
+- Phase 5 is not declared fully complete: Expense authority is resolved to
+  reconciled bank/card statements plus processed Gusto, but statement matching
+  and actual-benefit evidence await the location of the reconciled records.
+- No further phase, Collaboration Platform work, production database changes,
+  real provider execution or camera access is authorized by this checkpoint.
 
-The separate [QA execution adapter](qa-execution-validation-20260916.md) now
-passes 128 live lifecycle checks across ten simulated operation types, plus
-129 retained QA Python backend tests. All test intents are cancelled, with audit
-evidence retained. Its live release is
-`9a5616aed194654b5e553b1d402a35d299599f5f3b07c667b1b45ea9749a3d8a`.
-All 205 existing operational-route denials remain intact; this does not claim
-external provider processing or complete product UI execution integration.
-
-QA schema repairs 001–042 are applied. The four explicitly approved access restrictions
-[pass live identity checks](access-restrictions-live-20260916.md). Latest QA frontend release
-`ee6c5b06-bc5f-4043-8760-f4b6de37bbc9` uses source
-`23699ca1e1372ed2128802996ff2ccd214b6b933`. All 1,598 retained frontend tests
-pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
-publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
-
-Recent live checks/repairs: [urgent office stock](urgent-office-stock-validation-20260916.md),
-[urgent catalog item names](urgent-catalog-name-validation-20260916.md),
-[Front Desk reviewer/no-self-approval rule](front-desk-review-boundary-validation-20260916.md),
-[urgent audit and notification simulations](urgent-audit-simulation-validation-20260916.md),
-[urgent-request optional fields](urgent-optional-fields-validation-20260916.md),
-[mobile urgent-request item selection](urgent-new-request-routing-validation-20260916.md),
-[fulfillment import retries](fulfillment-import-idempotency-validation-20260916.md),
-[transactional receipt replay](supply-receipt-transaction-candidate-20260916.md),
-[receipt receiver display](supply-receipt-actor-display-validation-20260916.md),
-[receipt action permissions](supply-receive-visibility-validation-20260916.md),
-[unchanged stock save idempotency](clinical-stock-idempotency-validation-20260916.md),
-[clinical stock error feedback](clinical-stock-error-validation-20260916.md),
-[office assignment](user-office-transaction-validation-20260915.md),
-[office administration](office-ui-validation-20260915.md),
-[providers](provider-ui-validation-20260915.md),
-[cost drivers](cost-driver-toggle-validation-20260915.md), and
-[service/vendor categories](service-category-toggle-validation-20260915.md), and
-[monthly goals and goal office access](office-goal-validation-20260915.md), and
-[single responsive page mount](single-layout-validation-20260915.md), and
-[insurance appointment validation](insurance-request-time-validation-20260915.md),
-[insurance API scope](insurance-access-validation-20260915.md), and
-[private verification PDFs](insurance-pdf-storage-validation-20260915.md), and
-[completed verification API locks](insurance-completed-lock-validation-20260916.md),
-[cancellation audit history](insurance-cancel-audit-validation-20260916.md),
-[stale Huddle review actions](huddle-review-state-validation-20260915.md).
-Temporary records from completed administration, goals and implant/import checks
-and the insurance request/draft/PDF are cleaned; audit evidence retained. Original
-Huddle/EOD/task fixtures are also cleaned after their retained checks. Evidence and
-general audit rows remain; old fixture-dependent helpers need fresh fixtures before reuse.
-
-Service-goal generation/edit/cleanup now [passes with fixed synthetic baselines](goal-baseline-adapter-validation-20260916.md),
-including the [service-goal office boundary](service-goal-read-boundary-validation-20260916.md).
-[Imported entity review](entity-review-validation-20260916.md) passes and retains
-its completed labeled review history. Latest QA API release is
-`585313aa7a2c2f5ee8e4aeeabe0767f6a7a7d76f0a6ddcc2daf6302d6f06d012`;
-142 retained backend tests and 71 live baseline-adapter checks pass.
-
-Phase 5 is incomplete. Continue remaining safe write/role
-checks, operational mock integration, bounded performance investigation, final
-production read-only regression, and cleanup. Dr. G designated reconciled
-bank/card statements plus processed Gusto records as the Expense authority;
-remaining statement matching and actual-benefit evidence must be reconciled
-before certifying a total.
-Browser and server access currently work. Camera access was not granted and is
-not needed; use manual inventory entry.
+## Historical progress notes
 
 Bone/Tissue [manual camera-free entry](bone-manual-entry-validation-20260915.md),
 [optional-field saves](bone-optional-fields-validation-20260915.md), and

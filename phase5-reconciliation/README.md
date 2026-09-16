@@ -1,3 +1,5 @@
+Current overall status: [September 16 Phase 5 checkpoint](../phase5-qa/phase5-checkpoint-20260916.md). The source-reconciliation checkpoint below is historical; current main and production include the later bounded AmEx completeness repair.
+
 # Phase5 checkpoint — source reconciliation passed
 
 NuDental Dashboard only. Do not repeat Phase4 or modify the Collaboration
