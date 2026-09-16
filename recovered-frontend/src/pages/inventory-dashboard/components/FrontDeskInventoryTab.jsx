@@ -1579,6 +1579,14 @@ const FrontDeskInventoryTab = () => {
 
   const criticalItems = items?.filter(i => i?.status === 'Critically Low' || i?.status === 'Out of Stock');
 
+  const refreshSummary = async () => {
+    try {
+      setSummary(await frontDeskInventoryService?.fetchSummary(selectedOffice, selectedMonth));
+    } catch {
+      setError('Item saved, but the summary could not refresh. Reload the page to retry.');
+    }
+  };
+
   const handleQtySave = async (id, qty) => {
     try {
       await frontDeskInventoryService?.updateQty(id, qty);
@@ -1590,7 +1598,7 @@ const FrontDeskInventoryTab = () => {
         else if (qty <= i?.min_required) newStatus = 'Low';
         return { ...i, current_qty: qty, status: newStatus };
       }));
-      await loadData();
+      await refreshSummary();
       showToast('Quantity updated');
     } catch (err) {
       setError(err?.message || 'Failed to update quantity');
@@ -1601,7 +1609,7 @@ const FrontDeskInventoryTab = () => {
     try {
       const updated = await frontDeskInventoryService?.updateRow(id, updates);
       setItems(prev => prev?.map(i => i?.id === id ? { ...i, ...updated } : i));
-      await loadData();
+      await refreshSummary();
       showToast('Item updated');
     } catch (err) {
       setError(err?.message || 'Failed to update item');
@@ -1612,7 +1620,7 @@ const FrontDeskInventoryTab = () => {
     try {
       const newItem = await frontDeskInventoryService?.insertRow(rowData);
       setItems(prev => [...prev, newItem]);
-      await loadData();
+      await refreshSummary();
       showToast('Item added successfully');
     } catch (err) {
       throw err;
