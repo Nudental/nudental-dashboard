@@ -308,6 +308,9 @@ export const supplyRequestService = {
     if (items?.length > 0) {
       const itemsToInsert = items?.map(item => ({
         ...item,
+        department_id: item?.department_id === '' ? null : item?.department_id,
+        subsection_id: item?.subsection_id === '' ? null : item?.subsection_id,
+        item_id: item?.item_id === '' ? null : item?.item_id,
         batch_id: batchData?.id,
         office_id: batch?.office_id,
         department_category: batch?.department_category || null,
