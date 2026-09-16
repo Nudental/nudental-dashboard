@@ -11,14 +11,15 @@ eight actual roles plus account/office variants. Three API routes are positively
 reviewed (office read, EOD read, synthetic Patient Flow export); other operational
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
-QA schema repairs 001–039 are applied. The four explicitly approved access restrictions
+QA schema repairs 001–040 are applied. The four explicitly approved access restrictions
 [pass live identity checks](access-restrictions-live-20260916.md). Latest QA frontend release
-`80c69cdc-8ebb-4f18-aece-d25364965521` uses source
-`847c1c6cbe01640753fa741c957215b8860ca710`. All 1,546 retained frontend tests
+`9fb1f39e-ce99-4791-969a-d552e792825f` uses source
+`39d89493bd7221c529a67f61702e06ef18995e20`. All 1,561 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
-Recent live checks/repairs: [urgent audit and notification simulations](urgent-audit-simulation-validation-20260916.md),
+Recent live checks/repairs: [Front Desk reviewer/no-self-approval rule](front-desk-review-boundary-validation-20260916.md),
+[urgent audit and notification simulations](urgent-audit-simulation-validation-20260916.md),
 [urgent-request optional fields](urgent-optional-fields-validation-20260916.md),
 [mobile urgent-request item selection](urgent-new-request-routing-validation-20260916.md),
 [fulfillment import retries](fulfillment-import-idempotency-validation-20260916.md),
@@ -90,8 +91,8 @@ The [Current Inventory office columns](front-desk-current-offices-validation-202
 now display QA quantities correctly after refresh. Browser CSV file-save remains
 unverified. [Office Manager submission](front-desk-submission-validation-20260916.md)
 passes persistence, audit, scope and simulated notification checks; its review
-business rule is now confirmed: Regional Manager/Admin review only, no self-approval.
-Implementation and verification of that rule remain pending; no new role grants are implied.
+business rule is now confirmed and live verified: Regional Manager/Admin review only,
+no self-approval. Both Front Desk review fixtures are cleaned with seven audit entries retained.
 Migration 032 is applied and its live scope checks pass.
 The [catalog audit trigger](front-desk-catalog-audit-validation-20260916.md)
 passes live create/edit/replay/delete checks. Its separate temporary fixture is
