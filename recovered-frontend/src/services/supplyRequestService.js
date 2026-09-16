@@ -526,6 +526,7 @@ export const supplyRequestService = {
   async fetchUrgentRequests(filters = {}) {
     let query = supabase?.from('urgent_supply_requests')?.select(`
         *,
+        supply_items(name),
         supply_departments(name),
         supply_subsections(name),
         requested_by_profile:user_profiles!urgent_supply_requests_requested_by_fkey(full_name),

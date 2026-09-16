@@ -1,0 +1,13 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.join(__dirname,'../recovered-frontend'),parser=require(path.join(process.env.NDASH_PARSER_ROOT||root,'node_modules/@babel/parser'));
+function find(n,p){if(!n||typeof n!=='object')return;if(p(n))return n;for(const v of Object.values(n)){const r=find(v,p);if(r)return r;}}
+const source=fs.readFileSync(path.join(root,'src/services/supplyRequestService.js'),'utf8');
+const method=find(parser.parse(source,{sourceType:'module'}),n=>n.type==='ObjectMethod'&&n.key.name==='fetchUrgentRequests');
+function load(rows,error=null){const state={filters:[],select:''},q={select(v){state.select=v;return this},order(){return this},eq(...args){state.filters.push(args);return this},then(resolve){const data=rows.map(r=>({...r,...(/supply_items\(name\)/.test(state.select)?{supply_items:r.item_id?{name:'QA catalog item'}:null}:{})}));resolve({data,error})}};return{state,run:vm.runInNewContext('({'+source.slice(method.start,method.end)+'}).fetchUrgentRequests',{supabase:{from:table=>{assert.equal(table,'urgent_supply_requests');return q}}})};}
+const ui=fs.readFileSync(path.join(root,'src/pages/inventory-dashboard/components/supply/UrgentRequestTab.jsx'),'utf8');
+const display=find(parser.parse(ui,{sourceType:'module',plugins:['jsx']}),n=>n.type==='JSXExpressionContainer'&&ui.slice(n.expression.start,n.expression.end)==="r?.custom_item_name || r?.supply_items?.name || '—'");
+function name(r){assert.ok(display);return vm.runInNewContext(ui.slice(display.expression.start,display.expression.end),{r})}
+test('catalog-backed request displays its joined item name after reload',async()=>{const h=load([{item_id:'qa-item',custom_item_name:''}]),rows=await h.run();assert.equal(name(rows[0]),'QA catalog item');assert.equal(rows.length,1)});
+test('custom requests remain in the list without a catalog relationship',async()=>{const h=load([{item_id:null,custom_item_name:'QA custom item'}]),rows=await h.run();assert.equal(rows.length,1);assert.equal(name(rows[0]),'QA custom item');assert.doesNotMatch(h.state.select,/supply_items!inner/)});
+test('office status and priority filters remain exact',async()=>{const h=load([]);await h.run({officeId:'QA / Office A',status:'submitted',priority:'urgent'});assert.deepEqual(h.state.filters,[['office_id','QA / Office A'],['urgent_status','submitted'],['priority','urgent']])});
+test('failed reads propagate instead of displaying an empty successful list',async()=>{const error=new Error('read denied'),h=load([],error);await assert.rejects(h.run(),e=>e===error)});

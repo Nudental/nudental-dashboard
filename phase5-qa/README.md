@@ -46,8 +46,10 @@ general audit rows remain; old fixture-dependent helpers need fresh fixtures bef
 
 Phase 5 is incomplete. Continue service-goal generation, remaining safe write/role
 checks, operational mock integration, bounded performance investigation, final
-production read-only regression, and cleanup. The previously presented Expense
-accounting-owner decision remains pending; other work continues independently.
+production read-only regression, and cleanup. Dr. G designated reconciled
+bank/card statements plus processed Gusto records as the Expense authority;
+remaining statement matching and actual-benefit evidence must be reconciled
+before certifying a total.
 Browser and server access currently work. Camera access was not granted and is
 not needed; use manual inventory entry.
 
