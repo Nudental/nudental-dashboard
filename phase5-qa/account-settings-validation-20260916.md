@@ -48,8 +48,12 @@ Four additional executed-source tests cover saved/default themes and
 present/missing creation dates. Both missing-field cases failed before. All seven
 profile readback tests now pass (the first date expectation was corrected to the
 existing long-month UI format). All 1,623 retained frontend tests and QA build /
-511-file source parity pass. Publication/live replay pending.
+511-file source parity pass. QA release `e40c619e-a01d-4105-b6ef-6f9d6f394eb4`
+(source `be37bf0b86af8318595e78b3ffe64c5b7646ad17`) passed live replay:
+Warm Professional survives a full reload, and Member Since shows September 14,
+2026. Nu Dental Brand was restored, verified in the UI and database.
 
 Separate profile-workflow receipt: `qa-profile-settings-20260916.json`. Original
-theme is Nu Dental Brand and photo is unset. The original theme must be restored
-after verification. No photo uploaded yet; the QA profile-photo bucket is absent.
+theme is Nu Dental Brand and photo is unset. Both original values are now restored.
+The separate [photo workflow](profile-photo-validation-20260916.md) passes and is
+cleaned; its private bucket and approved QA-only policy remain as reusable setup.
