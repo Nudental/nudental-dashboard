@@ -276,6 +276,7 @@ const ItemRow = ({ item, inventory, isAdmin, onStockSaved, onItemEdited, onDeact
   const handleStockDone = async (qty) => {
     setSaving(true);
     try {
+      let savedInventory = invRecord;
       if (isOffline) {
         await offlineQueueService?.enqueue('supply_catalog_edit', {
           action: 'set_stock',
@@ -287,9 +288,9 @@ const ItemRow = ({ item, inventory, isAdmin, onStockSaved, onItemEdited, onDeact
         });
       } else {
         if (invRecord?.id) {
-          await supplyRequestService?.adjustInventory(invRecord?.id, qty, 'Manual stock update from catalog', '');
+          savedInventory = await supplyRequestService?.adjustInventory(invRecord?.id, qty, 'Manual stock update from catalog', '');
         } else {
-          await supplyRequestService?.upsertInventoryItem({
+          savedInventory = await supplyRequestService?.upsertInventoryItem({
             item_id: item?.id,
             item_name: item?.name,
             office_id: officeId,
@@ -302,7 +303,7 @@ const ItemRow = ({ item, inventory, isAdmin, onStockSaved, onItemEdited, onDeact
         }
       }
       if (navigator.vibrate) navigator.vibrate(200);
-      onStockSaved(item?.id, qty);
+      onStockSaved(item?.id, qty, savedInventory);
       setShowKeypad(false);
     } catch (e) { console.error(e); }
     finally { setSaving(false); }
@@ -728,13 +729,13 @@ const MobileCatalogView = ({ isAdmin, officeId }) => {
     ? filteredDepts?.reduce((acc, d) => acc + getFilteredSubs(d?.id)?.reduce((a, s) => a + getFilteredItems(s?.id)?.length, 0), 0)
     : null;
 
-  const handleStockSaved = (itemId, qty) => {
+  const handleStockSaved = (itemId, qty, savedInventory) => {
     setInventory(prev => {
       const existing = prev?.find(inv => inv?.item_id === itemId);
       if (existing) {
-        return prev?.map(inv => inv?.item_id === itemId ? { ...inv, quantity_on_hand: qty } : inv);
+        return prev?.map(inv => inv?.item_id === itemId ? { ...inv, ...savedInventory, quantity_on_hand: qty } : inv);
       }
-      return [...prev, { item_id: itemId, quantity_on_hand: qty, office_id: officeId }];
+      return [...prev, { ...savedInventory, item_id: itemId, quantity_on_hand: qty, office_id: officeId }];
     });
   };
 
