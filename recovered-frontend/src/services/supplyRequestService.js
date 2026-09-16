@@ -838,14 +838,15 @@ export const supplyRequestService = {
       const newStatus = receivedQty >= qtySupplied ? 'completed' : 'partial';
 
       // Update fulfillment log row
-      await supabase?.from('supply_fulfillment_logs')?.update({
+      const { error: receiptError } = await supabase?.from('supply_fulfillment_logs')?.update({
         qty_received: receivedQty,
         date_received: today,
         received_by: user?.id,
         log_fulfillment_status: newStatus,
         tracking_notes: notes || null,
         updated_at: new Date()?.toISOString(),
-      })?.eq('id', item?.id);
+      })?.eq('id', item?.id)?.select('id')?.single();
+      if (receiptError) throw receiptError;
 
       // Auto-update office_supply_inventory
       if (item?.item_id && office_id) {
