@@ -15,6 +15,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--connection', required=True, type=Path)
     parser.add_argument('--expect-closed', action='store_true')
+    parser.add_argument('--output', type=Path, help='Preserve a separate verification checkpoint')
     args = parser.parse_args()
     config = json.loads(args.connection.read_text())
     api = HostedQa(config)
@@ -95,7 +96,9 @@ def main():
     stage = 'closed' if args.expect_closed else 'live'
     report = {'project_ref':PROJECT,'production_connected':False,'checks':len(results),
               'passed':sum(result['pass'] for result in results),'results':results}
-    (args.connection.parent.parent / f'qa-api-offices-{stage}-20260915.json').write_text(json.dumps(report,indent=2))
+    output = args.output or args.connection.parent.parent / f'qa-api-offices-{stage}-20260915.json'
+    if args.output: assert not output.exists(), 'Preserve the existing checkpoint'
+    output.write_text(json.dumps(report,indent=2))
     print(json.dumps({'checks':len(results),'passed':report['passed'],'failed':[result for result in results if not result['pass']]}))
     assert all(result['pass'] for result in results)
 

@@ -11,6 +11,14 @@ eight actual roles plus account/office variants. Three API routes are positively
 reviewed (office read, EOD read, synthetic Patient Flow export); other operational
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
+The separate [QA execution adapter](qa-execution-validation-20260916.md) now
+passes 128 live lifecycle checks across ten simulated operation types, plus
+129 retained QA Python backend tests. All test intents are cancelled, with audit
+evidence retained. Its live release is
+`9a5616aed194654b5e553b1d402a35d299599f5f3b07c667b1b45ea9749a3d8a`.
+All 205 existing operational-route denials remain intact; this does not claim
+external provider processing or complete product UI execution integration.
+
 QA schema repairs 001–040 are applied. The four explicitly approved access restrictions
 [pass live identity checks](access-restrictions-live-20260916.md). Latest QA frontend release
 `f2983c78-166c-4359-b0ea-4d9113ec0451` uses source

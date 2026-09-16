@@ -18,13 +18,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--connection', type=Path, required=True)
     parser.add_argument('--report-adapter', action='store_true', help='Verify the reviewed Patient Flow CSV stage')
+    parser.add_argument('--output', type=Path, help='Preserve a separate verification checkpoint')
     args = parser.parse_args()
     config = json.loads(args.connection.read_text())
     api = HostedQa(config)
     identities = json.loads((args.connection.parent / 'identities.private.json').read_text())
     assert identities['project_ref'] == PROJECT
     suffix = '-report-adapter' if args.report_adapter else ''
-    output = args.connection.parent.parent / ('qa-closed-route-matrix'+suffix+'-20260915.json')
+    output = args.output or args.connection.parent.parent / ('qa-closed-route-matrix'+suffix+'-20260915.json')
     assert not output.exists(), 'Preserve the existing report'
     tokens, results = {}, []
 
