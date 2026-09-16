@@ -67,7 +67,7 @@ const MobileEntryModal = ({ record, offices, providers, staff, userId, isSuperAd
   });
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
-  const [scanMode, setScanMode] = useState(true);
+  const [scanMode, setScanMode] = useState(false);
   const [toast, setToast] = useState('');
 
   const touchStartY = useRef(0);
