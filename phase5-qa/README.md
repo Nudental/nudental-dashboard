@@ -11,7 +11,7 @@ eight actual roles plus account/office variants. Three API routes are positively
 reviewed (office read, EOD read, synthetic Patient Flow export); other operational
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
-QA schema repairs 001–022 are applied. Latest QA frontend release
+QA schema repairs 001–023 are applied. Latest QA frontend release
 `9a99231f-5b40-49f3-b6c1-265be834820e` uses source
 `194a068957efe6b0ac66b2107f7476c14d0142fc`. All 1,375 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
@@ -43,8 +43,10 @@ not needed; use manual inventory entry.
 Bone/Tissue [manual camera-free entry](bone-manual-entry-validation-20260915.md),
 [optional-field saves](bone-optional-fields-validation-20260915.md), and
 [active-account/audit scope](bone-access-validation-20260915.md) are repaired and
-verified live in QA. One labeled Bone/Tissue fixture remains for the remaining
-inventory date/stock/delete checks; it is not a permanent seed fixture.
+verified live in QA. Calendar-date formatting, single stock deduction, active
+stock-role checks and audit-preserving deletion are also live verified. The
+temporary Bone/Tissue inventory and stock records are cleaned; seven audit
+events are retained. Attachments/imports and other inventory modules remain.
 ## Historical preparation record
 
 The following notes preserve conditions at initial preparation, not current
