@@ -16,3 +16,14 @@ for(const name of ['supplyRequestService','frontDeskInventoryService']){
   assert.equal(context.getOffices(),result,'Shared options remain stable across renders');
  });
 }
+const serviceSource=fs.readFileSync(path.join(root,'src/services/frontDeskInventoryService.js'),'utf8');
+const serviceAst=parser.parse(serviceSource,{sourceType:'module'});
+const serviceOffices=find(serviceAst,n=>n.type==='VariableDeclarator'&&n.id.name==='OFFICES').init;
+const serviceGetter=find(serviceAst,n=>n.type==='ObjectProperty'&&n.key.name==='getOffices').value;
+const historySource=fs.readFileSync(path.join(root,'src/pages/inventory-dashboard/components/FrontDeskAmazonOrderHistory.jsx'),'utf8');
+const historyOffices=find(parser.parse(historySource,{sourceType:'module',plugins:['jsx']}),n=>n.type==='VariableDeclarator'&&n.id.name==='OFFICES').init;
+for(const mode of [true,false,undefined])test('Amazon history office filter follows actual service '+(mode===true?'QA':mode===false?'production':'default'),()=>{
+ const context=vm.createContext({dashboardEnvironment:{isQa:mode}});
+ vm.runInContext('const OFFICES='+serviceSource.slice(serviceOffices.start,serviceOffices.end)+'; this.frontDeskInventoryService={getOffices:('+serviceSource.slice(serviceGetter.start,serviceGetter.end)+')}; this.options='+historySource.slice(historyOffices.start,historyOffices.end)+';',context);
+ assert.deepEqual(Array.from(context.options),['All Offices',...(mode===true?fixtures.offices.map(o=>o.name):production)]);
+});
