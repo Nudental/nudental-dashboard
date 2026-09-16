@@ -173,7 +173,7 @@ const MobileReceiveSuppliesModal = ({ fulfillmentBatch, onClose, onSaved }) => {
   const [receivedQtys, setReceivedQtys] = useState({});
   const [activeItemId, setActiveItemId] = useState(null);
   const [notes, setNotes] = useState('');
-  const [receivedBy, setReceivedBy] = useState(userProfile?.full_name || '');
+  const [receivedBy] = useState(userProfile?.full_name || '');
   const [dateReceived, setDateReceived] = useState(new Date()?.toISOString()?.split('T')?.[0]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -404,14 +404,17 @@ const MobileReceiveSuppliesModal = ({ fulfillmentBatch, onClose, onSaved }) => {
             {/* Received By + Date */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-muted-foreground mb-2">Received By</label>
+                <label htmlFor="supply-receipt-received-by" className="block text-xs font-semibold text-muted-foreground mb-2">Received By</label>
                 <input
+                  id="supply-receipt-received-by"
                   type="text"
                   value={receivedBy}
-                  onChange={e => setReceivedBy(e?.target?.value)}
+                  readOnly
+                  aria-describedby="supply-receipt-actor-help"
                   className="w-full px-3 border border-border rounded-xl bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm"
                   style={{ minHeight: '52px', fontSize: '16px' }}
                 />
+                <p id="supply-receipt-actor-help" className="mt-1 text-xs text-muted-foreground">Your signed-in name is recorded with this receipt.</p>
               </div>
               <div>
                 <label className="block text-xs font-semibold text-muted-foreground mb-2">Date Received</label>
