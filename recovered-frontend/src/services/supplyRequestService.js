@@ -451,7 +451,7 @@ export const supplyRequestService = {
     // Fetch existing batch values before update so we can record old_values in audit log
     const { data: existingBatch, error: fetchErr } = await supabase
       ?.from('supply_request_batches')
-      ?.select('batch_status, reviewer_id, reviewer_notes')
+      ?.select('batch_status, reviewer_id, reviewer_notes, department_category')
       ?.eq('id', batchId)
       ?.single();
     if (fetchErr) throw fetchErr;
@@ -470,6 +470,9 @@ export const supplyRequestService = {
       ?.select()
       ?.single();
     if (error) throw error;
+
+    // The QA Front Desk trigger records review history in the same transaction.
+    if (dashboardEnvironment.isQa && existingBatch?.department_category === 'Front Desk') return data;
 
     // Map status to audit action label
     const actionMap = {
