@@ -11,7 +11,7 @@ eight actual roles plus account/office variants. Three API routes are positively
 reviewed (office read, EOD read, synthetic Patient Flow export); other operational
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
-QA schema repairs 001–024 are applied. Latest QA frontend release
+QA schema repairs 001–025 are applied. Latest QA frontend release
 `f4288986-8ab1-4d3b-8d4f-69e48bc9d28d` uses source
 `8470d63b35ce8f56db6aec89cf0e03e746d1bd48`. All 1,389 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
