@@ -290,6 +290,19 @@ export const supplyRequestService = {
   },
 
   async saveDraftBatch(batch, items) {
+    if (dashboardEnvironment.isQa) {
+      const { data, error } = await supabase.rpc('save_supply_request_draft', {
+        p_batch: batch,
+        p_items: (items || []).map(item => ({
+          ...item,
+          department_id: item?.department_id === '' ? null : item?.department_id,
+          subsection_id: item?.subsection_id === '' ? null : item?.subsection_id,
+          item_id: item?.item_id === '' ? null : item?.item_id,
+        })),
+      });
+      if (error) throw error;
+      return data;
+    }
     const { data: { user } } = await supabase?.auth?.getUser();
     let batchData;
 
