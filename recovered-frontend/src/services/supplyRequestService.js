@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { dashboardEnvironment } from '../config/dashboardEnvironment';
 import { get, set, createStore } from 'idb-keyval';
 
 const SUPPLY_CACHE_STORE = createStore('nu-dental-supply-cache', 'supply_cache');
@@ -17,7 +18,7 @@ const setCache = async (key, data) => {
   try { await set(key, { data, ts: Date.now() }, SUPPLY_CACHE_STORE); } catch (_) {}
 };
 
-const OFFICES = [
+const OFFICES = dashboardEnvironment.isQa ? ['QA / Office A', 'QA / Office B'] : [
   'Nu Dental of Eatontown',
   'Nu Dental of Brick',
   'Nu Dental of Barnegat',

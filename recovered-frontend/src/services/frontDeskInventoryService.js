@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
+import { dashboardEnvironment } from '../config/dashboardEnvironment';
 
-const OFFICES = [
+const OFFICES = dashboardEnvironment.isQa ? ['QA / Office A', 'QA / Office B'] : [
   'Nu Dental of Eatontown',
   'Nu Dental of Brick',
   'Nu Dental of Barnegat',
