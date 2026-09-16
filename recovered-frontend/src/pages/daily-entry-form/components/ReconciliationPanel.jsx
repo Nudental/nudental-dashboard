@@ -51,7 +51,7 @@ const ReconciliationPanel = ({ preSnapshot, postSnapshot, importResult, csvRows 
     const deltaProduction = (post?.production || 0) - (pre?.production || 0);
     const deltaCollection = (post?.collection || 0) - (pre?.collection || 0);
     const deltaRows = (post?.rowCount || 0) - (pre?.rowCount || 0);
-    const expectedDelta = (importedForOffice?.inserted || 0) + (importedForOffice?.updated || 0);
+    const expectedDelta = importedForOffice?.inserted || 0;
 
     // Flag: row count delta doesn't match expected import count
     const rowCountMismatch = importedForOffice && Math.abs(deltaRows - expectedDelta) > 0;
@@ -90,8 +90,13 @@ const ReconciliationPanel = ({ preSnapshot, postSnapshot, importResult, csvRows 
     const csvForDate = (csvRows || [])?.filter((r) => r?._parsedDate === date && r?._status !== 'error');
     const csvProduction = csvForDate?.reduce((s, r) => s + (parseFloat(r?.production_amount) || 0), 0);
 
-    // Flag: production delta doesn't match CSV production for this date (tolerance $0.01)
-    const productionMismatch = csvForDate?.length > 0 && Math.abs(deltaProduction - csvProduction) > 0.01;
+    // Updates replace an existing value; repeated identities use the final CSV row.
+    const finalEntries = new Map(csvForDate.map((row) => [
+      JSON.stringify([row?._resolvedOfficeId, date, row?._providerName || '']), row,
+    ]));
+    const expectedProductionDelta = [...finalEntries].reduce((total, [key, row]) =>
+      total + (parseFloat(row?.production_amount) || 0) - (preSnapshot?.byEntry?.[key]?.production || 0), 0);
+    const productionMismatch = csvForDate?.length > 0 && Math.abs(deltaProduction - expectedProductionDelta) > 0.01;
 
     // Flag: date in post but not in pre (new date added)
     const isNewDate = !preSnapshot?.byDate?.[date];

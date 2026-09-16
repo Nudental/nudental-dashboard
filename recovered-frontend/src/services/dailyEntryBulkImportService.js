@@ -984,7 +984,7 @@ export const fetchPreImportSnapshot = async (validRows) => {
 
   const { data, error } = await supabase
     ?.from('daily_entries')
-    ?.select('production, collection, expense_amount, entry_date, office_id, offices(name)')
+    ?.select('production, collection, expense_amount, entry_date, office_id, provider_name, offices(name)')
     ?.in('office_id', officeIds)
     ?.in('entry_date', dates);
 
@@ -994,10 +994,14 @@ export const fetchPreImportSnapshot = async (validRows) => {
 
   const byOffice = {};
   const byDate = {};
+  const byEntry = {};
 
   entries?.forEach((e) => {
     const oName = e?.offices?.name || e?.office_id || 'Unknown';
     const date = e?.entry_date;
+    byEntry[JSON.stringify([e?.office_id, date, e?.provider_name || ''])] = {
+      production: parseFloat(e?.production) || 0,
+    };
 
     // Aggregate by office
     if (!byOffice?.[oName]) byOffice[oName] = { production: 0, collection: 0, expenses: 0, rowCount: 0 };
@@ -1014,7 +1018,7 @@ export const fetchPreImportSnapshot = async (validRows) => {
     byDate[date].rowCount++;
   });
 
-  return { byOffice, byDate };
+  return { byOffice, byDate, byEntry };
 };
 
 // ── Mark entity as reviewed ───────────────────────────────────────────────

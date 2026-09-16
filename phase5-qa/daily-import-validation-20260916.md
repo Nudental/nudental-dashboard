@@ -39,5 +39,30 @@ Smallest fix: render an unavailable message for a missing YTD payload and label
 the panel as legacy totals, explicitly preserving official Dentrix totals. The
 existing supported numeric/zero rendering remains unchanged. No new accounting
 calculation, aggregation, source data, or API capability is introduced. Five JSX
-regressions: four failed before; numeric/zero control already passed. Post-fix
-full suite, QA deployment and live verification pending.
+regressions: four failed before; numeric/zero control already passed. All 1,608
+retained frontend tests and the QA build/511-source parity pass. QA deployment
+`62ce1227-8e60-4889-b78f-b19ce2a25f44`, source
+`b831b438d0a8d8fad886f6cfffa30ee22e862077`, passed 17 hosted checks. Live after
+reload and repeat import: unavailable YTD message visible, no bare percent, and
+official totals unchanged caption visible. The same entry remains with unchanged
+amounts and three audit events. All 12 role reads preserve its intended review
+scope; Office B, inactive and unapproved identities see zero. Production unchanged.
+
+## PH5-IMPORT-005 — successful upserts falsely flagged as mismatches
+
+Two identical-file retries left one entry with unchanged totals, yet the office
+view flagged an expected one-row increase and the date view flagged production.
+The root cause was counting updated rows as inserted rows and comparing the
+production difference to the entire CSV value rather than its change from the
+existing row. The import itself persisted correctly.
+
+Targeted fix: expected row growth counts inserts only. The existing read-only
+snapshot additionally retains production by the same office/date/provider key
+used for upsert. Date reconciliation subtracts that prior amount, using the
+final value for repeated CSV identities. Independent duplicate-CSV warnings are
+preserved. No write contract or financial source changed.
+
+Eight focused regressions cover unchanged/edited/mixed upserts, other providers,
+same provider names in separate offices, final duplicate-row values, incorrect
+saved amounts and snapshot identity. Six failed before; all eight pass after.
+Full regression/build, QA publication and live verification pending.
