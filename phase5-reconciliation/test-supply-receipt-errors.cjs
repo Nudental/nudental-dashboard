@@ -5,7 +5,7 @@ function find(n,p){if(!n||typeof n!=='object')return;if(p(n))return n;for(const 
 const method=find(parser.parse(source,{sourceType:'module'}),n=>n.type==='ObjectMethod'&&n.key.name==='receiveSupplies');
 const id='12345678-1234-4234-8234-123456789abc';
 function harness(mode){
- const state={writes:0},context={supabase:{
+ const state={writes:0},context={dashboardEnvironment:{isQa:false},supabase:{
   auth:{getUser:async()=>({data:{user:{id}}})},
   from(table){assert.equal(table,'supply_fulfillment_logs');return{
    update(payload){state.payload=payload;return this},eq(k,v){assert.equal(k,'id');assert.equal(v,id);return this},select(fields){assert.equal(fields,'id');return this},

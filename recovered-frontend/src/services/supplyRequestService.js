@@ -826,6 +826,12 @@ export const supplyRequestService = {
 
   // ── RECEIVE SUPPLIES ─────────────────────────────────────────────────────
   async receiveSupplies(payload) {
+    if (dashboardEnvironment.isQa) {
+      const { data, error } = await supabase.rpc('receive_supply_receipt', { p_payload: payload });
+      if (error) throw error;
+      if (!data?.success) throw new Error('Receipt was not confirmed. Refresh before retrying.');
+      return data;
+    }
     const { data: { user } } = await supabase?.auth?.getUser();
     const { fulfillment_log_id, office_id, items, received_by, date_received, notes } = payload;
     const today = date_received || new Date()?.toISOString()?.split('T')?.[0];
