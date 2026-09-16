@@ -1590,6 +1590,7 @@ const FrontDeskInventoryTab = () => {
         else if (qty <= i?.min_required) newStatus = 'Low';
         return { ...i, current_qty: qty, status: newStatus };
       }));
+      await loadData();
       showToast('Quantity updated');
     } catch (err) {
       setError(err?.message || 'Failed to update quantity');
@@ -1600,6 +1601,7 @@ const FrontDeskInventoryTab = () => {
     try {
       const updated = await frontDeskInventoryService?.updateRow(id, updates);
       setItems(prev => prev?.map(i => i?.id === id ? { ...i, ...updated } : i));
+      await loadData();
       showToast('Item updated');
     } catch (err) {
       setError(err?.message || 'Failed to update item');
@@ -1610,6 +1612,7 @@ const FrontDeskInventoryTab = () => {
     try {
       const newItem = await frontDeskInventoryService?.insertRow(rowData);
       setItems(prev => [...prev, newItem]);
+      await loadData();
       showToast('Item added successfully');
     } catch (err) {
       throw err;
