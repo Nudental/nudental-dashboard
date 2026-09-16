@@ -257,6 +257,7 @@ const ItemRow = ({ item, inventory, isAdmin, onStockSaved, onItemEdited, onDeact
   const [showKeypad, setShowKeypad] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const invRecord = inventory?.find(inv => inv?.item_id === item?.id);
   const currentQty = invRecord?.quantity_on_hand ?? null;
@@ -274,6 +275,7 @@ const ItemRow = ({ item, inventory, isAdmin, onStockSaved, onItemEdited, onDeact
   };
 
   const handleStockDone = async (qty) => {
+    setError('');
     setSaving(true);
     try {
       let savedInventory = invRecord;
@@ -305,7 +307,11 @@ const ItemRow = ({ item, inventory, isAdmin, onStockSaved, onItemEdited, onDeact
       if (navigator.vibrate) navigator.vibrate(200);
       onStockSaved(item?.id, qty, savedInventory);
       setShowKeypad(false);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      setError(e?.code === '22003'
+        ? 'Stock quantity is too large. Enter a smaller number.'
+        : 'Could not confirm the stock save. Refresh to check the current value before retrying.');
+    }
     finally { setSaving(false); }
   };
 
@@ -348,7 +354,7 @@ const ItemRow = ({ item, inventory, isAdmin, onStockSaved, onItemEdited, onDeact
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Stock level chip */}
           <button
-            onClick={() => { setShowKeypad(p => !p); setShowEdit(false); }}
+            onClick={() => { setError(''); setShowKeypad(p => !p); setShowEdit(false); }}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm font-semibold border transition-all active:scale-95 ${
               currentQty === null
                 ? 'border-dashed border-muted-foreground text-muted-foreground bg-transparent'
@@ -384,6 +390,7 @@ const ItemRow = ({ item, inventory, isAdmin, onStockSaved, onItemEdited, onDeact
         </div>
       </div>
       {/* Inline keypad */}
+      {showKeypad && error && <p role="alert" className="mx-4 mb-2 text-sm text-red-600">{error}</p>}
       {showKeypad && (
         <InlineNumericKeypad
           itemName={item?.name}
