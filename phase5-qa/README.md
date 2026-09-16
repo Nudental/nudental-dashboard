@@ -11,13 +11,14 @@ eight actual roles plus account/office variants. Three API routes are positively
 reviewed (office read, EOD read, synthetic Patient Flow export); other operational
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
-QA schema repairs 001–031, 033, 036 and 037 are applied; 032, 034 and 035 are pending approval. Latest QA frontend release
-`0abbfd1e-34dc-4e04-a2ae-10dd7537bb5d` uses source
-`3e04d50264b13ee206eef16effe0f84985bb8603`. All 1,541 retained frontend tests
+QA schema repairs 001–031, 033, 036, 037 and 038 are applied; 032, 034, 035 and 039 remain unapplied access candidates awaiting approval. Latest QA frontend release
+`80c69cdc-8ebb-4f18-aece-d25364965521` uses source
+`847c1c6cbe01640753fa741c957215b8860ca710`. All 1,546 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
-Recent live checks/repairs: [urgent-request optional fields](urgent-optional-fields-validation-20260916.md),
+Recent live checks/repairs: [urgent audit and notification simulations](urgent-audit-simulation-validation-20260916.md),
+[urgent-request optional fields](urgent-optional-fields-validation-20260916.md),
 [mobile urgent-request item selection](urgent-new-request-routing-validation-20260916.md),
 [fulfillment import retries](fulfillment-import-idempotency-validation-20260916.md),
 [transactional receipt replay](supply-receipt-transaction-candidate-20260916.md),
