@@ -12,8 +12,8 @@ reviewed (office read, EOD read, synthetic Patient Flow export); other operation
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
 QA schema repairs 001–023 are applied. Latest QA frontend release
-`9a99231f-5b40-49f3-b6c1-265be834820e` uses source
-`194a068957efe6b0ac66b2107f7476c14d0142fc`. All 1,375 retained frontend tests
+`9935d19e-4e4f-425f-aef1-3c08bfab60ed` uses source
+`d52108d5311881b1a8945a28e039e1b73e66e158`. All 1,381 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
@@ -47,6 +47,8 @@ verified live in QA. Calendar-date formatting, single stock deduction, active
 stock-role checks and audit-preserving deletion are also live verified. The
 temporary Bone/Tissue inventory and stock records are cleaned; seven audit
 events are retained. Attachments/imports and other inventory modules remain.
+The [supply office selectors](supply-qa-offices-validation-20260915.md) now use
+the two synthetic offices in QA; production options are unchanged.
 ## Historical preparation record
 
 The following notes preserve conditions at initial preparation, not current
