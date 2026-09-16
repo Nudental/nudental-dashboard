@@ -12,8 +12,8 @@ reviewed (office read, EOD read, synthetic Patient Flow export); other operation
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
 QA schema repairs 001–031 and 033 are applied; 032 is pending approval. Latest QA frontend release
-`5c99d0a5-108e-4a19-95ac-3c825ca82bf5` uses source
-`4d185e2dd9063631c10d2b93b6d3a0b2e25ac0bd`. All 1,443 retained frontend tests
+`3db499b1-b07c-4d2c-8e51-757454873230` uses source
+`636b06501552edcb969cfbaf06558c0116b22b6d`. All 1,449 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
@@ -91,6 +91,10 @@ The [catalog summary counters](front-desk-summary-validation-20260916.md) now
 refresh after saves while preserving the open category. Live quantity/create
 and full-refresh checks pass. The extra creation-counter fixture is cleaned,
 preserving two audit events. Production is unchanged.
+The [optional catalog date](front-desk-optional-date-validation-20260916.md)
+now allows a note edit with Last Supplied blank. Live save/audit/retry/refresh
+checks pass. The retained six-unit fixture now has six real update audits; its
+earlier unaudited creation is not retroactively fabricated.
 ## Historical preparation record
 
 The following notes preserve conditions at initial preparation, not current
