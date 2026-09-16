@@ -12,12 +12,13 @@ reviewed (office read, EOD read, synthetic Patient Flow export); other operation
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
 QA schema repairs 001–031, 033 and 036 are applied; 032, 034 and 035 are pending approval. Latest QA frontend release
-`643899b2-1f0a-47fb-a1c7-11f5c61f8d51` uses source
-`b300f539c5bd1759791ae50beef53093bdb23af9`. All 1,475 retained frontend tests
+`08136072-57b6-4875-99fb-894f104b4385` uses source
+`dc35e7c1e8c04214526bdc7ab9341a74748e99ec`. All 1,482 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
-Recent live checks/repairs: [clinical stock error feedback](clinical-stock-error-validation-20260916.md),
+Recent live checks/repairs: [unchanged stock save idempotency](clinical-stock-idempotency-validation-20260916.md),
+[clinical stock error feedback](clinical-stock-error-validation-20260916.md),
 [office assignment](user-office-transaction-validation-20260915.md),
 [office administration](office-ui-validation-20260915.md),
 [providers](provider-ui-validation-20260915.md),
