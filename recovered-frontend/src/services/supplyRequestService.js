@@ -336,6 +336,11 @@ export const supplyRequestService = {
   },
 
   async submitBatch(batchId) {
+    if (dashboardEnvironment.isQa) {
+      const { data, error } = await supabase.rpc('submit_supply_request_qa', { p_batch_id: batchId });
+      if (error) throw error;
+      return data;
+    }
     const { data, error } = await supabase?.from('supply_request_batches')?.update({ batch_status: 'submitted', submitted_at: new Date()?.toISOString(), updated_at: new Date()?.toISOString() })?.eq('id', batchId)?.select()?.single();
     if (error) throw error;
 

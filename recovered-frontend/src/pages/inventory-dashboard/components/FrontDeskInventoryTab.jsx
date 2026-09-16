@@ -8,6 +8,7 @@ import FrontDeskRequestHistory from './FrontDeskRequestHistory';
 import FrontDeskCurrentInventory from './FrontDeskCurrentInventory';
 import FrontDeskAmazonOrderHistory from './FrontDeskAmazonOrderHistory';
 import useRolePermissions from '../../../hooks/useRolePermissions';
+import { dashboardEnvironment } from '../../../config/dashboardEnvironment';
 
 const OFFICES = frontDeskInventoryService?.getOffices();
 const CATEGORIES = frontDeskInventoryService?.getCategories();
@@ -1712,7 +1713,7 @@ const FrontDeskInventoryTab = () => {
 
       // ── Fire order-request-notifications edge function (Front Desk → ny@thenudental.com, CC admasu@thenudental.com) ──
       let emailNotifError = null;
-      try {
+      if (!dashboardEnvironment.isQa) try {
         const { data: profile } = await supabase?.from('user_profiles')?.select('full_name')?.eq('id', user?.id)?.single();
         const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL;
         const supabaseAnonKey = import.meta.env?.VITE_SUPABASE_ANON_KEY;
