@@ -29,5 +29,22 @@ unchanged empty form_data and correctly did not raise; it now supplies a changed
 synthetic value. The retained Storage test originally reopened its completed
 fixture merely to test draft PDF denial. It now seeds a separate draft and checks
 that draft access is denied while the original completed PDF remains readable;
-the lock is not weakened for test setup. Hosted migration and live verification
-pending.
+the lock is not weakened for test setup. All retained insurance access (50) and
+Storage (32) checks pass as well.
+
+Hosted repair 041 applied only to hvtxjfayenqnwtaisoaw. Saved SQL evidence:
+c7d45cbd-f15d-4946-8760-e84d6f9453f6; trigger enabled, snippet saved.
+Both original Office Manager notes bypasses now fail, preserving the row and
+audit count. Positive API controls verify PDF metadata write/readback/restore,
+draft edit/readback, completion/readback, stale-save rejection and no duplicate
+verification. These API controls do not claim UI-generated audit events or actual
+PDF delivery. The test initially supplied invalid request status `new`; the
+existing constraint rejected it before insertion. Correcting the fixture to the
+application's `requested` status allowed the intended test.
+
+After a fresh browser reload the completed form has 24 read-only text fields,
+19 read-only numeric fields and no Save Draft/Mark Completed controls. Both exact
+temporary requests and verifications were removed; repeated deletes returned
+zero. No PDF object or provider action occurred; no audit row was erased.
+Receipt: qa-insurance-lock-20260916.json, cleanup_verified=true. QA frontend and
+API releases are unchanged; production was not deployed or modified.
