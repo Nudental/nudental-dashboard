@@ -19,10 +19,10 @@ evidence retained. Its live release is
 All 205 existing operational-route denials remain intact; this does not claim
 external provider processing or complete product UI execution integration.
 
-QA schema repairs 001–041 are applied. The four explicitly approved access restrictions
+QA schema repairs 001–042 are applied. The four explicitly approved access restrictions
 [pass live identity checks](access-restrictions-live-20260916.md). Latest QA frontend release
-`d6008b73-92ac-4418-aa6d-584d5bb9b8e1` uses source
-`d409fc1770b255ec1d75732880411ec6497cb37b`. All 1,595 retained frontend tests
+`ee6c5b06-bc5f-4043-8760-f4b6de37bbc9` uses source
+`23699ca1e1372ed2128802996ff2ccd214b6b933`. All 1,598 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
@@ -56,7 +56,14 @@ and the insurance request/draft/PDF are cleaned; audit evidence retained. Origin
 Huddle/EOD/task fixtures are also cleaned after their retained checks. Evidence and
 general audit rows remain; old fixture-dependent helpers need fresh fixtures before reuse.
 
-Phase 5 is incomplete. Continue service-goal generation, remaining safe write/role
+Service-goal generation/edit/cleanup now [passes with fixed synthetic baselines](goal-baseline-adapter-validation-20260916.md),
+including the [service-goal office boundary](service-goal-read-boundary-validation-20260916.md).
+[Imported entity review](entity-review-validation-20260916.md) passes and retains
+its completed labeled review history. Latest QA API release is
+`585313aa7a2c2f5ee8e4aeeabe0767f6a7a7d76f0a6ddcc2daf6302d6f06d012`;
+142 retained backend tests and 71 live baseline-adapter checks pass.
+
+Phase 5 is incomplete. Continue remaining safe write/role
 checks, operational mock integration, bounded performance investigation, final
 production read-only regression, and cleanup. Dr. G designated reconciled
 bank/card statements plus processed Gusto records as the Expense authority;
