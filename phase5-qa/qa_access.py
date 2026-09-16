@@ -90,6 +90,13 @@ class ReviewedRoutes:
         if not isinstance(actor, ApiAccess):
             return False
         route = (scope.get('method'), scope.get('path'))
+        from qa_goal_baselines import PATHS, fixture_scope
+        if route[1] in PATHS:
+            try:
+                fixture_scope(actor, scope)
+                return True
+            except (ValueError, KeyError, UnicodeError):
+                return False
         from qa_execution import route_kind, can_use
         if route_kind(*route):
             return can_use(actor) and not scope.get('query_string', b'')

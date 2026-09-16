@@ -80,6 +80,8 @@ def main():
     install_report_route(app, report_export)
     from qa_execution import install_execution_routes
     install_execution_routes(app, policy)
+    from qa_goal_baselines import install_goal_baseline_routes
+    install_goal_baseline_routes(app, policy)
     # Preserve recovered handlers, replacing only public health diagnostics and
     # production CORS configuration in this explicitly QA-only launcher.
     app.router.routes = [r for r in app.router.routes if getattr(r, 'path', None) not in ('/', '/health')]
@@ -92,6 +94,7 @@ def main():
                 'recovered_route_count': route_count, 'qa_database_connected': True,
                 'external_execution': 'disabled', 'reviewed_route_methods': len(ReviewedRoutes.enabled),
                 'qa_simulation_operations': 10,
+                'qa_goal_baseline_routes': 2,
                 'internet_sockets_blocked': internet_blocked,
                 'production_home_hidden': True, 'root_home_hidden': True}
     identity = QaAccessResolver(policy, config['secret_key'], requests.Session)

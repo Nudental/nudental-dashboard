@@ -19,10 +19,10 @@ evidence retained. Its live release is
 All 205 existing operational-route denials remain intact; this does not claim
 external provider processing or complete product UI execution integration.
 
-QA schema repairs 001–040 are applied. The four explicitly approved access restrictions
+QA schema repairs 001–041 are applied. The four explicitly approved access restrictions
 [pass live identity checks](access-restrictions-live-20260916.md). Latest QA frontend release
-`f2983c78-166c-4359-b0ea-4d9113ec0451` uses source
-`660aaa3a1ab8ff7df02606a5711a626bde45229e`. All 1,584 retained frontend tests
+`d6008b73-92ac-4418-aa6d-584d5bb9b8e1` uses source
+`d409fc1770b255ec1d75732880411ec6497cb37b`. All 1,595 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
@@ -48,6 +48,8 @@ Recent live checks/repairs: [urgent office stock](urgent-office-stock-validation
 [insurance appointment validation](insurance-request-time-validation-20260915.md),
 [insurance API scope](insurance-access-validation-20260915.md), and
 [private verification PDFs](insurance-pdf-storage-validation-20260915.md), and
+[completed verification API locks](insurance-completed-lock-validation-20260916.md),
+[cancellation audit history](insurance-cancel-audit-validation-20260916.md),
 [stale Huddle review actions](huddle-review-state-validation-20260915.md).
 Temporary records from completed administration, goals and implant/import checks
 and the insurance request/draft/PDF are cleaned; audit evidence retained. Original
