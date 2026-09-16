@@ -1,0 +1,28 @@
+const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
+const {openSchema}=require('./offline_database.cjs');
+(async()=>{const {db}=await openSchema();let checks=0;const check=(name,ok)=>{assert.ok(ok,name);checks++};try{
+ const dir=path.join(__dirname,'repairs');await db.exec("SET nudashboard.environment='qa';");
+ for(const f of fs.readdirSync(dir).filter(f=>/^\d{3}-.+\.sql$/.test(f)&&f<'034-'&&!f.startsWith('032-')).sort())await db.exec(fs.readFileSync(path.join(dir,f),'utf8'));
+ const fixtures=JSON.parse(fs.readFileSync(path.join(__dirname,'synthetic-role-fixtures.json'),'utf8'));
+ for(const o of fixtures.offices)await db.query('INSERT INTO offices(id,name) VALUES($1,$2)',[o.id,o.name]);
+ const actors={};for(const a of fixtures.actors){const id=crypto.randomUUID();actors[a.fixture_key]=id;await db.query("INSERT INTO auth.users(id,email,raw_user_meta_data) VALUES($1,$2,'{}')",[id,a.email]);await db.query('UPDATE user_profiles SET role=$2,office_id=$3,is_active=$4,is_approved=$5,status=$6 WHERE id=$1',[id,a.role,a.office_id,a.is_active,a.is_approved,a.status]);}
+ for(const p of fixtures.role_permissions.filter(p=>p.permission==='resources.inventory.front_desk.view'))await db.query('INSERT INTO role_permissions(role,permission,enabled) VALUES($1,$2,$3) ON CONFLICT(role,permission) DO UPDATE SET enabled=EXCLUDED.enabled',[p.role,p.permission,p.enabled]);
+ const permissions=(await db.query('SELECT role,permission,enabled FROM role_permissions ORDER BY role,permission')).rows;
+ const insert="INSERT INTO front_desk_amazon_orders(office_location,order_date,order_id,item_name,item_quantity,amazon_order_status,ordered_by,approved_by) VALUES($1,'2026-09-16','QA TEMP','QA TEMP',2,'Closed','QA','QA') RETURNING id";
+ const rowA=(await db.query(insert,['QA / Office A'])).rows[0].id,rowB=(await db.query(insert,['QA / Office B'])).rows[0].id;
+ async function asActor(actor,sql,params=[]){await db.exec('BEGIN; SET LOCAL ROLE '+(actor==='anonymous'?'anon':actor==='service'?'service_role':'authenticated')+';');try{await db.query("SELECT set_config('request.jwt.claim.sub',$1,true),set_config('request.jwt.claim.role',$2,true)",[actors[actor]||'',actor==='anonymous'?'anon':actor==='service'?'service_role':'authenticated']);return(await db.query(sql,params)).rows}finally{await db.exec('ROLLBACK;')}}
+ const read='SELECT id FROM front_desk_amazon_orders WHERE id=$1',update="UPDATE front_desk_amazon_orders SET amazon_order_status='Pending' WHERE id=$1 RETURNING id";
+ for(const actor of [...Object.keys(actors),'anonymous']){check(actor+' original read bypass',(await asActor(actor,read,[rowA])).length===1);check(actor+' original update bypass',(await asActor(actor,update,[rowA])).length===1);}
+ await db.exec(fs.readFileSync(path.join(dir,'034-front-desk-order-access.sql'),'utf8'));
+ for(const actor of [...Object.keys(actors),'anonymous']){const expected=['super_admin','office_manager'].includes(actor)?1:0;check(actor+' repaired read boundary',(await asActor(actor,read,[rowA])).length===expected);check(actor+' repaired update boundary',(await asActor(actor,update,[rowA])).length===expected);}
+ check('Office B reads its own office',(await asActor('office_manager_b',read,[rowB])).length===1);check('Office B can close its own order',(await asActor('office_manager_b',update,[rowB])).length===1);
+ let denied=false;try{await asActor('office_manager',"UPDATE front_desk_amazon_orders SET office_location='QA / Office B' WHERE id=$1",[rowA])}catch(e){check('cross-office move error',e.code==='42501');denied=true}check('cross-office move denied',denied);
+ for(const actor of ['super_admin','office_manager','staff','anonymous']){denied=false;try{await asActor(actor,insert,['QA / Office A'])}catch(e){check(actor+' import denial code',e.code==='42501');denied=true}check(actor+' imports remain service-only',denied);check(actor+' cannot delete history',(await asActor(actor,'DELETE FROM front_desk_amazon_orders WHERE id=$1 RETURNING id',[rowA])).length===0);}
+ check('service import remains allowed',(await asActor('service',insert,['QA / Office A'])).length===1);check('service cleanup remains allowed',(await asActor('service','DELETE FROM front_desk_amazon_orders WHERE id=$1 RETURNING id',[rowA])).length===1);
+ check('permission settings unchanged',JSON.stringify((await db.query('SELECT role,permission,enabled FROM role_permissions ORDER BY role,permission')).rows)===JSON.stringify(permissions));
+ await db.query("UPDATE role_permissions SET enabled=true WHERE role='staff' AND permission='resources.inventory.front_desk.view'");check('staff can read when granted page',(await asActor('staff',read,[rowA])).length===1);check('staff cannot mark closed',(await asActor('staff',update,[rowA])).length===0);
+ for(const actor of ['inactive_staff','unapproved_staff'])check(actor+' remains blocked with page grant',(await asActor(actor,read,[rowA])).length===0);
+ await db.query("UPDATE role_permissions SET enabled=true WHERE role IN ('admin','regional_clinical_manager') AND permission='resources.inventory.front_desk.view'");for(const actor of ['admin','regional_clinical_manager'])check(actor+' existing Mark Closed role preserved',(await asActor(actor,update,[rowA])).length===1);
+ check('no business row changed',(await db.query("SELECT id FROM front_desk_amazon_orders WHERE amazon_order_status='Closed'")).rows.length===2);
+ console.log(JSON.stringify({checks,passed:checks,productionConnected:false}));
+}finally{await db.close()}})().catch(e=>{console.log(JSON.stringify({result:'FAIL',code:e.code,message:String(e.message).slice(0,180)}));process.exitCode=1});
