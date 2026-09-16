@@ -539,7 +539,11 @@ export const supplyRequestService = {
 
   async createUrgentRequest(req) {
     const { data: { user } } = await supabase?.auth?.getUser();
-    const { data, error } = await supabase?.from('urgent_supply_requests')?.insert({ ...req, requested_by: user?.id, urgent_status: 'submitted' })?.select()?.single();
+    const payload = { ...req, requested_by: user?.id, urgent_status: 'submitted' };
+    for (const field of ['department_id', 'subsection_id', 'item_id', 'needed_by_date']) {
+      if (payload[field] === '') payload[field] = null;
+    }
+    const { data, error } = await supabase?.from('urgent_supply_requests')?.insert(payload)?.select()?.single();
     if (error) throw error;
 
     // ── Clinical Supply Urgent email notification ──────────────────────────
