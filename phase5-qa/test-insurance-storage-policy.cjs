@@ -19,7 +19,10 @@ const {openSchema}=require('./offline_database.cjs');
   let inserted=false;try{inserted=(await run(actor,"INSERT INTO storage.objects(bucket_id,name) VALUES('insurance-verifications',$1) RETURNING id",[file])).length===1}catch(error){assert.equal(error.code,'42501')}check(actor+' upload scope',inserted===allowed);
  }
  for(const bad of [`unknown/${v}/QA.pdf`,`verifications/${crypto.randomUUID()}/QA.pdf`,`verifications/${v}/nested/QA.pdf`,`verifications/${v}/QA.txt`]){let blocked=false;try{await run('manager',"INSERT INTO storage.objects(bucket_id,name) VALUES('insurance-verifications',$1)",[bad])}catch(error){blocked=error.code==='42501'}check('invalid path denied '+bad,blocked)}
- await db.query("UPDATE insurance_verifications SET status='draft' WHERE id=$1",[v]);check('draft PDFs are not readable',(await run('manager','SELECT id FROM storage.objects')).length===0);
- check('probe operations leave original object count unchanged',(await db.query('SELECT count(*)::int AS n FROM storage.objects')).rows[0].n===1);
+ const draft=(await db.query("INSERT INTO insurance_verifications(request_id,status) VALUES($1,'draft') RETURNING id",[r])).rows[0].id;
+ const draftFile=`verifications/${draft}/QA-draft.pdf`;await db.query("INSERT INTO storage.objects(bucket_id,name) VALUES('insurance-verifications',$1)",[draftFile]);
+ check('draft PDFs are not readable',(await run('manager','SELECT id FROM storage.objects WHERE name=$1',[draftFile])).length===0);
+ check('completed PDF remains readable without reopening its form',(await run('manager','SELECT id FROM storage.objects WHERE name=$1',[file])).length===1);
+ check('probe operations leave both seeded objects unchanged',(await db.query('SELECT count(*)::int AS n FROM storage.objects')).rows[0].n===2);
  console.log(JSON.stringify({checks:checks.length,passed:checks.length,productionConnected:false,storageSchema:'offline model; hosted Storage testing required'}));
 }finally{await db.close()}})().catch(error=>{console.log(JSON.stringify({result:'FAIL',code:error.code,message:String(error.message).slice(0,200)}));process.exitCode=1});

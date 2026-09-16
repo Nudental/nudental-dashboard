@@ -26,4 +26,8 @@ authorized roles, the original bypass, full row preservation on failure,
 unprivileged page denial, stale draft saves, allowed tracking metadata, draft
 editing/completion and direct trigger-function permission. An initial test used
 unchanged empty form_data and correctly did not raise; it now supplies a changed
-synthetic value. Hosted migration and live verification pending.
+synthetic value. The retained Storage test originally reopened its completed
+fixture merely to test draft PDF denial. It now seeds a separate draft and checks
+that draft access is denied while the original completed PDF remains readable;
+the lock is not weakened for test setup. Hosted migration and live verification
+pending.
