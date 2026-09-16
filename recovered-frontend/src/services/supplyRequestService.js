@@ -184,6 +184,7 @@ export const supplyRequestService = {
       `)?.order('item_name');
 
     if (filters?.officeId) query = query?.eq('office_id', filters?.officeId);
+    if (filters?.itemId) query = query?.eq('item_id', filters?.itemId);
     if (filters?.departmentId) query = query?.eq('department_id', filters?.departmentId);
     if (filters?.subsectionId) query = query?.eq('subsection_id', filters?.subsectionId);
     if (filters?.status) query = query?.eq('inv_status', filters?.status);
