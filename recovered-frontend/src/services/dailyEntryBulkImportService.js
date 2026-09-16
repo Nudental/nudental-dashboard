@@ -1037,10 +1037,10 @@ function fetchYTDTotals(...args) {
 }
 
 export { fetchYTDTotals };
-function formatDateDisplay(...args) {
-  // eslint-disable-next-line no-console
-  console.warn('Placeholder: formatDateDisplay is not implemented yet.', args);
-  return null;
+function formatDateDisplay(dateString) {
+  if (!dateString) return '—';
+  const parts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
+  return parts ? `${parts[2]}/${parts[3]}/${parts[1]}` : dateString;
 }
 
 export { formatDateDisplay };
