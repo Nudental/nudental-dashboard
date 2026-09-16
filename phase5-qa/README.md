@@ -11,13 +11,14 @@ eight actual roles plus account/office variants. Three API routes are positively
 reviewed (office read, EOD read, synthetic Patient Flow export); other operational
 routes remain closed. Closed-route denials are not positive workflow coverage.
 
-QA schema repairs 001–031, 033 and 036 are applied; 032, 034 and 035 are pending approval. Latest QA frontend release
-`12a045da-9299-4683-9e08-726268fd0563` uses source
-`e88a92c2084b46182f12c7c6ef00091ed64a38cb`. All 1,497 retained frontend tests
+QA schema repairs 001–031, 033, 036 and 037 are applied; 032, 034 and 035 are pending approval. Latest QA frontend release
+`59f7e08c-9ad3-491f-8570-c8c01332db46` uses source
+`2a7581676e93049b2a49439b636c4e7202bc8018`. All 1,503 retained frontend tests
 pass, zero skipped; 17 hosted deployment/isolation checks pass. No production
 publication performed. Canonical main remains `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`.
 
-Recent live checks/repairs: [receipt receiver display](supply-receipt-actor-display-validation-20260916.md),
+Recent live checks/repairs: [transactional receipt replay](supply-receipt-transaction-candidate-20260916.md),
+[receipt receiver display](supply-receipt-actor-display-validation-20260916.md),
 [receipt action permissions](supply-receive-visibility-validation-20260916.md),
 [unchanged stock save idempotency](clinical-stock-idempotency-validation-20260916.md),
 [clinical stock error feedback](clinical-stock-error-validation-20260916.md),
