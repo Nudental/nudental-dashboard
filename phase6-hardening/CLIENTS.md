@@ -1,6 +1,6 @@
 # Phase 6 client candidate
 
-Not deployed. Production depends on successful Group A and D installation before enabling these clients.
+Deployed to isolated QA only (`c3c958d8-fede-4be7-85e6-c7a61b635af9`, source `545068b`). Production remains unchanged and depends on successful Group A and D installation before enabling these clients. Previous QA deployment `7e91a103` and source tag `backup/qa-before-phase6-20260917` are preserved. QA branch history, database and API configuration are unchanged.
 
 - Office assignments use the existing reviewed atomic RPC in both environments. Failure cannot fall back to delete/reinsert. Existing assignment audit remains.
 - Supply drafts normalize optional identifiers and use one reviewed draft transaction. Receipts use one reviewed receipt transaction and require a confirmed success result; no partial-write fallback remains.
