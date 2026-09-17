@@ -1,6 +1,6 @@
 # API identity rollout — in progress
 
-Dr. G approved existing signed-in user checks plus separate restricted identities for approved background jobs. No API authentication changes have been deployed yet.
+Dr. G approved existing signed-in user checks plus separate restricted identities for approved background jobs. The first bounded eight-route payroll release deployed on 2026-09-17 at 22:55 UTC from source `30521585ecb3f7e5f1d3651a817e0acc68000a3f`. Server verification passed; live browser verification is tracked separately in CHECKPOINT.md.
 
 The confirmed defect is that a payroll read accepted the shared application key with no user session or an invalid session. The application key identifies the client application; it must not establish the person's identity.
 
@@ -27,7 +27,9 @@ No scheduled validator has been executed for this work. The unchanged shared app
 
 - 52 local identity, permission, job-scope, integrated dependency and redirect checks PASS.
 - Live isolated QA identity resolution PASS for existing synthetic Super Admin, Office Manager and Regional Manager; invalid session rejected. No business endpoint calls or fixture changes. Inactive/unapproved live sessions were expired, so those live negative cases were not repeated; local identity and retained native SQL negative coverage remain explicit.
-- Candidate source materialization PASS (19 files); 13 materializer tests PASS. All 58 native Python/FastAPI cases PASS with network/business-data guard active, no blocked attempts. All 17 retained backend suites PASS after adapting five isolated test harnesses to the new Request/identity context; all prior assertions retained, originals untouched. Private job provisioning, production rollout and live payroll verification remain separate release gates.
+- Candidate source materialization PASS (19 files); 13 materializer tests PASS. All 58 native Python/FastAPI cases PASS with network/business-data guard active, no blocked attempts. All 17 retained backend suites PASS after adapting five isolated test harnesses to the new Request/identity context; all prior assertions retained, originals untouched.
+- Both existing API services passed the deployed checks: missing application key, absent user session and invalid session return 401; each separate validator identity receives only its approved empty-result read; out-of-scope reads are denied. No write requests or scheduled jobs were executed. The existing runtime environment file, provider configuration and frontend asset remain unchanged.
+- Validator credentials expire on 2026-12-16 at 22:55 UTC. Renew the two private credentials through the same reviewed scope before that date; do not remove expiration or broaden route grants. The hash registry and credential files remain private and outside Git. Backup tag `backup/api-before-phase6-payroll-20260917` and private source/config backup `api-payroll-backup-20260917T225503Z` preserve the prior state.
 - This is not a claim that every Dashboard API route has complete role/office authorization. Remaining route groups still need their own caller and scope review. Source inspection found shared-key routes and additional handler patterns; counts of shared-key declarations alone do not prove the status of every route.
 - Report export makes internal API calls. A later general identity rollout must forward the initiating user's verified identity and preserve office scope. Current payroll batch does not change report-export routes or provider callbacks.
 - Existing read-only cache warming targets RCM endpoints; it is unaffected by this bounded payroll batch. No startup sync, migrations, provider execution or financial source mutation is authorized by this release.
