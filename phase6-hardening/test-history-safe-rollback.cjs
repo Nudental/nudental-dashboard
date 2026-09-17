@@ -1,0 +1,22 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const {openSchema}=require(path.join(process.env.PHASE5_QA_DIR,'offline_database.cjs'));
+const {snapshot,rollback}=require('./catalog.cjs');
+(async()=>{const {db}=await openSchema();let checks=0;try{
+ const sql=fs.readFileSync(path.join(__dirname,'migrations/C-clinical-inventory.sql'),'utf8');
+ await db.exec(fs.readFileSync(path.join(__dirname,'migrations/A-tasks-notifications-profiles.sql'),'utf8'));
+ const before=await snapshot(db);await db.exec(sql);const after=await snapshot(db);
+ const undo=rollback(before,after,{preserveHistoricalAudit:true});
+ await db.exec(undo);assert.deepEqual(await snapshot(db),before);checks++;
+ await db.exec(sql);
+ const office=(await db.query("INSERT INTO offices(name) VALUES('PH6 TEMP rollback fixture') RETURNING id")).rows[0].id;
+ const record=(await db.query("INSERT INTO bone_tissue_inventory(office_id,patient_name,procedure_date,product_name,identification_number) VALUES($1,'PH6 TEMP synthetic','2027-01-10','PH6 TEMP','PH6 TEMP') RETURNING id",[office])).rows[0].id;
+ await db.query('DELETE FROM bone_tissue_inventory WHERE id=$1',[record]);
+ const history=(await db.query('SELECT * FROM bone_tissue_audit_log WHERE record_id=$1 ORDER BY id',[record])).rows;
+ assert.equal(history.length,2);checks++;
+ await db.exec(undo);
+ assert.deepEqual((await db.query('SELECT * FROM bone_tissue_audit_log WHERE record_id=$1 ORDER BY id',[record])).rows,history);checks++;
+ assert.equal((await db.query("SELECT convalidated FROM pg_constraint WHERE conname='bone_tissue_audit_log_record_id_fkey'")).rows[0].convalidated,false);checks++;
+ await db.exec(fs.readFileSync(path.join(__dirname,'rollback/C-restore-audit-fk.sql'),'utf8'));
+ assert.deepEqual((await db.query('SELECT * FROM bone_tissue_audit_log WHERE record_id=$1 ORDER BY id',[record])).rows,history);checks++;
+ console.log(JSON.stringify({checks,passed:checks,productionConnected:false,postReleaseDeleteHistoryPreserved:true}));
+}finally{await db.close()}})().catch(e=>{console.log(JSON.stringify({result:'FAIL',code:e.code,message:String(e.message).slice(0,180)}));process.exitCode=1});
