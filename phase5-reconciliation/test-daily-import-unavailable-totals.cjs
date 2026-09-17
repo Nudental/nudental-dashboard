@@ -1,0 +1,11 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.join(__dirname,'../recovered-frontend'),deps=process.env.NDASH_PARSER_ROOT||root;
+const parser=require(path.join(deps,'node_modules/@babel/parser')),esbuild=require(path.join(deps,'node_modules/esbuild'));
+const source=fs.readFileSync(path.join(root,'src/pages/daily-entry-form/components/DailyBulkImportTab.jsx'),'utf8');
+function find(n,p){if(!n||typeof n!=='object')return;if(p(n))return n;for(const v of Object.values(n)){const r=find(v,p);if(r)return r}}
+const panel=find(parser.parse(source,{sourceType:'module',plugins:['jsx']}),n=>n.type==='LogicalExpression'&&n.operator==='&&'&&source.slice(n.left.start,n.left.end)==='wtdMtd || ytdData');
+const code=esbuild.transformSync('('+source.slice(panel.start,panel.end)+')',{loader:'jsx',jsxFactory:'React.createElement'}).code;
+function text(ytdData){const tree=vm.runInNewContext(code,{React:{createElement:(type,props,...children)=>({type,props,children})},Icon:'icon',wtdMtd:{wtd:{production:12,collection:9},mtd:{production:12,collection:9}},ytdData,formatCurrency:n=>'$'+Number(n||0).toFixed(2)});function words(x){return Array.isArray(x)?x.map(words).join(' '):x&&typeof x==='object'?words(x.children):typeof x==='string'||typeof x==='number'?String(x):''}return words(tree).replace(/\s+/g,' ').trim()}
+for(const [label,value] of [['null',null],['undefined',undefined],['missing payload',{}]])test('Unavailable '+label+' YTD is not reported as zero',()=>{const s=text(value);assert.match(s,/Year-to-date totals unavailable/);assert.doesNotMatch(s,/\$0\.00|Rate|%/)});
+test('Supported YTD numeric values and genuine zero are retained',()=>{assert.match(text({ytd:{production:100,collection:80,collectionRate:80}}),/\$100\.00.*\$80\.00.*80 %/);assert.match(text({ytd:{production:0,collection:0,collectionRate:0}}),/\$0\.00.*\$0\.00.*0 %/)});
+test('Legacy imports do not claim to refresh official dashboards',()=>{const s=text(null);assert.match(s,/Legacy Totals/);assert.match(s,/Official Dentrix totals unchanged/);assert.doesNotMatch(s,/All dashboards refreshed|Live Totals Recalculated/)});

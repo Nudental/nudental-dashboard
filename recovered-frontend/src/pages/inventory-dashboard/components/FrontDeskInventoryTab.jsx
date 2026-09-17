@@ -8,6 +8,7 @@ import FrontDeskRequestHistory from './FrontDeskRequestHistory';
 import FrontDeskCurrentInventory from './FrontDeskCurrentInventory';
 import FrontDeskAmazonOrderHistory from './FrontDeskAmazonOrderHistory';
 import useRolePermissions from '../../../hooks/useRolePermissions';
+import { dashboardEnvironment } from '../../../config/dashboardEnvironment';
 
 const OFFICES = frontDeskInventoryService?.getOffices();
 const CATEGORIES = frontDeskInventoryService?.getCategories();
@@ -1030,8 +1031,15 @@ const FD_STATUS_BADGE = {
 
 const FD_REVIEW_STATUSES = ['submitted', 'under_review', 'approved', 'rejected', 'partially_fulfilled', 'fulfilled'];
 
+const canReviewFrontDeskBatch = (profile, batch, isQa, legacyCanReview) => isQa
+  ? !!(profile?.id && batch?.requested_by && profile.id !== batch.requested_by
+    && ['super_admin', 'admin', 'regional_manager'].includes(profile?.role))
+  : legacyCanReview;
+
 const FrontDeskRequestReview = ({ isAdmin, isRCM }) => {
   const OFFICES = frontDeskInventoryService?.getOffices();
+  const { userProfile } = useAuth();
+  const canReview = batch => canReviewFrontDeskBatch(userProfile, batch, dashboardEnvironment.isQa, isAdmin || isRCM);
 
   const [view, setView] = useState('list'); // 'list' | 'detail'
   const [batches, setBatches] = useState([]);
@@ -1087,6 +1095,7 @@ const FrontDeskRequestReview = ({ isAdmin, isRCM }) => {
 
   const handleRCMAction = async (batchId, status, notes = '') => {
     try {
+      if (!canReview(selectedBatch)) throw new Error('Regional Manager/Admin review required; self-review is not allowed.');
       await supplyRequestService?.updateBatchStatus(batchId, status, notes);
       setSuccess(`Request ${status?.replace(/_/g, ' ')}`);
       setTimeout(() => setSuccess(''), 3000);
@@ -1229,7 +1238,7 @@ const FrontDeskRequestReview = ({ isAdmin, isRCM }) => {
       </div>
 
       {/* Regional Manager Review actions — only when actionable */}
-      {(isAdmin || isRCM) && ['submitted', 'under_review']?.includes(selectedBatch?.batch_status) && (
+      {canReview(selectedBatch) && ['submitted', 'under_review']?.includes(selectedBatch?.batch_status) && (
         <div className="bg-card border border-border rounded-2xl p-5 space-y-4">
           <div className="flex items-center gap-2">
             <h4 className="text-sm font-semibold text-foreground">Regional Manager Review</h4>
@@ -1440,7 +1449,7 @@ const FrontDeskRequestReview = ({ isAdmin, isRCM }) => {
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-lg text-xs font-semibold hover:bg-primary/20 transition-colors"
                       >
                         <Icon name="Eye" size={12} />
-                        {(isAdmin || isRCM) && ['submitted', 'under_review']?.includes(b?.batch_status) ? 'Review' : 'View'}
+                        {canReview(b) && ['submitted', 'under_review']?.includes(b?.batch_status) ? 'Review' : 'View'}
                       </button>
                     </td>
                   </tr>
@@ -1578,6 +1587,14 @@ const FrontDeskInventoryTab = () => {
 
   const criticalItems = items?.filter(i => i?.status === 'Critically Low' || i?.status === 'Out of Stock');
 
+  const refreshSummary = async () => {
+    try {
+      setSummary(await frontDeskInventoryService?.fetchSummary(selectedOffice, selectedMonth));
+    } catch {
+      setError('Item saved, but the summary could not refresh. Reload the page to retry.');
+    }
+  };
+
   const handleQtySave = async (id, qty) => {
     try {
       await frontDeskInventoryService?.updateQty(id, qty);
@@ -1589,6 +1606,7 @@ const FrontDeskInventoryTab = () => {
         else if (qty <= i?.min_required) newStatus = 'Low';
         return { ...i, current_qty: qty, status: newStatus };
       }));
+      await refreshSummary();
       showToast('Quantity updated');
     } catch (err) {
       setError(err?.message || 'Failed to update quantity');
@@ -1599,6 +1617,7 @@ const FrontDeskInventoryTab = () => {
     try {
       const updated = await frontDeskInventoryService?.updateRow(id, updates);
       setItems(prev => prev?.map(i => i?.id === id ? { ...i, ...updated } : i));
+      await refreshSummary();
       showToast('Item updated');
     } catch (err) {
       setError(err?.message || 'Failed to update item');
@@ -1609,6 +1628,7 @@ const FrontDeskInventoryTab = () => {
     try {
       const newItem = await frontDeskInventoryService?.insertRow(rowData);
       setItems(prev => [...prev, newItem]);
+      await refreshSummary();
       showToast('Item added successfully');
     } catch (err) {
       throw err;
@@ -1712,7 +1732,7 @@ const FrontDeskInventoryTab = () => {
 
       // ── Fire order-request-notifications edge function (Front Desk → ny@thenudental.com, CC admasu@thenudental.com) ──
       let emailNotifError = null;
-      try {
+      if (!dashboardEnvironment.isQa) try {
         const { data: profile } = await supabase?.from('user_profiles')?.select('full_name')?.eq('id', user?.id)?.single();
         const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL;
         const supabaseAnonKey = import.meta.env?.VITE_SUPABASE_ANON_KEY;

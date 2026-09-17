@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Icon from '../../../components/AppIcon';
 import { fetchTreatmentPlanCompletion } from '../../../services/eodTreatmentService';
-import { OFFICE_LIST, getOfficeNameById } from '../../../constants/offices';
+import { getOfficeNameById } from '../../../constants/offices';
 import { useOffice } from '../../../contexts/OfficeContext';
 import {
   safeDisplayNum,
@@ -109,7 +109,7 @@ const Td = ({ children, bold = false }) => (
 );
 
 const TreatmentPlanCompletionTab = ({ selectedOfficeId: propOfficeId, selectedDate: propDate }) => {
-  const { canSwitchOffice, selectedOfficeId: ctxOfficeId } = useOffice();
+  const { offices = [], canSwitchOffice, selectedOfficeId: ctxOfficeId } = useOffice();
 
   // Default planned period: Jan 2026 for initial QA
   const [localOfficeId, setLocalOfficeId] = useState(propOfficeId || ctxOfficeId || '');
@@ -163,7 +163,7 @@ const TreatmentPlanCompletionTab = ({ selectedOfficeId: propOfficeId, selectedDa
   const byCompletingProvider = data?.by_completing_provider || [];
   const byCategory = data?.by_category || [];
   const warnings = data?.warnings || [];
-  const officeName = getOfficeNameById(localOfficeId) || localOfficeId;
+  const officeName = offices?.find(o => o?.id === localOfficeId)?.name || getOfficeNameById(localOfficeId) || localOfficeId;
 
   return (
     <div className="space-y-4">
@@ -197,7 +197,7 @@ const TreatmentPlanCompletionTab = ({ selectedOfficeId: propOfficeId, selectedDa
               >
                 <option value="">Select office…</option>
                 <option value="__all__">All Offices</option>
-                {OFFICE_LIST?.map(o => (
+                {offices?.map(o => (
                   <option key={o?.id} value={o?.id}>{o?.name}</option>
                 ))}
               </select>

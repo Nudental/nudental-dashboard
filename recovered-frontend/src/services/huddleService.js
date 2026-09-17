@@ -47,6 +47,11 @@ export const huddleService = {
         created_by: userId,
       })?.select()?.single();
 
+    if (createError?.code === '23505') {
+      const { data: concurrentHuddle, error: retryError } = await supabase?.from('huddles')?.select('*')?.eq('office_id', officeId)?.eq('huddle_date', date)?.maybeSingle();
+      if (retryError) throw retryError;
+      if (concurrentHuddle) return concurrentHuddle;
+    }
     if (createError) throw createError;
 
     // Create default provider blocks — 2 doctor + 2 hygienist (block_order 1–4)
@@ -90,11 +95,13 @@ export const huddleService = {
     const { data: blocks } = await supabase?.from('huddle_provider_blocks')?.select('*')?.eq('huddle_id', huddleId)?.order('block_order');
 
     const { data: checklist } = await supabase?.from('huddle_checklist_items')?.select('*')?.eq('huddle_id', huddleId)?.order('item_number');
+    const { data: linkedTasks } = await supabase?.from('action_items')?.select('checklist_item_id')?.eq('huddle_id', huddleId);
+    const taskItemIds = new Set((linkedTasks || []).map(task => task.checklist_item_id));
 
     return {
       ...huddle,
       providerBlocks: blocks || [],
-      checklistItems: checklist || [],
+      checklistItems: (checklist || []).map(item => ({ ...item, has_task: taskItemIds.has(item.id) })),
     };
   },
 
@@ -135,7 +142,7 @@ export const huddleService = {
         submitted_by: userId,
         submitted_at: new Date()?.toISOString(),
         updated_at: new Date()?.toISOString(),
-      })?.eq('id', huddleId)?.select('*, offices(name)')?.single();
+      })?.eq('id', huddleId)?.in('status', ['unlocked', 'draft'])?.select('*, offices(name)')?.single();
     if (error) throw error;
 
     await supabase?.from('huddle_audit_log')?.insert({

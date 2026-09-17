@@ -1,0 +1,10 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const parser=require(path.join(process.env.NDASH_PARSER_ROOT||path.join(__dirname,'../recovered-frontend'),'node_modules/@babel/parser'));
+const source=fs.readFileSync(path.join(__dirname,'../recovered-frontend/src/services/dailyEntryBulkImportService.js'),'utf8');
+const node=parser.parse(source,{sourceType:'module'}).program.body.find(n=>n.type==='FunctionDeclaration'&&n.id.name==='formatDateDisplay');
+const format=vm.runInNewContext('('+source.slice(node.start,node.end)+')',{console:{warn(){}}});
+test('Preview displays the selected synthetic entry date',()=>assert.equal(format('2027-02-10'),'02/10/2027'));
+test('Year-boundary imported dates do not shift to the previous day',()=>assert.equal(format('2027-01-01'),'01/01/2027'));
+test('Leap-day date is preserved for reconciliation display',()=>assert.equal(format('2028-02-29'),'02/29/2028'));
+test('Missing dates have a visible fallback',()=>{for(const value of [null,undefined,''])assert.equal(format(value),'—')});
+test('Existing readable date text is preserved',()=>assert.equal(format('2/10/2027'),'2/10/2027'));

@@ -1,0 +1,19 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.resolve(__dirname,'../recovered-frontend');const parser=require(path.join(process.env.NDASH_PARSER_ROOT||root,'node_modules/@babel/parser'));
+const source=fs.readFileSync(path.join(root,'src/pages/huddle-approvals/index.jsx'),'utf8');
+function find(n,p){if(!n||typeof n!=='object')return;if(p(n))return n;for(const v of Object.values(n)){const r=find(v,p);if(r)return r}}
+const ast=parser.parse(source,{sourceType:'module',plugins:['jsx']});
+function setup(action,status,{denied=false,missing=false}={}){
+ const node=find(ast,n=>n.type==='VariableDeclarator'&&n.id.name===`handle${action}`).init;
+ const s={row:{id:'qa-huddle',status,approved_at:status==='approved'?'2026-09-15T12:00:00Z':null},writes:0,history:[],success:[],errors:[],loading:false,refreshes:0};
+ const db={from(table){return{update(payload){const filters={};let single=false;const q={eq(k,v){filters[k]=v;return q},select(){return q},single(){single=true;return q},then(resolve,reject){if(denied)return Promise.resolve({error:{code:'42501',message:'QA permission denied'}}).then(resolve,reject);const matches=!missing&&Object.entries(filters).every(([k,v])=>s.row[k]===v);if(!matches)return Promise.resolve(single?{data:null,error:{code:'PGRST116',message:'No matching QA Huddle'}}:{data:null,error:null}).then(resolve,reject);s.writes++;Object.assign(s.row,payload);return Promise.resolve({data:{...s.row},error:null}).then(resolve,reject)}};return q},async insert(payload){assert.equal(table,'huddle_audit_log');s.history.push(payload);return{error:null}}}}};
+ const context={userProfile:{id:'qa-reviewer'},supabase:db,setActionLoading:v=>s.loading=v,success:(...x)=>s.success.push(x),toastError:(...x)=>s.errors.push(x),fetchHuddles:()=>s.refreshes++};context['set'+action+'Target']=v=>s.closed=v===null;
+ const handler=vm.runInNewContext('('+source.slice(node.start,node.end)+')',context);s.run=()=>handler({id:'qa-huddle',status:'submitted',offices:{name:'QA / Office A'}},'QA TEMP review reason');return s;
+}
+for(const action of ['Reject','Unlock']){
+ for(const status of ['approved','rejected','unlocked','draft'])test(`stale ${action} preserves newer ${status} state and history`,async()=>{const s=setup(action,status),before=JSON.stringify(s.row);await s.run();assert.equal(JSON.stringify(s.row),before);assert.equal(s.writes,0);assert.equal(s.history.length,0);assert.equal(s.success.length,0);assert.equal(s.errors.length,1);assert.match(s.errors[0][1],/Refresh and review/);assert.equal(s.loading,false)});
+ test(`two ${action} reviewers save one state change and audit`,async()=>{const s=setup(action,'submitted');await Promise.all([s.run(),s.run()]);assert.equal(s.writes,1);assert.equal(s.history.length,1);assert.equal(s.success.length,1);assert.equal(s.errors.length,1)});
+ test(`${action} cannot report success for missing or invisible record`,async()=>{const s=setup(action,'submitted',{missing:true});await s.run();assert.equal(s.writes,0);assert.equal(s.history.length,0);assert.equal(s.success.length,0);assert.equal(s.errors.length,1)});
+ test(`authorized ${action} retains reason, actor and normal UI completion`,async()=>{const s=setup(action,'submitted');await s.run();assert.equal(s.row.status,action==='Reject'?'rejected':'unlocked');assert.equal(s.history[0].reason,'QA TEMP review reason');assert.equal(s.history[0].changed_by,'qa-reviewer');assert.equal(s.success.length,1);assert.equal(s.closed,true);assert.equal(s.refreshes,1);assert.equal(s.loading,false)});
+ test(`${action} permission denial preserves state and history`,async()=>{const s=setup(action,'submitted',{denied:true});await s.run();assert.equal(s.writes,0);assert.equal(s.history.length,0);assert.equal(s.success.length,0);assert.equal(s.errors.length,1)});
+}

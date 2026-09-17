@@ -2,14 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Icon from '../../../components/AppIcon';
 import { supabase } from '../../../lib/supabase';
 import { useAuth } from '../../../contexts/AuthContext';
+import { frontDeskInventoryService } from '../../../services/frontDeskInventoryService';
 
-const OFFICES = [
-  'All Offices',
-  'Nu Dental of Eatontown',
-  'Nu Dental of Brick',
-  'Nu Dental of Barnegat',
-  'Nu Dental of Staten Island',
-];
+const OFFICES = ['All Offices', ...frontDeskInventoryService.getOffices()];
 
 const CATEGORIES = [
   'All',
@@ -379,12 +374,6 @@ const FrontDeskAmazonOrderHistory = () => {
         new_values: { amazon_order_status: 'Closed' },
         changed_by: changedBy,
         changed_at: now,
-        metadata: {
-          order_id: r?.order_id || null,
-          item_name: r?.item_name || null,
-          office_location: r?.office_location || null,
-          note: 'Amazon status manually marked Closed in dashboard; does not indicate office receipt.',
-        },
       }));
 
       const { error: auditErr } = await supabase

@@ -107,6 +107,7 @@ export default function NewVerificationRequestForm({ onSuccess }) {
     if (!form?.patientLastName?.trim()) errs.patientLastName = 'Required';
     if (!form?.patientDob) errs.patientDob = 'Required';
     if (!form?.appointmentDate) errs.appointmentDate = 'Required';
+    if (!form?.appointmentTime) errs.appointmentTime = 'Required';
     if (!form?.insuranceCompanyName?.trim()) errs.insuranceCompanyName = 'Required';
     if (!form?.memberId?.trim()) errs.memberId = 'Required';
     if (!form?.insurancePhone?.trim()) errs.insurancePhone = 'Required';
@@ -294,13 +295,14 @@ export default function NewVerificationRequestForm({ onSuccess }) {
             />
             {errors?.appointmentDate && <p className="text-xs text-red-500">{errors?.appointmentDate}</p>}
           </Field>
-          <Field label="Appointment Time">
+          <Field label="Appointment Time" required>
             <input
               type="time"
               value={form?.appointmentTime}
               onChange={(e) => set('appointmentTime', e?.target?.value)}
-              className={inputCls}
+              className={`${inputCls} ${errors?.appointmentTime ? 'border-red-400' : ''}`}
             />
+            {errors?.appointmentTime && <p className="text-xs text-red-500">{errors?.appointmentTime}</p>}
           </Field>
         </div>
       </div>

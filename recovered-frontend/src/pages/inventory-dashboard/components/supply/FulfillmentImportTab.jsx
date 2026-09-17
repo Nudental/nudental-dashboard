@@ -2,9 +2,10 @@ import React, { useState, useRef, useCallback } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import Icon from '../../../../components/AppIcon';
-import supplyRequestService from '../../../../services/supplyRequestService';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { supabase } from '../../../../lib/supabase';
+import { dashboardEnvironment } from '../../../../config/dashboardEnvironment';
+import { fulfillmentFileKey, importFulfillmentRow } from '../../../../services/fulfillmentImportService';
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -423,6 +424,7 @@ const FulfillmentImportTab = ({ onImportComplete }) => {
 
   const [step, setStep] = useState('upload'); // upload | preview | importing | done
   const [fileName, setFileName] = useState('');
+  const [fileKey, setFileKey] = useState('');
   const [rows, setRows] = useState([]);
   const [rowErrors, setRowErrors] = useState({});
   const [parseError, setParseError] = useState('');
@@ -442,9 +444,11 @@ const FulfillmentImportTab = ({ onImportComplete }) => {
     setRows([]);
     setRowErrors({});
     setFileName(file?.name);
+    setFileKey('');
     setUnmatchedReceivedByCount(0);
 
     try {
+      const nextFileKey = dashboardEnvironment.isQa ? await fulfillmentFileKey(file) : '';
       const parsed = await parseFile(file);
       if (!parsed?.length) {
         setParseError('No data rows found in the file. Please check the file and try again.');
@@ -455,13 +459,14 @@ const FulfillmentImportTab = ({ onImportComplete }) => {
       const profiles = await fetchUserProfiles();
 
       // Attach _mapped and resolve Received By for each row
-      const enriched = parsed?.map((row) => {
+      const enriched = parsed?.map((row, sourceIndex) => {
         const mapped = row;
         const rawReceivedBy = safeStr(mapped?.['Received By']);
         const resolution = resolveReceivedBy(rawReceivedBy, profiles);
         return {
           ...row,
           _mapped: mapped,
+          _sourceIndex: sourceIndex,
           _receivedByStatus: resolution?.status,
           _receivedByUuid: resolution?.uuid,
           _receivedByResolvedName: resolution?.resolvedName,
@@ -481,6 +486,7 @@ const FulfillmentImportTab = ({ onImportComplete }) => {
       });
 
       setRows(enriched);
+      setFileKey(nextFileKey);
       setRowErrors(errors);
       setStep('preview');
     } catch (err) {
@@ -497,14 +503,16 @@ const FulfillmentImportTab = ({ onImportComplete }) => {
     setStep('importing');
 
     let successCount = 0;
+    let duplicateCount = 0;
     let failedCount = 0;
     const failedDetails = [];
 
     for (const row of validRows) {
       try {
         const payload = mapRowToPayload(row);
-        await supplyRequestService?.createFulfillmentLog(payload);
-        successCount++;
+        const result = await importFulfillmentRow(payload, fileKey, row._sourceIndex);
+        if (result.alreadyImported) duplicateCount++;
+        else successCount++;
       } catch (err) {
         failedCount++;
         failedDetails?.push(err?.message || 'Unknown error');
@@ -521,6 +529,7 @@ const FulfillmentImportTab = ({ onImportComplete }) => {
           file_name: fileName,
           row_count: rows?.length,
           success_count: successCount,
+          ...(dashboardEnvironment.isQa ? { duplicate_count: duplicateCount } : {}),
           failed_count: failedCount + invalidRows?.length,
           imported_by: userProfile?.id || userProfile?.email || 'unknown',
           imported_at: new Date()?.toISOString(),
@@ -534,6 +543,7 @@ const FulfillmentImportTab = ({ onImportComplete }) => {
 
     setImportResult({
       successCount,
+      duplicateCount,
       failedCount: failedCount + invalidRows?.length,
       skippedCount: invalidRows?.length,
       insertFailedCount: failedCount,
@@ -550,6 +560,7 @@ const FulfillmentImportTab = ({ onImportComplete }) => {
   const handleReset = () => {
     setStep('upload');
     setFileName('');
+    setFileKey('');
     setRows([]);
     setRowErrors({});
     setParseError('');
@@ -753,8 +764,8 @@ const FulfillmentImportTab = ({ onImportComplete }) => {
   // ── Done Step ──────────────────────────────────────────────────────────────
 
   if (step === 'done' && importResult) {
-    const { successCount, skippedCount, insertFailedCount } = importResult;
-    const allGood = successCount > 0 && insertFailedCount === 0;
+    const { successCount, duplicateCount, skippedCount, insertFailedCount } = importResult;
+    const allGood = (successCount > 0 || duplicateCount > 0) && insertFailedCount === 0;
 
     return (
       <div className="space-y-4">
@@ -767,6 +778,9 @@ const FulfillmentImportTab = ({ onImportComplete }) => {
               </p>
               <div className="mt-2 space-y-1 text-sm">
                 <p className="text-emerald-700 font-semibold">✓ {successCount} record{successCount !== 1 ? 's' : ''} imported successfully</p>
+                {duplicateCount > 0 && (
+                  <p className="text-blue-700">{duplicateCount} record{duplicateCount !== 1 ? 's' : ''} already imported from this file; no duplicate created.</p>
+                )}
                 {skippedCount > 0 && (
                   <p className="text-amber-700">⚠ {skippedCount} row{skippedCount !== 1 ? 's' : ''} skipped (validation errors)</p>
                 )}

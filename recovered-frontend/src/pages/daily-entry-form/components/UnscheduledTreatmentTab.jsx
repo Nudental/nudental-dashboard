@@ -1,7 +1,9 @@
+import { dashboardFetch as fetch } from '../../../lib/dashboardFetch';
+import { DASHBOARD_API_ORIGIN } from '../../../config/dashboardEnvironment';
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
 import { fetchUnscheduledTreatment } from '../../../services/eodTreatmentService';
-import { OFFICE_LIST, getOfficeNameById } from '../../../constants/offices';
+import { getOfficeNameById } from '../../../constants/offices';
 import { useOffice } from '../../../contexts/OfficeContext';
 import { supabase } from '../../../lib/supabase';
 import {
@@ -13,7 +15,7 @@ import {
 } from '../../../services/eodReportService';
 
 const NA = '—';
-const API_BASE = 'https://api.nudashboard.com/v2';
+const API_BASE = DASHBOARD_API_ORIGIN + "/v2";
 const API_KEY = import.meta.env?.VITE_ASCEND_API_KEY || '';
 
 const buildHeaders = () => ({
@@ -1124,7 +1126,7 @@ const WorkflowSummarySection = ({ workflowSummary }) => {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 const UnscheduledTreatmentTab = ({ selectedOfficeId: propOfficeId, selectedDate: propDate }) => {
-  const { canSwitchOffice, selectedOfficeId: ctxOfficeId } = useOffice();
+  const { offices = [], canSwitchOffice, selectedOfficeId: ctxOfficeId } = useOffice();
 
   const getTodayStr = () => new Date()?.toISOString()?.split('T')?.[0];
 
@@ -1198,7 +1200,7 @@ const UnscheduledTreatmentTab = ({ selectedOfficeId: propOfficeId, selectedDate:
   const pagination = data?.pagination;
   const warnings = data?.warnings || [];
   const sourceFreshness = data?.source_freshness;
-  const officeName = getOfficeNameById(localOfficeId) || localOfficeId;
+  const officeName = offices?.find(o => o?.id === localOfficeId)?.name || getOfficeNameById(localOfficeId) || localOfficeId;
 
   // Client-side workflow filter
   const patients = useMemo(() => {
@@ -1259,7 +1261,7 @@ const UnscheduledTreatmentTab = ({ selectedOfficeId: propOfficeId, selectedDate:
                 className="w-full px-3 py-2 border border-border rounded-lg bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="">Select office…</option>
-                {OFFICE_LIST?.map(o => (
+                {offices?.map(o => (
                   <option key={o?.id} value={o?.id}>{o?.name}</option>
                 ))}
               </select>

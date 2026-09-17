@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
+import { dashboardEnvironment } from '../config/dashboardEnvironment';
 
-const OFFICES = [
+const OFFICES = dashboardEnvironment.isQa ? ['QA / Office A', 'QA / Office B'] : [
   'Nu Dental of Eatontown',
   'Nu Dental of Brick',
   'Nu Dental of Barnegat',
@@ -73,7 +74,7 @@ export const frontDeskInventoryService = {
   async updateRow(id, updates) {
     const { data, error } = await supabase
       ?.from('front_desk_inventory')
-      ?.update({ ...updates, updated_at: new Date()?.toISOString() })
+      ?.update({ ...updates, ...(updates?.last_supplied_date === '' ? { last_supplied_date: null } : {}), updated_at: new Date()?.toISOString() })
       ?.eq('id', id)
       ?.select()
       ?.single();

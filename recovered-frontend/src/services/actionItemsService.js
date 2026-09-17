@@ -201,10 +201,13 @@ export const actionItemsService = {
         ? buildLifecyclePayload(newStatus, actorId, existingTask)
         : {};
 
-      const { data, error } = await supabase
+      let query = supabase
         ?.from('action_items')
         ?.update({ ...updates, ...lifecyclePayload, updated_at: new Date()?.toISOString() })
-        ?.eq('id', itemId)
+        ?.eq('id', itemId);
+      // A stale view must not repeat or overwrite a transition completed elsewhere.
+      if (previousStatus) query = query?.eq('task_status', previousStatus);
+      const { data, error } = await query
         ?.select(`
           *,
           assigned_owner:user_profiles!action_items_assigned_owner_id_fkey(id, full_name, email),

@@ -5,7 +5,7 @@ import TouchDropdown from '../../../components/ui/TouchDropdown';
 import MobileDatePicker from '../../../components/ui/MobileDatePicker';
 import NumericKeypad from '../../../components/ui/NumericKeypad';
 import { offlineQueueService } from '../../../services/offlineQueueService';
-import { createInventoryRecord, updateInventoryRecord, deductStockForItem } from '../../../services/boneTissueService';
+import { createInventoryRecord, updateInventoryRecord } from '../../../services/boneTissueService';
 
 const TYPES = ['Bone', 'Tissue', 'Membrane', 'PRF', 'Other'];
 const STATUSES = ['In Stock', 'Used', 'Wasted', 'Returned'];
@@ -67,7 +67,7 @@ const MobileEntryModal = ({ record, offices, providers, staff, userId, isSuperAd
   });
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
-  const [scanMode, setScanMode] = useState(true);
+  const [scanMode, setScanMode] = useState(false);
   const [toast, setToast] = useState('');
 
   const touchStartY = useRef(0);
@@ -123,12 +123,7 @@ const MobileEntryModal = ({ record, offices, providers, staff, userId, isSuperAd
         return;
       }
 
-      const wasUsedBefore = isEdit && record?.item_status === 'Used';
-      const isNowUsed = form?.item_status === 'Used';
-      if (isNowUsed && !wasUsedBefore && form?.identification_number?.trim()) {
-        try { await deductStockForItem(form?.identification_number?.trim(), form?.office_id); } catch (_) {}
-      }
-
+      // The existing database trigger deducts stock in the save transaction.
       if (isEdit) {
         await updateInventoryRecord(record?.id, payload);
       } else {

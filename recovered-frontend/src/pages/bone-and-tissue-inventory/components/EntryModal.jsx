@@ -11,7 +11,6 @@ import {
   uploadAttachment,
   getAttachmentUrl,
   fetchStockByItem,
-  deductStockForItem,
 } from '../../../services/boneTissueService';
 
 const TYPES = ['Bone', 'Tissue', 'Membrane', 'PRF', 'Other'];
@@ -332,17 +331,7 @@ const EntryModal = ({
         ...(isEdit ? {} : { created_by: userId }),
       };
 
-      // Auto-deduct stock when status is 'Used'
-      const wasUsedBefore = isEdit && record?.item_status === 'Used';
-      const isNowUsed = form?.item_status === 'Used';
-      if (isNowUsed && !wasUsedBefore && form?.identification_number?.trim()) {
-        try {
-          await deductStockForItem(form?.identification_number?.trim(), form?.office_id);
-        } catch (stockErr) {
-          console.error('Stock deduction failed:', stockErr);
-        }
-      }
-
+      // The existing database trigger deducts stock in the save transaction.
       if (isEdit) {
         await updateInventoryRecord(record?.id, payload);
       } else {

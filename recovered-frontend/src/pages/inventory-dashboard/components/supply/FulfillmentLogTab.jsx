@@ -16,15 +16,25 @@ const STATUS_CONFIG = {
 
 const CreateFulfillmentModal = ({ onClose, onSaved, departments }) => {
   const { userProfile } = useAuth();
+  const today = new Date();
   const [form, setForm] = useState({
     office_id: '', request_type: 'monthly', item_name: '', item_id: '',
     department_id: '', qty_requested: 0, qty_approved: 0, qty_supplied: 1,
-    date_supplied: new Date()?.toISOString()?.split('T')?.[0],
+    date_supplied: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`,
     delivery_method: '', tracking_notes: '', received_by: '',
     date_received: '', log_fulfillment_status: 'completed',
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [recipients, setRecipients] = useState([]);
+
+  useEffect(() => {
+    let mounted = true;
+    supplyRequestService.fetchFulfillmentRecipients()
+      .then(data => { if (mounted) setRecipients(data); })
+      .catch(() => { if (mounted) setError('Unable to load receiving users. Close and reopen this form to try again.'); });
+    return () => { mounted = false; };
+  }, []);
 
   const OFFICES = supplyRequestService?.getOffices();
   const setField = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
@@ -106,9 +116,12 @@ const CreateFulfillmentModal = ({ onClose, onSaved, departments }) => {
                 className="w-full px-3 py-2 border border-border rounded-xl text-sm bg-background focus:outline-none" />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Received By</label>
-              <input type="text" value={form?.received_by} onChange={e => setField('received_by', e?.target?.value)}
-                className="w-full px-3 py-2 border border-border rounded-xl text-sm bg-background focus:outline-none" />
+              <label htmlFor="fulfillment-received-by" className="block text-xs font-semibold text-muted-foreground mb-1.5">Received By</label>
+              <select id="fulfillment-received-by" value={form?.received_by} onChange={e => setField('received_by', e?.target?.value)}
+                className="w-full px-3 py-2 border border-border rounded-xl text-sm bg-background focus:outline-none">
+                <option value="">Not recorded</option>
+                {recipients.map(recipient => <option key={recipient.id} value={recipient.id}>{recipient.full_name}</option>)}
+              </select>
             </div>
             <div>
               <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Date Received</label>
@@ -323,7 +336,7 @@ const FulfillmentLogTab = ({ isAdmin, isRCM }) => {
                             <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${sCfg?.color}`}>{sCfg?.label}</span>
                           </td>
                           <td className="py-2.5 px-3">
-                            {isMobile && r?.log_fulfillment_status !== 'completed' && r?.log_fulfillment_status !== 'cancelled' && (
+                            {(isAdmin || isRCM) && isMobile && r?.log_fulfillment_status !== 'completed' && r?.log_fulfillment_status !== 'cancelled' && (
                               <button
                                 onClick={() => setMobileReceiveLog(r)}
                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-semibold hover:bg-emerald-700 whitespace-nowrap"
@@ -347,7 +360,7 @@ const FulfillmentLogTab = ({ isAdmin, isRCM }) => {
               onSaved={() => { setShowCreate(false); setSuccess('Fulfillment record created!'); setTimeout(() => setSuccess(''), 3000); load(); }}
             />
           )}
-          {mobileReceiveLog && (
+          {(isAdmin || isRCM) && mobileReceiveLog && (
             <MobileReceiveSuppliesModal
               fulfillmentBatch={mobileReceiveLog}
               onClose={() => setMobileReceiveLog(null)}

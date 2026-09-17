@@ -4,6 +4,7 @@ import Icon from '../../../../components/AppIcon';
 import supplyRequestService from '../../../../services/supplyRequestService';
 import { useAuth } from '../../../../contexts/AuthContext';
 import MobileUrgentRequestModal from './MobileUrgentRequestModal';
+import { dashboardEnvironment } from '../../../../config/dashboardEnvironment';
 
 const PRIORITY_CONFIG = {
   urgent: { label: 'Urgent', color: 'bg-orange-100 text-orange-700', border: 'border-orange-200' },
@@ -223,6 +224,8 @@ const UrgentRequestTab = ({ isAdmin, isRCM, prefillItem }) => {
   const [supplyItems, setSupplyItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [stockLoading, setStockLoading] = useState(false);
+  const [stockError, setStockError] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [officeFilter, setOfficeFilter] = useState('');
@@ -315,6 +318,37 @@ const UrgentRequestTab = ({ isAdmin, isRCM, prefillItem }) => {
 
   const setField = (key, val) => setForm(prev => ({ ...prev, [key]: val }));
 
+  useEffect(() => {
+    setStockError('');
+    if (view !== 'form' || !form?.office_id || !form?.item_id) {
+      setStockLoading(false);
+      if (view === 'form' && form?.item_id && !form?.office_id) {
+        setForm(prev => ({ ...prev, current_qty_on_hand: 0 }));
+      }
+      return;
+    }
+    let current = true;
+    setStockLoading(true);
+    setForm(prev => ({ ...prev, current_qty_on_hand: null }));
+    (async () => {
+      try {
+        const rows = await supplyRequestService.fetchInventory({ officeId: form.office_id, itemId: form.item_id });
+        if (!current) return;
+        const quantity = rows.length === 0 ? 0 : rows[0]?.quantity_on_hand;
+        if (rows.length > 1 || !Number.isInteger(quantity) || quantity < 0) throw new Error('Ambiguous office stock');
+        setForm(prev => ({ ...prev, current_qty_on_hand: quantity }));
+      } catch (_) {
+        if (current) {
+          setForm(prev => ({ ...prev, current_qty_on_hand: '' }));
+          setStockError('Could not load office stock. Enter the on-hand quantity manually.');
+        }
+      } finally {
+        if (current) setStockLoading(false);
+      }
+    })();
+    return () => { current = false; };
+  }, [view, form?.office_id, form?.item_id]);
+
   // Master search handlers
   const handleMasterSelectItem = ({ department_id, subsection_id, item_id, custom_item_name, current_qty_on_hand, unit_type }) => {
     setForm(prev => ({
@@ -343,13 +377,21 @@ const UrgentRequestTab = ({ isAdmin, isRCM, prefillItem }) => {
   };
 
   const handleSubmit = async () => {
+    if (stockLoading) return;
     if (!form?.office_id) { setError('Please select an office'); return; }
     if (!form?.custom_item_name && !form?.item_id) { setError('Please specify an item'); return; }
     if (!form?.reason) { setError('Please provide a reason'); return; }
+    if (form?.current_qty_on_hand === '' || form?.current_qty_on_hand == null
+      || !Number.isInteger(Number(form.current_qty_on_hand)) || Number(form.current_qty_on_hand) < 0) {
+      setError('Enter a nonnegative whole-number on-hand quantity'); return;
+    }
+    setError('');
     setSaving(true);
     try {
       await supplyRequestService?.createUrgentRequest(form);
-      setSuccess('Urgent request submitted! Regional Clinical Manager has been notified.');
+      setSuccess(dashboardEnvironment.isQa
+        ? 'Urgent request submitted. QA notification simulations recorded; no email or SMS was sent.'
+        : 'Urgent request submitted! Regional Clinical Manager has been notified.');
       setTimeout(() => setSuccess(''), 5000);
       setView('list');
       load();
@@ -480,8 +522,11 @@ const UrgentRequestTab = ({ isAdmin, isRCM, prefillItem }) => {
           </div>
           <div>
             <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Current Qty On Hand</label>
-            <input type="number" min="0" value={form?.current_qty_on_hand ?? 0} onChange={e => setField('current_qty_on_hand', parseInt(e?.target?.value) || 0)}
+            <input type="number" min="0" disabled={stockLoading} value={form?.current_qty_on_hand ?? ''}
+              onChange={e => { setField('current_qty_on_hand', e?.target?.value === '' ? '' : Number(e?.target?.value)); setStockError(''); }}
               className="w-full px-3 py-2 border border-border rounded-xl text-sm bg-background focus:outline-none" />
+            {stockLoading && <p className="text-xs text-muted-foreground mt-1">Checking office stock…</p>}
+            {stockError && <p role="alert" className="text-xs text-red-600 mt-1">{stockError}</p>}
           </div>
           <div>
             <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Requested Qty *</label>
@@ -519,7 +564,7 @@ const UrgentRequestTab = ({ isAdmin, isRCM, prefillItem }) => {
       </div>
       <div className="flex gap-3">
         <button onClick={() => setView('list')} className="px-5 py-2.5 border border-border rounded-xl text-sm font-semibold hover:bg-muted">Cancel</button>
-        <button onClick={handleSubmit} disabled={saving}
+        <button onClick={handleSubmit} disabled={saving || stockLoading}
           className="px-5 py-2.5 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700 disabled:opacity-50 flex items-center gap-2">
           <Icon name="AlertTriangle" size={14} />{saving ? 'Submitting...' : 'Submit Urgent Request'}
         </button>
@@ -544,14 +589,7 @@ const UrgentRequestTab = ({ isAdmin, isRCM, prefillItem }) => {
             </span>
           )}
         </div>
-        <button onClick={() => {
-            if (isMobile) {
-              setMobilePrefill(null);
-              setShowMobileModal(true);
-            } else {
-              setView('form');
-            }
-          }}
+        <button onClick={() => setView('form')}
           className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl text-sm font-semibold hover:bg-red-700">
           <Icon name="AlertTriangle" size={15} />New Urgent Request
         </button>
@@ -638,7 +676,9 @@ const UrgentRequestTab = ({ isAdmin, isRCM, prefillItem }) => {
             if (result?.offline) {
               setSuccess('Urgent request queued — will sync when back online');
             } else {
-              setSuccess('Urgent request submitted! Regional Clinical Manager has been notified.');
+              setSuccess(dashboardEnvironment.isQa
+                ? 'Urgent request submitted. QA notification simulations recorded; no email or SMS was sent.'
+                : 'Urgent request submitted! Regional Clinical Manager has been notified.');
               load();
             }
             setTimeout(() => setSuccess(''), 5000);

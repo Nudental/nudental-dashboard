@@ -10,16 +10,16 @@ import { format, parseISO } from 'date-fns';
 // ─── Send EOD rejection email to Office Manager ───────────────────────────────
 const sendRejectionEmail = async ({ entry, rejectionReason, rejectedByName }) => {
   try {
-    if (!entry?.submitted_by) return;
+    if (!entry?.submitted_by) return false;
     const { data: omProfile } = await supabase
       ?.from('user_profiles')
       ?.select('email, full_name')
       ?.eq('id', entry?.submitted_by)
       ?.maybeSingle();
-    if (!omProfile?.email) return;
+    if (!omProfile?.email) return false;
     const SUPABASE_URL = import.meta.env?.VITE_SUPABASE_URL;
     const SUPABASE_ANON_KEY = import.meta.env?.VITE_SUPABASE_ANON_KEY;
-    await fetch(`${SUPABASE_URL}/functions/v1/eod-rejection-notification`, {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/eod-rejection-notification`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
       body: JSON.stringify({
@@ -32,8 +32,12 @@ const sendRejectionEmail = async ({ entry, rejectionReason, rejectedByName }) =>
         entry_id: entry?.id,
       }),
     });
+    if (!response?.ok) return false;
+    const result = await response.json();
+    return result?.success === true && typeof result?.id === 'string' && result.id.trim().length > 0;
   } catch (err) {
     console.warn('[eod-rejection-email] Failed to send rejection email:', err?.message);
+    return false;
   }
 };
 
@@ -219,6 +223,8 @@ const PendingApprovalsPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
   const [actionLoading, setActionLoading] = useState(false);
+  const [bulkRejectOpen, setBulkRejectOpen] = useState(false);
+  const [bulkRejectReason, setBulkRejectReason] = useState('');
 
   // ─── Full-scope counts (independent of active status filter) ───────────────
   const [fullCounts, setFullCounts] = useState({
@@ -436,7 +442,7 @@ const PendingApprovalsPage = () => {
     try {
       const approverName = userProfile?.full_name || userProfile?.email || 'Unknown';
       const fromStatus = entry?.status;
-      const { error } = await supabase
+      const { data: updatedEntry, error } = await supabase
         ?.from('daily_entries')
         ?.update({
           status: 'approved',
@@ -448,8 +454,11 @@ const PendingApprovalsPage = () => {
           status_changed_by_name: approverName,
         })
         ?.eq('id', entry?.id)
-        ?.neq('status', 'approved');
+        ?.eq('status', fromStatus)
+        ?.select('id')
+        ?.maybeSingle();
       if (error) throw error;
+      if (!updatedEntry) throw new Error('This EOD report has changed. Refresh and review its current status.');
       await logStatusChange({
         entryId: entry?.id, fromStatus, toStatus: 'approved',
         changedBy: userProfile?.id, changerName: approverName, changerRole: userProfile?.role,
@@ -477,7 +486,7 @@ const PendingApprovalsPage = () => {
     try {
       const approverName = userProfile?.full_name || userProfile?.email || 'Unknown';
       const fromStatus = entry?.status;
-      const { error } = await supabase
+      const { data: updatedEntry, error } = await supabase
         ?.from('daily_entries')
         ?.update({
           status: 'rejected',
@@ -489,15 +498,19 @@ const PendingApprovalsPage = () => {
           status_changed_by: userProfile?.id,
           status_changed_by_name: approverName,
         })
-        ?.eq('id', entry?.id);
+        ?.eq('id', entry?.id)
+        ?.eq('status', fromStatus)
+        ?.select('id')
+        ?.maybeSingle();
       if (error) throw error;
+      if (!updatedEntry) throw new Error('This EOD report has changed. Refresh and review its current status.');
       await logStatusChange({
         entryId: entry?.id, fromStatus, toStatus: 'rejected',
         changedBy: userProfile?.id, changerName: approverName, changerRole: userProfile?.role,
         note, rejectionReason: note, eventType: 'rejection',
       });
-      await sendRejectionEmail({ entry, rejectionReason: note, rejectedByName: approverName });
-      success('Rejected', 'Entry rejected. Office Manager has been notified.');
+      const notificationAccepted = await sendRejectionEmail({ entry, rejectionReason: note, rejectedByName: approverName });
+      success('Rejected', `Entry rejected. ${notificationAccepted ? 'Notification request accepted.' : 'Notification could not be confirmed.'}`);
       setReviewEntry(null);
       setReviewNote('');
       fetchEntries();
@@ -525,7 +538,7 @@ const PendingApprovalsPage = () => {
     try {
       const actorName = userProfile?.full_name || userProfile?.email || 'Unknown';
       const entry = rejectAfterApprovalEntry;
-      const { error } = await supabase
+      const { data: updatedEntry, error } = await supabase
         ?.from('daily_entries')
         ?.update({
           status: 'rejected_after_approval',
@@ -537,8 +550,11 @@ const PendingApprovalsPage = () => {
           status_changed_by_name: actorName,
         })
         ?.eq('id', entry?.id)
-        ?.eq('status', 'approved');
+        ?.eq('status', 'approved')
+        ?.select('id')
+        ?.maybeSingle();
       if (error) throw error;
+      if (!updatedEntry) throw new Error('This EOD report has changed. Refresh and review its current status.');
       await logStatusChange({
         entryId: entry?.id, fromStatus: 'approved', toStatus: 'rejected_after_approval',
         changedBy: userProfile?.id, changerName: actorName, changerRole: userProfile?.role,
@@ -549,8 +565,8 @@ const PendingApprovalsPage = () => {
         oldValues: { status: 'approved', approved_by: entry?.approved_by, approved_at: entry?.approved_at },
         newValues: { status: 'rejected_after_approval', rejected_by: userProfile?.id },
       });
-      await sendRejectionEmail({ entry, rejectionReason: rejectAfterApprovalReason, rejectedByName: actorName });
-      success('Approval Reversed', 'Record changed to Rejected After Approval.');
+      const notificationAccepted = await sendRejectionEmail({ entry, rejectionReason: rejectAfterApprovalReason, rejectedByName: actorName });
+      success('Approval Reversed', `Record changed to Rejected After Approval. ${notificationAccepted ? 'Notification request accepted.' : 'Notification could not be confirmed.'}`);
       setShowRejectWarning(false);
       setRejectAfterApprovalEntry(null);
       setRejectAfterApprovalReason('');
@@ -609,12 +625,15 @@ const PendingApprovalsPage = () => {
       updatePayload.status_changed_by = userProfile?.id;
       updatePayload.status_changed_by_name = actorName;
 
-      const { error } = await supabase
+      const { data: updatedEntry, error } = await supabase
         ?.from('daily_entries')
         ?.update(updatePayload)
         ?.eq('id', entry?.id)
-        ?.eq('status', 'approved');
+        ?.eq('status', 'approved')
+        ?.select('id')
+        ?.maybeSingle();
       if (error) throw error;
+      if (!updatedEntry) throw new Error('This EOD report has changed. Refresh and review its current status.');
 
       await logStatusChange({
         entryId: entry?.id, fromStatus: 'approved', toStatus: 'pending_reapproval',
@@ -646,7 +665,9 @@ const PendingApprovalsPage = () => {
     setActionLoading(true);
     try {
       const approverName = userProfile?.full_name || userProfile?.email || 'Unknown';
-      const { error } = await supabase
+      const reviewedEntries = entries?.filter(entry => selectedIds?.includes(entry?.id) && ['pending', 'pending_review', 'pending_reapproval']?.includes(entry?.status)) || [];
+      if (!reviewedEntries?.length) throw new Error('These EOD reports have changed. Refresh and review their current status.');
+      const { data: updatedEntries, error } = await supabase
         ?.from('daily_entries')
         ?.update({
           status: 'approved',
@@ -657,17 +678,20 @@ const PendingApprovalsPage = () => {
           status_changed_by_name: approverName,
         })
         ?.in('id', selectedIds)
-        ?.neq('status', 'approved');
+        ?.or(reviewedEntries?.map(entry => `and(id.eq.${entry?.id},status.eq.${entry?.status})`)?.join(','))
+        ?.select('id');
       if (error) throw error;
-      await Promise.all(selectedIds?.map(id => {
-        const entry = entries?.find(e => e?.id === id);
+      if (!updatedEntries?.length) throw new Error('These EOD reports have changed. Refresh and review their current status.');
+      await Promise.all(updatedEntries?.map(({ id }) => {
+        const entry = reviewedEntries?.find(e => e?.id === id);
         return logStatusChange({
           entryId: id, fromStatus: entry?.status, toStatus: 'approved',
           changedBy: userProfile?.id, changerName: approverName, changerRole: userProfile?.role,
           note: 'Bulk approval', eventType: 'bulk_approval',
         });
       }));
-      success('Bulk Approved', `${selectedIds?.length} EOD reports approved.`);
+      const skipped = selectedIds?.length - updatedEntries?.length;
+      success('Bulk Approved', `${updatedEntries?.length} EOD report${updatedEntries?.length === 1 ? '' : 's'} approved.${skipped ? ` ${skipped} skipped because they changed; refresh and review them.` : ''}`);
       setSelectedIds([]);
       fetchEntries();
       fetchFullCounts();
@@ -681,12 +705,14 @@ const PendingApprovalsPage = () => {
   // ─── Bulk reject ───────────────────────────────────────────────────────────
   const handleBulkReject = async () => {
     if (selectedIds?.length === 0) return;
-    const note = window.prompt('Rejection reason (required for all selected):');
+    const note = bulkRejectReason;
     if (!note?.trim()) return;
     setActionLoading(true);
     try {
       const approverName = userProfile?.full_name || userProfile?.email || 'Unknown';
-      const { error } = await supabase
+      const reviewedEntries = entries?.filter(entry => selectedIds?.includes(entry?.id) && ['pending', 'pending_review', 'pending_reapproval']?.includes(entry?.status)) || [];
+      if (!reviewedEntries?.length) throw new Error('These EOD reports have changed. Refresh and review their current status.');
+      const { data: updatedEntries, error } = await supabase
         ?.from('daily_entries')
         ?.update({
           status: 'rejected',
@@ -698,17 +724,23 @@ const PendingApprovalsPage = () => {
           status_changed_by: userProfile?.id,
           status_changed_by_name: approverName,
         })
-        ?.in('id', selectedIds);
+        ?.in('id', selectedIds)
+        ?.or(reviewedEntries?.map(entry => `and(id.eq.${entry?.id},status.eq.${entry?.status})`)?.join(','))
+        ?.select('id');
       if (error) throw error;
-      await Promise.all(selectedIds?.map(id => {
-        const entry = entries?.find(e => e?.id === id);
+      if (!updatedEntries?.length) throw new Error('These EOD reports have changed. Refresh and review their current status.');
+      await Promise.all(updatedEntries?.map(({ id }) => {
+        const entry = reviewedEntries?.find(e => e?.id === id);
         return logStatusChange({
           entryId: id, fromStatus: entry?.status, toStatus: 'rejected',
           changedBy: userProfile?.id, changerName: approverName, changerRole: userProfile?.role,
           note, rejectionReason: note, eventType: 'bulk_rejection',
         });
       }));
-      success('Bulk Rejected', `${selectedIds?.length} entries rejected.`);
+      const skipped = selectedIds?.length - updatedEntries?.length;
+      success('Bulk Rejected', `${updatedEntries?.length} entr${updatedEntries?.length === 1 ? 'y' : 'ies'} rejected.${skipped ? ` ${skipped} skipped because they changed; refresh and review them.` : ''}`);
+      setBulkRejectOpen(false);
+      setBulkRejectReason('');
       setSelectedIds([]);
       fetchEntries();
       fetchFullCounts();
@@ -941,7 +973,7 @@ const PendingApprovalsPage = () => {
           <button onClick={handleBulkApprove} disabled={actionLoading} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50">
             <Icon name="CheckCheck" size={16} />Approve All
           </button>
-          <button onClick={handleBulkReject} disabled={actionLoading} className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50">
+          <button onClick={() => { setBulkRejectReason(''); setBulkRejectOpen(true); }} disabled={actionLoading} className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50">
             <Icon name="XCircle" size={16} />Reject All
           </button>
           <button onClick={() => setSelectedIds([])} className="text-sm text-muted-foreground hover:text-foreground">Clear</button>
@@ -1168,6 +1200,24 @@ const PendingApprovalsPage = () => {
           </div>
         </div>
       )}
+      {bulkRejectOpen && (
+        <div className="fixed inset-0 z-[400] flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="bulk-reject-title">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="relative w-full max-w-md bg-popover border border-border rounded-xl shadow-2xl p-5 space-y-4">
+            <h2 id="bulk-reject-title" className="text-base font-bold text-foreground">Reject selected reports</h2>
+            <p className="text-sm text-muted-foreground">Provide a reason for all {selectedIds?.length} selected reports.</p>
+            <label htmlFor="bulk-reject-reason" className="block text-sm font-medium text-foreground">Rejection reason (required)</label>
+            <textarea id="bulk-reject-reason" value={bulkRejectReason} onChange={e => setBulkRejectReason(e?.target?.value)} rows={3} autoFocus disabled={actionLoading}
+              className="w-full px-3 py-2 text-sm bg-muted border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50" />
+            <div className="flex gap-3">
+              <button onClick={() => { setBulkRejectOpen(false); setBulkRejectReason(''); }} disabled={actionLoading}
+                className="flex-1 py-2 border border-border rounded-lg text-sm disabled:opacity-50">Cancel</button>
+              <button onClick={handleBulkReject} disabled={actionLoading || !bulkRejectReason?.trim()}
+                className="flex-1 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm disabled:opacity-50">{actionLoading ? 'Processing...' : 'Reject selected'}</button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* ─── Review / Approve / Reject Modal ─────────────────────────────────── */}
       {reviewEntry && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4" role="dialog" aria-modal="true">
@@ -1334,7 +1384,7 @@ const PendingApprovalsPage = () => {
               )}
 
               {/* Comment field for pending entries — only for non-api-synced */}
-              {!isApiSyncedRow(reviewEntry) && ['pending', 'pending_review']?.includes(reviewEntry?.status) && (
+              {!isApiSyncedRow(reviewEntry) && ['pending', 'pending_review', 'pending_reapproval']?.includes(reviewEntry?.status) && (
                 <div>
                   <label className="text-xs font-medium text-foreground mb-1.5 block">
                     Comment <span className="text-muted-foreground font-normal">(required for rejection)</span>
@@ -1351,7 +1401,7 @@ const PendingApprovalsPage = () => {
             </div>
 
             {/* Footer actions — only for non-api-synced pending entries */}
-            {!isApiSyncedRow(reviewEntry) && ['pending', 'pending_review']?.includes(reviewEntry?.status) && (
+            {!isApiSyncedRow(reviewEntry) && ['pending', 'pending_review', 'pending_reapproval']?.includes(reviewEntry?.status) && (
               <div className="flex items-center gap-3 px-5 py-4 border-t border-border bg-muted/30 flex-shrink-0">
                 <button
                   onClick={() => handleApprove(reviewEntry, reviewNote)}
@@ -1458,7 +1508,7 @@ const PendingApprovalsPage = () => {
                 <ul className="list-disc list-inside text-xs space-y-0.5 mt-1">
                   <li>Editing moves this record to <strong>Pending Re-Approval</strong></li>
                   <li>Full audit trail of all changes is preserved</li>
-                  <li>Record must be re-approved to post to analytics</li>
+                  <li>Record must be re-approved to complete its review workflow</li>
                 </ul>
               </div>
               <div className="bg-muted/40 rounded-lg p-3 text-xs text-muted-foreground">

@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { dashboardEnvironment } from '../config/dashboardEnvironment';
 import { get, set, createStore } from 'idb-keyval';
 
 const SUPPLY_CACHE_STORE = createStore('nu-dental-supply-cache', 'supply_cache');
@@ -17,7 +18,7 @@ const setCache = async (key, data) => {
   try { await set(key, { data, ts: Date.now() }, SUPPLY_CACHE_STORE); } catch (_) {}
 };
 
-const OFFICES = [
+const OFFICES = dashboardEnvironment.isQa ? ['QA / Office A', 'QA / Office B'] : [
   'Nu Dental of Eatontown',
   'Nu Dental of Brick',
   'Nu Dental of Barnegat',
@@ -183,6 +184,7 @@ export const supplyRequestService = {
       `)?.order('item_name');
 
     if (filters?.officeId) query = query?.eq('office_id', filters?.officeId);
+    if (filters?.itemId) query = query?.eq('item_id', filters?.itemId);
     if (filters?.departmentId) query = query?.eq('department_id', filters?.departmentId);
     if (filters?.subsectionId) query = query?.eq('subsection_id', filters?.subsectionId);
     if (filters?.status) query = query?.eq('inv_status', filters?.status);
@@ -218,8 +220,9 @@ export const supplyRequestService = {
 
   async adjustInventory(inventoryId, newQty, reason, notes) {
     const { data: { user } } = await supabase?.auth?.getUser();
-    const { data: current, error: fetchErr } = await supabase?.from('office_supply_inventory')?.select('quantity_on_hand, office_id')?.eq('id', inventoryId)?.single();
+    const { data: current, error: fetchErr } = await supabase?.from('office_supply_inventory')?.select('*')?.eq('id', inventoryId)?.single();
     if (fetchErr) throw fetchErr;
+    if (newQty === current?.quantity_on_hand) return current;
 
     const { data, error } = await supabase?.from('office_supply_inventory')?.update({ quantity_on_hand: newQty, last_updated_by: user?.id, updated_at: new Date()?.toISOString() })?.eq('id', inventoryId)?.select()?.single();
     if (error) throw error;
@@ -289,6 +292,19 @@ export const supplyRequestService = {
   },
 
   async saveDraftBatch(batch, items) {
+    if (dashboardEnvironment.isQa) {
+      const { data, error } = await supabase.rpc('save_supply_request_draft', {
+        p_batch: batch,
+        p_items: (items || []).map(item => ({
+          ...item,
+          department_id: item?.department_id === '' ? null : item?.department_id,
+          subsection_id: item?.subsection_id === '' ? null : item?.subsection_id,
+          item_id: item?.item_id === '' ? null : item?.item_id,
+        })),
+      });
+      if (error) throw error;
+      return data;
+    }
     const { data: { user } } = await supabase?.auth?.getUser();
     let batchData;
 
@@ -307,6 +323,9 @@ export const supplyRequestService = {
     if (items?.length > 0) {
       const itemsToInsert = items?.map(item => ({
         ...item,
+        department_id: item?.department_id === '' ? null : item?.department_id,
+        subsection_id: item?.subsection_id === '' ? null : item?.subsection_id,
+        item_id: item?.item_id === '' ? null : item?.item_id,
         batch_id: batchData?.id,
         office_id: batch?.office_id,
         department_category: batch?.department_category || null,
@@ -319,6 +338,11 @@ export const supplyRequestService = {
   },
 
   async submitBatch(batchId) {
+    if (dashboardEnvironment.isQa) {
+      const { data, error } = await supabase.rpc('submit_supply_request_qa', { p_batch_id: batchId });
+      if (error) throw error;
+      return data;
+    }
     const { data, error } = await supabase?.from('supply_request_batches')?.update({ batch_status: 'submitted', submitted_at: new Date()?.toISOString(), updated_at: new Date()?.toISOString() })?.eq('id', batchId)?.select()?.single();
     if (error) throw error;
 
@@ -428,7 +452,7 @@ export const supplyRequestService = {
     // Fetch existing batch values before update so we can record old_values in audit log
     const { data: existingBatch, error: fetchErr } = await supabase
       ?.from('supply_request_batches')
-      ?.select('batch_status, reviewer_id, reviewer_notes')
+      ?.select('batch_status, reviewer_id, reviewer_notes, department_category')
       ?.eq('id', batchId)
       ?.single();
     if (fetchErr) throw fetchErr;
@@ -447,6 +471,9 @@ export const supplyRequestService = {
       ?.select()
       ?.single();
     if (error) throw error;
+
+    // The QA Front Desk trigger records review history in the same transaction.
+    if (dashboardEnvironment.isQa && existingBatch?.department_category === 'Front Desk') return data;
 
     // Map status to audit action label
     const actionMap = {
@@ -499,6 +526,7 @@ export const supplyRequestService = {
   async fetchUrgentRequests(filters = {}) {
     let query = supabase?.from('urgent_supply_requests')?.select(`
         *,
+        supply_items(name),
         supply_departments(name),
         supply_subsections(name),
         requested_by_profile:user_profiles!urgent_supply_requests_requested_by_fkey(full_name),
@@ -516,8 +544,14 @@ export const supplyRequestService = {
 
   async createUrgentRequest(req) {
     const { data: { user } } = await supabase?.auth?.getUser();
-    const { data, error } = await supabase?.from('urgent_supply_requests')?.insert({ ...req, requested_by: user?.id, urgent_status: 'submitted' })?.select()?.single();
+    const payload = { ...req, requested_by: user?.id, urgent_status: 'submitted' };
+    for (const field of ['department_id', 'subsection_id', 'item_id', 'needed_by_date']) {
+      if (payload[field] === '') payload[field] = null;
+    }
+    const { data, error } = await supabase?.from('urgent_supply_requests')?.insert(payload)?.select()?.single();
     if (error) throw error;
+    // Isolated QA records both notification simulations in the insert transaction.
+    if (dashboardEnvironment.isQa) return data;
 
     // ── Clinical Supply Urgent email notification ──────────────────────────
     // Replaces old notifyRCMUrgentRequest (which used generic send-email / onboarding@resend.dev).
@@ -639,9 +673,20 @@ export const supplyRequestService = {
     return data || [];
   },
 
+  async fetchFulfillmentRecipients() {
+    const { data, error } = await supabase.from('user_profiles').select('id, full_name')
+      .eq('is_active', true).eq('is_approved', true).eq('status', 'Active').order('full_name');
+    if (error) throw error;
+    return data || [];
+  },
+
   async createFulfillmentLog(log) {
     const { data: { user } } = await supabase?.auth?.getUser();
-    const { data, error } = await supabase?.from('supply_fulfillment_logs')?.insert({ ...log, supplied_by: user?.id })?.select()?.single();
+    const payload = { ...log, supplied_by: user?.id };
+    for (const field of ['item_id', 'department_id', 'received_by', 'date_supplied', 'date_received']) {
+      if (payload[field] === '') payload[field] = null;
+    }
+    const { data, error } = await supabase?.from('supply_fulfillment_logs')?.insert(payload)?.select()?.single();
     if (error) throw error;
 
     // Auto-update inventory if item_id and office_id provided
@@ -792,6 +837,12 @@ export const supplyRequestService = {
 
   // ── RECEIVE SUPPLIES ─────────────────────────────────────────────────────
   async receiveSupplies(payload) {
+    if (dashboardEnvironment.isQa) {
+      const { data, error } = await supabase.rpc('receive_supply_receipt', { p_payload: payload });
+      if (error) throw error;
+      if (!data?.success) throw new Error('Receipt was not confirmed. Refresh before retrying.');
+      return data;
+    }
     const { data: { user } } = await supabase?.auth?.getUser();
     const { fulfillment_log_id, office_id, items, received_by, date_received, notes } = payload;
     const today = date_received || new Date()?.toISOString()?.split('T')?.[0];
@@ -805,14 +856,15 @@ export const supplyRequestService = {
       const newStatus = receivedQty >= qtySupplied ? 'completed' : 'partial';
 
       // Update fulfillment log row
-      await supabase?.from('supply_fulfillment_logs')?.update({
+      const { error: receiptError } = await supabase?.from('supply_fulfillment_logs')?.update({
         qty_received: receivedQty,
         date_received: today,
         received_by: user?.id,
         log_fulfillment_status: newStatus,
         tracking_notes: notes || null,
         updated_at: new Date()?.toISOString(),
-      })?.eq('id', item?.id);
+      })?.eq('id', item?.id)?.select('id')?.single();
+      if (receiptError) throw receiptError;
 
       // Auto-update office_supply_inventory
       if (item?.item_id && office_id) {

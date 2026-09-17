@@ -93,11 +93,11 @@ const ChecklistSection = ({ title, icon, items, onToggle, onNotesChange, isLocke
                         onClick={() => setConvertItem(item)}
                         title="Convert to Task"
                         className={`absolute right-1.5 top-1 flex items-center gap-1 px-2 py-0.5 text-xs rounded font-medium transition-smooth ${
-                          taskCreatedIds?.has(item?.id)
+                          (item?.has_task || taskCreatedIds?.has(item?.id))
                             ? 'bg-success/10 text-success border border-success/20' :'bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20'
                         }`}
                       >
-                        {taskCreatedIds?.has(item?.id) ? (
+                        {(item?.has_task || taskCreatedIds?.has(item?.id)) ? (
                           <><Icon name="CheckCircle2" size={10} /> Task Created</>
                         ) : (
                           <><Icon name="Plus" size={10} /> Task</>

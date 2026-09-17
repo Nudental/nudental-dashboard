@@ -257,6 +257,7 @@ const ItemRow = ({ item, inventory, isAdmin, onStockSaved, onItemEdited, onDeact
   const [showKeypad, setShowKeypad] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
 
   const invRecord = inventory?.find(inv => inv?.item_id === item?.id);
   const currentQty = invRecord?.quantity_on_hand ?? null;
@@ -274,8 +275,10 @@ const ItemRow = ({ item, inventory, isAdmin, onStockSaved, onItemEdited, onDeact
   };
 
   const handleStockDone = async (qty) => {
+    setError('');
     setSaving(true);
     try {
+      let savedInventory = invRecord;
       if (isOffline) {
         await offlineQueueService?.enqueue('supply_catalog_edit', {
           action: 'set_stock',
@@ -287,9 +290,9 @@ const ItemRow = ({ item, inventory, isAdmin, onStockSaved, onItemEdited, onDeact
         });
       } else {
         if (invRecord?.id) {
-          await supplyRequestService?.adjustInventory(invRecord?.id, qty, 'Manual stock update from catalog', '');
+          savedInventory = await supplyRequestService?.adjustInventory(invRecord?.id, qty, 'Manual stock update from catalog', '');
         } else {
-          await supplyRequestService?.upsertInventoryItem({
+          savedInventory = await supplyRequestService?.upsertInventoryItem({
             item_id: item?.id,
             item_name: item?.name,
             office_id: officeId,
@@ -302,9 +305,13 @@ const ItemRow = ({ item, inventory, isAdmin, onStockSaved, onItemEdited, onDeact
         }
       }
       if (navigator.vibrate) navigator.vibrate(200);
-      onStockSaved(item?.id, qty);
+      onStockSaved(item?.id, qty, savedInventory);
       setShowKeypad(false);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      setError(e?.code === '22003'
+        ? 'Stock quantity is too large. Enter a smaller number.'
+        : 'Could not confirm the stock save. Refresh to check the current value before retrying.');
+    }
     finally { setSaving(false); }
   };
 
@@ -347,7 +354,7 @@ const ItemRow = ({ item, inventory, isAdmin, onStockSaved, onItemEdited, onDeact
         <div className="flex items-center gap-2 flex-shrink-0">
           {/* Stock level chip */}
           <button
-            onClick={() => { setShowKeypad(p => !p); setShowEdit(false); }}
+            onClick={() => { setError(''); setShowKeypad(p => !p); setShowEdit(false); }}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-sm font-semibold border transition-all active:scale-95 ${
               currentQty === null
                 ? 'border-dashed border-muted-foreground text-muted-foreground bg-transparent'
@@ -383,6 +390,7 @@ const ItemRow = ({ item, inventory, isAdmin, onStockSaved, onItemEdited, onDeact
         </div>
       </div>
       {/* Inline keypad */}
+      {showKeypad && error && <p role="alert" className="mx-4 mb-2 text-sm text-red-600">{error}</p>}
       {showKeypad && (
         <InlineNumericKeypad
           itemName={item?.name}
@@ -728,13 +736,13 @@ const MobileCatalogView = ({ isAdmin, officeId }) => {
     ? filteredDepts?.reduce((acc, d) => acc + getFilteredSubs(d?.id)?.reduce((a, s) => a + getFilteredItems(s?.id)?.length, 0), 0)
     : null;
 
-  const handleStockSaved = (itemId, qty) => {
+  const handleStockSaved = (itemId, qty, savedInventory) => {
     setInventory(prev => {
       const existing = prev?.find(inv => inv?.item_id === itemId);
       if (existing) {
-        return prev?.map(inv => inv?.item_id === itemId ? { ...inv, quantity_on_hand: qty } : inv);
+        return prev?.map(inv => inv?.item_id === itemId ? { ...inv, ...savedInventory, quantity_on_hand: qty } : inv);
       }
-      return [...prev, { item_id: itemId, quantity_on_hand: qty, office_id: officeId }];
+      return [...prev, { ...savedInventory, item_id: itemId, quantity_on_hand: qty, office_id: officeId }];
     });
   };
 

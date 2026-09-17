@@ -117,19 +117,19 @@ const logDRStatusChange = async ({
 
 // ─── EOD rejection email (reused from EOD Queue — same edge function path) ───
 // Sends via eod-rejection-notification edge function (Resend).
-// Only called on reject, not on approve. Preserves existing behavior exactly.
+// Only called on reject. Confirms request acceptance, not recipient delivery.
 const sendDRRejectionEmail = async ({ entry, rejectionReason, rejectedByName }) => {
   try {
-    if (!entry?.submitted_by) return;
+    if (!entry?.submitted_by) return false;
     const { data: omProfile } = await supabase
       ?.from('user_profiles')
       ?.select('email, full_name')
       ?.eq('id', entry?.submitted_by)
       ?.maybeSingle();
-    if (!omProfile?.email) return;
+    if (!omProfile?.email) return false;
     const SUPABASE_URL = import.meta.env?.VITE_SUPABASE_URL;
     const SUPABASE_ANON_KEY = import.meta.env?.VITE_SUPABASE_ANON_KEY;
-    await fetch(`${SUPABASE_URL}/functions/v1/eod-rejection-notification`, {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/eod-rejection-notification`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
       body: JSON.stringify({
@@ -142,8 +142,12 @@ const sendDRRejectionEmail = async ({ entry, rejectionReason, rejectedByName }) 
         entry_id: entry?.id,
       }),
     });
+    if (!response?.ok) return false;
+    const result = await response.json();
+    return result?.success === true && typeof result?.id === 'string' && result.id.length > 0;
   } catch (err) {
     console.warn('[dr-rejection-email] Failed to send rejection email:', err?.message);
+    return false;
   }
 };
 
@@ -815,7 +819,7 @@ const DailyReviewRejectModal = ({ isOpen, entry, onConfirmReject, onCancel, reje
           <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 flex items-start gap-3">
             <Icon name="AlertTriangle" size={15} className="text-red-600 mt-0.5 flex-shrink-0" />
             <p className="text-xs text-red-800 leading-relaxed">
-              Rejecting this Daily Report will update its workflow status to <strong>rejected</strong> and write to <strong>eod_status_history</strong>. The submitter will be notified via email using the existing EOD rejection notification. This does <strong>not</strong> update Dentrix/FastAPI actuals or monthly_executive_analytics.
+              Rejecting this Daily Report will update its workflow status to <strong>rejected</strong> and write to <strong>eod_status_history</strong>. An email notification will be requested for the submitter; delivery is not guaranteed. This does <strong>not</strong> update Dentrix/FastAPI actuals or monthly_executive_analytics.
             </p>
           </div>
           <div>
@@ -1241,7 +1245,8 @@ const HuddleApprovalsPage = () => {
           approved_by: userProfile?.id,
           approved_at: new Date()?.toISOString(),
           updated_at: new Date()?.toISOString(),
-        })?.eq('id', huddle?.id);
+        })?.eq('id', huddle?.id)?.eq('status', huddle?.status)?.select('id')?.single();
+      if (error?.code === 'PGRST116') throw new Error('This Huddle changed since it was reviewed. Refresh and review its current status.');
       if (error) throw error;
 
       await supabase?.from('huddle_audit_log')?.insert({
@@ -1265,7 +1270,8 @@ const HuddleApprovalsPage = () => {
   const handleUnlock = async (huddle, reason) => {
     setActionLoading(true);
     try {
-      const { error } = await supabase?.from('huddles')?.update({ status: 'unlocked', updated_at: new Date()?.toISOString() })?.eq('id', huddle?.id);
+      const { error } = await supabase?.from('huddles')?.update({ status: 'unlocked', updated_at: new Date()?.toISOString() })?.eq('id', huddle?.id)?.eq('status', huddle?.status)?.select('id')?.single();
+      if (error?.code === 'PGRST116') throw new Error('This Huddle changed since it was reviewed. Refresh and review its current status.');
       if (error) throw error;
 
       await supabase?.from('huddle_audit_log')?.insert({
@@ -1289,7 +1295,8 @@ const HuddleApprovalsPage = () => {
   const handleReject = async (huddle, reason) => {
     setActionLoading(true);
     try {
-      const { error } = await supabase?.from('huddles')?.update({ status: 'rejected', updated_at: new Date()?.toISOString() })?.eq('id', huddle?.id);
+      const { error } = await supabase?.from('huddles')?.update({ status: 'rejected', updated_at: new Date()?.toISOString() })?.eq('id', huddle?.id)?.eq('status', huddle?.status)?.select('id')?.single();
+      if (error?.code === 'PGRST116') throw new Error('This Huddle changed since it was reviewed. Refresh and review its current status.');
       if (error) throw error;
 
       await supabase?.from('huddle_audit_log')?.insert({
@@ -1329,7 +1336,7 @@ const HuddleApprovalsPage = () => {
       const isReapproval = fromStatus === 'pending_reapproval';
 
       // Field mapping reused from EOD Queue handleApprove
-      const { error } = await supabase
+      const { data: updatedEntry, error } = await supabase
         ?.from('daily_entries')
         ?.update({
           status: 'approved',
@@ -1341,8 +1348,11 @@ const HuddleApprovalsPage = () => {
           status_changed_by_name: approverName,
         })
         ?.eq('id', entry?.id)
-        ?.neq('status', 'approved');
+        ?.eq('status', fromStatus)
+        ?.select('id')
+        ?.maybeSingle();
       if (error) throw error;
+      if (!updatedEntry) throw new Error('This Daily Report changed while you were reviewing it. Refresh and review its current status.');
 
       // eod_status_history write — same pattern as EOD Queue
       await logDRStatusChange({
@@ -1389,7 +1399,7 @@ const HuddleApprovalsPage = () => {
       // rejected_by, rejected_at, rejection_by_name, rejection_reason
       // Does NOT stamp approved_by / approver_name / approved_at on a rejection.
       // Does NOT set approval_note on rejection.
-      const { error } = await supabase
+      const { data: updatedEntry, error } = await supabase
         ?.from('daily_entries')
         ?.update({
           status: 'rejected',
@@ -1400,8 +1410,12 @@ const HuddleApprovalsPage = () => {
           status_changed_by: userProfile?.id,
           status_changed_by_name: rejectorName,
         })
-        ?.eq('id', entry?.id);
+        ?.eq('id', entry?.id)
+        ?.eq('status', fromStatus)
+        ?.select('id')
+        ?.maybeSingle();
       if (error) throw error;
+      if (!updatedEntry) throw new Error('This Daily Report changed while you were reviewing it. Refresh and review its current status.');
 
       // eod_status_history write — same pattern as EOD Queue
       await logDRStatusChange({
@@ -1417,9 +1431,9 @@ const HuddleApprovalsPage = () => {
       });
 
       // Rejection email — reuses existing eod-rejection-notification edge function
-      await sendDRRejectionEmail({ entry, rejectionReason: reason, rejectedByName: rejectorName });
+      const notificationAccepted = await sendDRRejectionEmail({ entry, rejectionReason: reason, rejectedByName: rejectorName });
 
-      success('Rejected', `Daily Report rejected. The submitter has been notified via email.`);
+      success('Rejected', `Daily Report rejected. ${notificationAccepted ? 'Notification request accepted.' : 'Notification could not be confirmed.'}`);
       setDrRejectTarget(null);
       fetchDailyReviews();
     } catch (err) {

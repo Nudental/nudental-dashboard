@@ -1,0 +1,10 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.join(__dirname,'../recovered-frontend'),parser=require(path.join(process.env.NDASH_PARSER_ROOT||root,'node_modules/@babel/parser'));
+const source=fs.readFileSync(path.join(root,'src/services/frontDeskInventoryService.js'),'utf8');
+function find(n,p){if(!n||typeof n!=='object')return;if(p(n))return n;for(const v of Object.values(n)){const r=find(v,p);if(r)return r;}}
+const method=find(parser.parse(source,{sourceType:'module'}),n=>n.type==='ObjectMethod'&&n.key.name==='updateRow');
+function harness(error){const calls=[];let payload;const saved={id:'qa-item',notes:'Synthetic QA'};const ctx={supabase:{from(table){calls.push(['from',table]);return{update(value){payload=value;return this},eq(k,v){calls.push(['eq',k,v]);return this},select(){return this},single(){return Promise.resolve(error?{error}:{data:saved})}}}}};vm.runInNewContext('this.update=({'+source.slice(method.start,method.end)+'}).updateRow;',ctx);return{update:ctx.update,calls,saved,get payload(){return payload}};}
+for(const value of ['',null,'2026-09-16'])test('optional catalog date '+JSON.stringify(value)+' saves with correct database representation',async()=>{const h=harness();await h.update('qa-item',{last_supplied_date:value,notes:''});assert.equal(h.payload.last_supplied_date,value===''?null:value);assert.equal(h.payload.notes,'');assert.ok(h.payload.updated_at);});
+test('omitted optional date does not overwrite the existing date',async()=>{const h=harness();await h.update('qa-item',{notes:'Synthetic QA'});assert.equal(Object.hasOwn(h.payload,'last_supplied_date'),false);});
+test('updates target exactly the chosen item and return database values',async()=>{const h=harness();assert.equal(await h.update('qa-item',{notes:'Synthetic QA'}),h.saved);assert.deepEqual(h.calls,[['from','front_desk_inventory'],['eq','id','qa-item']]);});
+test('database permission or validation errors still propagate',async()=>{await assert.rejects(harness(Error('QA denied')).update('qa-item',{last_supplied_date:''}),/QA denied/);});

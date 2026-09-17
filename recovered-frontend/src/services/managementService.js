@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase, createUserInvitationClient } from '../lib/supabase';
 import { readCompleteAuditEntries } from './auditReadService';
 
 // ─── DIFF LOGIC ────────────────────────────────────────────────────────────
@@ -194,8 +194,8 @@ export const usersService = {
     // Use provided tempPassword or generate one
     const tempPassword = payload?.tempPassword?.trim() || (crypto.randomUUID() + 'Aa1!');
 
-    // Create auth user with signUp using the provided/generated password
-    const { data: signUpData, error: signUpError } = await supabase?.auth?.signUp({
+    // Signup must not replace the administrator session used for the profile write.
+    const { data: signUpData, error: signUpError } = await createUserInvitationClient().auth.signUp({
       email: payload?.email,
       password: tempPassword,
       options: {
@@ -249,7 +249,9 @@ export const usersService = {
 
   async toggleActive(id, isActive) {
     const { data: old } = await supabase?.from('user_profiles')?.select('*')?.eq('id', id)?.single();
-    const { data, error } = await supabase?.from('user_profiles')?.update({ is_active: isActive })?.eq('id', id)?.select()?.single();
+    const { data, error } = await supabase?.from('user_profiles')?.update({
+      is_active: isActive, is_approved: isActive, status: isActive ? 'Active' : 'Deactivated',
+    })?.eq('id', id)?.select()?.single();
     if (error) throw error;
     await logAudit('TOGGLE_ACTIVE', 'user_profiles', id, old, data, old?.full_name);
     return data;

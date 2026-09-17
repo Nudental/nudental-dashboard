@@ -18,6 +18,7 @@
 import { supabase } from '../lib/supabase';
 import { ascendApi } from './ascendApi';
 import { LOCATION_ID_MAP, OFFICE_MAP } from '../constants/offices';
+import { dashboardEnvironment } from '../config/dashboardEnvironment';
 
 // ─── Audit helpers ────────────────────────────────────────────────────────────
 
@@ -394,7 +395,7 @@ export const serviceCategoryGoalsService = {
     const previewRows = [];
 
     for (const officeId of officeIds) {
-      const locationId = LOCATION_ID_MAP?.[officeId] || null;
+      const locationId = dashboardEnvironment.isQa ? officeId : LOCATION_ID_MAP?.[officeId] || null;
       const officeName = OFFICE_MAP?.[officeId]?.name || officeId;
 
       for (const mm of months) {

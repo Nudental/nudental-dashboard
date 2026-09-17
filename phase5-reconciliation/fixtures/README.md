@@ -1,0 +1,1 @@
+Test-only contract excerpts and office labels. No identities, credentials, seeded records or execution adapters. These files are outside the frontend build and never deployed. Schema source SHA256: 373191f4cbadfaf2fb7fe0ff737ec8257ab1a7407a1797e502c2106922e203fc

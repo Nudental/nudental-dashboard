@@ -3,6 +3,7 @@ import Icon from '../../../../components/AppIcon';
 import supplyRequestService from '../../../../services/supplyRequestService';
 import MobileCatalogView from './MobileCatalogView';
 import { useAuth } from '../../../../contexts/AuthContext';
+import { useOffice } from '../../../../contexts/OfficeContext';
 
 // ── Custom hook for mobile detection ──────────────────────────────────────────
 const useIsMobile = () => {
@@ -330,7 +331,8 @@ const DesktopCatalogView = ({ isAdmin }) => {
 const SupplyCatalogTab = ({ isAdmin }) => {
   const isMobile = useIsMobile();
   const { userProfile } = useAuth();
-  const officeId = userProfile?.office_id || null;
+  const { offices } = useOffice();
+  const officeId = offices?.find(office => office?.id === userProfile?.office_id)?.name || null;
 
   if (isMobile) {
     return <MobileCatalogView isAdmin={isAdmin} officeId={officeId} />;
