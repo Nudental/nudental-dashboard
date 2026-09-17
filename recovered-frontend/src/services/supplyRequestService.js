@@ -292,49 +292,18 @@ export const supplyRequestService = {
   },
 
   async saveDraftBatch(batch, items) {
-    if (dashboardEnvironment.isQa) {
-      const { data, error } = await supabase.rpc('save_supply_request_draft', {
-        p_batch: batch,
-        p_items: (items || []).map(item => ({
-          ...item,
-          department_id: item?.department_id === '' ? null : item?.department_id,
-          subsection_id: item?.subsection_id === '' ? null : item?.subsection_id,
-          item_id: item?.item_id === '' ? null : item?.item_id,
-        })),
-      });
-      if (error) throw error;
-      return data;
-    }
-    const { data: { user } } = await supabase?.auth?.getUser();
-    let batchData;
-
-    if (batch?.id) {
-      const { data, error } = await supabase?.from('supply_request_batches')?.update({ ...batch, updated_at: new Date()?.toISOString() })?.eq('id', batch?.id)?.select()?.single();
-      if (error) throw error;
-      batchData = data;
-      // Delete existing items and re-insert
-      await supabase?.from('supply_request_items')?.delete()?.eq('batch_id', batch?.id);
-    } else {
-      const { data, error } = await supabase?.from('supply_request_batches')?.insert({ ...batch, requested_by: user?.id, batch_status: 'draft' })?.select()?.single();
-      if (error) throw error;
-      batchData = data;
-    }
-
-    if (items?.length > 0) {
-      const itemsToInsert = items?.map(item => ({
+    const { data, error } = await supabase.rpc('save_supply_request_draft', {
+      p_batch: batch,
+      p_items: (items || []).map(item => ({
         ...item,
         department_id: item?.department_id === '' ? null : item?.department_id,
         subsection_id: item?.subsection_id === '' ? null : item?.subsection_id,
         item_id: item?.item_id === '' ? null : item?.item_id,
-        batch_id: batchData?.id,
-        office_id: batch?.office_id,
-        department_category: batch?.department_category || null,
-      }));
-      const { error: itemsErr } = await supabase?.from('supply_request_items')?.insert(itemsToInsert);
-      if (itemsErr) throw itemsErr;
-    }
+      })),
+    });
+    if (error) throw error;
+    return data;
 
-    return batchData;
   },
 
   async submitBatch(batchId) {
@@ -472,8 +441,8 @@ export const supplyRequestService = {
       ?.single();
     if (error) throw error;
 
-    // The QA Front Desk trigger records review history in the same transaction.
-    if (dashboardEnvironment.isQa && existingBatch?.department_category === 'Front Desk') return data;
+    // The Front Desk trigger records review history in the same transaction.
+    if (existingBatch?.department_category === 'Front Desk' && ['approved', 'rejected', 'under_review'].includes(status)) return data;
 
     // Map status to audit action label
     const actionMap = {
@@ -837,87 +806,10 @@ export const supplyRequestService = {
 
   // ── RECEIVE SUPPLIES ─────────────────────────────────────────────────────
   async receiveSupplies(payload) {
-    if (dashboardEnvironment.isQa) {
-      const { data, error } = await supabase.rpc('receive_supply_receipt', { p_payload: payload });
-      if (error) throw error;
-      if (!data?.success) throw new Error('Receipt was not confirmed. Refresh before retrying.');
-      return data;
-    }
-    const { data: { user } } = await supabase?.auth?.getUser();
-    const { fulfillment_log_id, office_id, items, received_by, date_received, notes } = payload;
-    const today = date_received || new Date()?.toISOString()?.split('T')?.[0];
-
-    for (const item of (items || [])) {
-      const receivedQty = item?.received_qty || 0;
-      if (receivedQty <= 0) continue;
-
-      // Determine fulfillment status
-      const qtySupplied = item?.qty_supplied || 0;
-      const newStatus = receivedQty >= qtySupplied ? 'completed' : 'partial';
-
-      // Update fulfillment log row
-      const { error: receiptError } = await supabase?.from('supply_fulfillment_logs')?.update({
-        qty_received: receivedQty,
-        date_received: today,
-        received_by: user?.id,
-        log_fulfillment_status: newStatus,
-        tracking_notes: notes || null,
-        updated_at: new Date()?.toISOString(),
-      })?.eq('id', item?.id)?.select('id')?.single();
-      if (receiptError) throw receiptError;
-
-      // Auto-update office_supply_inventory
-      if (item?.item_id && office_id) {
-        const { data: invItem } = await supabase
-          ?.from('office_supply_inventory')
-          ?.select('id, quantity_on_hand')
-          ?.eq('item_id', item?.item_id)
-          ?.eq('office_id', office_id)
-          ?.maybeSingle();
-
-        if (invItem) {
-          const newQty = (invItem?.quantity_on_hand || 0) + receivedQty;
-          await supabase?.from('office_supply_inventory')?.update({
-            quantity_on_hand: newQty,
-            last_supplied_date: today,
-            last_supplied_quantity: receivedQty,
-            last_updated_by: user?.id,
-            updated_at: new Date()?.toISOString(),
-          })?.eq('id', invItem?.id);
-
-          // Log to supply_inventory_history
-          await supabase?.from('supply_inventory_history')?.insert({
-            inventory_id: invItem?.id,
-            office_id,
-            change_type: 'supplied',
-            old_qty: invItem?.quantity_on_hand,
-            new_qty: newQty,
-            change_qty: receivedQty,
-            changed_by: user?.id,
-            change_reason: `Received: ${item?.item_name}`,
-          });
-        }
-      }
-
-      // Update supply_request_items status if linked
-      if (item?.request_item_id) {
-        const { data: reqItem } = await supabase
-          ?.from('supply_request_items')
-          ?.select('requested_qty, fulfilled_qty')
-          ?.eq('id', item?.request_item_id)
-          ?.single();
-        if (reqItem) {
-          const totalFulfilled = (reqItem?.fulfilled_qty || 0) + receivedQty;
-          const itemStatus = totalFulfilled >= reqItem?.requested_qty ? 'fulfilled' : 'partially_fulfilled';
-          await supabase?.from('supply_request_items')?.update({
-            fulfilled_qty: totalFulfilled,
-            item_status: itemStatus,
-          })?.eq('id', item?.request_item_id);
-        }
-      }
-    }
-
-    return { success: true };
+    const { data, error } = await supabase.rpc('receive_supply_receipt', { p_payload: payload });
+    if (error) throw error;
+    if (!data?.success) throw new Error('Receipt was not confirmed. Refresh before retrying.');
+    return data;
   },
 
   // ── CHECK EXISTING BATCH FOR DEPT CATEGORY ───────────────────────────────

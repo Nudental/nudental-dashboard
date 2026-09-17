@@ -27,6 +27,6 @@ test('QA clearing assignments and all-office requests use the same guarded path'
 test('A rejected QA transaction cannot fall back to partial writes or success audit',async()=>{
  const c=setup(true,true);await assert.rejects(()=>c.save('qa-user',['qa-b'],false),/QA assignment denied/);assert.deepEqual(c.writes,[]);assert.equal(c.audits.length,0);
 });
-test('Production keeps its existing write path until a separately reviewed schema release',async()=>{
- const c=setup(false);await c.save('qa-user',['qa-b'],false);assert.equal(c.rpc.length,0);assert.deepEqual(c.writes,['delete','insert']);assert.equal(c.audits.length,1);
+test('Production uses the reviewed atomic assignment path',async()=>{
+ const c=setup(false);await c.save('qa-user',['qa-b'],false);assert.equal(c.rpc.length,1);assert.deepEqual(c.writes,[]);assert.equal(c.audits.length,1);
 });

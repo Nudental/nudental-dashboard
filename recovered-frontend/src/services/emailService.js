@@ -316,45 +316,13 @@ export const userOfficeService = {
       // Non-blocking: proceed even if pre-fetch fails
     }
 
-    if (dashboardEnvironment.isQa) {
-      const { data, error } = await supabase.rpc('dashboard_set_user_offices', {
-        p_user_id: userId, p_office_ids: officeIds || [], p_all_offices: allOffices,
-      });
-      if (error) throw error;
-      await logOfficeAssignmentAudit(userId, previousAssignments, data || [], allOffices, officeIds || []);
-      return;
-    }
+    // Production and QA both use the reviewed atomic assignment RPC.
+    const { data, error } = await supabase.rpc('dashboard_set_user_offices', {
+      p_user_id: userId, p_office_ids: officeIds || [], p_all_offices: allOffices,
+    });
+    if (error) throw error;
+    await logOfficeAssignmentAudit(userId, previousAssignments, data || [], allOffices, officeIds || []);
 
-    // Delete existing assignments
-    await supabase?.from('user_office_assignments')?.delete()?.eq('user_id', userId);
-
-    let insertedData = null;
-    if (allOffices) {
-      // Insert a single all_offices=true record
-      const { data, error } = await supabase?.from('user_office_assignments')?.insert({
-        user_id: userId,
-        office_id: null,
-        all_offices: true,
-      })?.select();
-      if (error) throw error;
-      insertedData = data;
-    } else if (officeIds?.length > 0) {
-      const inserts = officeIds?.map((officeId) => ({
-        user_id: userId,
-        office_id: officeId,
-        all_offices: false,
-      }));
-      const { data, error } = await supabase?.from('user_office_assignments')?.insert(inserts)?.select();
-      if (error) throw error;
-      insertedData = data;
-    }
-
-    // ── V685: Write audit row after successful assignment update ───────────
-    try {
-      await logOfficeAssignmentAudit(userId, previousAssignments, insertedData || [], allOffices, officeIds || []);
-    } catch (auditErr) {
-      console.warn('[userOfficeService] Audit log error (non-blocking):', auditErr?.message);
-    }
   },
 
   async getAllUsersWithOffices() {

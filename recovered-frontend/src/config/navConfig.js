@@ -278,6 +278,17 @@ export const NAV_GROUPS = [
         description: 'Manage and track team action items',
       },
       {
+        id: 'front-desk-approvals',
+        label: 'Front Desk Approvals',
+        shortLabel: 'Supply Review',
+        icon: 'ClipboardCheck',
+        route: '/front-desk-approvals',
+        roles: ['super_admin', 'admin', 'regional_manager'],
+        permission: 'workflow.approvals.view',
+        requireBothRoleAndPermission: true,
+        description: 'Review Front Desk supply requests; requester self-approval is prohibited',
+      },
+      {
         id: 'pending-approvals',
         label: 'EOD Approval Queue',
         shortLabel: 'EOD Queue',

@@ -1031,15 +1031,15 @@ const FD_STATUS_BADGE = {
 
 const FD_REVIEW_STATUSES = ['submitted', 'under_review', 'approved', 'rejected', 'partially_fulfilled', 'fulfilled'];
 
-const canReviewFrontDeskBatch = (profile, batch, isQa, legacyCanReview) => isQa
-  ? !!(profile?.id && batch?.requested_by && profile.id !== batch.requested_by
-    && ['super_admin', 'admin', 'regional_manager'].includes(profile?.role))
-  : legacyCanReview;
+export const canReviewFrontDeskBatch = (profile, batch) => !!(
+  profile?.id && batch?.requested_by && profile.id !== batch.requested_by
+  && ['super_admin', 'admin', 'regional_manager'].includes(profile?.role)
+);
 
-const FrontDeskRequestReview = ({ isAdmin, isRCM }) => {
+export const FrontDeskRequestReview = () => {
   const OFFICES = frontDeskInventoryService?.getOffices();
   const { userProfile } = useAuth();
-  const canReview = batch => canReviewFrontDeskBatch(userProfile, batch, dashboardEnvironment.isQa, isAdmin || isRCM);
+  const canReview = batch => canReviewFrontDeskBatch(userProfile, batch);
 
   const [view, setView] = useState('list'); // 'list' | 'detail'
   const [batches, setBatches] = useState([]);
