@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { dashboardEnvironment } from '../config/dashboardEnvironment';
 
 const APP_URL = 'https://nudentalr1699.builtwithrocket.new';
 
@@ -313,6 +314,15 @@ export const userOfficeService = {
       previousAssignments = prevData || [];
     } catch (_) {
       // Non-blocking: proceed even if pre-fetch fails
+    }
+
+    if (dashboardEnvironment.isQa) {
+      const { data, error } = await supabase.rpc('dashboard_set_user_offices', {
+        p_user_id: userId, p_office_ids: officeIds || [], p_all_offices: allOffices,
+      });
+      if (error) throw error;
+      await logOfficeAssignmentAudit(userId, previousAssignments, data || [], allOffices, officeIds || []);
+      return;
     }
 
     // Delete existing assignments

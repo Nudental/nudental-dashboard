@@ -4,6 +4,8 @@ import App from "./App";
 import "./styles/tailwind.css";
 import "./styles/index.css";
 import { errorLoggingService } from "./services/errorLoggingService";
+import { dashboardEnvironment } from './config/dashboardEnvironment';
+import QaEnvironmentBanner from './components/QaEnvironmentBanner';
 
 // Install global unhandled error + promise rejection handlers
 errorLoggingService?.installGlobalHandlers();
@@ -17,4 +19,4 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-root.render(<App />);
+root.render(dashboardEnvironment.isQa ? <><QaEnvironmentBanner /><App /></> : <App />);

@@ -1,3 +1,5 @@
+import { dashboardFetch as fetch } from '../../../lib/dashboardFetch';
+import { DASHBOARD_API_ORIGIN } from '../../../config/dashboardEnvironment';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
 import { getPayrollScheduleForYear, getScheduleYears, formatDateShort, fetchPayrollData,  } from '../../../services/payrollService';
@@ -25,8 +27,8 @@ import {
 } from '../../../services/providerPayrollPDFService';
 import { useAuth } from '../../../contexts/AuthContext';
 
-const API_KEY = 'nudashboard_prod_key';
-const API_BASE = 'https://api.nudashboard.com/v2';
+const API_KEY = (import.meta.env?.VITE_ASCEND_API_KEY || '');
+const API_BASE = DASHBOARD_API_ORIGIN + "/v2";
 const USER_EMAIL = 'admasu@thenudental.com';
 
 const fmtCurrency = (v) =>

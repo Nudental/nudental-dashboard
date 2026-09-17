@@ -1,3 +1,5 @@
+import { dashboardFetch as fetch } from '../../../lib/dashboardFetch';
+import { DASHBOARD_API_ORIGIN } from '../../../config/dashboardEnvironment';
 import React, { useState, useMemo } from 'react';
 import { useGustoComparison, useGustoCrosswalk } from '../../../hooks/gusto/useGustoComparison';
 import { fmtDate, fmtDateRange, fmtDateCSV, downloadCSV } from '../../../lib/gusto/gustoFormatters';
@@ -421,9 +423,9 @@ function MappingModal({ employee, onClose, onSave }) {
     if (!dentrixProviderId) return;
     setSaving(true);
     try {
-      const r2 = await fetch('https://api.nudashboard.com/v2/payroll/crosswalk', {
+      const r2 = await fetch(DASHBOARD_API_ORIGIN + "/v2/payroll/crosswalk", {
         method: 'POST',
-        headers: { 'X-API-Key': 'nudashboard_prod_key', 'Content-Type': 'application/json' },
+        headers: { 'X-API-Key': (import.meta.env?.VITE_ASCEND_API_KEY || ''), 'Content-Type': 'application/json' },
         body: JSON.stringify({
           gusto_employee_id: employee?.id,
           dentrix_provider_id: dentrixProviderId,

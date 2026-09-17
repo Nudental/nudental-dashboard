@@ -1,3 +1,5 @@
+import { dashboardFetch as fetch } from '../lib/dashboardFetch';
+import { DASHBOARD_API_ORIGIN } from '../config/dashboardEnvironment';
 /**
  * eodTreatmentService.js
  * ══════════════════════════════════════════════════════════════════════════════
@@ -17,7 +19,7 @@
  *   - Do NOT use `value || 0` for display
  */
 
-const API_BASE = 'https://api.nudashboard.com/v2';
+const API_BASE = DASHBOARD_API_ORIGIN + "/v2";
 const API_KEY = import.meta.env?.VITE_ASCEND_API_KEY || '';
 
 const buildHeaders = () => ({

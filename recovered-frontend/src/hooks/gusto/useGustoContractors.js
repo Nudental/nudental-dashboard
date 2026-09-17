@@ -1,8 +1,10 @@
+import { dashboardFetch as fetch } from '../../lib/dashboardFetch';
+import { DASHBOARD_API_ORIGIN } from '../../config/dashboardEnvironment';
 import { supabase } from '../../lib/supabase';
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-const API_BASE = 'https://api.nudashboard.com/v2/payroll';
-const API_KEY = 'nudashboard_prod_key';
+const API_BASE = DASHBOARD_API_ORIGIN + "/v2/payroll";
+const API_KEY = (import.meta.env?.VITE_ASCEND_API_KEY || '');
 const PAGE_SIZE = 50;
 
 async function apiFetch(path, params = {}) {

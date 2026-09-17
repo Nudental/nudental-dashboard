@@ -1,3 +1,5 @@
+import { dashboardFetch as fetch } from '../lib/dashboardFetch';
+import { DASHBOARD_API_ORIGIN } from '../config/dashboardEnvironment';
 /**
  * OTP Auth Service — Nu Portal Phase 0C
  *
@@ -17,7 +19,7 @@
 
 import { supabase } from '../lib/supabase';
 
-const OTP_API_BASE = 'https://api.nudashboard.com/v2/auth';
+const OTP_API_BASE = DASHBOARD_API_ORIGIN + "/v2/auth";
 
 // ─── Internal: get Supabase JWT ───────────────────────────────────────────────
 async function getJwt() {

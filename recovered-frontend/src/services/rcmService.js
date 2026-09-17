@@ -1,3 +1,5 @@
+import { dashboardFetch as fetch } from '../lib/dashboardFetch';
+import { DASHBOARD_API_ORIGIN } from '../config/dashboardEnvironment';
 /**
  * rcmService.js
  * ─────────────────────────────────────────────────────────────────────────────
@@ -651,7 +653,7 @@ const scopeArPayload = (payload, officeIds = []) => {
 };
 
 export const fetchAgingReceivablesLive = async ({ officeIds = [] } = {}) => {
-  const API_BASE_V2 = 'https://api.nudashboard.com/v2';
+  const API_BASE_V2 = DASHBOARD_API_ORIGIN + "/v2";
   const API_KEY = import.meta.env?.VITE_ASCEND_API_KEY || '';
   const headers = { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' };
 
@@ -737,7 +739,7 @@ export const fetchAgingReceivablesLive = async ({ officeIds = [] } = {}) => {
  * Does NOT use /v2/accounts-receivable, /v2/ar, or any claim-derived source.
  */
 export const fetchOfficialArAging = async (officeId) => {
-  const API_BASE_V2 = 'https://api.nudashboard.com/v2';
+  const API_BASE_V2 = DASHBOARD_API_ORIGIN + "/v2";
   const API_KEY = import.meta.env?.VITE_ASCEND_API_KEY || '';
   const headers = { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' };
 
@@ -1035,7 +1037,7 @@ function normalizeArPayload(payload) {
 }
 
 export const fetchPayorSummary = async ({ start, end, officeId, officeIds }) => {
-  const API_BASE_V2 = 'https://api.nudashboard.com/v2';
+  const API_BASE_V2 = DASHBOARD_API_ORIGIN + "/v2";
   const API_KEY = import.meta.env?.VITE_ASCEND_API_KEY || '';
   // ── IMPORTANT: Do NOT include Content-Type on GET requests. ──────────────
   // Content-Type: application/json on a GET triggers a CORS preflight OPTIONS
@@ -2628,7 +2630,7 @@ export const fetchGuarantorReconciliation = async ({
   const locationId = resolveLocationId(officeId);
 
   const buildUrl = (locId) => {
-    const API_BASE = 'https://api.nudashboard.com/v2';
+    const API_BASE = DASHBOARD_API_ORIGIN + "/v2";
     let url = `${API_BASE}/rcm/guarantor-reconciliation?page=${page}&page_size=${pageSize}`;
     if (startDate)              url += `&start_date=${startDate}`;
     if (endDate)                url += `&end_date=${endDate}`;

@@ -1,3 +1,5 @@
+import { dashboardFetch as fetch } from '../../lib/dashboardFetch';
+import { DASHBOARD_API_ORIGIN } from '../../config/dashboardEnvironment';
 import React, { useState, useEffect, useCallback } from 'react';
 
 import { ascendApi } from '../../services/ascendApi';
@@ -9,7 +11,7 @@ import { AccessDenied } from '../../hooks/useRbacGuard';
 import { supabase } from '../../lib/supabase';
 
 // ─── API base for new endpoint ────────────────────────────────────────────────
-const API_BASE_V2 = 'https://api.nudashboard.com/v2';
+const API_BASE_V2 = DASHBOARD_API_ORIGIN + "/v2";
 const API_KEY = import.meta.env?.VITE_ASCEND_API_KEY || '';
 
 const buildHeaders = () => ({

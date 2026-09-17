@@ -51,6 +51,7 @@ export const notificationsService = {
         ?.update({ is_read: true })
         ?.eq('id', notificationId);
       if (error) throw error;
+      window.dispatchEvent(new Event('notifications:changed'));
       return { success: true };
     } catch (err) {
       console.error('markAsRead error:', err);
@@ -68,6 +69,7 @@ export const notificationsService = {
         ?.eq('user_id', user?.id)
         ?.eq('is_read', false);
       if (error) throw error;
+      window.dispatchEvent(new Event('notifications:changed'));
       return { success: true };
     } catch (err) {
       console.error('markAllAsRead error:', err);
@@ -83,6 +85,7 @@ export const notificationsService = {
         ?.update({ is_archived: true, is_read: true })
         ?.eq('id', notificationId);
       if (error) throw error;
+      window.dispatchEvent(new Event('notifications:changed'));
       return { success: true };
     } catch (err) {
       console.error('archiveNotification error:', err);
@@ -101,6 +104,7 @@ export const notificationsService = {
         ?.eq('is_read', true)
         ?.eq('is_archived', false);
       if (error) throw error;
+      window.dispatchEvent(new Event('notifications:changed'));
       return { success: true };
     } catch (err) {
       console.error('archiveAllRead error:', err);
@@ -122,6 +126,7 @@ export const notificationsService = {
           metadata,
         });
       if (error) throw error;
+      window.dispatchEvent(new Event('notifications:changed'));
       return { success: true };
     } catch (err) {
       console.error('createNotification error:', err);
@@ -136,7 +141,7 @@ export const notificationsService = {
       ?.on(
         'postgres_changes',
         {
-          event: 'INSERT',
+          event: '*',
           schema: 'public',
           table: 'notifications',
           filter: `user_id=eq.${userId}`,

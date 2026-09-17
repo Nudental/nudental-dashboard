@@ -1,3 +1,5 @@
+import { dashboardFetch as fetch } from '../lib/dashboardFetch';
+import { DASHBOARD_API_ORIGIN } from '../config/dashboardEnvironment';
 /**
  * expenseReportService.js — CENTRALIZED EXPENSE REPORT SERVICE
  *
@@ -684,18 +686,8 @@ export function resolveSourceTypeLabel(r) {
 }
 
 // ── MIDDLEWARE API BASE ───────────────────────────────────────────────────────
-const MIDDLEWARE_API_BASE = 'https://api.nudashboard.com/v2';
+const MIDDLEWARE_API_BASE = DASHBOARD_API_ORIGIN + "/v2";
 
-// V564: Module-level store for extra summary fields returned by fetchExpenseSummary.
-// These are populated during the API call and consumed by fetchExpenseKPIs.
-let _lastSummaryExtras = {
-  amexCharges: null,
-  amexCredits: null,
-  payrollTaxes: null,
-  benefits: null,
-  wfReferenceBuckets: null,
-  expenseModel: null,
-};
 function _middlewareHeaders() {
   return {
     'X-API-Key': import.meta.env?.VITE_ASCEND_API_KEY || '',
@@ -717,6 +709,15 @@ function _middlewareHeaders() {
  * @returns {{ amex: number|null, payroll: number|null, wfDirect: number|null, error: string|null }}
  */
 async function fetchExpenseSummary({ startDate, endDate, officeIds = [] } = {}) {
+  // Keep metadata with this request while other summaries are in flight.
+  let _lastSummaryExtras = {
+    amexCharges: null,
+    amexCredits: null,
+    payrollTaxes: null,
+    benefits: null,
+    wfReferenceBuckets: null,
+    expenseModel: null,
+  };
   // ── Step 1: Try the middleware aggregate API ──────────────────────────────
   // V297 FIX: Send recognized backend parameters only.
   // Backend accepts: date_from, date_to, startDate, endDate, year, month, quarter
@@ -822,7 +823,7 @@ async function fetchExpenseSummary({ startDate, endDate, officeIds = [] } = {}) 
         console.log('[expenseReportService] fetchExpenseSummary: totals.wf_banking =', apiWfDirect);
         console.log('[expenseReportService] fetchExpenseSummary: totals.amex_charges =', amexCharges, 'totals.amex_credits =', amexCredits);
         console.log('[expenseReportService] fetchExpenseSummary: totals.payroll_taxes =', payrollTaxes, 'totals.benefits =', benefits);
-        // Store extra fields on module-level for access in fetchExpenseKPIs
+        // Return this request's extra fields to fetchExpenseKPIs.
         _lastSummaryExtras = {
           amexCharges: isNaN(amexCharges) ? null : amexCharges,
           amexCredits: isNaN(amexCredits) ? null : amexCredits,

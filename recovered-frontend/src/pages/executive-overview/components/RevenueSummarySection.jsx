@@ -5,7 +5,7 @@ import { ascendApi } from '../../../services/ascendApi';
 import { resolveLocationId, buildExecutiveDateRange } from '../../../services/executiveOverviewService';
 
 // ── CRITICAL: Use the env-var API key, never a hardcoded fallback ─────────────
-// RevenueSummarySection previously used a hardcoded 'nudashboard_prod_key' string
+// RevenueSummarySection previously used a hardcoded '[environment-supplied API key]' string
 // which bypassed the real VITE_ASCEND_API_KEY and ignored location filters entirely.
 // All API calls now go through ascendApi which uses the correct key + locationId.
 

@@ -1,3 +1,5 @@
+import { dashboardFetch as fetch } from '../../../lib/dashboardFetch';
+import { DASHBOARD_API_ORIGIN } from '../../../config/dashboardEnvironment';
 /**
  * VerifiedArTrendChart.jsx
  * ─────────────────────────────────────────────────────────────────────────────
@@ -28,7 +30,7 @@ import Icon from '../../../components/AppIcon';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const API_BASE = 'https://api.nudashboard.com/v2';
+const API_BASE = DASHBOARD_API_ORIGIN + "/v2";
 const API_KEY  = import.meta.env?.VITE_ASCEND_API_KEY || '';
 
 /** Known Dentrix locationId → office name */
