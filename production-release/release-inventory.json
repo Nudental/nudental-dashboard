@@ -1,0 +1,4199 @@
+{
+  "compared_main": "61c224b1bf9ec53d91ab69a8eb00e563204bf76d",
+  "qa_head": "2859ae6416e59918af4487e781e343f790ab770a",
+  "files": [
+    {
+      "path": "phase4-audit/environment-test-support.cjs",
+      "added": "9",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase4-audit/test-ar-office-scope.cjs",
+      "added": "2",
+      "deleted": "1",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase4-audit/test-marketing-credit-readback.cjs",
+      "added": "2",
+      "deleted": "1",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase4-audit/test-marketing-office-selection.cjs",
+      "added": "2",
+      "deleted": "1",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase4-audit/test-payor-claim-office-scope.cjs",
+      "added": "2",
+      "deleted": "1",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase4-audit/test-rcm-dashboard-portion-options.cjs",
+      "added": "2",
+      "deleted": "1",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/.gitignore",
+      "added": "3",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/FINDINGS.md",
+      "added": "121",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/README.md",
+      "added": "185",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/access-restrictions-live-20260916.md",
+      "added": "18",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/account-settings-validation-20260916.md",
+      "added": "59",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/api-route-inventory.json",
+      "added": "4450",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/api-runtime-validation-20260915.md",
+      "added": "62",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/api_identity.py",
+      "added": "143",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/assemble_qa_release.py",
+      "added": "56",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/bone-access-validation-20260915.md",
+      "added": "30",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/bone-active-role-validation-20260915.md",
+      "added": "26",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/bone-calendar-date-validation-20260915.md",
+      "added": "20",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/bone-delete-audit-validation-20260915.md",
+      "added": "32",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/bone-manual-entry-validation-20260915.md",
+      "added": "29",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/bone-optional-fields-validation-20260915.md",
+      "added": "31",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/bone-single-deduction-validation-20260915.md",
+      "added": "30",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/build-hosted-permission-probes.cjs",
+      "added": "59",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/build_qa_application.py",
+      "added": "151",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/build_qa_installer.py",
+      "added": "93",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/build_schema.py",
+      "added": "211",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/check_qa_units.py",
+      "added": "15",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/clinical-catalog-office-validation-20260916.md",
+      "added": "13",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/clinical-stock-access-candidate-20260916.md",
+      "added": "9",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/clinical-stock-after-access-validation-20260916.md",
+      "added": "23",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/clinical-stock-create-history-validation-20260916.md",
+      "added": "15",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/clinical-stock-error-validation-20260916.md",
+      "added": "15",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/clinical-stock-idempotency-validation-20260916.md",
+      "added": "15",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/clinical-stock-identity-validation-20260916.md",
+      "added": "17",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/closed-route-validation-20260915.md",
+      "added": "24",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/connect_qa_tunnel.py",
+      "added": "76",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/cost-driver-toggle-validation-20260915.md",
+      "added": "14",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/daily-import-validation-20260916.md",
+      "added": "79",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/entity-review-validation-20260916.md",
+      "added": "23",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-approval-concurrency-validation-20260915.md",
+      "added": "41",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-approved-edit-concurrency-validation-20260915.md",
+      "added": "32",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-approved-flow-validation-20260915.md",
+      "added": "34",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-audit-validation-20260915.md",
+      "added": "37",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-bulk-approval-validation-20260915.md",
+      "added": "32",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-bulk-rejection-dialog-validation-20260915.md",
+      "added": "29",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-bulk-rejection-validation-20260915.md",
+      "added": "37",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-edit-caption-validation-20260915.md",
+      "added": "23",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-history-access-validation-20260915.md",
+      "added": "46",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-individual-rejection-validation-20260915.md",
+      "added": "35",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-insert-validation-20260915.md",
+      "added": "38",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-notification-result-validation-20260915.md",
+      "added": "35",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-reapproval-review-validation-20260915.md",
+      "added": "30",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-reversal-concurrency-validation-20260915.md",
+      "added": "32",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-tab-context-validation-20260915.md",
+      "added": "50",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-treatment-directory-validation-20260915.md",
+      "added": "37",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod-workflow-integrity-validation-20260915.md",
+      "added": "44",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod_approval_flow_fixture.py",
+      "added": "74",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/eod_bulk_fixture.py",
+      "added": "88",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/execution_intents.py",
+      "added": "131",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/front-desk-amazon-offices-validation-20260916.md",
+      "added": "17",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/front-desk-catalog-audit-validation-20260916.md",
+      "added": "34",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/front-desk-current-offices-validation-20260916.md",
+      "added": "33",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/front-desk-offices-validation-20260916.md",
+      "added": "24",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/front-desk-optional-date-validation-20260916.md",
+      "added": "32",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/front-desk-order-access-candidate-20260916.md",
+      "added": "11",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/front-desk-order-audit-validation-20260916.md",
+      "added": "21",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/front-desk-review-boundary-validation-20260916.md",
+      "added": "26",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/front-desk-submission-validation-20260916.md",
+      "added": "32",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/front-desk-summary-validation-20260916.md",
+      "added": "37",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/fulfillment-import-idempotency-validation-20260916.md",
+      "added": "17",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/goal-baseline-adapter-validation-20260916.md",
+      "added": "51",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/hosted-office-probes.sql",
+      "added": "276",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/hosted-profile-probes.sql",
+      "added": "191",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/hosted-validation-20260914.md",
+      "added": "120",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/hosted_client.py",
+      "added": "43",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/hosting-validation-20260915.md",
+      "added": "52",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/huddle-approval-concurrency-validation-20260915.md",
+      "added": "36",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/huddle-child-audit-validation-20260915.md",
+      "added": "33",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/huddle-create-validation-20260915.md",
+      "added": "35",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/huddle-daily-approval-validation-20260915.md",
+      "added": "35",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/huddle-daily-rejection-validation-20260915.md",
+      "added": "33",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/huddle-notification-validation-20260915.md",
+      "added": "35",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/huddle-review-permission-validation-20260915.md",
+      "added": "42",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/huddle-review-state-validation-20260915.md",
+      "added": "47",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/huddle-submit-validation-20260915.md",
+      "added": "56",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/huddle-task-marker-validation-20260915.md",
+      "added": "31",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/implant-attachment-storage-validation-20260915.md",
+      "added": "16",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/implant-consume-transaction-validation-20260915.md",
+      "added": "51",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/implant-delete-audit-validation-20260915.md",
+      "added": "14",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/implant-lookup-audit-validation-20260915.md",
+      "added": "35",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/implant-monthly-count-validation-20260915.md",
+      "added": "35",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/implant-office-validation-20260915.md",
+      "added": "39",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/implant-optional-fields-validation-20260915.md",
+      "added": "35",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/implant-pdf-render-validation-20260915.md",
+      "added": "16",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/implant-report-csv-validation-20260915.md",
+      "added": "15",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/implant-ui-workflows-checkpoint-20260915.md",
+      "added": "17",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/implant-usage-date-validation-20260915.md",
+      "added": "27",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/implant-usage-optional-validation-20260915.md",
+      "added": "33",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/import-office-validation-20260915.md",
+      "added": "16",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/import-overlay-validation-20260915.md",
+      "added": "14",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/inspect_qa_hosting.py",
+      "added": "50",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/install_qa_server.py",
+      "added": "79",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/install_qa_server.template.py",
+      "added": "79",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/insurance-access-validation-20260915.md",
+      "added": "42",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/insurance-cancel-audit-validation-20260916.md",
+      "added": "32",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/insurance-completed-lock-validation-20260916.md",
+      "added": "50",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/insurance-pdf-storage-validation-20260915.md",
+      "added": "51",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/insurance-request-time-validation-20260915.md",
+      "added": "44",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/inventory_qa_routes.py",
+      "added": "47",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/live-schema-summary.json",
+      "added": "16",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/local-threshold-validation-20260916.md",
+      "added": "24",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/notification-audit-validation-20260915.md",
+      "added": "30",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/notification-count-validation-20260915.md",
+      "added": "28",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/notification-task-filter-validation-20260915.md",
+      "added": "26",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/office-api-validation-20260915.md",
+      "added": "45",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/office-goal-validation-20260915.md",
+      "added": "26",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/office-ui-validation-20260915.md",
+      "added": "13",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/offline_database.cjs",
+      "added": "49",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/package-lock.json",
+      "added": "21",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/package.json",
+      "added": "7",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/phase5-checkpoint-20260916.md",
+      "added": "112",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/profile-photo-validation-20260916.md",
+      "added": "44",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/provider-ui-validation-20260915.md",
+      "added": "21",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/publish_qa_frontend.py",
+      "added": "117",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/qa-execution-validation-20260916.md",
+      "added": "45",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/qa-ui-validation-20260915.md",
+      "added": "41",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/qa_access.py",
+      "added": "154",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/qa_bootstrap.py",
+      "added": "22",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/qa_deploy.py",
+      "added": "85",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/qa_egress.py",
+      "added": "63",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/qa_execution.py",
+      "added": "130",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/qa_goal_baselines.py",
+      "added": "50",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/qa_launcher.py",
+      "added": "114",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/qa_offices.py",
+      "added": "65",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/qa_report_export.py",
+      "added": "206",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/qa_transport.py",
+      "added": "168",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/repairs/001-profile-access-boundary.sql",
+      "added": "87",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/002-office-workflow-boundary.sql",
+      "added": "44",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/003-eod-audit-coverage.sql",
+      "added": "16",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/004-eod-insert-boundary.sql",
+      "added": "20",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/005-eod-workflow-integrity.sql",
+      "added": "62",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/006-eod-history-identity.sql",
+      "added": "31",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/007-huddle-child-audit-coverage.sql",
+      "added": "20",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/008-task-page-permission.sql",
+      "added": "29",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/009-task-field-permission.sql",
+      "added": "34",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/010-notification-audit-coverage.sql",
+      "added": "13",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/011-huddle-review-permission.sql",
+      "added": "49",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/012-implant-office-boundary.sql",
+      "added": "46",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/013-task-identity-boundary.sql",
+      "added": "57",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/014-task-row-audit.sql",
+      "added": "15",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/015-implant-lookup-audit.sql",
+      "added": "27",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/016-implant-stock-transaction.sql",
+      "added": "32",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/017-implant-delete-audit.sql",
+      "added": "15",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/018-user-office-assignment-transaction.sql",
+      "added": "61",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/019-office-goal-read-boundary.sql",
+      "added": "16",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/020-insurance-access-boundary.sql",
+      "added": "41",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/021-bone-inventory-access-boundary.sql",
+      "added": "23",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/022-bone-role-active-profile.sql",
+      "added": "19",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/023-bone-delete-audit-history.sql",
+      "added": "15",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/024-supply-synthetic-offices.sql",
+      "added": "26",
+      "deleted": "0",
+      "class": "D",
+      "disposition": "Exclude synthetic constraints/execution simulation",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/025-supply-request-access-boundary.sql",
+      "added": "37",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/026-supply-draft-transaction.sql",
+      "added": "134",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/027-supply-submission-simulation.sql",
+      "added": "74",
+      "deleted": "0",
+      "class": "D",
+      "disposition": "Exclude synthetic constraints/execution simulation",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/028-supply-fulfillment-access-boundary.sql",
+      "added": "28",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/029-supply-fulfillment-audit.sql",
+      "added": "53",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/030-supply-receipt-columns.sql",
+      "added": "14",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/031-front-desk-synthetic-offices.sql",
+      "added": "20",
+      "deleted": "0",
+      "class": "D",
+      "disposition": "Exclude synthetic constraints/execution simulation",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/032-front-desk-catalog-access.sql",
+      "added": "28",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/033-front-desk-catalog-audit.sql",
+      "added": "38",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/034-front-desk-order-access.sql",
+      "added": "45",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/035-clinical-stock-access.sql",
+      "added": "53",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/036-clinical-stock-create-history.sql",
+      "added": "27",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/037-supply-receipt-transaction.sql",
+      "added": "101",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/038-urgent-request-audit-simulation.sql",
+      "added": "58",
+      "deleted": "0",
+      "class": "D",
+      "disposition": "Exclude synthetic constraints/execution simulation",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/039-urgent-request-access-boundary.sql",
+      "added": "27",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/040-front-desk-review-boundary.sql",
+      "added": "76",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/041-insurance-completed-form-lock.sql",
+      "added": "38",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/042-service-goal-read-boundary.sql",
+      "added": "15",
+      "deleted": "0",
+      "class": "C",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "batch": "3-individual-migration-review"
+    },
+    {
+      "path": "phase5-qa/repairs/README.md",
+      "added": "46",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/report-export-validation-20260915.md",
+      "added": "50",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/report-formats-validation-20260915.md",
+      "added": "44",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/requirements-qa.txt",
+      "added": "13",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/retained-review-history-20260916.json",
+      "added": "9",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/reusable-clinical-fixtures-20260916.json",
+      "added": "38",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/runtime_policy.py",
+      "added": "107",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/schema.sql",
+      "added": "30486",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/seed_hosted_fixtures.py",
+      "added": "86",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/server-isolation-20260915.md",
+      "added": "39",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/service-category-toggle-validation-20260915.md",
+      "added": "15",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/service-goal-read-boundary-validation-20260916.md",
+      "added": "27",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/single-layout-validation-20260915.md",
+      "added": "18",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/source-boundary-inventory.json",
+      "added": "755",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/storage/implant-attachments.sql",
+      "added": "30",
+      "deleted": "0",
+      "class": "C",
+      "batch": "3-individual-migration-review",
+      "disposition": "Compare production bucket/policy state; do not promote QA storage configuration"
+    },
+    {
+      "path": "phase5-qa/storage/insurance-verifications.sql",
+      "added": "35",
+      "deleted": "0",
+      "class": "C",
+      "batch": "3-individual-migration-review",
+      "disposition": "Compare production bucket/policy state; do not promote QA storage configuration"
+    },
+    {
+      "path": "phase5-qa/storage/profile-photos.sql",
+      "added": "30",
+      "deleted": "0",
+      "class": "C",
+      "batch": "3-individual-migration-review",
+      "disposition": "Compare production bucket/policy state; do not promote QA storage configuration"
+    },
+    {
+      "path": "phase5-qa/supply-access-validation-20260915.md",
+      "added": "28",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/supply-custom-draft-validation-20260915.md",
+      "added": "31",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/supply-draft-transaction-validation-20260915.md",
+      "added": "48",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/supply-fulfillment-access-validation-20260915.md",
+      "added": "28",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/supply-fulfillment-audit-validation-20260915.md",
+      "added": "36",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/supply-fulfillment-date-validation-20260915.md",
+      "added": "25",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/supply-fulfillment-optional-validation-20260915.md",
+      "added": "36",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/supply-fulfillment-recipient-validation-20260915.md",
+      "added": "29",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/supply-office-constraints-validation-20260915.md",
+      "added": "26",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/supply-qa-offices-validation-20260915.md",
+      "added": "28",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/supply-receipt-actor-display-validation-20260916.md",
+      "added": "15",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/supply-receipt-persistence-validation-20260915.md",
+      "added": "40",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/supply-receipt-transaction-candidate-20260916.md",
+      "added": "21",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/supply-receive-visibility-validation-20260916.md",
+      "added": "15",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/supply-submission-simulation-validation-20260915.md",
+      "added": "42",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/synthetic-role-fixtures.json",
+      "added": "5707",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/task-counter-validation-20260915.md",
+      "added": "49",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/task-field-permission-validation-20260915.md",
+      "added": "29",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/task-identity-validation-20260915.md",
+      "added": "36",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/task-page-permission-validation-20260915.md",
+      "added": "25",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/task-row-audit-validation-20260915.md",
+      "added": "28",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/task-status-concurrency-validation-20260915.md",
+      "added": "38",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/task_manager_ui_fixture.py",
+      "added": "72",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-bone-access-boundary.cjs",
+      "added": "31",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-bone-delete-audit.cjs",
+      "added": "28",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-bone-role-active.cjs",
+      "added": "26",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-bone-single-deduction.cjs",
+      "added": "29",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-clinical-stock-access.cjs",
+      "added": "36",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-clinical-stock-create-history.cjs",
+      "added": "23",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-eod-audit.cjs",
+      "added": "55",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-eod-history-access.cjs",
+      "added": "62",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-eod-insert-boundary.cjs",
+      "added": "68",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-eod-workflow-integrity.cjs",
+      "added": "81",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-front-desk-catalog-access.cjs",
+      "added": "32",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-front-desk-catalog-audit.cjs",
+      "added": "30",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-front-desk-order-access.cjs",
+      "added": "28",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-front-desk-review-boundary.cjs",
+      "added": "43",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-front-desk-synthetic-offices.cjs",
+      "added": "23",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-hosted-probe-files.cjs",
+      "added": "16",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-huddle-child-audit.cjs",
+      "added": "48",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-huddle-review-permission.cjs",
+      "added": "67",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-implant-delete-audit.cjs",
+      "added": "37",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-implant-lookup-audit.cjs",
+      "added": "45",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-implant-office-boundary.cjs",
+      "added": "69",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-implant-stock-transaction.cjs",
+      "added": "34",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-implant-storage-policy.cjs",
+      "added": "35",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-insurance-access-boundary.cjs",
+      "added": "38",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-insurance-completed-form-lock.cjs",
+      "added": "30",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-insurance-storage-policy.cjs",
+      "added": "28",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-insurance-time-schema.cjs",
+      "added": "11",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-notification-audit.cjs",
+      "added": "21",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-office-goal-read-boundary.cjs",
+      "added": "44",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-office-workflows.cjs",
+      "added": "58",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-profile-boundary.cjs",
+      "added": "65",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-profile-photo-storage.cjs",
+      "added": "28",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-repair-installation.cjs",
+      "added": "23",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-service-goal-read-boundary.cjs",
+      "added": "24",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-supply-access-boundary.cjs",
+      "added": "35",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-supply-draft-transaction.cjs",
+      "added": "53",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-supply-fulfillment-access.cjs",
+      "added": "35",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-supply-fulfillment-audit.cjs",
+      "added": "34",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-supply-receipt-columns.cjs",
+      "added": "19",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-supply-receipt-transaction.cjs",
+      "added": "55",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-supply-submission-simulation.cjs",
+      "added": "31",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-supply-synthetic-offices.cjs",
+      "added": "30",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-task-field-permission.cjs",
+      "added": "41",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-task-identity-boundary.cjs",
+      "added": "71",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-task-page-permission.cjs",
+      "added": "41",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-task-row-audit.cjs",
+      "added": "53",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-urgent-audit-simulation.cjs",
+      "added": "37",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-urgent-request-access.cjs",
+      "added": "31",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test-user-office-transaction.cjs",
+      "added": "64",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test_api_identity.py",
+      "added": "192",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test_execution_intents.py",
+      "added": "94",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test_qa_access.py",
+      "added": "77",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test_qa_execution.py",
+      "added": "137",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test_qa_goal_baselines.py",
+      "added": "65",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test_qa_offices.py",
+      "added": "102",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test_qa_offices_transport.py",
+      "added": "65",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test_qa_report_export.py",
+      "added": "241",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test_qa_transport.py",
+      "added": "122",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test_runtime_policy.py",
+      "added": "111",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test_schema_precision.py",
+      "added": "29",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test_server_isolation.py",
+      "added": "30",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/test_synthetic_role_fixtures.py",
+      "added": "56",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/urgent-audit-simulation-validation-20260916.md",
+      "added": "29",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/urgent-catalog-name-validation-20260916.md",
+      "added": "11",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/urgent-new-request-routing-validation-20260916.md",
+      "added": "15",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/urgent-office-stock-validation-20260916.md",
+      "added": "15",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/urgent-optional-fields-validation-20260916.md",
+      "added": "15",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/urgent-request-access-candidate-20260916.md",
+      "added": "13",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/user-active-state-validation-20260915.md",
+      "added": "14",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/user-office-transaction-validation-20260915.md",
+      "added": "20",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/user-role-options-validation-20260915.md",
+      "added": "17",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_closed_route_matrix.py",
+      "added": "101",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_eod_history_access.py",
+      "added": "90",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_eod_history_reads.py",
+      "added": "53",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_hosted_eod_audit.py",
+      "added": "82",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_hosted_eod_boundary.py",
+      "added": "73",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_hosted_eod_ui.py",
+      "added": "33",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_hosted_eod_updates.py",
+      "added": "99",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_hosted_frontend.py",
+      "added": "77",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_hosted_identity.py",
+      "added": "42",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_hosted_profile.py",
+      "added": "52",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_huddle_approval_ui.py",
+      "added": "33",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_huddle_child_audit.py",
+      "added": "47",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_huddle_review_permission.py",
+      "added": "96",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_implant_consume_service.cjs",
+      "added": "66",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_implant_csv_artifact.cjs",
+      "added": "32",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_implant_delete_audit.py",
+      "added": "42",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_implant_lookup_audit.py",
+      "added": "68",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_implant_month_count.py",
+      "added": "25",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_implant_office_boundary.py",
+      "added": "110",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_implant_storage.py",
+      "added": "94",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_import_offices.py",
+      "added": "20",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_notification_audit.py",
+      "added": "44",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_profile_storage.py",
+      "added": "81",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_qa_eod_access.py",
+      "added": "101",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_qa_offices.py",
+      "added": "107",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_qa_report_export.py",
+      "added": "145",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_qa_report_formats.py",
+      "added": "134",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_qa_runtime.py",
+      "added": "75",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_task_field_permission.py",
+      "added": "36",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_task_identity_boundary.py",
+      "added": "100",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_task_page_permission.py",
+      "added": "34",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_task_row_audit.py",
+      "added": "70",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_task_status_concurrency.py",
+      "added": "72",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-qa/verify_user_office_transaction.py",
+      "added": "55",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/PH5-EXP-002-request-isolation.md",
+      "added": "33",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/README.md",
+      "added": "2",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/performance-baseline.md",
+      "added": "43",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-account-job-title-readback.cjs",
+      "added": "21",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-bone-inventory-calendar-date.cjs",
+      "added": "13",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-bone-manual-entry-default.cjs",
+      "added": "30",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-bone-optional-fields.cjs",
+      "added": "18",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-clinical-catalog-office.cjs",
+      "added": "15",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-clinical-stock-error.cjs",
+      "added": "15",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-clinical-stock-idempotency.cjs",
+      "added": "23",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-clinical-stock-identity.cjs",
+      "added": "20",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-cost-driver-toggle.cjs",
+      "added": "24",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-daily-import-date-display.cjs",
+      "added": "10",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-daily-import-unavailable-totals.cjs",
+      "added": "11",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-daily-import-upsert-reconciliation.cjs",
+      "added": "19",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-dashboard-api-session.cjs",
+      "added": "62",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-eod-approval-concurrency.cjs",
+      "added": "67",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-eod-approved-edit-concurrency.cjs",
+      "added": "27",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-eod-bulk-approval.cjs",
+      "added": "61",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-eod-bulk-rejection-dialog.cjs",
+      "added": "26",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-eod-bulk-rejection.cjs",
+      "added": "61",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-eod-draft-persistence.cjs",
+      "added": "49",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-eod-individual-rejection.cjs",
+      "added": "64",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-eod-notification-result.cjs",
+      "added": "36",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-eod-permission-loading.cjs",
+      "added": "52",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-eod-profile-office.cjs",
+      "added": "28",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-eod-reversal-concurrency.cjs",
+      "added": "27",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-eod-review-reapproval.cjs",
+      "added": "26",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-eod-tab-context.cjs",
+      "added": "51",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-eod-treatment-office-directory.cjs",
+      "added": "39",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-expense-summary-request-isolation.cjs",
+      "added": "57",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-front-desk-current-offices.cjs",
+      "added": "17",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-front-desk-optional-date.cjs",
+      "added": "10",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-front-desk-order-audit.cjs",
+      "added": "29",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-front-desk-review-boundary.cjs",
+      "added": "16",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-front-desk-write-summary.cjs",
+      "added": "21",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-fulfillment-import-idempotency.cjs",
+      "added": "22",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-fulfillment-import-ui.cjs",
+      "added": "16",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-huddle-approval-concurrency.cjs",
+      "added": "17",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-huddle-create-concurrency.cjs",
+      "added": "43",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-huddle-daily-approval-concurrency.cjs",
+      "added": "68",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-huddle-daily-rejection-concurrency.cjs",
+      "added": "65",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-huddle-notification-result.cjs",
+      "added": "37",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-huddle-review-state-guards.cjs",
+      "added": "19",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-huddle-submit-concurrency.cjs",
+      "added": "19",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-huddle-task-readback.cjs",
+      "added": "22",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-implant-attachment-render.cjs",
+      "added": "22",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-implant-consume-atomic.cjs",
+      "added": "18",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-implant-monthly-usage.cjs",
+      "added": "20",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-implant-optional-fields.cjs",
+      "added": "20",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-implant-report-csv.cjs",
+      "added": "13",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-implant-usage-calendar-date.cjs",
+      "added": "12",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-implant-usage-optionals.cjs",
+      "added": "18",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-import-qa-offices.cjs",
+      "added": "12",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-insurance-cancel-audit.cjs",
+      "added": "22",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-insurance-request-time.cjs",
+      "added": "11",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-main-layout-single-page.cjs",
+      "added": "22",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-notification-count-refresh.cjs",
+      "added": "20",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-qa-api-key-configuration.cjs",
+      "added": "5",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-qa-environment-policy.cjs",
+      "added": "14",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-qa-response-headers.cjs",
+      "added": "10",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-service-category-toggle.cjs",
+      "added": "24",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-service-goal-qa-baseline.cjs",
+      "added": "6",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-supply-fulfillment-local-date.cjs",
+      "added": "23",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-supply-fulfillment-optional-fields.cjs",
+      "added": "34",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-supply-fulfillment-recipient.cjs",
+      "added": "32",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-supply-optional-ids.cjs",
+      "added": "28",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-supply-qa-notifications.cjs",
+      "added": "21",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-supply-qa-offices.cjs",
+      "added": "29",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-supply-receipt-actor-display.cjs",
+      "added": "12",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-supply-receipt-errors.cjs",
+      "added": "21",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-supply-receipt-transaction-routing.cjs",
+      "added": "13",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-supply-receive-visibility.cjs",
+      "added": "19",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-task-mutation-refresh.cjs",
+      "added": "20",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-task-status-concurrency.cjs",
+      "added": "22",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-urgent-catalog-name.cjs",
+      "added": "13",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-urgent-new-request-routing.cjs",
+      "added": "11",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-urgent-notification-simulation.cjs",
+      "added": "13",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-urgent-office-stock.cjs",
+      "added": "29",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-urgent-optional-fields.cjs",
+      "added": "13",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-user-active-state.cjs",
+      "added": "42",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-user-invitation-session.cjs",
+      "added": "62",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-user-office-transaction.cjs",
+      "added": "32",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "phase5-reconciliation/test-user-role-options.cjs",
+      "added": "20",
+      "deleted": "0",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    },
+    {
+      "path": "recovered-frontend/src/components/QaEnvironmentBanner.jsx",
+      "added": "15",
+      "deleted": "0",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/components/layout/Header.jsx",
+      "added": "5",
+      "deleted": "5",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/components/layout/MainLayout.jsx",
+      "added": "3",
+      "deleted": "6",
+      "class": "B",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/components/payroll/comparison/ComparisonRoot.jsx",
+      "added": "4",
+      "deleted": "2",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/config/dashboardEnvironment.js",
+      "added": "7",
+      "deleted": "0",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/config/environmentPolicy.js",
+      "added": "46",
+      "deleted": "0",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/config/qaHeaders.js",
+      "added": "14",
+      "deleted": "0",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/contexts/AuthContext.jsx",
+      "added": "1",
+      "deleted": "1",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/hooks/gusto/useGustoComparison.js",
+      "added": "4",
+      "deleted": "2",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/hooks/gusto/useGustoContractors.js",
+      "added": "4",
+      "deleted": "2",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/hooks/gusto/useGustoEmployees.js",
+      "added": "4",
+      "deleted": "2",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/hooks/gusto/useGustoPayrollRuns.js",
+      "added": "4",
+      "deleted": "2",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/hooks/gusto/useGustoSummaryTotals.js",
+      "added": "4",
+      "deleted": "2",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/index.jsx",
+      "added": "3",
+      "deleted": "1",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/lib/dashboardFetch.js",
+      "added": "21",
+      "deleted": "0",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/lib/gusto/gustoImportHelpers.js",
+      "added": "6",
+      "deleted": "4",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/lib/supabase.js",
+      "added": "19",
+      "deleted": "1",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/alert-center/index.jsx",
+      "added": "2",
+      "deleted": "0",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/bone-and-tissue-inventory/components/EntryModal.jsx",
+      "added": "1",
+      "deleted": "12",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/bone-and-tissue-inventory/components/InventoryTable.jsx",
+      "added": "1",
+      "deleted": "1",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/bone-and-tissue-inventory/components/MobileEntryModal.jsx",
+      "added": "3",
+      "deleted": "8",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/daily-entry-form/components/DailyBulkImportTab.jsx",
+      "added": "4",
+      "deleted": "4",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/daily-entry-form/components/ReconciliationPanel.jsx",
+      "added": "8",
+      "deleted": "3",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/daily-entry-form/components/TreatmentPlanCompletionTab.jsx",
+      "added": "4",
+      "deleted": "4",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/daily-entry-form/components/UnscheduledTreatmentTab.jsx",
+      "added": "7",
+      "deleted": "5",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/daily-entry-form/index.jsx",
+      "added": "22",
+      "deleted": "18",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/daily-morning-huddle/components/ChecklistSection.jsx",
+      "added": "2",
+      "deleted": "2",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/executive-overview/components/RevenueSummarySection.jsx",
+      "added": "1",
+      "deleted": "1",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/financial-analytics/ExpenseReport.jsx",
+      "added": "3",
+      "deleted": "1",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/huddle-approvals/index.jsx",
+      "added": "28",
+      "deleted": "14",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/implant-inventory-management/components/AddImplantModal.jsx",
+      "added": "13",
+      "deleted": "2",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/implant-inventory-management/components/ImplantBulkImportWizard.jsx",
+      "added": "1",
+      "deleted": "1",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/implant-inventory-management/components/ImplantReportsTab.jsx",
+      "added": "10",
+      "deleted": "3",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/implant-inventory-management/components/ImplantUsageLogTab.jsx",
+      "added": "1",
+      "deleted": "1",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/insurance-verify/components/NewVerificationRequestForm.jsx",
+      "added": "4",
+      "deleted": "2",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/inventory-dashboard/components/FrontDeskAmazonOrderHistory.jsx",
+      "added": "2",
+      "deleted": "13",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/inventory-dashboard/components/FrontDeskCurrentInventory.jsx",
+      "added": "7",
+      "deleted": "30",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/inventory-dashboard/components/FrontDeskInventoryTab.jsx",
+      "added": "23",
+      "deleted": "3",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/inventory-dashboard/components/supply/FulfillmentImportTab.jsx",
+      "added": "20",
+      "deleted": "6",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/inventory-dashboard/components/supply/FulfillmentLogTab.jsx",
+      "added": "19",
+      "deleted": "6",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/inventory-dashboard/components/supply/MobileCatalogView.jsx",
+      "added": "16",
+      "deleted": "8",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/inventory-dashboard/components/supply/MobileReceiveSuppliesModal.jsx",
+      "added": "6",
+      "deleted": "3",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/inventory-dashboard/components/supply/SupplyCatalogTab.jsx",
+      "added": "3",
+      "deleted": "1",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/inventory-dashboard/components/supply/UrgentRequestTab.jsx",
+      "added": "52",
+      "deleted": "12",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/management/CostDriversManagement.jsx",
+      "added": "2",
+      "deleted": "2",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/management/ServiceCategoriesManagement.jsx",
+      "added": "2",
+      "deleted": "2",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/payroll/components/ProviderCompensationNew.jsx",
+      "added": "4",
+      "deleted": "2",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/pending-approvals/index.jsx",
+      "added": "80",
+      "deleted": "30",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/rcm/components/VerifiedArTrendChart.jsx",
+      "added": "3",
+      "deleted": "1",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/sync-dashboard/index.jsx",
+      "added": "3",
+      "deleted": "1",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/team-assignments/index.jsx",
+      "added": "2",
+      "deleted": "2",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/users-management/components/BulkActionsBar.jsx",
+      "added": "0",
+      "deleted": "7",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/users-management/components/EditUserModal.jsx",
+      "added": "0",
+      "deleted": "7",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/users-management/components/InviteUserModal.jsx",
+      "added": "0",
+      "deleted": "7",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/pages/users-management/components/UserFilters.jsx",
+      "added": "0",
+      "deleted": "7",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/actionItemsService.js",
+      "added": "5",
+      "deleted": "2",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/ascendApi.js",
+      "added": "3",
+      "deleted": "1",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/boneTissueService.js",
+      "added": "8",
+      "deleted": "2",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/bulkImportService.js",
+      "added": "6",
+      "deleted": "0",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/dailyEntryBulkImportService.js",
+      "added": "11",
+      "deleted": "7",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/emailService.js",
+      "added": "10",
+      "deleted": "0",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/eodReportService.js",
+      "added": "3",
+      "deleted": "1",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/eodTreatmentService.js",
+      "added": "3",
+      "deleted": "1",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/expenseReportService.js",
+      "added": "14",
+      "deleted": "13",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/frontDeskInventoryService.js",
+      "added": "3",
+      "deleted": "2",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/fulfillmentImportService.js",
+      "added": "45",
+      "deleted": "0",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/huddleService.js",
+      "added": "9",
+      "deleted": "2",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/implantInventoryService.js",
+      "added": "21",
+      "deleted": "26",
+      "class": "C",
+      "batch": "3-schema-dependent",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/insuranceVerifyService.js",
+      "added": "13",
+      "deleted": "2",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/kpiService.js",
+      "added": "4",
+      "deleted": "2",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/managementService.js",
+      "added": "6",
+      "deleted": "4",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/notificationsService.js",
+      "added": "6",
+      "deleted": "1",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/operationsService.js",
+      "added": "3",
+      "deleted": "1",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/otpAuthService.js",
+      "added": "3",
+      "deleted": "1",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/rcmService.js",
+      "added": "6",
+      "deleted": "4",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/reportExportService.js",
+      "added": "3",
+      "deleted": "1",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/serviceCategoryGoalsService.js",
+      "added": "2",
+      "deleted": "1",
+      "class": "A",
+      "batch": "2-operations",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/src/services/supplyRequestService.js",
+      "added": "59",
+      "deleted": "7",
+      "class": "C",
+      "batch": "3-schema-dependent",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "recovered-frontend/vite.config.mjs",
+      "added": "17",
+      "deleted": "4",
+      "class": "A",
+      "batch": "1-core",
+      "disposition": "Promote verified application behavior with production inputs; QA branches stay inactive"
+    },
+    {
+      "path": "tools/test-dashboard.cjs",
+      "added": "4",
+      "deleted": "1",
+      "class": "D",
+      "batch": "not-runtime",
+      "disposition": "Test/evidence or QA infrastructure; never deploy as production runtime"
+    }
+  ],
+  "database_repairs": [
+    {
+      "repair": "001-profile-access-boundary.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "002-office-workflow-boundary.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "003-eod-audit-coverage.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "004-eod-insert-boundary.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "005-eod-workflow-integrity.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "006-eod-history-identity.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "007-huddle-child-audit-coverage.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "008-task-page-permission.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "009-task-field-permission.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "010-notification-audit-coverage.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "011-huddle-review-permission.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "012-implant-office-boundary.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "013-task-identity-boundary.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "014-task-row-audit.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "015-implant-lookup-audit.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "016-implant-stock-transaction.sql",
+      "class": "C",
+      "kind": "required for repaired write functionality",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "017-implant-delete-audit.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "018-user-office-assignment-transaction.sql",
+      "class": "C",
+      "kind": "required for repaired write functionality",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "019-office-goal-read-boundary.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "020-insurance-access-boundary.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "021-bone-inventory-access-boundary.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "022-bone-role-active-profile.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "023-bone-delete-audit-history.sql",
+      "class": "C",
+      "kind": "required for repaired write functionality",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "024-supply-synthetic-offices.sql",
+      "class": "D",
+      "kind": "QA-only",
+      "disposition": "Exclude synthetic constraints/execution simulation",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "025-supply-request-access-boundary.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "026-supply-draft-transaction.sql",
+      "class": "C",
+      "kind": "required for repaired write functionality",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "027-supply-submission-simulation.sql",
+      "class": "D",
+      "kind": "QA-only",
+      "disposition": "Exclude synthetic constraints/execution simulation",
+      "qa_namespaced": true
+    },
+    {
+      "repair": "028-supply-fulfillment-access-boundary.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "029-supply-fulfillment-audit.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
+      "qa_namespaced": true
+    },
+    {
+      "repair": "030-supply-receipt-columns.sql",
+      "class": "C",
+      "kind": "required for repaired write functionality",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "031-front-desk-synthetic-offices.sql",
+      "class": "D",
+      "kind": "QA-only",
+      "disposition": "Exclude synthetic constraints/execution simulation",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "032-front-desk-catalog-access.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "033-front-desk-catalog-audit.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
+      "qa_namespaced": true
+    },
+    {
+      "repair": "034-front-desk-order-access.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "035-clinical-stock-access.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "036-clinical-stock-create-history.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
+      "qa_namespaced": true
+    },
+    {
+      "repair": "037-supply-receipt-transaction.sql",
+      "class": "C",
+      "kind": "required for repaired write functionality",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "038-urgent-request-audit-simulation.sql",
+      "class": "D",
+      "kind": "QA-only",
+      "disposition": "Exclude synthetic constraints/execution simulation",
+      "qa_namespaced": true
+    },
+    {
+      "repair": "039-urgent-request-access-boundary.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    },
+    {
+      "repair": "040-front-desk-review-boundary.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
+      "qa_namespaced": true
+    },
+    {
+      "repair": "041-insurance-completed-form-lock.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
+      "qa_namespaced": true
+    },
+    {
+      "repair": "042-service-goal-read-boundary.sql",
+      "class": "C",
+      "kind": "safe-hardening candidate requiring production role validation",
+      "disposition": "Review against current production schema; idempotent candidate and rollback required",
+      "qa_namespaced": false
+    }
+  ],
+  "financial_corrections": "E \u2014 all excluded; frozen private registers are not branch changes"
+}
