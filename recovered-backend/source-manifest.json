@@ -364,9 +364,10 @@
   },
   {
     "source_file": "middleware/main_candidate.py",
-    "sha256": "a3961f234a8895617052de9cce99306cb6380f48c2d650f4395ab2c160bf0336",
-    "template_sha256": "f408d6f3b23c13bcf0747dda00c5d4184cb3d4c53496d8fc02deb2d0f0eb190c",
-    "round_trip_exact": true
+    "sha256": "5270a49bb0623b96c5eb372dab409026adc257f0efcc5dacf3b10f33cb5c31f8",
+    "template_sha256": "b336bd11ad357413abf265d203e45beb2d41b33466434762acbe48b3f3cd5c08",
+    "round_trip_exact": true,
+    "previous_production_sha256": "a3961f234a8895617052de9cce99306cb6380f48c2d650f4395ab2c160bf0336"
   },
   {
     "file": "middleware/otp_auth.py",
@@ -731,5 +732,26 @@
     "sha256": "bda610354c12bfb5bd3e1878ac28044f4e7ea24758b296a24fb8eebb5b604608",
     "template_sha256": "bda610354c12bfb5bd3e1878ac28044f4e7ea24758b296a24fb8eebb5b604608",
     "round_trip_exact": true
+  },
+  {
+    "source_file": "middleware/api_identity.py",
+    "sha256": "a62b5634262d65fec1a98080f063c10f38e5d832e8d1204837f4d613bbfe65e9",
+    "template_sha256": "a62b5634262d65fec1a98080f063c10f38e5d832e8d1204837f4d613bbfe65e9",
+    "round_trip_exact": true,
+    "introduced": "phase6-api-identity"
+  },
+  {
+    "source_file": "middleware/api_payroll_policy.py",
+    "sha256": "98e745ea45b2e46f29d383f9c319e5cf580e2f0474a2a2e38b4fdc464b29291a",
+    "template_sha256": "98e745ea45b2e46f29d383f9c319e5cf580e2f0474a2a2e38b4fdc464b29291a",
+    "round_trip_exact": true,
+    "introduced": "phase6-api-identity"
+  },
+  {
+    "source_file": "middleware/api_access_runtime.py",
+    "sha256": "54ba20fe6f346a72cb523c2ad88f83eb6c24e7ffb6960899ddd347fde4c3d6e3",
+    "template_sha256": "54ba20fe6f346a72cb523c2ad88f83eb6c24e7ffb6960899ddd347fde4c3d6e3",
+    "round_trip_exact": true,
+    "introduced": "phase6-api-identity"
   }
 ]

@@ -233,6 +233,10 @@ def startup_event():
     logger.info(f"Startup complete. API ready on port {_port}.")
 
 
+# Named background-job tokens have an exact route boundary on every path.
+from api_access_runtime import ScopedJobBoundary
+app.add_middleware(ScopedJobBoundary)
+
 # CORS
 app.add_middleware(
     CORSMiddleware,
@@ -246,9 +250,23 @@ app.add_middleware(
 # Auth
 # ---------------------------------------------------------------------------
 
-def verify_api_key(x_api_key: Optional[str] = Header(None)):
+def verify_api_key(request: Request, x_api_key: Optional[str] = Header(None)):
     if x_api_key is None or x_api_key != NUDASHBOARD_API_KEY:
         raise HTTPException(status_code=401, detail="Invalid or missing API key")
+    # Phase 6 bounded rollout: the app key never identifies a person or job.
+    # Preserve unrelated routes until their own caller/scope review is complete.
+    from api_payroll_policy import PAYROLL_READS
+    if request.url.path in PAYROLL_READS:
+        from api_access_runtime import authorize_payroll
+        from api_identity import AccessFailure
+        from otp_auth import _load_sb
+        try:
+            authorize_payroll(request, _load_sb)
+        except AccessFailure as error:
+            messages = {401: "A valid Dashboard identity is required",
+                        403: "This action is not permitted",
+                        503: "Access verification is temporarily unavailable"}
+            raise HTTPException(status_code=error.status, detail=messages[error.status]) from None
     return x_api_key
 
 

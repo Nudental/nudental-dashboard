@@ -1,0 +1,107 @@
+"""Runtime adapter for the first bounded production API identity release."""
+from pathlib import Path
+import json
+import os
+import stat
+from api_identity import AccessFailure, IdentityBoundary, JobResolver, UserResolver
+from api_payroll_policy import PAYROLL_READS, authenticate_payroll_request, payroll_authorize
+
+
+def private_json(path, *, absent=None):
+    path = Path(path)
+    if not path.exists() and absent is not None:
+        return absent
+    info = path.lstat()
+    if (not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode) & 0o077
+            or info.st_uid not in {0, os.geteuid()}):
+        raise AccessFailure(503)
+    if info.st_size > 65536:
+        raise AccessFailure(503)
+    return json.loads(path.read_text())
+
+
+def job_configuration():
+    return private_json(Path.home() / '.config/nudashboard/api-job-scopes.json',
+                        absent={'version': 1, 'jobs': []})
+
+
+class ScopedJobBoundary:
+    """A job token cannot bypass its scope through an older unreviewed route."""
+    def __init__(self, app, *, load_jobs=job_configuration):
+        self.app = app
+        self.boundary = IdentityBoundary(app, users=None, jobs=JobResolver(load_jobs),
+                                         authorize=payroll_authorize)
+
+    async def __call__(self, scope, receive, send):
+        credentials = [v for k,v in scope.get('headers',[]) if k.lower()==b'authorization']
+        if any(value.partition(b' ')[2].lstrip().startswith(b'ndjob_') for value in credentials):
+            await self.boundary(scope, receive, send)
+        else:
+            await self.app(scope, receive, send)
+
+
+def authorize_payroll(request, load_supabase, *, session_factory=None, job_configuration=None):
+    """The existing application key remains an additional check in the caller."""
+    if request.url.path not in PAYROLL_READS:
+        raise ValueError('Unreviewed route passed to payroll adapter')
+    try:
+        config = load_supabase()
+        if session_factory is None:
+            import requests
+            session_factory = requests.Session
+        if job_configuration is None:
+            job_file = Path.home() / '.config/nudashboard/api-job-scopes.json'
+            job_configuration = lambda: private_json(job_file, absent={'version': 1, 'jobs': []})
+        users = UserResolver(config['project_url'].rstrip('/'), config['secret_key'], session_factory)
+        jobs = JobResolver(job_configuration)
+        return authenticate_payroll_request(request, users, jobs)
+    except AccessFailure:
+        raise
+    except Exception:
+        raise AccessFailure(503) from None
+
+
+def validator_headers(job_id, path, origin, *, load_credentials=None):
+    """Credential goes only to the fixed existing Dashboard API destinations.
+
+    Used by existing validation scripts; never a browser bundle or provider call.
+    The file holds a separate credential for each named existing validator.
+    """
+    if origin not in {'https://api.nudashboard.com', 'http://localhost:8001', 'http://127.0.0.1:8001'}:
+        raise AccessFailure(403)
+    from urllib.parse import urlsplit
+    parsed = urlsplit(path)
+    if parsed.scheme or parsed.netloc or parsed.fragment or not parsed.path.startswith('/v2/'):
+        return {}
+    if job_id not in {'dashboard-validator', 'reconciliation-validator'}:
+        raise AccessFailure(403)
+    if load_credentials is None:
+        file = Path.home() / '.config/nudashboard' / (job_id + '.json')
+        load_credentials = lambda: private_json(file)
+    try:
+        record = load_credentials()
+        token = record['token']
+        import re
+        if record.get('id') != job_id or not re.fullmatch(r'ndjob_[A-Za-z0-9_-]{43}', token):
+            raise AccessFailure(503)
+        if parsed.path not in record.get('routes', []):
+            return {}
+        return {'Authorization': 'Bearer ' + token}
+    except AccessFailure:
+        raise
+    except Exception:
+        raise AccessFailure(503) from None
+
+
+def validator_open(request, *, timeout):
+    """Do not forward the job credential through an HTTP redirect."""
+    import urllib.request
+    from urllib.parse import urlsplit
+    parsed = urlsplit(request.full_url)
+    origin = parsed.scheme + '://' + parsed.netloc
+    if origin not in {'https://api.nudashboard.com', 'http://localhost:8001', 'http://127.0.0.1:8001'}:
+        raise AccessFailure(403)
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            return None
+    return urllib.request.build_opener(NoRedirect()).open(request, timeout=timeout)

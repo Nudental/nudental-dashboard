@@ -1,6 +1,6 @@
 # Phase 6 release checkpoint
 
-Status: **IN PROGRESS — production migrations not applied**. This is not a Phase 6 completion report.
+Status: **IN PROGRESS — Group A deployed and verified; Groups B–E await exact approval after automatic review rejection**. This is not a Phase 6 completion report.
 
 ## Verified candidate
 
@@ -26,8 +26,16 @@ These client checks do not claim production migration deployment or persistent Q
 - `backup/production-before-phase6-group-a-20260917` preserves previous main.
 - `backup/qa-before-phase6-20260917` preserves previous QA source `be846c8`; previous Pages deployment `7e91a103-ef44-4f3a-a667-447e112e6997` remains available. Source QA branch remains `2859ae6`.
 - Per-group private schema snapshots, rollback SQL, row hashes and native receipts are retained locally and on the existing server. Never delete historical audit rows to restore Group C's old FK.
-- Exact Group A production approval is pending after automatic approval review rejected the combined script's possible persistent path. The separate forced-rollback preflight was allowed and passed. Do not infer approval from elapsed time.
-- API design decision is pending: separate scoped unattended access versus signed-in user sessions for every caller. One empty-result payroll probe accepted missing/invalid user sessions when the shared application key was supplied. Source inspection found 100 shared-key route declarations; this is not proof that every route lacks indirect authorization. Known validation scripts call business APIs; the watchdog references health only. No API authentication change or secret change has been made.
+- Dr. G explicitly approved Group A and separate restricted background-job API access. Group A applied 2026-09-17 21:51 UTC; 4,425 row fingerprints unchanged, seven functions/two policies/five triggers, existing owners/grants preserved. Fresh rollback directory: production-a-20260917T215054Z on the existing server. Live Tasks/Profile PASS; all 13 active actors across Tasks/Notifications match reviewed visibility; production and QA frontend/API HTTP 200.
+- Automatic review rejected Group B because the latest explicit approval named only Group A. One combined B–E approval request is pending; do not retry production apply until answered.
+- API design decision approved: signed-in user access plus separate scoped unattended access. One empty-result payroll probe accepted missing/invalid user sessions when the shared application key was supplied. Source inspection found 100 shared-key route declarations; this is not proof that every route lacks indirect authorization. Known validation scripts call business APIs; the watchdog references health only. No API authentication change or secret change has been made.
 - Specialized implant/bone/supply audit tables have actor/office/action/state/time fields but no immutable historical actor-role field. Common `audit_logs` candidate context records actor role. Current-profile role lookup must not be presented as historical proof.
 
-Continue after required decisions: fresh per-group backup/data guards → bounded production apply → live workflow/permission/audit verification → main fast-forward only after PASS. Frozen accounting remains outside this phase.
+Continue with the approved API design while B–E approval is pending: fresh per-group backup/data guards → bounded production apply → live workflow/permission/audit verification → main fast-forward only after PASS. Frozen accounting remains outside this phase.
+
+
+## Approved API candidate preparation
+
+The first bounded API candidate protects eight existing payroll read routes with current Supabase identity, active/approved profile, page permissions and office scope, plus separate scoped read-only identities for the two existing validators. Calculation/data-reader syntax trees are unchanged. Other API route groups remain explicitly unclosed; see API-ACCESS.md. No API production file, service, job credential or schedule has changed yet.
+
+Candidate main SHA256 5270a49bb0623b96c5eb372dab409026adc257f0efcc5dacf3b10f33cb5c31f8. Nineteen-file materialization PASS; 13 materializer tests PASS; 52 local tests and 58 native runtime/framework tests PASS with guard active and no blocked network/data attempts. All 17 retained backend suites PASS; five isolated test harnesses were adapted without removing assertions or changing original test files. QA identity resolution PASS for three existing active fixtures plus invalid-token rejection. The candidate is staged only at api-identity-candidate-v3 on the existing server.
