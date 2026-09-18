@@ -1,6 +1,6 @@
 # Legacy Amazon request API boundary
 
-Candidate verified; deployment pending the bounded release receipt.
+Deployed and verified from `34e9f2f008dad5bccdd2ed0c75ff8f3ee8c16c59`.
 
 This batch covers five existing route declarations: request list/create,
 approve/reject and read-only Amazon order history. It does not grant or execute
@@ -42,3 +42,11 @@ All 23 unrelated materialized files and all unrelated route bodies are unchanged
 Production verification is limited to safe denial probes, read-only health and
 the existing Front Desk history UI. Real requests, approvals, purchases and syncs
 remain intentionally untested and are not authorized by this release procedure.
+
+## Legacy Amazon request identity/office boundary — deployed
+
+Source `34e9f2f008dad5bccdd2ed0c75ff8f3ee8c16c59` applied at 2026-09-18T08:27:00.919486+00:00; main SHA256 `00c18f7187717386f51c1d11af0d9dbd54047e82d202f6ebd505a2e7d5a83457`. Five request/history route declarations now verify current human identity and existing request/page/review grants. Creation binds actor and canonical office. Review requires Regional Manager/Admin/Super Admin, pending state, the stored office and no self-review. Conditional updates guard concurrent office/requester/state changes. Read filters are encoded. Existing schema fields replace the previously nonexistent reviewer columns; rejection attribution is in the existing service journal, not a newly claimed database/UI audit trail.
+
+177 native tests and 17 retained backend suites PASS under network/business-data guards; 23 unrelated materialized files and all unrelated route bodies are unchanged. Candidate/live missing or invalid identities return 401; read-only job credentials return 403. The existing payroll validator remains 200. All 78,277 fresh guarded original rows are preserved, including zero legacy order requests and 129 order-history records. RLS on the request table remains enabled with no ordinary policies. No schema/policy, provider/config/job/frontend change was needed. Production/QA health PASS. The signed-in Front Desk Amazon Order History view displays 129 records with no captured errors; its existing Supabase client is unchanged.
+
+No real order, request, approval, rejection, cart, purchase, provider authorization or sync was executed. Cart/purchase/sync/OAuth APIs remain separate pending groups. Recovery: `backup/api-before-phase6-orders-20260918`, `api-order-backup-20260918T082630Z`. The private backup is preserved locally and on the server. Phase 6 and main integration remain in progress.
