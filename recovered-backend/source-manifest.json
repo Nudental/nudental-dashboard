@@ -79,9 +79,10 @@
   },
   {
     "source_file": "middleware/ascend_service.py",
-    "sha256": "85b660c8bd0e5da672636915aa3942ec3f0cc97870839de15acd681f1ec74664",
-    "template_sha256": "cfdccdbabdae75b81a2f57071def4a88837c2cc2d03078b869cb4b9d13f42a6e",
-    "round_trip_exact": true
+    "sha256": "f73ebf4b1f48b8a715de73233581b296260806436faaa45d36d3c45036f1ac46",
+    "template_sha256": "cfe767322f788d3e67340a8a8271aea7b6ba953427aa6de18c2bd21c2658e4ac",
+    "round_trip_exact": true,
+    "bytes": 202954
   },
   {
     "file": "middleware/main_candidate.py",
@@ -364,11 +365,11 @@
   },
   {
     "source_file": "middleware/main_candidate.py",
-    "sha256": "00c18f7187717386f51c1d11af0d9dbd54047e82d202f6ebd505a2e7d5a83457",
-    "template_sha256": "a94ad62673124a438b166e2654c57a5471178dff5cf42a280a3ad63af7b4868f",
+    "sha256": "2f95be52354db8cdb47a960fbecce8ef3dce0d1742232738f4cf7bf19dfaa72b",
+    "template_sha256": "832e960c2fd5cb2e931d47508990198788bf2d08fa6390fb65a218c0c7e2c07a",
     "round_trip_exact": true,
     "previous_production_sha256": "a3961f234a8895617052de9cce99306cb6380f48c2d650f4395ab2c160bf0336",
-    "bytes": 862451
+    "bytes": 862561
   },
   {
     "file": "middleware/otp_auth.py",
@@ -753,11 +754,11 @@
   },
   {
     "source_file": "middleware/api_access_runtime.py",
-    "sha256": "5b3a7ff460f960d4fc3633492bdcceb1d2e068c12bf67c20732d1153171a2aa0",
-    "template_sha256": "5b3a7ff460f960d4fc3633492bdcceb1d2e068c12bf67c20732d1153171a2aa0",
+    "sha256": "46b64cffedb504b022f0804a59ba983a6c97c2debbc4488972db543e62373138",
+    "template_sha256": "46b64cffedb504b022f0804a59ba983a6c97c2debbc4488972db543e62373138",
     "round_trip_exact": true,
     "introduced": "phase6-api-identity",
-    "bytes": 8910
+    "bytes": 9604
   },
   {
     "source_file": "middleware/api_report_policy.py",
@@ -802,5 +803,11 @@
     "sha256": "c780c9afd45026247c4541af76d24921118e6deb6e7742a412b44cc76b0f1181",
     "template_sha256": "c780c9afd45026247c4541af76d24921118e6deb6e7742a412b44cc76b0f1181",
     "bytes": 3259
+  },
+  {
+    "source_file": "middleware/api_clinical_read_policy.py",
+    "sha256": "9c3d8ece8cf4de5833a8e13fd0f6aa22107a0afd1d7b86fedaa553c0769dad8a",
+    "template_sha256": "9c3d8ece8cf4de5833a8e13fd0f6aa22107a0afd1d7b86fedaa553c0769dad8a",
+    "bytes": 4702
   }
 ]

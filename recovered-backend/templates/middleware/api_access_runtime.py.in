@@ -115,6 +115,22 @@ class OrderBoundary:
             await self.app(scope,receive,send)
 
 
+class ClinicalReadBoundary:
+    def __init__(self,app,*,office_to_location,users=None):
+        from api_clinical_read_policy import clinical_read_authorize
+        self.app=app
+        self.boundary=IdentityBoundary(app,users=users or CurrentUserResolver(),
+            jobs=JobResolver(job_configuration),
+            authorize=lambda actor,scope:clinical_read_authorize(actor,scope,office_to_location))
+
+    async def __call__(self,scope,receive,send):
+        from api_clinical_read_policy import is_clinical_read_path
+        if is_clinical_read_path(scope.get('path','')):
+            await self.boundary(scope,receive,send)
+        else:
+            await self.app(scope,receive,send)
+
+
 def private_json(path, *, absent=None):
     path = Path(path)
     if not path.exists() and absent is not None:

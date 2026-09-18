@@ -849,7 +849,10 @@ class AscendService:
             if end_date:
                 params["endDate"] = end_date
             items = _fetch_all_pages("/v1/patients", params=params, max_items=limit, page_size=min(limit, 500))
-            result = [self._map_patient(x) for x in items[:limit]]
+            result = [self._map_patient(x) for x in items]
+            if location_id:
+                result = [row for row in result if str(row.get("locationId")) == str(location_id)]
+            result = result[:limit]
 
         _cache_set(key, result, ttl=60)
         return result
