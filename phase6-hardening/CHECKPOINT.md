@@ -1,6 +1,6 @@
 # Phase 6 active checkpoint
 
-Updated 2026-09-18T07:34:36.915169+00:00. Phase 6 remains IN PROGRESS; continue autonomously under Dr. G's explicit B–E/client approval.
+Updated 2026-09-18T07:50:20.832166+00:00. Phase 6 remains IN PROGRESS; continue autonomously under Dr. G's explicit B–E/client approval.
 
 ## Do not repeat completed deployments
 
@@ -21,6 +21,14 @@ Source `cf9cff66d030b7c14943f60d10f51e895a9cc650` applied at 2026-09-18T07:26:41
 Fresh guards preserved all 20,868 original rows; provider configuration, job credentials, schedules, service settings and frontend artifact are unchanged. Live Sync Dashboard renders API Proxy Online and 29 job entries, with no captured console errors. No sync, recomputation, seed or other maintenance action was triggered. Production and QA HTTP/API health PASS. Recovery: `backup/api-before-phase6-admin-20260918`, `api-admin-backup-20260918T072624Z`. The full private backup is preserved locally and on the existing server.
 
 These row counts are per-deployment snapshots. Intervening records existed before this release; no cause is attributed and accounting follow-up remains frozen.
+
+## RCM contact-record identity and office boundary — deployed
+
+Source `209d518538390c1384e2c9505993be80d38f3bc1` applied at 2026-09-18T07:43:24.066901+00:00; main SHA256 `734a190e8f5558fe103e25186e9f960da33c77c7713e6034ae3a14440c709372`. Four manual-contact routes now verify the current account, Statements permission and actual office scope. Created actor/name and office name cannot be forged. Updates bind to the existing record's checked office; request filters are encoded. Nullable legacy office records remain editable only by all-office users. No delivery functionality changed.
+
+149 native tests and 17 retained suites PASS; isolated QA Super Admin/Office Manager/Regional Manager identity resolution and invalid-session checks PASS. Inactive/unapproved QA sessions were expired, so live negatives were not rerun; native negatives remain covered. All 20,870 fresh guarded original rows and configuration/jobs are preserved; the production contact-attempt table remained empty. Candidate and production missing/invalid 401 and job 403 probes PASS, existing payroll validator 200. Live Patient AR Follow-Up rendered 30 rows with no contact-summary warning/error. Positive creates/edits used synthetic native storage only; zero real contact records or provider actions were performed. Production/QA health PASS.
+
+Recovery: `backup/api-before-phase6-contacts-20260918`, `api-contact-backup-20260918T074308Z`. Private backups are preserved locally and on the server. Final main integration remains pending the remaining route review and regression.
 
 Canonical main remains `820970ede7727830d95d8d03d518d02119da1acd`; final integration pending.
 
@@ -54,6 +62,10 @@ Gusto callback currently ignores state and saves a response before checking toke
 
 Fresh webhook preflight already contained 43 additional expenses and two additional auth-audit rows compared with the OTP preflight; no cause is attributed. Each deployment's original rows were preserved. Do not reopen accounting investigations. Final main integration still awaits remaining API review and final regression.
 
-## Current follow-on candidate (not deployed)
+## Next bounded review (no follow-on deployed yet)
 
-RCM contact-attempt routes have confirmed actor spoofing and no office authorization. `contact-attribution-reproduction.json` reproduced the exact preserved create handler with synthetic in-memory storage (zero network/writes). Four-route contact candidate is being edited locally; production remains the verified administrative release above. It binds creation attribution to the current account, checks read/create/update office scope and URL-encodes filters. Run guarded native/retained tests and a fresh release backup before promotion. Remaining read/job, EOD object scope, Amazon operational actions and provider setup/callback reviews remain open.
+RCM contact identity/office repair is complete. Current browser is production RCM / Patient AR Follow-Up, 30 rows and no contact-summary error; no action submitted. Next: Huddle/EOD read and record-office boundaries, followed by remaining core/RCM/Expense read scopes and job compatibility, Amazon operational actions and Gusto/Amazon setup callbacks. Read-only caller inventory identified a separate Collaboration daily-report dependency on two RCM routes; preserve it without unreviewed scope or schedule changes.
+
+Huddle prefill uses officeId UUID. EOD daily/unscheduled reads use numeric locationId or officeId UUID; the contacts route must check its stored queue office, and assignee lookup uses only officeId. Completion has legitimate KPI and Reports consumers, not only EOD. Inspect each consumer before defining grants. No next candidate source has been written yet. Preserve the incidental unsubmitted Huddle draft; avoid auto-initializing another one.
+
+TwiML routes are static external call instructions and do not read Dashboard business tables. Existing legacy OAuth metadata does not authorize the protected MCP downstream transport. Gusto/Amazon callback vulnerabilities and provider setup caller compatibility remain to be addressed, with no real provider flow/credential change during tests. Do not claim Phase 6 complete or merge main until the remaining API review and final gates pass.
