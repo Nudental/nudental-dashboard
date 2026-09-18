@@ -7,6 +7,35 @@ from api_identity import AccessFailure, IdentityBoundary, JobResolver, UserResol
 from api_payroll_policy import PAYROLL_READS, authenticate_payroll_request, payroll_authorize
 
 
+class CurrentUserResolver:
+    """Load the existing server configuration only when a reviewed request arrives."""
+    def resolve(self, token):
+        try:
+            import requests
+            from otp_auth import _load_sb
+            config = _load_sb()
+            return UserResolver(config['project_url'].rstrip('/'), config['secret_key'], requests.Session).resolve(token)
+        except AccessFailure:
+            raise
+        except Exception:
+            raise AccessFailure(503) from None
+
+
+class ReportExportBoundary:
+    def __init__(self, app, *, users=None):
+        from api_report_policy import report_authorize
+        self.app = app
+        self.boundary = IdentityBoundary(app, users=users or CurrentUserResolver(),
+            jobs=JobResolver(job_configuration), authorize=report_authorize)
+
+    async def __call__(self, scope, receive, send):
+        from api_report_policy import EXPORT_PATH
+        if scope.get('path') == EXPORT_PATH:
+            await self.boundary(scope, receive, send)
+        else:
+            await self.app(scope, receive, send)
+
+
 def private_json(path, *, absent=None):
     path = Path(path)
     if not path.exists() and absent is not None:

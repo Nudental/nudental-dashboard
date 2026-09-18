@@ -33,6 +33,8 @@ class UserIdentity:
     assigned_offices: frozenset
     all_offices: bool
     permissions: frozenset
+    # Supabase Auth supplies the attribution address; never trust a request body.
+    email: str = ''
 
 
 @dataclass(frozen=True)
@@ -103,7 +105,8 @@ class UserResolver:
             seen.add(key)
             if row.get('enabled') is True:
                 enabled.add(key)
-        return UserIdentity(user_id, profile['role'], primary, frozenset(offices), bool(all_offices), frozenset(enabled))
+        email = user.get('email')
+        return UserIdentity(user_id, profile['role'], primary, frozenset(offices), bool(all_offices), frozenset(enabled), email if isinstance(email, str) else '')
 
     def _get(self, session, path, *, token=None, params=None):
         headers = {'apikey': self.service_key, 'Authorization': 'Bearer ' + (token or self.service_key)}

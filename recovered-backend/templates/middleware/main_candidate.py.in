@@ -234,8 +234,9 @@ def startup_event():
 
 
 # Named background-job tokens have an exact route boundary on every path.
-from api_access_runtime import ScopedJobBoundary
+from api_access_runtime import ScopedJobBoundary, ReportExportBoundary
 app.add_middleware(ScopedJobBoundary)
+app.add_middleware(ReportExportBoundary)
 
 # CORS
 app.add_middleware(
@@ -17805,4 +17806,3 @@ async def mcp_proxy(request: Request, path: str = ""):
         )
     except Exception as e:
         return {"error": f"MCP server not available: {e}", "target": target}
-

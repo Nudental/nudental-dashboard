@@ -18,7 +18,7 @@ import urllib.request
 from datetime import datetime, date, timezone
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Body, Depends, Header
+from fastapi import APIRouter, HTTPException, Body, Depends, Header, Request
 
 logger = logging.getLogger("report_export")
 
@@ -112,7 +112,13 @@ def _sb_rest(path: str, method: str = "GET", body: dict = None) -> list | dict:
 
 def _api_get(path: str, api_key: str) -> dict | list:
     """Internal HTTP call to our own middleware API."""
-    from urllib.parse import quote
+    from urllib.parse import quote, urlsplit
+    from api_identity import forward_identity
+    from api_access_runtime import validator_open
+    parsed = urlsplit(path)
+    identity = forward_identity.get()
+    if parsed.scheme or parsed.netloc or parsed.fragment or not parsed.path.startswith('/v2/') or not identity:
+        raise HTTPException(status_code=403, detail='Verified report identity required')
     # Encode the path properly — split at ? to keep query string structure
     if "?" in path:
         base, qs = path.split("?", 1)
@@ -129,8 +135,9 @@ def _api_get(path: str, api_key: str) -> dict | list:
     req = urllib.request.Request(url, headers={
         "X-API-Key": api_key,
         "Accept": "application/json",
+        "Authorization": identity,
     })
-    with urllib.request.urlopen(req, timeout=30) as r:
+    with validator_open(req, timeout=30) as r:
         return json.loads(r.read())
 
 
@@ -1401,6 +1408,7 @@ def _handle_full_workbook_export(
 
 @router.post("/export", dependencies=[Depends(_verify_api_key)])
 def export_report(
+    request: Request,
     body: dict = Body(...),
     x_api_key: str = Header(..., alias="X-API-Key"),
 ):
@@ -1410,7 +1418,7 @@ def export_report(
 
     Required body fields:
       report_type, export_format, date_range_start, date_range_end,
-      user_id, user_email, user_role
+      Attribution is taken from the verified signed-in user, never body fields.
 
     Optional body fields:
       office_filter (list of office names),
@@ -1424,9 +1432,13 @@ def export_report(
     date_range_end = body.get("date_range_end", "").strip()
     office_filter_raw = body.get("office_filter")
     office_filter = _coerce_office_filter(office_filter_raw)
-    user_id = body.get("user_id", "").strip()
-    user_email = body.get("user_email", "").strip()
-    user_role = body.get("user_role", "").strip()
+    from api_report_policy import verified_export_actor
+    from api_identity import AccessFailure
+    try:
+        actor = verified_export_actor(request, report_type)
+    except AccessFailure as error:
+        raise HTTPException(status_code=error.status, detail='Verified export access required') from None
+    user_id, user_email, user_role = actor.id, actor.email, actor.role
 
     # ── Validate ──
     if not report_type:
