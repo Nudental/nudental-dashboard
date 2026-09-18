@@ -1,10 +1,10 @@
 # Phase 6 active checkpoint
 
-Updated 2026-09-18T12:20:04.491683+00:00. Phase 6 remains IN PROGRESS. Continue autonomously under Dr. G's explicit Bâ€“E/client/API approval; no new phase and no financial corrections.
+Updated 2026-09-18T12:35:32.903158+00:00. Phase 6 remains IN PROGRESS. Continue autonomously under Dr. G's explicit Bâ€“E/client/API approval; no new phase and no financial corrections.
 
 ## Current production
 
-**Current verified state:** API `d5c6da689852e41eaa3087d42ef274a7e654bdda`; production frontend `9509cba3-dd00-4084-9c14-e64ffd7ff390`; QA `559189b1-5a28-4cea-90ba-c0e00bbe2a5e`. Expense release PASS. Next: remaining RCM/financial/diagnostic/provider route review, final regression and normal main integration. No accounting corrections.
+**Current verified state:** API `0b108413241076358123eb0e4e1e87197c132ffb`; production frontend `9509cba3-dd00-4084-9c14-e64ffd7ff390`; QA `559189b1-5a28-4cea-90ba-c0e00bbe2a5e`. Status and Expense releases PASS. Next: RCM/financial/provider route review, final regression and normal main integration. No accounting corrections.
 
 ## RCM selected-office status repair — deployed
 
@@ -15,6 +15,14 @@ All 1,654 frontend tests (zero skips), six compiled Expense isolation checks and
 Live production RCM / Eatontown / Last Month renders all eight sections, today's September 18 daily summary and an available payment breakdown; captured errors and alerts are empty. QA layout and banner render with financial reads intentionally disabled by `product_api_ready=false`. Production/QA HTTP and API health PASS. Four production/collections metric comparisons for August 1–31, all offices and Eatontown, are unchanged. All 17,363 guarded original rows are preserved, backend source is unchanged and business writes are zero. The bounded last-150-line journal query contained no matching daily-summary request; no transport-log claim is made.
 
 Immediate frontend rollback: `a81545bf-4463-4dc3-9b33-3cad855888d7`, tag `backup/production-before-phase6-rcm-scope-20260918`, snapshot `core-client-frontend-backup-20260918T093908Z`. Earlier recovery points remain. This completes the client dependency only; core-read API identity activation and final main integration remain pending.
+
+## Legacy status readers — deployed
+
+Source `0b108413241076358123eb0e4e1e87197c132ffb` applied at 2026-09-18T12:30:15.853167+00:00. Three entries in the existing administrative policy now protect Sync status, Supabase table status and Gusto import status. There is no current frontend/scheduled consumer requiring anonymous access. All-office Admin/Super Admin or the exact existing Sync/Data Health page grant is required. Public health and static Compliance responses remain unchanged. Main source SHA256 remains `681aa6a12f0b9b7fbef6e914d47b82bf441dbbfa0a3fd7f4e48af1923a9b3cce`; no handler or calculation changed.
+
+271 guarded native tests and 13 materializer tests PASS. All 17 retained backend suites from the immediately preceding Expense candidate passed; their main/service inputs are byte-identical. All 30 other materialized files are unchanged. Live missing/invalid identities return 401, job access to these routes returns 403, and existing Summary/Payroll reads remain 200 with unchanged Summary data. All 78,473 original guarded Supabase rows and 83,962 SQLite rows are preserved. Current credentials, job scopes, configuration, frontend and provider connections are unchanged. Production/QA/API health PASS. Signed-in Expense reloads without alerts, warnings or captured browser errors. Positive status-handler tests were synthetic because no active UI uses these legacy paths.
+
+Recovery: `backup/api-before-phase6-status-reads-20260918`, `api-status-read-backup-20260918T122943Z`. Private recovery files remain server-side. Do not restore the revoked reconciliation credential. RCM/financial/provider route review, final regression and canonical-main integration remain pending; Phase 6 is not complete.
 
 ## Expense read boundary and query encoding — deployed
 

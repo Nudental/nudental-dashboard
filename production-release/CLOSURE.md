@@ -1,6 +1,6 @@
 # NuDental Dashboard â€” full release report
 
-Updated 2026-09-18T12:20:04.491683+00:00 from saved deployment and live verification evidence.
+Updated 2026-09-18T12:35:32.903158+00:00 from saved deployment and live verification evidence.
 
 **Phase 6 IN PROGRESS: Groups Aâ€“E and the approved frontend are live. Remaining API route review, final regression and canonical-main integration remain open.** Dr. G explicitly approved Bâ€“E and the client activation; no migration approval is pending.
 
@@ -14,9 +14,17 @@ Updated 2026-09-18T12:20:04.491683+00:00 from saved deployment and live verifica
 | Previous deployment | `08f84700-056f-4af4-8f13-526a66ad8187` |
 | Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` â€” final Phase 6 integration pending |
 | Branch | `phase6/nudashboard-production-hardening-20260917` |
-| API source | `d5c6da689852e41eaa3087d42ef274a7e654bdda`; Expense, metric/core and prior boundaries live |
+| API source | `0b108413241076358123eb0e4e1e87197c132ffb`; legacy status, Expense and prior reviewed boundaries live |
 | API main SHA256 | `681aa6a12f0b9b7fbef6e914d47b82bf441dbbfa0a3fd7f4e48af1923a9b3cce` |
 | QA deployment | `559189b1-5a28-4cea-90ba-c0e00bbe2a5e` |
+
+## Legacy status readers — deployed
+
+Source `0b108413241076358123eb0e4e1e87197c132ffb` applied at 2026-09-18T12:30:15.853167+00:00. Three entries in the existing administrative policy now protect Sync status, Supabase table status and Gusto import status. There is no current frontend/scheduled consumer requiring anonymous access. All-office Admin/Super Admin or the exact existing Sync/Data Health page grant is required. Public health and static Compliance responses remain unchanged. Main source SHA256 remains `681aa6a12f0b9b7fbef6e914d47b82bf441dbbfa0a3fd7f4e48af1923a9b3cce`; no handler or calculation changed.
+
+271 guarded native tests and 13 materializer tests PASS. All 17 retained backend suites from the immediately preceding Expense candidate passed; their main/service inputs are byte-identical. All 30 other materialized files are unchanged. Live missing/invalid identities return 401, job access to these routes returns 403, and existing Summary/Payroll reads remain 200 with unchanged Summary data. All 78,473 original guarded Supabase rows and 83,962 SQLite rows are preserved. Current credentials, job scopes, configuration, frontend and provider connections are unchanged. Production/QA/API health PASS. Signed-in Expense reloads without alerts, warnings or captured browser errors. Positive status-handler tests were synthetic because no active UI uses these legacy paths.
+
+Recovery: `backup/api-before-phase6-status-reads-20260918`, `api-status-read-backup-20260918T122943Z`. Private recovery files remain server-side. Do not restore the revoked reconciliation credential. RCM/financial/provider route review, final regression and canonical-main integration remain pending; Phase 6 is not complete.
 
 ## Expense read boundary and query encoding — deployed
 
