@@ -134,15 +134,35 @@ function debugFilterState(label, appliedFilters, serviceParams) {
 // Dentrix is never an expense source.
 async function fetchDentrixDenominators({ startDate, endDate, officeIds = [] }) {
   try {
+    const selectedOffices = [...new Set(officeIds)];
+    if (selectedOffices.some(id => !getLocationIdByOfficeId(id))) {
+      throw new Error('Select valid offices to load expense ratio denominators.');
+    }
+    if (selectedOffices.length > 1) {
+      const results = await Promise.all(selectedOffices.map(id =>
+        fetchDentrixDenominators({ startDate, endDate, officeIds: [id] })));
+      const total = field => results.every(result => Number.isFinite(result[field]))
+        ? results.reduce((sum, result) => sum + result[field], 0) : null;
+      return {
+        grossProduction: total('grossProduction'),
+        netProduction: total('netProduction'),
+        totalCollections: total('totalCollections'),
+        error: results.some(result => result.error) ? 'A selected office denominator is unavailable.' : null,
+        diagnostics: {
+          officeIds: selectedOffices,
+          locationIds: selectedOffices.map(getLocationIdByOfficeId),
+          missingFields: results.flatMap((result, index) =>
+            (result.diagnostics?.missingFields || (result.error ? ['fetch_failed'] : []))
+              .map(field => `${selectedOffices[index]}:${field}`)),
+        },
+      };
+    }
     const API_BASE = DASHBOARD_API_ORIGIN + "/v2";
     const API_KEY = import.meta.env?.VITE_ASCEND_API_KEY || '';
     const headers = { 'X-API-Key': API_KEY, 'Content-Type': 'application/json' };
 
-    // Resolve locationId: if a single office is selected, use its locationId; otherwise null (all offices)
-    let locationId = null;
-    if (officeIds?.length === 1) {
-      locationId = getLocationIdByOfficeId(officeIds?.[0]) || null;
-    }
+    // An empty selection is the explicit all-office view; selected offices stay scoped.
+    const locationId = selectedOffices.length ? getLocationIdByOfficeId(selectedOffices[0]) : null;
 
     const withLoc = (url) => {
       if (!locationId) return url;
