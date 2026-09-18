@@ -1,6 +1,6 @@
 # NuDental Dashboard â€” full release report
 
-Updated 2026-09-18T10:21:05.247164+00:00 from saved deployment and live verification evidence.
+Updated 2026-09-18T11:03:15.566910+00:00 from saved deployment and live verification evidence.
 
 **Phase 6 IN PROGRESS: Groups Aâ€“E and the approved frontend are live. Remaining API route review, final regression and canonical-main integration remain open.** Dr. G explicitly approved Bâ€“E and the client activation; no migration approval is pending.
 
@@ -9,14 +9,24 @@ Updated 2026-09-18T10:21:05.247164+00:00 from saved deployment and live verifica
 | Item | State |
 |---|---|
 | URL | https://nudashboard.com |
-| Frontend deployment | `08f84700-056f-4af4-8f13-526a66ad8187` |
-| Frontend source | `f3e427f7b94c96eb44424e7791c10051f30817cd` |
-| Previous deployment | `a81545bf-4463-4dc3-9b33-3cad855888d7` |
+| Frontend deployment | `9509cba3-dd00-4084-9c14-e64ffd7ff390` |
+| Frontend source | `7f9502208cd261684f064bc76e16ecb79b1d561c` |
+| Previous deployment | `08f84700-056f-4af4-8f13-526a66ad8187` |
 | Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` â€” final Phase 6 integration pending |
 | Branch | `phase6/nudashboard-production-hardening-20260917` |
 | API source | `471290102ae1c28bcd08170529cbc97adcfdbb10`; reviewed boundaries and background-reader compatibility live |
 | API main SHA256 | `c3e8cce7e212b3d56e043e98cab682745ed402346f646074edb467286d90b333` |
-| QA deployment | `707f2962-0ed0-406e-baa5-25cc49f40bc4` |
+| QA deployment | `559189b1-5a28-4cea-90ba-c0e00bbe2a5e` |
+
+## Expense denominator office-scope repair — deployed
+
+Frontend source `7f9502208cd261684f064bc76e16ecb79b1d561c` is live in production `9509cba3-dd00-4084-9c14-e64ffd7ff390` and QA `559189b1-5a28-4cea-90ba-c0e00bbe2a5e`. Selected offices are validated and deduplicated before denominator reads. Multiple selected offices receive separate scoped requests; their results are combined only when all required numeric values are present. Unknown offices fail before fetching. Existing single-office/all-office parsing and calculations are preserved. Four new tests failed on the old implementation before the small repair.
+
+All 1,660 frontend tests (zero skips), both builds and production/QA configuration-isolation checks PASS. Compiled checks: six retained Expense request-isolation cases, six new office-scope cases per environment, and three preserved RCM cases per environment PASS. Production entry `index-CmE5HSJ_.js` is 8,833,924 bytes; QA entry `index-D04awMLd.js` is 8,832,755 bytes. This is a 623-byte increase from the prior scope release; no speedup claim is made.
+
+Live production Expense Report / Last Month / Eatontown completes and renders denominator ratios without captured console errors or alerts. Production has no QA banner; QA visibly retains its banner and intentionally disabled product API. Multiple-office request behavior is covered in compiled tests; the live administrator filter offers one office at a time. All six August 1–31 production/collections comparisons (all offices, Eatontown and Brick) are unchanged, all 17,363 guarded original rows are preserved, and backend source is unchanged. Business writes: zero. Existing accounting caveats and the frozen residual register are unchanged; displayed diagnostic totals are not claimed as reconciled accounting totals.
+
+Recovery: prior production `08f84700-056f-4af4-8f13-526a66ad8187`, tag `backup/production-before-phase6-expense-scope-20260918`, snapshot `expense-client-frontend-backup-20260918T105236Z`. This completes the frontend prerequisite. The separately tested core-read API gate is not yet claimed live by this entry; remaining API review and canonical main integration are pending.
 
 ## Existing validator read compatibility — deployed
 

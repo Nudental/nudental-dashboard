@@ -27,12 +27,13 @@ Classes: A application repair; B performance/UX; C deliberate database/security 
 | Group D â€” supplies, Front Desk, urgent requests | C | DEPLOYED; native role/row guards and representative UI checks PASS. RM/Admin/Super Admin only for review; no self-approval. |
 | Group E â€” insurance and service-goal access | C | DEPLOYED; native role/row guards and representative UI checks PASS. |
 | Existing validator core-read compatibility | A — application/security repair | DEPLOYED; 220 native tests, exact GET scopes, three live unchanged read results. Exposed reconciliation credential revoked and equivalently rotated. |
+| Expense denominator selected-office reads | A — application repair | DEPLOYED in production and QA; 1,660 frontend tests and compiled checks PASS; six live metrics unchanged. |
 | RCM status selected-office propagation | A — application repair | DEPLOYED in production and QA; 1,654 frontend tests, six compiled isolation and six compiled RCM cases PASS. |
 | Phase 6 client changes | A | DEPLOYED to production after Aâ€“E verification; atomic office/draft/receipt clients and restricted review route active. |
 | QA environment, synthetic offices/actors, simulations and QA storage/security | D | Excluded from production. QA remains isolated. |
 | Frozen accounting corrections and metadata proposals | E | Excluded and unchanged. No reconciliation searches, corrections, imports or reclassification authorized here. |
 
-Production frontend is `08f84700-056f-4af4-8f13-526a66ad8187`, source `f3e427f7b94c96eb44424e7791c10051f30817cd`. API source is now `471290102ae1c28bcd08170529cbc97adcfdbb10`; broader API review is open. Main remains `820970ede7727830d95d8d03d518d02119da1acd` pending final integration. QA is `707f2962-0ed0-406e-baa5-25cc49f40bc4`; its isolation is preserved.
+Production frontend is `9509cba3-dd00-4084-9c14-e64ffd7ff390`, source `7f9502208cd261684f064bc76e16ecb79b1d561c`. API source is now `471290102ae1c28bcd08170529cbc97adcfdbb10`; broader API review is open. Main remains `820970ede7727830d95d8d03d518d02119da1acd` pending final integration. QA is `559189b1-5a28-4cea-90ba-c0e00bbe2a5e`; its isolation is preserved.
 
 ## Preserved application batches â€” earlier production promotion
 
