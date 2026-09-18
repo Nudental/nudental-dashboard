@@ -26,6 +26,7 @@ Classes: A application repair; B performance/UX; C deliberate database/security 
 | Group C â€” implant/bone history and access | C | DEPLOYED; native role/row guards and representative UI checks PASS. Preserve deletion history during any rollback. |
 | Group D â€” supplies, Front Desk, urgent requests | C | DEPLOYED; native role/row guards and representative UI checks PASS. RM/Admin/Super Admin only for review; no self-approval. |
 | Group E â€” insurance and service-goal access | C | DEPLOYED; native role/row guards and representative UI checks PASS. |
+| RCM A/R and eAssist request scope | A — application repair | DEPLOYED production/QA; 1,678 frontend tests, compiled checks, selected-office UI and unchanged metrics PASS. |
 | Legacy status reader authority | A — application/security repair | DEPLOYED; three administrative read gates, 271 native tests, unchanged handlers/jobs/configuration; live denials and health PASS. |
 | Expense identity and literal query filters | A — application/security repair | DEPLOYED; seven reads, 267 native tests, 17 retained suites, 13 materializer checks; Expense live PASS, calculations unchanged. |
 | Metric/helper identity and exact selector scope | A — application/security repair | DEPLOYED; eight reads, 253 native tests, 17 retained suites, 13 materializer checks; KPI and Finance live PASS. |
@@ -37,7 +38,7 @@ Classes: A application repair; B performance/UX; C deliberate database/security 
 | QA environment, synthetic offices/actors, simulations and QA storage/security | D | Excluded from production. QA remains isolated. |
 | Frozen accounting corrections and metadata proposals | E | Excluded and unchanged. No reconciliation searches, corrections, imports or reclassification authorized here. |
 
-Production frontend is `9509cba3-dd00-4084-9c14-e64ffd7ff390`, source `7f9502208cd261684f064bc76e16ecb79b1d561c`. API source is now `0b108413241076358123eb0e4e1e87197c132ffb`; broader API review is open. Main remains `820970ede7727830d95d8d03d518d02119da1acd` pending final integration. QA is `559189b1-5a28-4cea-90ba-c0e00bbe2a5e`; its isolation is preserved.
+Production frontend is `dcf8bc42-1a06-45f6-8010-80c1db7595be`, source `009005b03767dc3dc9facdbfc5f9fa81fa001d49`. API source is now `0b108413241076358123eb0e4e1e87197c132ffb`; broader API review is open. Main remains `820970ede7727830d95d8d03d518d02119da1acd` pending final integration. QA is `ae279546-abd2-4720-a052-a9a34aa2d60b`; its isolation is preserved.
 
 ## Preserved application batches â€” earlier production promotion
 

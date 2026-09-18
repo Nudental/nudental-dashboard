@@ -1,6 +1,6 @@
 # NuDental Dashboard â€” full release report
 
-Updated 2026-09-18T12:35:32.903158+00:00 from saved deployment and live verification evidence.
+Updated 2026-09-18T13:21:15.505162+00:00 from saved deployment and live verification evidence.
 
 **Phase 6 IN PROGRESS: Groups Aâ€“E and the approved frontend are live. Remaining API route review, final regression and canonical-main integration remain open.** Dr. G explicitly approved Bâ€“E and the client activation; no migration approval is pending.
 
@@ -9,14 +9,22 @@ Updated 2026-09-18T12:35:32.903158+00:00 from saved deployment and live verifica
 | Item | State |
 |---|---|
 | URL | https://nudashboard.com |
-| Frontend deployment | `9509cba3-dd00-4084-9c14-e64ffd7ff390` |
-| Frontend source | `7f9502208cd261684f064bc76e16ecb79b1d561c` |
-| Previous deployment | `08f84700-056f-4af4-8f13-526a66ad8187` |
+| Frontend deployment | `dcf8bc42-1a06-45f6-8010-80c1db7595be` |
+| Frontend source | `009005b03767dc3dc9facdbfc5f9fa81fa001d49` |
+| Previous deployment | `9509cba3-dd00-4084-9c14-e64ffd7ff390` |
 | Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` â€” final Phase 6 integration pending |
 | Branch | `phase6/nudashboard-production-hardening-20260917` |
 | API source | `0b108413241076358123eb0e4e1e87197c132ffb`; legacy status, Expense and prior reviewed boundaries live |
 | API main SHA256 | `681aa6a12f0b9b7fbef6e914d47b82bf441dbbfa0a3fd7f4e48af1923a9b3cce` |
-| QA deployment | `559189b1-5a28-4cea-90ba-c0e00bbe2a5e` |
+| QA deployment | `ae279546-abd2-4720-a052-a9a34aa2d60b` |
+
+## RCM A/R and eAssist request scope — deployed
+
+Frontend `009005b03767dc3dc9facdbfc5f9fa81fa001d49` is live in production `dcf8bc42-1a06-45f6-8010-80c1db7595be` and QA `ae279546-abd2-4720-a052-a9a34aa2d60b`. Selected A/R offices generate distinct validated requests; global or incomplete scoped replies fail closed. eAssist status carries the selected office, report filters honor the parent office, and parent scope changes isolate earlier responses. Existing calculations are unchanged. This completes the client dependency; the six-route snapshot/eAssist API candidate is local and NOT deployed.
+
+All 1,678 frontend tests PASS with zero skips, both builds and environment isolation PASS. Each compiled environment passes six A/R scope, six Expense request isolation, six retained Expense denominator and three RCM status checks. Production entry is 8,835,047 bytes; no speedup claim. Live production eAssist Eatontown/Brick selection and settled Brick A/R Aging PASS with no captured errors, alerts or scope warnings. QA layout/banner PASS; its financial API remains intentionally disabled.
+
+Six August 1–31 read-only metric comparisons are unchanged. All 17,363 original guarded rows are preserved; backend source is unchanged and business writes are zero. Recovery: `9509cba3-dd00-4084-9c14-e64ffd7ff390`, tag `backup/production-before-phase6-rcm-read-scope-20260918`, snapshot `rcm-read-client-frontend-backup-20260918T130751Z`. Remaining RCM/financial/provider API review, final regression and normal main integration remain open.
 
 ## Legacy status readers — deployed
 
