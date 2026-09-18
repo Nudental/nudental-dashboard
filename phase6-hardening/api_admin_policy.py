@@ -8,6 +8,9 @@ them into office-scoped operations. Job credentials have no access.
 from api_identity import UserIdentity
 
 ADMIN_ROUTES = {
+    '/v2/sync/status': ('GET', 'admin.sync.view'),
+    '/v2/supabase/status': ('GET', 'admin.data_health.view'),
+    '/v2/gusto/status': ('GET', 'admin.data_health.view'),
     '/v2/admin/sync-dashboard': ('GET', 'admin.sync.view'),
     '/v2/admin/data-freshness': ('GET', 'admin.data_health.view'),
     '/v2/admin/diagnostics': ('GET', 'admin.data_health.view'),

@@ -782,9 +782,9 @@
   },
   {
     "source_file": "middleware/api_admin_policy.py",
-    "sha256": "c68943c2958da6c9a3edd69516d4755752bc0088f506ca87e153b0f236d8ade6",
-    "template_sha256": "c68943c2958da6c9a3edd69516d4755752bc0088f506ca87e153b0f236d8ade6",
-    "bytes": 1604
+    "sha256": "a72494c10e8f0b444162b5b8f378d1d97aa47796d32dd673026e8422cc0fd745",
+    "template_sha256": "a72494c10e8f0b444162b5b8f378d1d97aa47796d32dd673026e8422cc0fd745",
+    "bytes": 1776
   },
   {
     "source_file": "middleware/api_contact_policy.py",
