@@ -1,6 +1,6 @@
 # NuDental Dashboard — full release report
 
-Updated 2026-09-18T06:45:21.934486+00:00 from saved deployment and live verification evidence.
+Updated 2026-09-18T07:10:28.471835+00:00 from saved deployment and live verification evidence.
 
 **Phase 6 IN PROGRESS: Groups A–E and the approved frontend are live. Remaining API route review, final regression and canonical-main integration remain open.** Dr. G explicitly approved B–E and the client activation; no migration approval is pending.
 
@@ -14,8 +14,8 @@ Updated 2026-09-18T06:45:21.934486+00:00 from saved deployment and live verifica
 | Previous deployment | `277f68be-3819-410c-8ca6-6aa5ffa2a95e` |
 | Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` — final Phase 6 integration pending |
 | Branch | `phase6/nudashboard-production-hardening-20260917` |
-| API source | `78cdc3c1994ac27dd3ac177abf1fd434984a8f06`; payroll/report/compensation identity and OTP administrative restrictions live |
-| API main SHA256 | `cfd39140f772dd59a1fec46d4b22c1971cf1f6394ba0e600af275bed6df7d711` |
+| API source | `bad155018f53baaf129f0f8681481bea62b6b634`; payroll/report/compensation identity, OTP administration and signed Plaid webhook live |
+| API main SHA256 | `674c553d5b4905b7f0357abae64bce3cb7fd5f983295f2214edf7c7b827ded98` |
 | QA deployment | `c3c958d8-fede-4be7-85e6-c7a61b635af9` — unchanged |
 
 ## Applied migration groups
@@ -63,6 +63,14 @@ Source `a0454b2e243cce5be407bf8e900df1e066ffb61c` deployed at 2026-09-18T06:19:0
 Source `78cdc3c1994ac27dd3ac177abf1fd434984a8f06` deployed at 2026-09-18T06:35:08.187866+00:00. OTP configuration and management of another user's trusted devices now require the account to remain active and approved, in addition to its existing administrative role. The one-file change does not alter ordinary login, OTP challenges, cookies, credentials or settings. All route bodies are unchanged.
 
 11 focused local and 99 native tests PASS. The other 20 materialized files match the compensation release; its 17 retained suites remain applicable to the unchanged main/service code. Candidate/live missing or invalid identities receive 401, jobs receive 403, and the existing payroll validator remains 200. All 20,790 guarded original rows are unchanged, including 186 trusted devices, one site-settings row and 3,385 authentication audit rows. No OTP, device revocation or setting change was performed. Production/QA health and refreshed Payroll UI PASS, no captured console errors. Backup: `api-otp-backup-20260918T063451Z`; tag: `backup/api-before-phase6-otp-admin-20260918`.
+
+## Signed Plaid webhook boundary — deployed
+
+Source `bad155018f53baaf129f0f8681481bea62b6b634` deployed at 2026-09-18T06:56:25.484273+00:00. The existing callback now verifies the provider signature, timestamp, exact request body and existing item mapping before dispatching its unchanged behavior. The unsigned request defect was reproduced with an intercepted subprocess. 124 native tests and all 17 retained backend suites PASS; valid positive dispatch was tested only with synthetic signatures and intercepted sync/email calls.
+
+Candidate/live unsigned and malformed callbacks return 401; read-only jobs return 403. The existing payroll validator remains 200. Harmless live probes performed zero provider-key lookups, syncs or emails. All 20,835 rows in the fresh snapshot are preserved, including 15,970 expense rows, 535 Gusto facts, 663 expense facts, 93 export audits, 186 trusted devices, one settings row and 3,387 authentication audit rows. Plaid connection files, job configuration, service units and frontend bytes are unchanged. Production/QA health and live Executive Overview PASS, with no captured console errors. Snapshot `api-webhook-backup-20260918T065608Z`; tag `backup/api-before-phase6-webhook-20260918`.
+
+The pre-release snapshot already contained 43 more expense rows and two more authentication audit rows than the previous OTP snapshot. Those additions preceded this webhook deployment; these checks do not attribute their cause. Release preservation claims apply to each fresh before/after snapshot, not a claim that ordinary production activity stopped throughout Phase 6. No financial correction is authorized or applied.
 
 ## Data, audit and performance limits
 

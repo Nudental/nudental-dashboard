@@ -4,6 +4,10 @@ Dr. G approved existing signed-in user checks plus separate restricted identitie
 
 The confirmed defect is that a payroll read accepted the shared application key with no user session or an invalid session. The application key identifies the client application; it must not establish the person's identity.
 
+## Applied signed provider-webhook boundary
+
+Plaid callbacks now require a valid provider signature, age/body check and existing item before dispatch. Source `bad155018f53baaf129f0f8681481bea62b6b634` is deployed, 124 native tests and 17 retained suites PASS; connection files and all fresh guarded rows are preserved. Live probes trigger no provider activity. See [webhook evidence](API-PLAID-WEBHOOK.md). Other callback and read/office/job reviews remain open.
+
 ## Applied OTP administrative restriction
 
 OTP administrative helpers now require the current active/approved account as well as its existing role. One-file source `78cdc3c1994ac27dd3ac177abf1fd434984a8f06` is live, 99 native tests PASS, and all guarded device/settings/audit rows are unchanged. See [OTP evidence](API-OTP-ADMIN.md).

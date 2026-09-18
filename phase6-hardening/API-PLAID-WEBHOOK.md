@@ -1,6 +1,6 @@
 # Plaid webhook verification
 
-Candidate status: 124 native Python/FastAPI tests and all 17 retained backend suites PASS; deployment pending.
+Status: DEPLOYED and live-verified at 2026-09-18T06:56:25.484273+00:00 from `bad155018f53baaf129f0f8681481bea62b6b634`. 124 native tests and 17 retained suites PASS.
 
 The existing public webhook accepted unsigned JSON and could dispatch the existing synchronization process or an alert. The preserved handler reproduced that behavior using a synthetic transaction event and an intercepted subprocess; no real process, provider call, email or financial write occurred.
 
@@ -9,3 +9,5 @@ The bounded repair follows [Plaid's webhook verification instructions](https://p
 The installed PyJWT 2.12.1 and cryptography 49.0.0 supply cryptographic verification; no dependency installation is needed. All 124 native tests pass under the existing production-access guard with zero blocked attempts. They exercise actual handler code with synthetic signed messages and intercepted sync/email operations, including valid messages, wrong keys, altered bodies, age limits, unsupported algorithms, embedded attacker keys, expired/mismatched provider keys, duplicate headers, oversized bodies and an item belonging to another account. All unrelated main-module code and 20 materialized files are unchanged.
 
 Production probes will send only unsigned/malformed messages with a non-actionable body. They cannot request a sync or alert even on the old handler. Positive signed dispatch is verified synthetically; an actual bank-provider event is deliberately not triggered. Fresh source, configuration, connection-file and row backups will precede candidate/live service verification with immediate rollback on failure. No financial correction, provider login, configuration change, real sync, real email or frontend deployment is authorized by this repair.
+
+Live result: unsigned/malformed 401, job 403, existing payroll validator 200. All 20,835 fresh guarded rows and Plaid connection/configuration files unchanged. Production/QA health and Executive Overview PASS. Verification triggered no real sync, email or provider-key lookup. Recovery: `backup/api-before-phase6-webhook-20260918`, `api-webhook-backup-20260918T065608Z`.
