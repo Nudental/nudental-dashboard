@@ -14,9 +14,19 @@ Updated 2026-09-18T11:03:15.566910+00:00 from saved deployment and live verifica
 | Previous deployment | `08f84700-056f-4af4-8f13-526a66ad8187` |
 | Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` â€” final Phase 6 integration pending |
 | Branch | `phase6/nudashboard-production-hardening-20260917` |
-| API source | `471290102ae1c28bcd08170529cbc97adcfdbb10`; reviewed boundaries and background-reader compatibility live |
+| API source | `14933358e819deb11559daa1703f23aa7a0ea427`; core aggregate reads and prior reviewed boundaries live |
 | API main SHA256 | `c3e8cce7e212b3d56e043e98cab682745ed402346f646074edb467286d90b333` |
 | QA deployment | `559189b1-5a28-4cea-90ba-c0e00bbe2a5e` |
+
+## Core aggregate read identity and office boundary — deployed
+
+Source `14933358e819deb11559daa1703f23aa7a0ea427` applied at 2026-09-18T11:03:00.050385+00:00; main SHA256 `23f8ec28eb5e2c63dadea80cf34bf97a7f32c2d4c8ee8bf1b800675073aa3eb4`. Sixteen aggregate GET routes now require current human identity, actual page grants and the office selector used by the handler. Global-only handlers require all-office authority; unknown/conflicting selectors fail closed. Existing exact GET-only job identities and expiry remain unchanged. Goal writes retain their separate maintenance policy. No calculation body, schema, business rule or provider connection changed.
+
+237 guarded native tests, 17 retained backend suites and materializer verification PASS. All route bodies and 26 unrelated materialized files are unchanged. Candidate and public production missing-identity checks return 401 on all 16 reads; invalid identity returns 401, approved scoped validator summary and payroll reads return 200, and job writes return 403. The saved summary result is unchanged. All 78,455 guarded original business/audit rows and 83,957 original SQLite rows are preserved; current configuration, credentials, jobs and frontend remain unchanged. Production and QA HTTP/API health PASS.
+
+Signed-in production Expense (including Last Month / Eatontown and five unchanged displayed ratios), KPIs, Executive Overview, Financial Reports and RCM pass read-only UI checks with no captured console errors or alerts. RCM source status shows September 18 and an available payment breakdown. Live human checks used the existing Super Admin session; other role/office positives and negatives used synthetic native identities. No real report export, workflow action, provider sync, email or financial correction was executed.
+
+Recovery: `backup/api-before-phase6-core-reads-20260918`, `api-core-read-backup-20260918T110234Z`. Private source/configuration recovery files remain server-side; never reinstate the revoked reconciliation-validator credential. Automatic approval review initially rejected activation for unclear scope; the same action was approved after the exact existing user authorization and test evidence were supplied. No extra user approval or workaround was used. Remaining route review, final regression and normal main integration remain pending.
 
 ## Expense denominator office-scope repair — deployed
 

@@ -1,6 +1,6 @@
 # Expense ratio selected-office read dependency
 
-Candidate tested; deployment is not yet claimed.
+Deployed and verified in production and QA; see the release entry below.
 
 The existing Expense Overview reads production and collections solely as ratio
 denominators. Its helper sent a global request for multiple selected offices,
