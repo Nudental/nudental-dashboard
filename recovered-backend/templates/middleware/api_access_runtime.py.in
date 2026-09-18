@@ -193,6 +193,22 @@ class ExpenseReadBoundary:
             await self.app(scope,receive,send)
 
 
+class RcmSnapshotBoundary:
+    def __init__(self,app,*,office_to_location,location_names,users=None):
+        from api_rcm_snapshot_policy import snapshot_authorize
+        self.app=app
+        self.boundary=IdentityBoundary(app,users=users or CurrentUserResolver(),
+            jobs=JobResolver(job_configuration),
+            authorize=lambda actor,scope:snapshot_authorize(actor,scope,office_to_location,location_names()))
+
+    async def __call__(self,scope,receive,send):
+        from api_rcm_snapshot_policy import is_snapshot_read
+        if is_snapshot_read(scope):
+            await self.boundary(scope,receive,send)
+        else:
+            await self.app(scope,receive,send)
+
+
 def private_json(path, *, absent=None):
     path = Path(path)
     if not path.exists() and absent is not None:

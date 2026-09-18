@@ -234,7 +234,7 @@ def startup_event():
 
 
 # Named background-job tokens have an exact route boundary on every path.
-from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary, WorkflowReadBoundary, OrderBoundary, ClinicalReadBoundary, MaintenanceBoundary, CoreReadBoundary, MetricReadBoundary, ExpenseReadBoundary
+from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary, WorkflowReadBoundary, OrderBoundary, ClinicalReadBoundary, MaintenanceBoundary, CoreReadBoundary, MetricReadBoundary, ExpenseReadBoundary, RcmSnapshotBoundary
 app.add_middleware(ScopedJobBoundary)
 app.add_middleware(ReportExportBoundary)
 app.add_middleware(CompensationBoundary, allowed_emails=PAYROLL_ALLOWED_EMAILS)
@@ -246,6 +246,7 @@ app.add_middleware(MaintenanceBoundary)
 app.add_middleware(CoreReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID)
 app.add_middleware(MetricReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID, allowed_emails=PAYROLL_ALLOWED_EMAILS)
 app.add_middleware(ExpenseReadBoundary)
+app.add_middleware(RcmSnapshotBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID, location_names=lambda: LOCATION_NAMES)
 app.add_middleware(WorkflowReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID)
 
 # CORS
@@ -8902,6 +8903,7 @@ def rcm_patient_balances(
 @app.get("/v2/rcm/aging-receivables-live", tags=["RCM"])
 @app.get("/v2/aging-receivables/live", tags=["RCM"])
 def rcm_payor_aging(
+    request: Request,
     asOfDate:    Optional[str] = Query(None, description="Report date (YYYY-MM-DD). Returns most recent snapshot ≤ this date."),
     locationId:  Optional[str] = Query(None, description="Filter by Dentrix location_id"),
     officeId:    Optional[str] = Query(None, description="Filter by office UUID (maps to location_id)"),
@@ -8919,6 +8921,7 @@ def rcm_payor_aging(
     To update: export Dentrix Aged Receivables (Over 90 format) → run import_ar_aging.py --seed <date>
     """
     import datetime, requests as _req
+    from api_rcm_snapshot_policy import payor_response_scope
 
     # Resolve officeId → locationId
     if officeId and not locationId:
@@ -9058,7 +9061,7 @@ def rcm_payor_aging(
         "dentrix_aged_receivables_seed" if is_seed else "dentrix_aged_receivables_precomputed"
     )
 
-    return {
+    return payor_response_scope({
         "asOfDate":        as_of,
         "snapshotDate":    latest_date,
         "reportType":      rtype,
@@ -9112,7 +9115,7 @@ def rcm_payor_aging(
 
         # --- Available snapshots ---
         "availableSnapshots": available_dates[:10],
-    }
+    }, request.state.dashboard_actor, locationId)
     import sqlite3 as _sq3
     import datetime
 
@@ -12774,6 +12777,7 @@ def eassist_daily_reports(
 ):
     """Return ingested eAssist Daily Report rows from Supabase."""
     import requests
+    from api_expense_read_policy import expense_filter_literal
     try:
         with open("/home/openclaw/.config/supabase/nudental.json") as f:
             cfg = json.load(f)
@@ -12789,21 +12793,21 @@ def eassist_daily_reports(
 
     filters = []
     if reportDate:
-        filters.append(f"report_date=eq.{reportDate}")
+        filters.append(f"report_date=eq.{expense_filter_literal(reportDate)}")
     if startDate:
-        filters.append(f"report_date=gte.{startDate}")
+        filters.append(f"report_date=gte.{expense_filter_literal(startDate)}")
     if endDate:
-        filters.append(f"report_date=lte.{endDate}")
+        filters.append(f"report_date=lte.{expense_filter_literal(endDate)}")
     if office:
-        filters.append(f"office_canonical=eq.{office}")
+        filters.append(f"office_canonical=eq.{expense_filter_literal(office)}")
     if officeId:
-        filters.append(f"office_id=eq.{officeId}")
+        filters.append(f"office_id=eq.{expense_filter_literal(officeId)}")
     if locationId:
-        filters.append(f"location_id=eq.{locationId}")
+        filters.append(f"location_id=eq.{expense_filter_literal(locationId)}")
     if parseStatus:
-        filters.append(f"parser_status=eq.{parseStatus}")
+        filters.append(f"parser_status=eq.{expense_filter_literal(parseStatus)}")
     if validationStatus:
-        filters.append(f"validation_status=eq.{validationStatus}")
+        filters.append(f"validation_status=eq.{expense_filter_literal(validationStatus)}")
 
     offset = (page - 1) * pageSize
 
@@ -12899,9 +12903,14 @@ def eassist_daily_reports(
 
 
 @app.get("/v2/eassist/ingest/status", tags=["eAssist"], dependencies=[Depends(verify_api_key)])
-def eassist_ingest_status():
+def eassist_ingest_status(request: Request, locationId: Optional[str] = Query(None), officeId: Optional[str] = Query(None)):
     """Return ingestion health/coverage summary for the eAssist pipeline."""
     import requests
+    from api_expense_read_policy import expense_filter_literal
+    actor = request.state.dashboard_actor
+    selected_location = locationId or OFFICE_TO_LOCATION.get(officeId)
+    selected_office = LOCATION_NAMES.get(selected_location) if selected_location else None
+    office_filter = ("&office_canonical=eq." + expense_filter_literal(selected_office)) if selected_office else ""
     from datetime import date as _date, timedelta as _td
 
     try:
@@ -12917,41 +12926,44 @@ def eassist_ingest_status():
         "Prefer": "count=exact",
     }
 
-    # Latest ingest runs
-    run_resp = requests.get(
-        f"{sb_url}/rest/v1/eassist_ingest_log?select=*&order=run_started_at.desc&limit=5",
-        headers=hdrs,
-        timeout=15,
-    )
-    latest_runs = run_resp.json() if run_resp.status_code in (200, 206) else []
+    latest_runs = []
+    stg_total = conf_total = None
+    if actor.all_offices:
+        # Latest ingest runs
+        run_resp = requests.get(
+            f"{sb_url}/rest/v1/eassist_ingest_log?select=*&order=run_started_at.desc&limit=5",
+            headers=hdrs,
+            timeout=15,
+        )
+        latest_runs = run_resp.json() if run_resp.status_code in (200, 206) else []
 
-    # Staging count
-    stg_resp = requests.get(
-        f"{sb_url}/rest/v1/eassist_daily_reports_staging?select=id&limit=1",
-        headers=hdrs,
-        timeout=10,
-    )
-    stg_total = None
-    cr = stg_resp.headers.get("content-range") or stg_resp.headers.get("Content-Range")
-    if cr and "/" in cr:
-        try:
-            stg_total = int(cr.split("/")[-1])
-        except Exception:
-            stg_total = None
+        # Staging count
+        stg_resp = requests.get(
+            f"{sb_url}/rest/v1/eassist_daily_reports_staging?select=id&limit=1",
+            headers=hdrs,
+            timeout=10,
+        )
+        stg_total = None
+        cr = stg_resp.headers.get("content-range") or stg_resp.headers.get("Content-Range")
+        if cr and "/" in cr:
+            try:
+                stg_total = int(cr.split("/")[-1])
+            except Exception:
+                stg_total = None
 
-    # Conflict count in staging
-    conf_resp = requests.get(
-        f"{sb_url}/rest/v1/eassist_daily_reports_staging?duplicate_status=eq.conflict&select=id&limit=1",
-        headers=hdrs,
-        timeout=10,
-    )
-    conf_total = None
-    cr2 = conf_resp.headers.get("content-range") or conf_resp.headers.get("Content-Range")
-    if cr2 and "/" in cr2:
-        try:
-            conf_total = int(cr2.split("/")[-1])
-        except Exception:
-            conf_total = None
+        # Conflict count in staging
+        conf_resp = requests.get(
+            f"{sb_url}/rest/v1/eassist_daily_reports_staging?duplicate_status=eq.conflict&select=id&limit=1",
+            headers=hdrs,
+            timeout=10,
+        )
+        conf_total = None
+        cr2 = conf_resp.headers.get("content-range") or conf_resp.headers.get("Content-Range")
+        if cr2 and "/" in cr2:
+            try:
+                conf_total = int(cr2.split("/")[-1])
+            except Exception:
+                conf_total = None
 
     # Determine last business day
     target = _date.today() - _td(days=1)
@@ -12960,7 +12972,7 @@ def eassist_ingest_status():
 
     # Missing placeholders for last business day
     miss_resp = requests.get(
-        f"{sb_url}/rest/v1/eassist_daily_reports?report_date=eq.{target.isoformat()}&parser_status=eq.missing&select=office_canonical,report_date,parser_status",
+        f"{sb_url}/rest/v1/eassist_daily_reports?report_date=eq.{target.isoformat()}&parser_status=eq.missing&select=office_canonical,report_date,parser_status{office_filter}",
         headers=hdrs,
         timeout=10,
     )
@@ -12968,7 +12980,7 @@ def eassist_ingest_status():
 
     # Latest reports (recent 100) and compute per office latest
     recent_resp = requests.get(
-        f"{sb_url}/rest/v1/eassist_daily_reports?select=office_canonical,report_date,parser_status,parser_confidence,email_received_at&order=report_date.desc&limit=100",
+        f"{sb_url}/rest/v1/eassist_daily_reports?select=office_canonical,report_date,parser_status,parser_confidence,email_received_at&order=report_date.desc&limit=100{office_filter}",
         headers=hdrs,
         timeout=15,
     )
@@ -12986,7 +12998,7 @@ def eassist_ingest_status():
             "lastBusinessDay": target.isoformat(),
             "missingReports": missing_rows,
             "missingCount": len(missing_rows),
-            "expectedOffices": ["Barnegat", "Brick", "Eatontown"],
+            "expectedOffices": [selected_office] if selected_office else ["Barnegat", "Brick", "Eatontown"],
         },
         "staging": {
             "stagedCount": stg_total,
