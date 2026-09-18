@@ -1,6 +1,6 @@
 # Expense API access and literal query encoding
 
-Status: candidate; not yet activated. Production remains at API source `749d8ee3900c25169f7c59e467f764665c91329b` until a passing release receipt is recorded.
+Status: DEPLOYED AND LIVE VERIFIED.
 
 ## Evidence and scope
 
@@ -31,7 +31,19 @@ Deployment first installs compatible policy/dispatcher code with the legacy main
 - All financial calculations and unrelated main AST: unchanged.
 - 27 unrelated materialized files: unchanged.
 - 17 retained backend suites: PASS, zero guard attempts.
-- Production activation: pending.
+- Production activation and live UI: PASS.
 - Frontend source unchanged; the previously passing 1,660-test build remains deployed.
 
 No financial source record, accounting proposal, classification, archive, provider connection, production schema or business action is changed by this candidate.
+
+## Expense read boundary and query encoding — deployed
+
+Source `d5c6da689852e41eaa3087d42ef274a7e654bdda` applied at 2026-09-18T12:16:35.660036+00:00; main SHA256 `681aa6a12f0b9b7fbef6e914d47b82bf441dbbfa0a3fd7f4e48af1923a9b3cce`. Seven existing Expense GET routes require a current approved human, all-office authority and their parent/child page grants. All-office authority is required because existing Summary/Payroll/Filters/Wells responses contain global components or metadata; no report filter is misrepresented as isolation. Current Regional Manager Overview dependencies remain available. Calculations, classifications, posted/archive rules and records are unchanged.
+
+A synthetic actual-handler test reproduced malformed-date fragments removing a later office selector and an ampersand splitting a department value. Sixty interpolated filter values in five handlers now use literal URL encoding. Canonical AST preservation verified that only encoding and access-boundary plumbing changed. No malformed request was sent to production.
+
+267 guarded native tests, 17 retained backend suites and 13 materializer tests PASS. The existing reconciliation-validator gained only its already-used `GET /v2/expenses/summary` route, retaining its current credential and expiry. Its dispatcher compatibility and unchanged response passed before the human gate activated. Other job identities/helpers remain unchanged. All seven missing identities return 401; off-scope reads and job writes return 403; permitted Summary and Payroll reads remain 200. The same-period Summary result is unchanged. All 78,471 guarded original Supabase rows and 83,961 SQLite rows are preserved. Production, QA and QA API health PASS. Frontend/provider configuration and the frozen accounting register remain unchanged.
+
+Live signed-in Expense (This Year / All Offices) reloads without alerts, permission/load warnings or captured console errors. Filters and Overview render. Live positives used Super Admin; restricted/other roles were tested synthetically. No provider, export, financial, clinical or approval action occurred.
+
+Recovery: `backup/api-before-phase6-expense-reads-20260918`, `api-expense-read-backup-20260918T121559Z`. Private backup files stay on the server. Restore only the freshly captured current job configuration; never reinstate the previously revoked credential. Remaining API review, final regression and canonical-main integration are still open.

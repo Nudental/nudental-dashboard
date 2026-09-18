@@ -1,8 +1,10 @@
 # Phase 6 active checkpoint
 
-Updated 2026-09-18T11:03:15.566910+00:00. Phase 6 remains IN PROGRESS. Continue autonomously under Dr. G's explicit Bâ€“E/client/API approval; no new phase and no financial corrections.
+Updated 2026-09-18T12:20:04.491683+00:00. Phase 6 remains IN PROGRESS. Continue autonomously under Dr. G's explicit Bâ€“E/client/API approval; no new phase and no financial corrections.
 
 ## Current production
+
+**Current verified state:** API `d5c6da689852e41eaa3087d42ef274a7e654bdda`; production frontend `9509cba3-dd00-4084-9c14-e64ffd7ff390`; QA `559189b1-5a28-4cea-90ba-c0e00bbe2a5e`. Expense release PASS. Next: remaining RCM/financial/diagnostic/provider route review, final regression and normal main integration. No accounting corrections.
 
 ## RCM selected-office status repair — deployed
 
@@ -13,6 +15,18 @@ All 1,654 frontend tests (zero skips), six compiled Expense isolation checks and
 Live production RCM / Eatontown / Last Month renders all eight sections, today's September 18 daily summary and an available payment breakdown; captured errors and alerts are empty. QA layout and banner render with financial reads intentionally disabled by `product_api_ready=false`. Production/QA HTTP and API health PASS. Four production/collections metric comparisons for August 1–31, all offices and Eatontown, are unchanged. All 17,363 guarded original rows are preserved, backend source is unchanged and business writes are zero. The bounded last-150-line journal query contained no matching daily-summary request; no transport-log claim is made.
 
 Immediate frontend rollback: `a81545bf-4463-4dc3-9b33-3cad855888d7`, tag `backup/production-before-phase6-rcm-scope-20260918`, snapshot `core-client-frontend-backup-20260918T093908Z`. Earlier recovery points remain. This completes the client dependency only; core-read API identity activation and final main integration remain pending.
+
+## Expense read boundary and query encoding — deployed
+
+Source `d5c6da689852e41eaa3087d42ef274a7e654bdda` applied at 2026-09-18T12:16:35.660036+00:00; main SHA256 `681aa6a12f0b9b7fbef6e914d47b82bf441dbbfa0a3fd7f4e48af1923a9b3cce`. Seven existing Expense GET routes require a current approved human, all-office authority and their parent/child page grants. All-office authority is required because existing Summary/Payroll/Filters/Wells responses contain global components or metadata; no report filter is misrepresented as isolation. Current Regional Manager Overview dependencies remain available. Calculations, classifications, posted/archive rules and records are unchanged.
+
+A synthetic actual-handler test reproduced malformed-date fragments removing a later office selector and an ampersand splitting a department value. Sixty interpolated filter values in five handlers now use literal URL encoding. Canonical AST preservation verified that only encoding and access-boundary plumbing changed. No malformed request was sent to production.
+
+267 guarded native tests, 17 retained backend suites and 13 materializer tests PASS. The existing reconciliation-validator gained only its already-used `GET /v2/expenses/summary` route, retaining its current credential and expiry. Its dispatcher compatibility and unchanged response passed before the human gate activated. Other job identities/helpers remain unchanged. All seven missing identities return 401; off-scope reads and job writes return 403; permitted Summary and Payroll reads remain 200. The same-period Summary result is unchanged. All 78,471 guarded original Supabase rows and 83,961 SQLite rows are preserved. Production, QA and QA API health PASS. Frontend/provider configuration and the frozen accounting register remain unchanged.
+
+Live signed-in Expense (This Year / All Offices) reloads without alerts, permission/load warnings or captured console errors. Filters and Overview render. Live positives used Super Admin; restricted/other roles were tested synthetically. No provider, export, financial, clinical or approval action occurred.
+
+Recovery: `backup/api-before-phase6-expense-reads-20260918`, `api-expense-read-backup-20260918T121559Z`. Private backup files stay on the server. Restore only the freshly captured current job configuration; never reinstate the previously revoked credential. Remaining API review, final regression and canonical-main integration are still open.
 
 ## Metric and legacy helper read boundary — deployed
 
@@ -90,4 +104,4 @@ One Huddle page initialized an unsubmitted September 18 draft at 04:18:07 UTC, w
 
 Financial follow-up is frozen: no record/classification/archive/card metadata changes, reconciliation searches, bank logins, provider syncs, emails, purchases, approvals, clinical writes or real workflow execution. TwiML is an existing intentionally external static call flow and remains separate. Do not alter Collaboration Platform or begin another phase.
 
-Current browser: production tab 68 on Financial Analytics. KPI Main/Specialty and Finance checks passed after the metric/helper gate; no warnings, captured errors or business actions. QA tab 69 remains available.
+Current browser: production tab 68 on Expense Report, This Year / All Offices, verified after the Expense gate; no alerts or captured errors. QA tab 69 remains available.
