@@ -365,11 +365,11 @@
   },
   {
     "source_file": "middleware/main_candidate.py",
-    "sha256": "bbfa92220cdc8ca29592393b69ea84dffa1943ea39a1eaf9bc6b60b9f6c789a0",
-    "template_sha256": "591c6fa222885ca6960bd0173023592c57cacc57dfe0331299b1b8a4c799d08c",
+    "sha256": "681aa6a12f0b9b7fbef6e914d47b82bf441dbbfa0a3fd7f4e48af1923a9b3cce",
+    "template_sha256": "27e5dd36785c0c1bee457abacbd0add659260fa0f1709378fe8398c164b83620",
     "round_trip_exact": true,
     "previous_production_sha256": "a3961f234a8895617052de9cce99306cb6380f48c2d650f4395ab2c160bf0336",
-    "bytes": 862869
+    "bytes": 864685
   },
   {
     "file": "middleware/otp_auth.py",
@@ -754,11 +754,11 @@
   },
   {
     "source_file": "middleware/api_access_runtime.py",
-    "sha256": "94b9f711d81ef0e0dd89972f2b89d08d682a28dbe1e9ee201963c5a68bd07337",
-    "template_sha256": "94b9f711d81ef0e0dd89972f2b89d08d682a28dbe1e9ee201963c5a68bd07337",
+    "sha256": "2ee8247c5a9d44ba83b5b68bbd0274ddd5701f2555a04c0a97ffb87c2fc969ad",
+    "template_sha256": "2ee8247c5a9d44ba83b5b68bbd0274ddd5701f2555a04c0a97ffb87c2fc969ad",
     "round_trip_exact": true,
     "introduced": "phase6-api-identity",
-    "bytes": 11634
+    "bytes": 12229
   },
   {
     "source_file": "middleware/api_report_policy.py",
@@ -818,14 +818,20 @@
   },
   {
     "source_file": "middleware/api_core_read_policy.py",
-    "sha256": "36fc83651d02bbb8d90ddf8b9a9a64384b69472934d73cd3c859fea1ab1c947a",
-    "template_sha256": "36fc83651d02bbb8d90ddf8b9a9a64384b69472934d73cd3c859fea1ab1c947a",
-    "bytes": 5680
+    "sha256": "4257ae4eb5c3ffd188da1530cd14d4f09f3012aa1ec874bb5a54214ca9b3c75c",
+    "template_sha256": "4257ae4eb5c3ffd188da1530cd14d4f09f3012aa1ec874bb5a54214ca9b3c75c",
+    "bytes": 5781
   },
   {
     "source_file": "middleware/api_metric_read_policy.py",
     "sha256": "e80845af83ed5593c36ffb413a216753b58520e14e55d347b37077ed4807f9ab",
     "template_sha256": "e80845af83ed5593c36ffb413a216753b58520e14e55d347b37077ed4807f9ab",
     "bytes": 3275
+  },
+  {
+    "source_file": "middleware/api_expense_read_policy.py",
+    "sha256": "208e16c7ad853d969a69c5a5c1077d0c2fdb0efe82a653b831911c7e70077bae",
+    "template_sha256": "208e16c7ad853d969a69c5a5c1077d0c2fdb0efe82a653b831911c7e70077bae",
+    "bytes": 1928
   }
 ]

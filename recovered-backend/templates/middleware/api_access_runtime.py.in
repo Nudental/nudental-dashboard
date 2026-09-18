@@ -178,6 +178,21 @@ class MetricReadBoundary:
             await self.app(scope,receive,send)
 
 
+class ExpenseReadBoundary:
+    def __init__(self,app,*,users=None):
+        from api_expense_read_policy import expense_read_authorize
+        self.app=app
+        self.boundary=IdentityBoundary(app,users=users or CurrentUserResolver(),
+            jobs=JobResolver(job_configuration),authorize=expense_read_authorize)
+
+    async def __call__(self,scope,receive,send):
+        from api_expense_read_policy import is_expense_read_request
+        if is_expense_read_request(scope):
+            await self.boundary(scope,receive,send)
+        else:
+            await self.app(scope,receive,send)
+
+
 def private_json(path, *, absent=None):
     path = Path(path)
     if not path.exists() and absent is not None:

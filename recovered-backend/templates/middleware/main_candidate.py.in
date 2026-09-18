@@ -234,7 +234,7 @@ def startup_event():
 
 
 # Named background-job tokens have an exact route boundary on every path.
-from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary, WorkflowReadBoundary, OrderBoundary, ClinicalReadBoundary, MaintenanceBoundary, CoreReadBoundary, MetricReadBoundary
+from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary, WorkflowReadBoundary, OrderBoundary, ClinicalReadBoundary, MaintenanceBoundary, CoreReadBoundary, MetricReadBoundary, ExpenseReadBoundary
 app.add_middleware(ScopedJobBoundary)
 app.add_middleware(ReportExportBoundary)
 app.add_middleware(CompensationBoundary, allowed_emails=PAYROLL_ALLOWED_EMAILS)
@@ -245,6 +245,7 @@ app.add_middleware(ClinicalReadBoundary, office_to_location=OFFICE_UUID_TO_LOCAT
 app.add_middleware(MaintenanceBoundary)
 app.add_middleware(CoreReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID)
 app.add_middleware(MetricReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID, allowed_emails=PAYROLL_ALLOWED_EMAILS)
+app.add_middleware(ExpenseReadBoundary)
 app.add_middleware(WorkflowReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID)
 
 # CORS
@@ -2690,6 +2691,7 @@ def expense_summary(
     office: str = None, officeId: str = None, department: str = None
 ):
     # Accept both param styles
+    from api_expense_read_policy import expense_filter_literal
     if not date_from and startDate:
         date_from = startDate
     if not date_to and endDate:
@@ -2708,18 +2710,18 @@ def expense_summary(
         # Updated 2026-05-18: Sum ALL posted AmEx rows (positive charges +
         # negative vendor credits/refunds) to get net AmEx expense.
         # AmEx payments are never in expenses table — they are in amex_payments.
-        amex_filter = f"expenses?select=amount,category_name,office_name,department_name,expense_date&source_tab=eq.amex&expense_date=gte.{start}&expense_date=lte.{end}&expense_status=eq.posted"
+        amex_filter = f"expenses?select=amount,category_name,office_name,department_name,expense_date&source_tab=eq.amex&expense_date=gte.{expense_filter_literal(start)}&expense_date=lte.{expense_filter_literal(end)}&expense_status=eq.posted"
         if office:
-            amex_filter += f"&office_name=ilike.*{office}*"
+            amex_filter += f"&office_name=ilike.*{expense_filter_literal(office)}*"
         amex_rows = _sb_get(amex_filter)
         amex_charges = sum(r["amount"] for r in amex_rows if (r["amount"] or 0) > 0)
         amex_credits = sum(r["amount"] for r in amex_rows if (r["amount"] or 0) < 0)
         amex_total = amex_charges + amex_credits  # net: charges minus credits
 
         # ── 2. Gusto payroll expense facts ────────────────────────────────
-        gef_filter = f"gusto_expense_facts?select=expense_category,expense_amount,expense_date,office_name&expense_date=gte.{start}&expense_date=lte.{end}"
+        gef_filter = f"gusto_expense_facts?select=expense_category,expense_amount,expense_date,office_name&expense_date=gte.{expense_filter_literal(start)}&expense_date=lte.{expense_filter_literal(end)}"
         if office:
-            gef_filter += f"&office_name=ilike.*{office}*"
+            gef_filter += f"&office_name=ilike.*{expense_filter_literal(office)}*"
         gef_rows = _sb_get(gef_filter)
 
         payroll_total    = sum(r["expense_amount"] or 0 for r in gef_rows if r["expense_category"] == "Payroll")
@@ -2728,9 +2730,9 @@ def expense_summary(
         contractor_total = sum(r["expense_amount"] or 0 for r in gef_rows if r["expense_category"] == "Contractors Paid")
 
         # ── 3. Manual expense_facts ───────────────────────────────────────
-        ef_filter = f"expense_facts?select=expense_category,expense_amount,expense_date,office_name,expense_source,source_table&expense_date=gte.{start}&expense_date=lte.{end}&expense_source=neq.gusto_payroll"
+        ef_filter = f"expense_facts?select=expense_category,expense_amount,expense_date,office_name,expense_source,source_table&expense_date=gte.{expense_filter_literal(start)}&expense_date=lte.{expense_filter_literal(end)}&expense_source=neq.gusto_payroll"
         if office:
-            ef_filter += f"&office_name=ilike.*{office}*"
+            ef_filter += f"&office_name=ilike.*{expense_filter_literal(office)}*"
         ef_rows = _sb_get(ef_filter)
 
         # Exclude rows sourced from gusto_payroll (already counted in gusto_expense_facts)
@@ -2761,11 +2763,11 @@ def expense_summary(
         }
         wf_filter = (
             f"expenses?select=amount,category_name,office_name,department_name,expense_date,allocation_metadata"
-            f"&source_tab=eq.Banking&expense_date=gte.{start}&expense_date=lte.{end}"
+            f"&source_tab=eq.Banking&expense_date=gte.{expense_filter_literal(start)}&expense_date=lte.{expense_filter_literal(end)}"
             f"&expense_status=eq.posted"
         )
         if office:
-            wf_filter += f"&office_name=ilike.*{office}*"
+            wf_filter += f"&office_name=ilike.*{expense_filter_literal(office)}*"
         wf_rows = _sb_get(wf_filter)
         wf_banking_total = sum(
             r["amount"] for r in wf_rows
@@ -2873,21 +2875,22 @@ def expense_lines(
     Merges: expenses (AmEx/Plaid) + gusto_expense_facts (payroll) + expense_facts (manual).
     Each row is traceable to its source table + source record ID.
     """
+    from api_expense_read_policy import expense_filter_literal
     try:
         start, end = _expense_date_filter(date_from, date_to, month, quarter, year)
         lines = []
 
         # ── Source 1: expenses table (AmEx / Plaid) ───────────────────────
         if not source_type or source_type in ("amex", "credit_card", "plaid"):
-            q = f"expenses?select=*&source_tab=eq.amex&expense_date=gte.{start}&expense_date=lte.{end}&order=expense_date.desc"
-            if office:     q += f"&office_name=ilike.*{office}*"
-            if department: q += f"&department_name=ilike.*{department}*"
-            if cardholder: q += f"&cardholder_name=ilike.*{cardholder}*"
-            if card_last4: q += f"&card_last4=eq.{card_last4}"
+            q = f"expenses?select=*&source_tab=eq.amex&expense_date=gte.{expense_filter_literal(start)}&expense_date=lte.{expense_filter_literal(end)}&order=expense_date.desc"
+            if office:     q += f"&office_name=ilike.*{expense_filter_literal(office)}*"
+            if department: q += f"&department_name=ilike.*{expense_filter_literal(department)}*"
+            if cardholder: q += f"&cardholder_name=ilike.*{expense_filter_literal(cardholder)}*"
+            if card_last4: q += f"&card_last4=eq.{expense_filter_literal(card_last4)}"
             # Default to 'posted' only; pass expense_status='archived' explicitly for audit/debug
             effective_status = expense_status if expense_status else "posted"
             q += f"&expense_status=eq.{effective_status}"
-            if category:   q += f"&category_name=ilike.*{category}*"
+            if category:   q += f"&category_name=ilike.*{expense_filter_literal(category)}*"
             for r in _sb_get(q):
                 # Also exclude superseded rows tagged in allocation_metadata
                 # (belt-and-suspenders: catches rows where expense_status couldn't be set)
@@ -2918,12 +2921,12 @@ def expense_lines(
 
         # ── Source 1b: WF Banking direct expenses ─────────────────────────
         if not source_type or source_type in ("banking", "wells_fargo"):
-            wf_q = f"expenses?select=*&source_tab=eq.Banking&expense_date=gte.{start}&expense_date=lte.{end}&order=expense_date.desc"
-            if office:     wf_q += f"&office_name=ilike.*{office}*"
-            if department: wf_q += f"&department_name=ilike.*{department}*"
-            if card_last4: wf_q += f"&card_last4=eq.{card_last4}"
-            if expense_status: wf_q += f"&expense_status=eq.{expense_status}"
-            if category:   wf_q += f"&category_name=ilike.*{category}*"
+            wf_q = f"expenses?select=*&source_tab=eq.Banking&expense_date=gte.{expense_filter_literal(start)}&expense_date=lte.{expense_filter_literal(end)}&order=expense_date.desc"
+            if office:     wf_q += f"&office_name=ilike.*{expense_filter_literal(office)}*"
+            if department: wf_q += f"&department_name=ilike.*{expense_filter_literal(department)}*"
+            if card_last4: wf_q += f"&card_last4=eq.{expense_filter_literal(card_last4)}"
+            if expense_status: wf_q += f"&expense_status=eq.{expense_filter_literal(expense_status)}"
+            if category:   wf_q += f"&category_name=ilike.*{expense_filter_literal(category)}*"
             for r in _sb_get(wf_q):
                 meta = r.get("allocation_metadata") or {}
                 if meta.get("excluded_from_expense", False):
@@ -2957,9 +2960,9 @@ def expense_lines(
 
         # ── Source 2: gusto_expense_facts (payroll / benefits / contractors) ──
         if not source_type or source_type in ("gusto", "payroll"):
-            q = f"gusto_expense_facts?select=*&expense_date=gte.{start}&expense_date=lte.{end}&order=expense_date.desc"
-            if office: q += f"&office_name=ilike.*{office}*"
-            if category: q += f"&expense_category=ilike.*{category}*"
+            q = f"gusto_expense_facts?select=*&expense_date=gte.{expense_filter_literal(start)}&expense_date=lte.{expense_filter_literal(end)}&order=expense_date.desc"
+            if office: q += f"&office_name=ilike.*{expense_filter_literal(office)}*"
+            if category: q += f"&expense_category=ilike.*{expense_filter_literal(category)}*"
             for r in _sb_get(q):
                 if r.get("expense_amount") and r["expense_amount"] > 0:
                     lines.append({
@@ -2988,9 +2991,9 @@ def expense_lines(
         # ── Source 3: expense_facts (manual + other) — exclude gusto dupes ──
         gusto_source_ids = {l["source_reference"] for l in lines if l["source_type"] == "gusto"}
         if not source_type or source_type == "manual":
-            q = f"expense_facts?select=*&expense_date=gte.{start}&expense_date=lte.{end}&expense_source=neq.gusto_payroll&order=expense_date.desc"
-            if office:   q += f"&office_name=ilike.*{office}*"
-            if category: q += f"&expense_category=ilike.*{category}*"
+            q = f"expense_facts?select=*&expense_date=gte.{expense_filter_literal(start)}&expense_date=lte.{expense_filter_literal(end)}&expense_source=neq.gusto_payroll&order=expense_date.desc"
+            if office:   q += f"&office_name=ilike.*{expense_filter_literal(office)}*"
+            if category: q += f"&expense_category=ilike.*{expense_filter_literal(category)}*"
             for r in _sb_get(q):
                 if r.get("source_id") in gusto_source_ids:
                     continue  # deduplicate
@@ -3044,6 +3047,7 @@ def expense_breakdown(
     office: str = None
 ):
     # Accept both param styles
+    from api_expense_read_policy import expense_filter_literal
     if not date_from and startDate:
         date_from = startDate
     if not date_to and endDate:
@@ -3059,8 +3063,8 @@ def expense_breakdown(
         buckets = defaultdict(float)
 
         # AmEx lines
-        amex_q = f"expenses?select=amount,category_name,office_name,department_name,cardholder_name,expense_date,source_tab&source_tab=eq.amex&expense_date=gte.{start}&expense_date=lte.{end}&expense_status=eq.posted"
-        if office: amex_q += f"&office_name=ilike.*{office}*"
+        amex_q = f"expenses?select=amount,category_name,office_name,department_name,cardholder_name,expense_date,source_tab&source_tab=eq.amex&expense_date=gte.{expense_filter_literal(start)}&expense_date=lte.{expense_filter_literal(end)}&expense_status=eq.posted"
+        if office: amex_q += f"&office_name=ilike.*{expense_filter_literal(office)}*"
         for r in _sb_get(amex_q):
             amt = r.get("amount") or 0
             if amt <= 0: continue
@@ -3074,8 +3078,8 @@ def expense_breakdown(
             buckets[key] += amt
 
         # Gusto payroll lines
-        gef_q = f"gusto_expense_facts?select=expense_amount,expense_category,expense_date,office_name&expense_date=gte.{start}&expense_date=lte.{end}"
-        if office: gef_q += f"&office_name=ilike.*{office}*"
+        gef_q = f"gusto_expense_facts?select=expense_amount,expense_category,expense_date,office_name&expense_date=gte.{expense_filter_literal(start)}&expense_date=lte.{expense_filter_literal(end)}"
+        if office: gef_q += f"&office_name=ilike.*{expense_filter_literal(office)}*"
         for r in _sb_get(gef_q):
             amt = r.get("expense_amount") or 0
             if amt <= 0: continue
@@ -3087,8 +3091,8 @@ def expense_breakdown(
             buckets[key] += amt
 
         # Manual expense_facts
-        ef_q = f"expense_facts?select=expense_amount,expense_category,expense_date,office_name&expense_date=gte.{start}&expense_date=lte.{end}"
-        if office: ef_q += f"&office_name=ilike.*{office}*"
+        ef_q = f"expense_facts?select=expense_amount,expense_category,expense_date,office_name&expense_date=gte.{expense_filter_literal(start)}&expense_date=lte.{expense_filter_literal(end)}"
+        if office: ef_q += f"&office_name=ilike.*{expense_filter_literal(office)}*"
         gusto_cats = {"Payroll / Gusto", "Payroll Taxes", "Benefit Paid", "Contractors Paid"}
         for r in _sb_get(ef_q):
             if r.get("expense_category") in gusto_cats: continue
@@ -3104,9 +3108,9 @@ def expense_breakdown(
         # WF Banking direct expenses
         wf_bd_q = (
             f"expenses?select=amount,category_name,office_name,expense_date,allocation_metadata"
-            f"&source_tab=eq.Banking&expense_date=gte.{start}&expense_date=lte.{end}"
+            f"&source_tab=eq.Banking&expense_date=gte.{expense_filter_literal(start)}&expense_date=lte.{expense_filter_literal(end)}"
         )
-        if office: wf_bd_q += f"&office_name=ilike.*{office}*"
+        if office: wf_bd_q += f"&office_name=ilike.*{expense_filter_literal(office)}*"
         for r in _sb_get(wf_bd_q):
             meta = r.get("allocation_metadata") or {}
             if meta.get("excluded_from_expense", False):
@@ -3150,19 +3154,20 @@ def expense_amex(
     Default: returns only posted, non-superseded rows (include_archived=false).
     Pass include_archived=true to include archived/superseded rows for audit/debug.
     """
+    from api_expense_read_policy import expense_filter_literal
     try:
         start, end = _expense_date_filter(date_from, date_to, month, quarter, year)
         from collections import defaultdict
 
-        q = f"expenses?select=*&source_tab=eq.amex&expense_date=gte.{start}&expense_date=lte.{end}&order=expense_date.desc"
+        q = f"expenses?select=*&source_tab=eq.amex&expense_date=gte.{expense_filter_literal(start)}&expense_date=lte.{expense_filter_literal(end)}&order=expense_date.desc"
         if not include_archived:
             # Default: exclude archived/superseded rows (normal user-facing view)
             q += "&expense_status=eq.posted"
-        if office:     q += f"&office_name=ilike.*{office}*"
-        if department: q += f"&department_name=ilike.*{department}*"
-        if cardholder: q += f"&cardholder_name=ilike.*{cardholder}*"
-        if card_last4: q += f"&card_last4=eq.{card_last4}"
-        if category:   q += f"&category_name=ilike.*{category}*"
+        if office:     q += f"&office_name=ilike.*{expense_filter_literal(office)}*"
+        if department: q += f"&department_name=ilike.*{expense_filter_literal(department)}*"
+        if cardholder: q += f"&cardholder_name=ilike.*{expense_filter_literal(cardholder)}*"
+        if card_last4: q += f"&card_last4=eq.{expense_filter_literal(card_last4)}"
+        if category:   q += f"&category_name=ilike.*{expense_filter_literal(category)}*"
 
         rows = _sb_get(q)
 
@@ -3246,16 +3251,17 @@ def expense_payroll(
     Payroll expense rollup for the Expense Report tab.
     Sources: gusto_payroll_runs (run-level totals) + gusto_expense_facts (by category).
     """
+    from api_expense_read_policy import expense_filter_literal
     try:
         start, end = _expense_date_filter(date_from, date_to, month, quarter, year)
 
         # Run-level totals from gusto_payroll_runs
-        runs_q = f"gusto_payroll_runs?select=check_date,pay_period_start,pay_period_end,total_net_pay,total_payable_tax,total_debit_amount,total_reimbursement&check_date=gte.{start}&check_date=lte.{end}&order=check_date.desc"
+        runs_q = f"gusto_payroll_runs?select=check_date,pay_period_start,pay_period_end,total_net_pay,total_payable_tax,total_debit_amount,total_reimbursement&check_date=gte.{expense_filter_literal(start)}&check_date=lte.{expense_filter_literal(end)}&order=check_date.desc"
         runs = _sb_get(runs_q)
 
         # Category breakdown from gusto_expense_facts
-        gef_q = f"gusto_expense_facts?select=expense_category,expense_subcategory,expense_amount,expense_date,office_name,office_mapping_status&expense_date=gte.{start}&expense_date=lte.{end}"
-        if office: gef_q += f"&office_name=ilike.*{office}*"
+        gef_q = f"gusto_expense_facts?select=expense_category,expense_subcategory,expense_amount,expense_date,office_name,office_mapping_status&expense_date=gte.{expense_filter_literal(start)}&expense_date=lte.{expense_filter_literal(end)}"
+        if office: gef_q += f"&office_name=ilike.*{expense_filter_literal(office)}*"
         gef = _sb_get(gef_q)
 
         from collections import defaultdict
@@ -3270,7 +3276,7 @@ def expense_payroll(
             by_month[(r.get("expense_date") or "")[:7]]     += amt
 
         # Contractor payments
-        cp_q = f"gusto_contractor_payments?select=check_date,total_amount,contractor_display_name&check_date=gte.{start}&check_date=lte.{end}&funded=eq.true"
+        cp_q = f"gusto_contractor_payments?select=check_date,total_amount,contractor_display_name&check_date=gte.{expense_filter_literal(start)}&check_date=lte.{expense_filter_literal(end)}&funded=eq.true"
         contractors = _sb_get(cp_q)
         contractor_total = sum(r.get("total_amount") or 0 for r in contractors)
 
