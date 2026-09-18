@@ -53,6 +53,22 @@ class CompensationBoundary:
             await self.app(scope, receive, send)
 
 
+class AdminBoundary:
+    """Only the ten reviewed administrative paths, never provider callbacks."""
+    def __init__(self, app, *, users=None):
+        from api_admin_policy import admin_authorize
+        self.app = app
+        self.boundary = IdentityBoundary(app, users=users or CurrentUserResolver(),
+            jobs=JobResolver(job_configuration), authorize=admin_authorize)
+
+    async def __call__(self, scope, receive, send):
+        from api_admin_policy import ADMIN_ROUTES
+        if scope.get('path') in ADMIN_ROUTES:
+            await self.boundary(scope, receive, send)
+        else:
+            await self.app(scope, receive, send)
+
+
 def private_json(path, *, absent=None):
     path = Path(path)
     if not path.exists() and absent is not None:
