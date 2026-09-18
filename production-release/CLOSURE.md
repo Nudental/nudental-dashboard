@@ -1,6 +1,6 @@
 # NuDental Dashboard — full release report
 
-Updated 2026-09-18T05:15:32.821682+00:00 from saved deployment and live verification evidence.
+Updated 2026-09-18T06:01:38.445119+00:00 from saved deployment and live verification evidence.
 
 **Phase 6 IN PROGRESS: Groups A–E and the approved frontend are live. Remaining API route review, final regression and canonical-main integration remain open.** Dr. G explicitly approved B–E and the client activation; no migration approval is pending.
 
@@ -14,8 +14,8 @@ Updated 2026-09-18T05:15:32.821682+00:00 from saved deployment and live verifica
 | Previous deployment | `277f68be-3819-410c-8ca6-6aa5ffa2a95e` |
 | Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` — final Phase 6 integration pending |
 | Branch | `phase6/nudashboard-production-hardening-20260917` |
-| API source | `30521585ecb3f7e5f1d3651a817e0acc68000a3f`; eight payroll reads protected |
-| API main SHA256 | `5270a49bb0623b96c5eb372dab409026adc257f0efcc5dacf3b10f33cb5c31f8` |
+| API source | `fa1730c752c4f26956c4d79b21e025e035a69f55`; eight payroll reads plus report export protected |
+| API main SHA256 | `a08923dcad7fad1cd935ba17c845255ea0c8a72c16da5ea5f83edbe0fc1921cc` |
 | QA deployment | `c3c958d8-fede-4be7-85e6-c7a61b635af9` — unchanged |
 
 ## Applied migration groups
@@ -41,8 +41,16 @@ The production build now activates atomic office assignment, atomic supply draft
 - Retained payroll release evidence: 52 local tests, 58 native runtime/FastAPI tests, 17 backend suites and 13 materializer checks PASS. No accounting calculation change.
 - Production Huddle history/review, EOD, implant/bone inventory, Front Desk history/catalog, clinical supply overview, Insurance and Service Goals PASS. No approvals, clinical stock changes, insurance submissions or financial actions were executed.
 - New live Front Desk Approvals route PASS on the new asset: three visible Front Desk requests, two pending; no self-approval guidance present; no action submitted. No captured console errors.
-- Dated Payroll Comparison now renders August 2–15, 2026 with 13 rows; date-required guard absent. Keyboard events succeeded without using the native picker. Narrow server request-status corroboration is tracked separately; employee-level amounts were not exported.
+- Dated Payroll Comparison now renders August 2–15, 2026 with 13 rows; date-required guard absent. Keyboard events succeeded without using the native picker. The exact native route response independently returned the same selected dates and 13 rows using read-only SQLite and two Supabase GETs. No matching HTTP access-log record was available; employee-level amounts were not exported.
 - Production and QA frontend/API health PASS. Production and QA live asset hashes match their own manifests; QA retains `product_api_ready=false`.
+
+## Bounded report-export API repair — deployed
+
+Source `fa1730c752c4f26956c4d79b21e025e035a69f55` deployed at 2026-09-18 05:53:57 UTC. Export permission and audit attribution now use the verified signed-in identity rather than body-supplied role/email/ID. All currently authorized exporters retain their existing grants. Internal reads forward only that identity to the fixed local API, without redirects. Jobs cannot export.
+
+64 local tests, 75 native Python/FastAPI tests and all 17 retained backend suites PASS. All 28 report calculation/rendering/audit-writer functions are unchanged. Live missing/invalid sessions return 401; read-only job returns 403; existing payroll validator remains 200. No real export was executed. Authorized report generation was tested with the actual handler, synthetic data and an in-memory audit.
+
+Fresh guards preserved 15,927 expense rows, 535 Gusto expense-fact rows, 663 expense-fact rows and all 93 export-audit rows. Configuration, existing job files and service units are unchanged. Production Reports still renders all eight sections/four export controls with no captured console errors. Production and QA health PASS. Recovery: `backup/api-before-phase6-reports-20260918`, private snapshot `api-report-backup-20260918T055345Z`.
 
 ## Data, audit and performance limits
 

@@ -4,7 +4,11 @@ Dr. G approved existing signed-in user checks plus separate restricted identitie
 
 The confirmed defect is that a payroll read accepted the shared application key with no user session or an invalid session. The application key identifies the client application; it must not establish the person's identity.
 
-## First bounded candidate
+## Applied report-export follow-on
+
+The verified report-export identity repair is now live from `fa1730c752c4f26956c4d79b21e025e035a69f55`. 75 native tests and 17 retained suites PASS; body identity is ignored, verified attribution is used, jobs are denied, internal reads forward the human identity, and original business/audit rows are unchanged. See [report-export evidence](API-REPORT-EXPORT.md). Remaining route review is still open.
+
+## First bounded candidate (preserved payroll release record)
 
 Eight existing GET endpoints under `/v2/payroll/`: runs, contractors, employees, expense-facts, comparison, mappings, crosswalk and summary. Their existing calculation, filtering and data-reader functions remain unchanged. The existing shared application-key check remains, with an additional authoritative identity/permission check.
 
@@ -31,5 +35,5 @@ No scheduled validator has been executed for this work. The unchanged shared app
 - Both existing API services passed the deployed checks: missing application key, absent user session and invalid session return 401; each separate validator identity receives only its approved empty-result read; out-of-scope reads are denied. No write requests or scheduled jobs were executed. The existing runtime environment file, provider configuration and frontend asset remain unchanged.
 - Validator credentials expire on 2026-12-16 at 22:55 UTC. Renew the two private credentials through the same reviewed scope before that date; do not remove expiration or broaden route grants. The hash registry and credential files remain private and outside Git. Backup tag `backup/api-before-phase6-payroll-20260917` and private source/config backup `api-payroll-backup-20260917T225503Z` preserve the prior state.
 - This is not a claim that every Dashboard API route has complete role/office authorization. Remaining route groups still need their own caller and scope review. Source inspection found shared-key routes and additional handler patterns; counts of shared-key declarations alone do not prove the status of every route.
-- Report export makes internal API calls. A later general identity rollout must forward the initiating user's verified identity and preserve office scope. Current payroll batch does not change report-export routes or provider callbacks.
+- Report export makes internal API calls. A later general identity rollout must forward the initiating user's verified identity and preserve office scope. The subsequent report-export batch implements this transport; provider callbacks remain under review.
 - Existing read-only cache warming targets RCM endpoints; it is unaffected by this bounded payroll batch. No startup sync, migrations, provider execution or financial source mutation is authorized by this release.

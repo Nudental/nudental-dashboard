@@ -4522,11 +4522,11 @@
       }
     }
   ],
-  "financial_corrections": "E — all excluded; frozen private registers are not branch changes",
+  "financial_corrections": "E \u2014 all excluded; frozen private registers are not branch changes",
   "phase6_release": {
-    "documentation_updated_utc": "2026-09-18T05:15:32.821682+00:00",
+    "documentation_updated_utc": "2026-09-18T06:01:38.445119+00:00",
     "phase_status": "IN_PROGRESS_GROUPS_AND_FRONTEND_LIVE_REMAINING_API_REVIEW",
-    "evidence_checkpoint_commit": "b748555f9dbb15e7548e30f204f0c10f563ee4b8",
+    "evidence_checkpoint_commit": "fa1730c752c4f26956c4d79b21e025e035a69f55",
     "canonical_main": "820970ede7727830d95d8d03d518d02119da1acd",
     "branch": "phase6/nudashboard-production-hardening-20260917",
     "production_frontend": {
@@ -4537,13 +4537,17 @@
       "bytes": 8833241
     },
     "production_api": {
-      "status": "DEPLOYED_SERVER_PASS_REPRESENTATIVE_UI_PASS_WITH_LIMIT",
-      "source": "30521585ecb3f7e5f1d3651a817e0acc68000a3f",
-      "main_sha256": "5270a49bb0623b96c5eb372dab409026adc257f0efcc5dacf3b10f33cb5c31f8",
+      "status": "PAYROLL_AND_REPORT_EXPORT_DEPLOYED_VERIFIED",
+      "source": "fa1730c752c4f26956c4d79b21e025e035a69f55",
+      "main_sha256": "a08923dcad7fad1cd935ba17c845255ea0c8a72c16da5ea5f83edbe0fc1921cc",
       "read_routes": 8,
       "restricted_validator_identities": 2,
       "credential_expiry": "2026-12-16T22:55:05.380984+00:00",
-      "backup": "/home/openclaw/.cache/nudashboard-phase6-20260917/api-payroll-backup-20260917T225503Z"
+      "backup": "/home/openclaw/.cache/nudashboard-phase6-20260917/api-payroll-backup-20260917T225503Z",
+      "report_export_route": "POST /v2/reports/export",
+      "report_export_backup": "/home/openclaw/.cache/nudashboard-phase6-20260917/api-report-backup-20260918T055345Z",
+      "native_tests": 75,
+      "retained_backend_suites": 17
     },
     "groups": {
       "A": {
@@ -4648,8 +4652,8 @@
       "bytes": 8832072,
       "api_product_ready": false
     },
-    "last_health_evidence_utc": "2026-09-18T04:59:55.950259+00:00",
-    "last_browser_evidence_utc": "2026-09-18T05:15:32.821682+00:00",
+    "last_health_evidence_utc": "2026-09-18T05:53:57.138095+00:00",
+    "last_browser_evidence_utc": "2026-09-18T06:01:38.445119+00:00",
     "limitations": [
       "Remaining API route authorization/caller review is open.",
       "Final full production regression and normal main integration remain pending.",
@@ -4667,7 +4671,12 @@
       ],
       "rows": 13,
       "native_picker_used": false,
-      "request_status_corroboration": "PENDING"
+      "request_status_corroboration": "No matching HTTP log available; exact native route response and live UI both verified",
+      "source_response": "PASS",
+      "source_response_rows": 13,
+      "source_response_sha256": "1bb019f6ca350da8cfd91f7e2b795b8f45ada991cf46c0ecd3eda94d736377ba",
+      "business_writes": 0,
+      "provider_calls": 0
     }
   }
 }

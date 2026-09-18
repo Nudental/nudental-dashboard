@@ -1,6 +1,6 @@
 # NuDental Dashboard release inventory — current status
 
-Updated 2026-09-18T05:15:32.821682+00:00 from saved evidence. Phase 6 is IN PROGRESS; Groups A–E and the approved frontend are deployed and verified.
+Updated 2026-09-18T06:01:38.445119+00:00 from saved evidence. Phase 6 is IN PROGRESS; Groups A–E and the approved frontend are deployed and verified.
 
 The original comparison remains main `61c224b1bf9ec53d91ab69a8eb00e563204bf76d` versus QA `2859ae6416e59918af4487e781e343f790ab770a`: 487 classified paths, including 79 promoted frontend paths and 42 database candidates. Those original classifications are preserved in `release-inventory.json`. Its `phase6_release` and per-repair `phase6_review` fields hold current status; a reviewed candidate is not an applied migration.
 
@@ -12,6 +12,7 @@ Classes: A application repair; B performance/UX; C deliberate database/security 
 |---|---|---|
 | Group A — profiles, user-office RPC, tasks, notifications | C — deliberate database/security adaptation | DEPLOYED and verified. Seven functions, two policies, five triggers; 4,425 rows unchanged. Office-assignment client is active in the new production frontend. |
 | Payroll identity and two validator identities | A — application/security repair | DEPLOYED. Eight GET routes require verified identity/permissions; two distinct expiring read-only job scopes. Existing calculations, schedules and provider settings unchanged. |
+| Verified report-export identity and audit attribution | A — application/security repair | DEPLOYED and live-verified; existing calculations, grants, configurations and export audit preserved. 75 native tests + 17 retained suites PASS. |
 | Group B — Huddle/EOD | C | DEPLOYED; native role/row guards and representative UI checks PASS. |
 | Group C — implant/bone history and access | C | DEPLOYED; native role/row guards and representative UI checks PASS. Preserve deletion history during any rollback. |
 | Group D — supplies, Front Desk, urgent requests | C | DEPLOYED; native role/row guards and representative UI checks PASS. RM/Admin/Super Admin only for review; no self-approval. |
@@ -20,7 +21,7 @@ Classes: A application repair; B performance/UX; C deliberate database/security 
 | QA environment, synthetic offices/actors, simulations and QA storage/security | D | Excluded from production. QA remains isolated. |
 | Frozen accounting corrections and metadata proposals | E | Excluded and unchanged. No reconciliation searches, corrections, imports or reclassification authorized here. |
 
-Production frontend is `a81545bf-4463-4dc3-9b33-3cad855888d7`, source `145adebb5e9367d3854fe96edd913464fd33053e`. API source remains `30521585ecb3f7e5f1d3651a817e0acc68000a3f`; broader API review is open. Main remains `820970ede7727830d95d8d03d518d02119da1acd` pending final integration. QA remains `c3c958d8-fede-4be7-85e6-c7a61b635af9`.
+Production frontend is `a81545bf-4463-4dc3-9b33-3cad855888d7`, source `145adebb5e9367d3854fe96edd913464fd33053e`. API source is now `fa1730c752c4f26956c4d79b21e025e035a69f55`; broader API review is open. Main remains `820970ede7727830d95d8d03d518d02119da1acd` pending final integration. QA remains `c3c958d8-fede-4be7-85e6-c7a61b635af9`.
 
 ## Preserved application batches — earlier production promotion
 
