@@ -1,0 +1,13 @@
+# Core aggregate read access
+
+Candidate: verified, activation pending the separately verified Expense office-scope client. This is a bounded identity and office-policy change for 16 GET routes. Existing calculation bodies and 26 unrelated materialized files are unchanged.
+
+The reviewed routes cover production aggregates, collections aggregates, adjustment summary, four report summaries, goals, reconciliation and stream status. Current approved human identity, the actual consuming page permissions and assigned office scope are checked before the handler. Unknown, conflicting, repeated or ignored office selectors fail closed. Handlers that do not filter by office require an all-office actor. Explicitly disabled permissions override legacy role defaults. Expense Overview retains only its production and collections denominator reads when both its parent and child permissions are present.
+
+The previously deployed exact GET-only identities for the dashboard, reconciliation and data validators remain unchanged. Both their private registry and the explicit identity-to-route policy must permit access. Goal writes retain the separate maintenance policy. This change grants no raw-record access, provider action or new background-job route.
+
+Verification: 237 native identity, policy, actual-handler and framework tests PASS; all 17 retained backend suites PASS; zero attempted network/business-file accesses under the test guard. The original shared-key-only handler access was reproduced with synthetic data, then denied before data access. Permitted and denied human roles, office aliases, cross-office requests, page grants, explicit denials, all-office behavior and exact job scope are covered. Materializer verification passed separately.
+
+Before activation, preserve fresh server source/configuration and row fingerprints; confirm no older data-validator process remains; verify the deployed Expense client and existing job compatibility; restart the candidate service before the production service. Compare an existing scoped read before and after, verify 16 missing-identity requests return 401, deny job writes, retain payroll-reader compatibility, then verify production/QA health and original rows. Roll back only this source group if validation fails.
+
+Private recovery files remain on the server. Never reinstate the revoked reconciliation-validator credential from a historical configuration backup. Financial records, accounting follow-up, provider connections, schedules and database schema remain unchanged. Live activation and human browser verification are recorded in the release receipt and checkpoint after deployment; they are not claimed by this candidate document.
