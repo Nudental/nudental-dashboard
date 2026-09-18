@@ -1,6 +1,6 @@
 # NuDental Dashboard — full release report
 
-Updated 2026-09-18T08:32:34.093909+00:00 from saved deployment and live verification evidence.
+Updated 2026-09-18T09:00:26.626810+00:00 from saved deployment and live verification evidence.
 
 **Phase 6 IN PROGRESS: Groups A–E and the approved frontend are live. Remaining API route review, final regression and canonical-main integration remain open.** Dr. G explicitly approved B–E and the client activation; no migration approval is pending.
 
@@ -14,8 +14,8 @@ Updated 2026-09-18T08:32:34.093909+00:00 from saved deployment and live verifica
 | Previous deployment | `277f68be-3819-410c-8ca6-6aa5ffa2a95e` |
 | Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` — final Phase 6 integration pending |
 | Branch | `phase6/nudashboard-production-hardening-20260917` |
-| API source | `34e9f2f008dad5bccdd2ed0c75ff8f3ee8c16c59`; verified payroll/report/compensation, OTP, webhook, admin, contact, Huddle/EOD and legacy order-request boundaries live |
-| API main SHA256 | `00c18f7187717386f51c1d11af0d9dbd54047e82d202f6ebd505a2e7d5a83457` |
+| API source | `c255989905a562e295ce0ed7fc64963716dc323c`; payroll/report/compensation, OTP, webhook, administration, contacts, Huddle/EOD, legacy orders and clinical reads verified live |
+| API main SHA256 | `2f95be52354db8cdb47a960fbecce8ef3dce0d1742232738f4cf7bf19dfaa72b` |
 | QA deployment | `c3c958d8-fede-4be7-85e6-c7a61b635af9` — unchanged |
 
 ## Administrative API boundary — deployed
@@ -49,6 +49,16 @@ Source `34e9f2f008dad5bccdd2ed0c75ff8f3ee8c16c59` applied at 2026-09-18T08:27:00
 177 native tests and 17 retained backend suites PASS under network/business-data guards; 23 unrelated materialized files and all unrelated route bodies are unchanged. Candidate/live missing or invalid identities return 401; read-only job credentials return 403. The existing payroll validator remains 200. All 78,277 fresh guarded original rows are preserved, including zero legacy order requests and 129 order-history records. RLS on the request table remains enabled with no ordinary policies. No schema/policy, provider/config/job/frontend change was needed. Production/QA health PASS. The signed-in Front Desk Amazon Order History view displays 129 records with no captured errors; its existing Supabase client is unchanged.
 
 No real order, request, approval, rejection, cart, purchase, provider authorization or sync was executed. Cart/purchase/sync/OAuth APIs remain separate pending groups. Recovery: `backup/api-before-phase6-orders-20260918`, `api-order-backup-20260918T082630Z`. The private backup is preserved locally and on the server. Phase 6 and main integration remain in progress.
+
+## Directory, patient and appointment read boundary — deployed
+
+Source `c255989905a562e295ce0ed7fc64963716dc323c` applied at 2026-09-18T08:52:18.592198+00:00; main SHA256 `2f95be52354db8cdb47a960fbecce8ef3dce0d1742232738f4cf7bf19dfaa72b`. Eight route declarations now verify current human identity and their existing page/admin grants. Reference directories remain available to active approved signed-in pickers. Aggregate reads enforce actual office selectors, including supported CSV selections, and respect explicit disabled permissions. Raw patient/appointment lists and unscoped provider schedules require existing all-office administrative read authority.
+
+The patient-service fallback reproduced returning a foreign-office synthetic record. The targeted repair filters mapped records before response limiting/cache; the SQLite path and unrelated service/route bodies remain unchanged. Existing bounded provider fetch limits are not increased. No real provider call was used in reproduction or tests.
+
+194 native tests and 17 retained suites PASS with zero network/business-data guard attempts. The actual call-site inventory confirms none of the eight routes has an existing unattended caller; no job scope changed. Candidate/live missing or invalid identity requests return 401, read-only job credentials return 403, and the existing payroll validator remains 200. All 78,279 guarded business/audit rows and 83,957 original SQLite clinical/reference rows are preserved. No schema, configuration, job, provider-connection or frontend change. Production/QA health PASS.
+
+The signed-in production KPI page renders its patient, appointment and treatment summary labels with no captured errors or alerts. This is read-only UI verification; no patient detail, workflow, provider sync or financial write was executed. Recovery: `backup/api-before-phase6-clinical-reads-20260918`, `api-clinical-read-backup-20260918T085142Z`; private backup preserved locally and on the server. Phase 6 and main integration remain in progress.
 
 ## Applied migration groups
 

@@ -1,7 +1,6 @@
 # Directory, patient and appointment read boundary
 
-Candidate only. 194 native tests and 17 retained suites PASS; exact unattended
-caller compatibility and the fresh deployment/rollback gates remain pending.
+Deployed and verified from `c255989905a562e295ce0ed7fc64963716dc323c`. 194 native tests, 17 retained suites, exact unattended caller review and fresh rollback/data gates PASS.
 
 Eight route declarations are covered:
 
@@ -36,7 +35,14 @@ the unchanged SQLite query. All unrelated route/service bodies and 23 unrelated
 materialized files are unchanged. Candidate verification cannot authorize any
 provider sync, job execution, patient write or financial correction.
 
-The bounded release script will additionally fingerprint original SQLite
-patients, appointments, providers and locations through a read-only connection.
-No fingerprint preservation or live deployment is claimed until its receipt and
-browser regression pass.
+The release additionally fingerprinted 83,957 original SQLite patients, appointments, providers and locations through a read-only connection; all remained unchanged.
+
+## Directory, patient and appointment read boundary — deployed
+
+Source `c255989905a562e295ce0ed7fc64963716dc323c` applied at 2026-09-18T08:52:18.592198+00:00; main SHA256 `2f95be52354db8cdb47a960fbecce8ef3dce0d1742232738f4cf7bf19dfaa72b`. Eight route declarations now verify current human identity and their existing page/admin grants. Reference directories remain available to active approved signed-in pickers. Aggregate reads enforce actual office selectors, including supported CSV selections, and respect explicit disabled permissions. Raw patient/appointment lists and unscoped provider schedules require existing all-office administrative read authority.
+
+The patient-service fallback reproduced returning a foreign-office synthetic record. The targeted repair filters mapped records before response limiting/cache; the SQLite path and unrelated service/route bodies remain unchanged. Existing bounded provider fetch limits are not increased. No real provider call was used in reproduction or tests.
+
+194 native tests and 17 retained suites PASS with zero network/business-data guard attempts. The actual call-site inventory confirms none of the eight routes has an existing unattended caller; no job scope changed. Candidate/live missing or invalid identity requests return 401, read-only job credentials return 403, and the existing payroll validator remains 200. All 78,279 guarded business/audit rows and 83,957 original SQLite clinical/reference rows are preserved. No schema, configuration, job, provider-connection or frontend change. Production/QA health PASS.
+
+The signed-in production KPI page renders its patient, appointment and treatment summary labels with no captured errors or alerts. This is read-only UI verification; no patient detail, workflow, provider sync or financial write was executed. Recovery: `backup/api-before-phase6-clinical-reads-20260918`, `api-clinical-read-backup-20260918T085142Z`; private backup preserved locally and on the server. Phase 6 and main integration remain in progress.
