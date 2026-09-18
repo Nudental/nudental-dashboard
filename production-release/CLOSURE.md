@@ -1,24 +1,34 @@
-# NuDental Dashboard — full release report
+# NuDental Dashboard â€” full release report
 
-Updated 2026-09-18T09:16:53.837899+00:00 from saved deployment and live verification evidence.
+Updated 2026-09-18T09:53:46.139563+00:00 from saved deployment and live verification evidence.
 
-**Phase 6 IN PROGRESS: Groups A–E and the approved frontend are live. Remaining API route review, final regression and canonical-main integration remain open.** Dr. G explicitly approved B–E and the client activation; no migration approval is pending.
+**Phase 6 IN PROGRESS: Groups Aâ€“E and the approved frontend are live. Remaining API route review, final regression and canonical-main integration remain open.** Dr. G explicitly approved Bâ€“E and the client activation; no migration approval is pending.
 
 ## Current production
 
 | Item | State |
 |---|---|
 | URL | https://nudashboard.com |
-| Frontend deployment | `a81545bf-4463-4dc3-9b33-3cad855888d7` |
-| Frontend source | `145adebb5e9367d3854fe96edd913464fd33053e` |
-| Previous deployment | `277f68be-3819-410c-8ca6-6aa5ffa2a95e` |
-| Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` — final Phase 6 integration pending |
+| Frontend deployment | `08f84700-056f-4af4-8f13-526a66ad8187` |
+| Frontend source | `f3e427f7b94c96eb44424e7791c10051f30817cd` |
+| Previous deployment | `a81545bf-4463-4dc3-9b33-3cad855888d7` |
+| Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` â€” final Phase 6 integration pending |
 | Branch | `phase6/nudashboard-production-hardening-20260917` |
 | API source | `288fdf7dc9feff34685ee169acef872ca5e1d7d5`; reviewed identity boundaries through clinical reads and legacy goal/EOD maintenance live |
 | API main SHA256 | `c3e8cce7e212b3d56e043e98cab682745ed402346f646074edb467286d90b333` |
-| QA deployment | `c3c958d8-fede-4be7-85e6-c7a61b635af9` — unchanged |
+| QA deployment | `707f2962-0ed0-406e-baa5-25cc49f40bc4` |
 
-## Administrative API boundary — deployed
+## RCM selected-office status repair — deployed
+
+Frontend source `f3e427f7b94c96eb44424e7791c10051f30817cd` is live in production `08f84700-056f-4af4-8f13-526a66ad8187` and isolated QA `707f2962-0ed0-406e-baa5-25cc49f40bc4`. The Data Source Status widget now forwards the selected office to the daily-summary service; unknown offices fail before making a request. Existing all-office behavior and the parent request isolation remain intact. Five new tests reproduced the defect before the two-file repair.
+
+All 1,654 frontend tests (zero skips), six compiled Expense isolation checks and three compiled RCM checks in each environment PASS. Both builds and environment-isolation checks PASS. Production entry `index-DHO0teuA.js` is 8,833,301 bytes (previous 8,833,241); QA entry `index-CUhTuMEX.js` is 8,832,132 bytes. No speedup claim is made for this 60-byte scope repair.
+
+Live production RCM / Eatontown / Last Month renders all eight sections, today's September 18 daily summary and an available payment breakdown; captured errors and alerts are empty. QA layout and banner render with financial reads intentionally disabled by `product_api_ready=false`. Production/QA HTTP and API health PASS. Four production/collections metric comparisons for August 1–31, all offices and Eatontown, are unchanged. All 17,363 guarded original rows are preserved, backend source is unchanged and business writes are zero. The bounded last-150-line journal query contained no matching daily-summary request; no transport-log claim is made.
+
+Immediate frontend rollback: `a81545bf-4463-4dc3-9b33-3cad855888d7`, tag `backup/production-before-phase6-rcm-scope-20260918`, snapshot `core-client-frontend-backup-20260918T093908Z`. Earlier recovery points remain. This completes the client dependency only; core-read API identity activation and final main integration remain pending.
+
+## Administrative API boundary â€” deployed
 
 Source `cf9cff66d030b7c14943f60d10f51e895a9cc650` applied at 2026-09-18T07:26:41.952563+00:00; main SHA256 `8b057829ac239c2d4aa4b9815b6823ea114fb90a3885829c669235728655e8ef`. Ten diagnostic/maintenance routes now require verified human identity, existing role/page permission and all-office scope. Jobs are denied. Existing route bodies are unchanged. 136 native tests, 17 retained backend suites and 13 materializer checks PASS. Candidate and production denial probes PASS; the existing payroll validator remains 200.
 
@@ -26,7 +36,7 @@ Fresh guards preserved all 20,868 original rows; provider configuration, job cre
 
 These row counts are per-deployment snapshots. Intervening records existed before this release; no cause is attributed and accounting follow-up remains frozen.
 
-## RCM contact-record identity and office boundary — deployed
+## RCM contact-record identity and office boundary â€” deployed
 
 Source `209d518538390c1384e2c9505993be80d38f3bc1` applied at 2026-09-18T07:43:24.066901+00:00; main SHA256 `734a190e8f5558fe103e25186e9f960da33c77c7713e6034ae3a14440c709372`. Four manual-contact routes now verify the current account, Statements permission and actual office scope. Created actor/name and office name cannot be forged. Updates bind to the existing record's checked office; request filters are encoded. Nullable legacy office records remain editable only by all-office users. No delivery functionality changed.
 
@@ -34,7 +44,7 @@ Source `209d518538390c1384e2c9505993be80d38f3bc1` applied at 2026-09-18T07:43:24
 
 Recovery: `backup/api-before-phase6-contacts-20260918`, `api-contact-backup-20260918T074308Z`. Private backups are preserved locally and on the server. Final main integration remains pending the remaining route review and regression.
 
-## Huddle/EOD read and record-office boundary — deployed
+## Huddle/EOD read and record-office boundary â€” deployed
 
 Source `1456c8684f955bb359b21a4d9b56e33b6611a858` applied at 2026-09-18T08:08:51.798392+00:00; main SHA256 `242ced3002edd136a68548e5448454fb53d6586bd2f364e4ffe6821a4380cb11`. Six read route declarations now verify current identity, existing page permissions and the actual office selector. Completion preserves existing KPI/Reports consumers. Contact history checks the stored queue office before fetching contacts; assignees require active, approved accounts. Explicit false role permissions override relevant existing fallback grants. No execution or sync capability was added.
 
@@ -42,7 +52,7 @@ Source `1456c8684f955bb359b21a4d9b56e33b6611a858` applied at 2026-09-18T08:08:51
 
 Recovery: `backup/api-before-phase6-workflow-20260918`, `api-workflow-backup-20260918T080821Z`. Private rollback evidence exists locally and on the server. Remaining route review and final main integration are pending.
 
-## Legacy Amazon request identity/office boundary — deployed
+## Legacy Amazon request identity/office boundary â€” deployed
 
 Source `34e9f2f008dad5bccdd2ed0c75ff8f3ee8c16c59` applied at 2026-09-18T08:27:00.919486+00:00; main SHA256 `00c18f7187717386f51c1d11af0d9dbd54047e82d202f6ebd505a2e7d5a83457`. Five request/history route declarations now verify current human identity and existing request/page/review grants. Creation binds actor and canonical office. Review requires Regional Manager/Admin/Super Admin, pending state, the stored office and no self-review. Conditional updates guard concurrent office/requester/state changes. Read filters are encoded. Existing schema fields replace the previously nonexistent reviewer columns; rejection attribution is in the existing service journal, not a newly claimed database/UI audit trail.
 
@@ -50,7 +60,7 @@ Source `34e9f2f008dad5bccdd2ed0c75ff8f3ee8c16c59` applied at 2026-09-18T08:27:00
 
 No real order, request, approval, rejection, cart, purchase, provider authorization or sync was executed. Cart/purchase/sync/OAuth APIs remain separate pending groups. Recovery: `backup/api-before-phase6-orders-20260918`, `api-order-backup-20260918T082630Z`. The private backup is preserved locally and on the server. Phase 6 and main integration remain in progress.
 
-## Directory, patient and appointment read boundary — deployed
+## Directory, patient and appointment read boundary â€” deployed
 
 Source `c255989905a562e295ce0ed7fc64963716dc323c` applied at 2026-09-18T08:52:18.592198+00:00; main SHA256 `2f95be52354db8cdb47a960fbecce8ef3dce0d1742232738f4cf7bf19dfaa72b`. Eight route declarations now verify current human identity and their existing page/admin grants. Reference directories remain available to active approved signed-in pickers. Aggregate reads enforce actual office selectors, including supported CSV selections, and respect explicit disabled permissions. Raw patient/appointment lists and unscoped provider schedules require existing all-office administrative read authority.
 
@@ -60,7 +70,7 @@ The patient-service fallback reproduced returning a foreign-office synthetic rec
 
 The signed-in production KPI page renders its patient, appointment and treatment summary labels with no captured errors or alerts. This is read-only UI verification; no patient detail, workflow, provider sync or financial write was executed. Recovery: `backup/api-before-phase6-clinical-reads-20260918`, `api-clinical-read-backup-20260918T085142Z`; private backup preserved locally and on the server. Phase 6 and main integration remain in progress.
 
-## Legacy goal and EOD maintenance boundary — deployed
+## Legacy goal and EOD maintenance boundary â€” deployed
 
 Source `288fdf7dc9feff34685ee169acef872ca5e1d7d5` applied at 2026-09-18T09:12:02.345983+00:00; main SHA256 `c3e8cce7e212b3d56e043e98cab682745ed402346f646074edb467286d90b333`. POST legacy goals now requires current active approved Super Admin/all-office authority, matching Management. Backend-only EOD queue sync requires Super Admin or Admin with the existing Sync grant and all-office authority. Ordinary EOD viewers and read-only job identities cannot execute either operation. Existing goal GET, ordinary EOD reads and every route body remain unchanged.
 
@@ -78,7 +88,7 @@ All 78,445 guarded original business/audit rows, including 36 legacy goals and 1
 | D | DEPLOYED / native permission and UI checks PASS | 5,701 | `production-d-20260918T044339Z` |
 | E | DEPLOYED / native permission and UI checks PASS | 5,072 | `production-e-20260918T045042Z` |
 
-Each apply preserved all guarded original rows, owners and grants. These table scopes overlap and must not be summed. B–E each used current counts for 13 active accounts and checked the expected role visibility inside the locked apply transaction. Native health, exact candidate catalog, role visibility and representative live UI checks passed. Fresh backups and rollback SQL remain local and on the existing server.
+Each apply preserved all guarded original rows, owners and grants. These table scopes overlap and must not be summed. Bâ€“E each used current counts for 13 active accounts and checked the expected role visibility inside the locked apply transaction. Native health, exact candidate catalog, role visibility and representative live UI checks passed. Fresh backups and rollback SQL remain local and on the existing server.
 
 Group B's first apply was safely rolled back after an old absolute-count reference failed. Investigation showed ordinary intervening records, not a policy expansion. The unchanged approved migration was then reapplied with a fresh per-deployment role reference. The failed attempt and exact rollback remain in `production-b-20260918T041614Z`. Group C rollback preserves deletion history; historical audit rows must never be deleted to restore the old foreign key.
 
@@ -91,10 +101,10 @@ The production build now activates atomic office assignment, atomic supply draft
 - Retained payroll release evidence: 52 local tests, 58 native runtime/FastAPI tests, 17 backend suites and 13 materializer checks PASS. No accounting calculation change.
 - Production Huddle history/review, EOD, implant/bone inventory, Front Desk history/catalog, clinical supply overview, Insurance and Service Goals PASS. No approvals, clinical stock changes, insurance submissions or financial actions were executed.
 - New live Front Desk Approvals route PASS on the new asset: three visible Front Desk requests, two pending; no self-approval guidance present; no action submitted. No captured console errors.
-- Dated Payroll Comparison now renders August 2–15, 2026 with 13 rows; date-required guard absent. Keyboard events succeeded without using the native picker. The exact native route response independently returned the same selected dates and 13 rows using read-only SQLite and two Supabase GETs. No matching HTTP access-log record was available; employee-level amounts were not exported.
+- Dated Payroll Comparison now renders August 2â€“15, 2026 with 13 rows; date-required guard absent. Keyboard events succeeded without using the native picker. The exact native route response independently returned the same selected dates and 13 rows using read-only SQLite and two Supabase GETs. No matching HTTP access-log record was available; employee-level amounts were not exported.
 - Production and QA frontend/API health PASS. Production and QA live asset hashes match their own manifests; QA retains `product_api_ready=false`.
 
-## Bounded report-export API repair — deployed
+## Bounded report-export API repair â€” deployed
 
 Source `fa1730c752c4f26956c4d79b21e025e035a69f55` deployed at 2026-09-18 05:53:57 UTC. Export permission and audit attribution now use the verified signed-in identity rather than body-supplied role/email/ID. All currently authorized exporters retain their existing grants. Internal reads forward only that identity to the fixed local API, without redirects. Jobs cannot export.
 
@@ -102,19 +112,19 @@ Source `fa1730c752c4f26956c4d79b21e025e035a69f55` deployed at 2026-09-18 05:53:5
 
 Fresh guards preserved 15,927 expense rows, 535 Gusto expense-fact rows, 663 expense-fact rows and all 93 export-audit rows. Configuration, existing job files and service units are unchanged. Production Reports still renders all eight sections/four export controls with no captured console errors. Production and QA health PASS. Recovery: `backup/api-before-phase6-reports-20260918`, private snapshot `api-report-backup-20260918T055345Z`.
 
-## Bounded provider-compensation API repair — deployed
+## Bounded provider-compensation API repair â€” deployed
 
 Source `a0454b2e243cce5be407bf8e900df1e066ffb61c` deployed at 2026-09-18T06:19:07.343197+00:00. Three compensation access/report/send routes now authorize only the verified signed-in account against its existing role/permission, all-office scope and unchanged existing email allowlist. A caller-supplied email cannot impersonate another user. Existing report calculations and send implementation are unchanged. No real export or email was executed.
 
 70 local tests, 88 native Python/FastAPI tests and 17 retained backend suites PASS. Candidate and live rejection checks return 401 for missing/invalid identities and 403 for read-only jobs; the existing payroll validator remains 200. All 17,218 original guarded financial/report-audit rows, configuration, job files, service units and frontend bytes are unchanged. Live Payroll and Provider Compensation render without access errors; no captured Payroll console errors. Production/QA health PASS. Recovery: `backup/api-before-phase6-compensation-20260918`, snapshot `api-compensation-backup-20260918T061853Z`.
 
-## Bounded OTP administrative restriction — deployed
+## Bounded OTP administrative restriction â€” deployed
 
 Source `78cdc3c1994ac27dd3ac177abf1fd434984a8f06` deployed at 2026-09-18T06:35:08.187866+00:00. OTP configuration and management of another user's trusted devices now require the account to remain active and approved, in addition to its existing administrative role. The one-file change does not alter ordinary login, OTP challenges, cookies, credentials or settings. All route bodies are unchanged.
 
 11 focused local and 99 native tests PASS. The other 20 materialized files match the compensation release; its 17 retained suites remain applicable to the unchanged main/service code. Candidate/live missing or invalid identities receive 401, jobs receive 403, and the existing payroll validator remains 200. All 20,790 guarded original rows are unchanged, including 186 trusted devices, one site-settings row and 3,385 authentication audit rows. No OTP, device revocation or setting change was performed. Production/QA health and refreshed Payroll UI PASS, no captured console errors. Backup: `api-otp-backup-20260918T063451Z`; tag: `backup/api-before-phase6-otp-admin-20260918`.
 
-## Signed Plaid webhook boundary — deployed
+## Signed Plaid webhook boundary â€” deployed
 
 Source `bad155018f53baaf129f0f8681481bea62b6b634` deployed at 2026-09-18T06:56:25.484273+00:00. The existing callback now verifies the provider signature, timestamp, exact request body and existing item mapping before dispatching its unchanged behavior. The unsigned request defect was reproduced with an intercepted subprocess. 124 native tests and all 17 retained backend suites PASS; valid positive dispatch was tested only with synthetic signatures and intercepted sync/email calls.
 
@@ -142,7 +152,7 @@ Continue the remaining API access review using actual downstream checks, current
 
 The following is the original completed application-promotion report. Its unchanged-QA/backend/policy statements describe that release's verification time, before the later Phase 6 changes above.
 
-### Verified production release — September 17, 2026
+### Verified production release â€” September 17, 2026
 
 Production application update is deployed and live regression passes. Residual accounting work is unchanged and is not part of this release.
 
@@ -164,7 +174,7 @@ Production application update is deployed and live regression passes. Residual a
 - 49 offline database/permission suites PASS; 14 production-specific migration checks PASS, including idempotence, oversell rejection/transaction rollback and historical-field preservation.
 - Financial/clinical production writes, approvals, provider sync, imports, emails and destructive actions intentionally excluded from live regression. Production authorization policies were not changed; live UI checks used the existing administrator session.
 
-#### Live production regression — PASS
+#### Live production regression â€” PASS
 
 Executive Overview, office filters, Production, Collections, A/R, RCM, Insurance, Reports, Huddle, EOD, Tasks, implant inventory, inventory hub, Front Desk, Clinical Supply/fulfillment history, Users, Providers, Offices, Profile, Payroll, imported Gusto overview and Expense rendering were checked in the actual production browser.
 

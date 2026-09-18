@@ -1,38 +1,39 @@
-# NuDental Dashboard release inventory — current status
+# NuDental Dashboard release inventory â€” current status
 
-Updated 2026-09-18T09:16:53.837899+00:00 from saved evidence. Phase 6 is IN PROGRESS; Groups A–E and the approved frontend are deployed and verified.
+Updated 2026-09-18T09:53:46.139563+00:00 from saved evidence. Phase 6 is IN PROGRESS; Groups Aâ€“E and the approved frontend are deployed and verified.
 
 The original comparison remains main `61c224b1bf9ec53d91ab69a8eb00e563204bf76d` versus QA `2859ae6416e59918af4487e781e343f790ab770a`: 487 classified paths, including 79 promoted frontend paths and 42 database candidates. Those original classifications are preserved in `release-inventory.json`. Its `phase6_release` and per-repair `phase6_review` fields hold current status; a reviewed candidate is not an applied migration.
 
-Classes: A application repair; B performance/UX; C deliberate database/security migration; D QA-only or test infrastructure; E frozen financial/accounting correction. Phase 6 priorities P1/P2/P3/P4 are a separate classification. Group letters A–E are deployment groups, not release classes.
+Classes: A application repair; B performance/UX; C deliberate database/security migration; D QA-only or test infrastructure; E frozen financial/accounting correction. Phase 6 priorities P1/P2/P3/P4 are a separate classification. Group letters Aâ€“E are deployment groups, not release classes.
 
 ## Phase 6 release layer
 
 | Change / group | Release class | Current disposition |
 |---|---|---|
-| Group A — profiles, user-office RPC, tasks, notifications | C — deliberate database/security adaptation | DEPLOYED and verified. Seven functions, two policies, five triggers; 4,425 rows unchanged. Office-assignment client is active in the new production frontend. |
-| Payroll identity and two validator identities | A — application/security repair | DEPLOYED. Eight GET routes require verified identity/permissions; two distinct expiring read-only job scopes. Existing calculations, schedules and provider settings unchanged. |
-| Verified report-export identity and audit attribution | A — application/security repair | DEPLOYED and live-verified; existing calculations, grants, configurations and export audit preserved. 75 native tests + 17 retained suites PASS. |
-| Verified provider-compensation identity | A — application/security repair | DEPLOYED; existing allowlist/calculations preserved, no emails or real exports. 88 native tests + 17 retained suites PASS. |
-| Current active/approved OTP administrator | A — application/security repair | DEPLOYED; login, devices and settings unchanged. 99 native tests PASS, all 20,790 guarded rows preserved. |
-| Signed Plaid webhook and item boundary | A — application/security repair | DEPLOYED; 124 native tests + 17 retained suites PASS. No provider/connection/configuration changes or real sync/email. |
-| Administrative diagnostic/maintenance identity | A — application/security repair | DEPLOYED; 10 routes, 136 native tests, 17 retained suites, 13 materializer checks and live Sync Dashboard PASS. No maintenance actions executed. |
-| RCM contact actor and office boundary | A — application/security repair | DEPLOYED; four routes, 149 native tests, 17 retained suites, QA identity and live Patient AR Follow-Up PASS. No real contact writes. |
-| Huddle/EOD API read/record office boundary | A — application/security repair | DEPLOYED; six reads, 164 native tests, 17 retained suites, live KPIs PASS. No real workflow action. |
-| Legacy Amazon request identity/office boundary | A — application/security repair | DEPLOYED; five routes, 177 native tests, 17 retained suites. Front Desk history shows 129 records, no real order action. |
-| Directory/patient/appointment read boundary | A — application/security repair | DEPLOYED; eight routes, 194 native tests, 17 retained suites; patient fallback office leak repaired; KPI rendering PASS. |
-| Legacy goal/EOD maintenance gate | A — application/security repair | DEPLOYED; two writes, 207 native tests, 17 retained suites; no real action executed. |
-| Group B — Huddle/EOD | C | DEPLOYED; native role/row guards and representative UI checks PASS. |
-| Group C — implant/bone history and access | C | DEPLOYED; native role/row guards and representative UI checks PASS. Preserve deletion history during any rollback. |
-| Group D — supplies, Front Desk, urgent requests | C | DEPLOYED; native role/row guards and representative UI checks PASS. RM/Admin/Super Admin only for review; no self-approval. |
-| Group E — insurance and service-goal access | C | DEPLOYED; native role/row guards and representative UI checks PASS. |
-| Phase 6 client changes | A | DEPLOYED to production after A–E verification; atomic office/draft/receipt clients and restricted review route active. |
+| Group A â€” profiles, user-office RPC, tasks, notifications | C â€” deliberate database/security adaptation | DEPLOYED and verified. Seven functions, two policies, five triggers; 4,425 rows unchanged. Office-assignment client is active in the new production frontend. |
+| Payroll identity and two validator identities | A â€” application/security repair | DEPLOYED. Eight GET routes require verified identity/permissions; two distinct expiring read-only job scopes. Existing calculations, schedules and provider settings unchanged. |
+| Verified report-export identity and audit attribution | A â€” application/security repair | DEPLOYED and live-verified; existing calculations, grants, configurations and export audit preserved. 75 native tests + 17 retained suites PASS. |
+| Verified provider-compensation identity | A â€” application/security repair | DEPLOYED; existing allowlist/calculations preserved, no emails or real exports. 88 native tests + 17 retained suites PASS. |
+| Current active/approved OTP administrator | A â€” application/security repair | DEPLOYED; login, devices and settings unchanged. 99 native tests PASS, all 20,790 guarded rows preserved. |
+| Signed Plaid webhook and item boundary | A â€” application/security repair | DEPLOYED; 124 native tests + 17 retained suites PASS. No provider/connection/configuration changes or real sync/email. |
+| Administrative diagnostic/maintenance identity | A â€” application/security repair | DEPLOYED; 10 routes, 136 native tests, 17 retained suites, 13 materializer checks and live Sync Dashboard PASS. No maintenance actions executed. |
+| RCM contact actor and office boundary | A â€” application/security repair | DEPLOYED; four routes, 149 native tests, 17 retained suites, QA identity and live Patient AR Follow-Up PASS. No real contact writes. |
+| Huddle/EOD API read/record office boundary | A â€” application/security repair | DEPLOYED; six reads, 164 native tests, 17 retained suites, live KPIs PASS. No real workflow action. |
+| Legacy Amazon request identity/office boundary | A â€” application/security repair | DEPLOYED; five routes, 177 native tests, 17 retained suites. Front Desk history shows 129 records, no real order action. |
+| Directory/patient/appointment read boundary | A â€” application/security repair | DEPLOYED; eight routes, 194 native tests, 17 retained suites; patient fallback office leak repaired; KPI rendering PASS. |
+| Legacy goal/EOD maintenance gate | A â€” application/security repair | DEPLOYED; two writes, 207 native tests, 17 retained suites; no real action executed. |
+| Group B â€” Huddle/EOD | C | DEPLOYED; native role/row guards and representative UI checks PASS. |
+| Group C â€” implant/bone history and access | C | DEPLOYED; native role/row guards and representative UI checks PASS. Preserve deletion history during any rollback. |
+| Group D â€” supplies, Front Desk, urgent requests | C | DEPLOYED; native role/row guards and representative UI checks PASS. RM/Admin/Super Admin only for review; no self-approval. |
+| Group E â€” insurance and service-goal access | C | DEPLOYED; native role/row guards and representative UI checks PASS. |
+| RCM status selected-office propagation | A — application repair | DEPLOYED in production and QA; 1,654 frontend tests, six compiled isolation and six compiled RCM cases PASS. |
+| Phase 6 client changes | A | DEPLOYED to production after Aâ€“E verification; atomic office/draft/receipt clients and restricted review route active. |
 | QA environment, synthetic offices/actors, simulations and QA storage/security | D | Excluded from production. QA remains isolated. |
 | Frozen accounting corrections and metadata proposals | E | Excluded and unchanged. No reconciliation searches, corrections, imports or reclassification authorized here. |
 
-Production frontend is `a81545bf-4463-4dc3-9b33-3cad855888d7`, source `145adebb5e9367d3854fe96edd913464fd33053e`. API source is now `288fdf7dc9feff34685ee169acef872ca5e1d7d5`; broader API review is open. Main remains `820970ede7727830d95d8d03d518d02119da1acd` pending final integration. QA remains `c3c958d8-fede-4be7-85e6-c7a61b635af9`.
+Production frontend is `08f84700-056f-4af4-8f13-526a66ad8187`, source `f3e427f7b94c96eb44424e7791c10051f30817cd`. API source is now `288fdf7dc9feff34685ee169acef872ca5e1d7d5`; broader API review is open. Main remains `820970ede7727830d95d8d03d518d02119da1acd` pending final integration. QA is `707f2962-0ed0-406e-baa5-25cc49f40bc4`; its isolation is preserved.
 
-## Preserved application batches — earlier production promotion
+## Preserved application batches â€” earlier production promotion
 
 The following rows describe the already-promoted Phase 4/5 application delta. They do not mark subsequent edits to the same files as deployed. Phase 6 changes to emailService, supplyRequestService, FrontDeskInventoryTab, Routes, navConfig and the new Front Desk review page are now live in the approved Phase 6 frontend.
 
@@ -120,7 +121,7 @@ The following rows describe the already-promoted Phase 4/5 application delta. Th
 | src/services/supplyRequestService.js | C | 2-operations (dependencies applied) |
 | vite.config.mjs | A | 1-core (deployed) |
 
-## Individual database review — all 42 original entries
+## Individual database review â€” all 42 original entries
 
 Only the two baseline adaptations (016/030) and adapted Phase 6 Group A are currently applied. Never apply original QA SQL packages wholesale.
 
@@ -141,7 +142,7 @@ Only the two baseline adaptations (016/030) and adapted Phase 6 Group A are curr
 | 013-task-identity-boundary.sql | C | P1 | A | DEPLOYED_VERIFIED: Adapted production Group A applied; row fingerprints and existing owners/grants preserved; native permission and representative UI checks pass. |
 | 014-task-row-audit.sql | C | P1 | A | DEPLOYED_VERIFIED: Adapted production Group A applied; row fingerprints and existing owners/grants preserved; native permission and representative UI checks pass. |
 | 015-implant-lookup-audit.sql | C | P2 | C | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
-| 016-implant-stock-transaction.sql | C | Already live | — | BASELINE_ALREADY_LIVE: Preserve the September 17 production adaptation; no reapply or historical backfill. |
+| 016-implant-stock-transaction.sql | C | Already live | â€” | BASELINE_ALREADY_LIVE: Preserve the September 17 production adaptation; no reapply or historical backfill. |
 | 017-implant-delete-audit.sql | C | P2 | C | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
 | 018-user-office-assignment-transaction.sql | C | P1 | A | DATABASE_LIVE_CLIENT_PENDING: Atomic office-assignment RPC is live in A. Client activation is still in the frontend candidate dependent on A and D. |
 | 019-office-goal-read-boundary.sql | C | P1 | E | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group E passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
@@ -149,14 +150,14 @@ Only the two baseline adaptations (016/030) and adapted Phase 6 Group A are curr
 | 021-bone-inventory-access-boundary.sql | C | P1 | C | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
 | 022-bone-role-active-profile.sql | C | P1 | C | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
 | 023-bone-delete-audit-history.sql | C | P2 | C | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
-| 024-supply-synthetic-offices.sql | D | P4 | — | QA_ONLY_EXCLUDED: Synthetic offices or execution simulation; never promote. |
+| 024-supply-synthetic-offices.sql | D | P4 | â€” | QA_ONLY_EXCLUDED: Synthetic offices or execution simulation; never promote. |
 | 025-supply-request-access-boundary.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
 | 026-supply-draft-transaction.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
-| 027-supply-submission-simulation.sql | D | P4 | — | QA_ONLY_EXCLUDED: Synthetic offices or execution simulation; never promote. |
+| 027-supply-submission-simulation.sql | D | P4 | â€” | QA_ONLY_EXCLUDED: Synthetic offices or execution simulation; never promote. |
 | 028-supply-fulfillment-access-boundary.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
 | 029-supply-fulfillment-audit.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
-| 030-supply-receipt-columns.sql | C | Already live | — | BASELINE_ALREADY_LIVE: Preserve the September 17 production adaptation; no reapply or historical backfill. |
-| 031-front-desk-synthetic-offices.sql | D | P4 | — | QA_ONLY_EXCLUDED: Synthetic offices or execution simulation; never promote. |
+| 030-supply-receipt-columns.sql | C | Already live | â€” | BASELINE_ALREADY_LIVE: Preserve the September 17 production adaptation; no reapply or historical backfill. |
+| 031-front-desk-synthetic-offices.sql | D | P4 | â€” | QA_ONLY_EXCLUDED: Synthetic offices or execution simulation; never promote. |
 | 032-front-desk-catalog-access.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
 | 033-front-desk-catalog-audit.sql | C | P2 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
 | 034-front-desk-order-access.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
@@ -169,7 +170,7 @@ Only the two baseline adaptations (016/030) and adapted Phase 6 Group A are curr
 | 041-insurance-completed-form-lock.sql | C | P1 | E | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group E passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
 | 042-service-goal-read-boundary.sql | C | P1 | E | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group E passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
 
-For A, native permission/row guards and representative production UI checks PASS. For B–E, QA and rollback-only production preflight PASS; fresh snapshots, explicit approval, actual production apply and live checks remain pending. For 018 the database function is live but its atomic client is not; for 002 only the A task portion is live. For 038 the QA simulation package remains excluded even though its independent audit portion is adapted into pending D.
+For A, native permission/row guards and representative production UI checks PASS. For Bâ€“E, QA and rollback-only production preflight PASS; fresh snapshots, explicit approval, actual production apply and live checks remain pending. For 018 the database function is live but its atomic client is not; for 002 only the A task portion is live. For 038 the QA simulation package remains excluded even though its independent audit portion is adapted into pending D.
 
 Storage: production policies/photo permissions remain unchanged. QA-only storage work is not promoted. Existing production-safe UI handling remains part of the earlier release. Accounting class E and PH5-EXP-001 remain exactly as previously preserved; no financial correction is applied.
 
