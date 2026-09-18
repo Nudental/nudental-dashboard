@@ -1,10 +1,10 @@
 # Phase 6 active checkpoint
 
-Updated 2026-09-18T13:37:55.081761+00:00. Phase 6 remains IN PROGRESS. Continue autonomously under Dr. G's explicit Bâ€“E/client/API approval; no new phase and no financial corrections.
+Updated 2026-09-18T14:16:01.894634+00:00. Phase 6 remains IN PROGRESS. Continue autonomously under Dr. G's explicit Bâ€“E/client/API approval; no new phase and no financial corrections.
 
 ## Current production
 
-**Current verified state:** API `91cb7ab8b9c45c359d1fdc6513480007f1c72278`; production frontend `dcf8bc42-1a06-45f6-8010-80c1db7595be`; QA `ae279546-abd2-4720-a052-a9a34aa2d60b`. RCM client and snapshot/eAssist API live verification PASS. Next: remaining financial/RCM readers and exact unattended compatibility, provider routes, final regression and main integration. No accounting corrections.
+**Current verified state:** API `ab7d6a1fa1f9be5ba1e62ec20b944be84cc12d85`; production frontend `dcf8bc42-1a06-45f6-8010-80c1db7595be`; QA `ae279546-abd2-4720-a052-a9a34aa2d60b`. Live RCM Dashboard PASS. Next: 22 provider declarations; two report-dependent gates await restart choice; final regression and main integration. No accounting corrections.
 
 ## RCM selected-office status repair — deployed
 
@@ -15,6 +15,20 @@ All 1,654 frontend tests (zero skips), six compiled Expense isolation checks and
 Live production RCM / Eatontown / Last Month renders all eight sections, today's September 18 daily summary and an available payment breakdown; captured errors and alerts are empty. QA layout and banner render with financial reads intentionally disabled by `product_api_ready=false`. Production/QA HTTP and API health PASS. Four production/collections metric comparisons for August 1–31, all offices and Eatontown, are unchanged. All 17,363 guarded original rows are preserved, backend source is unchanged and business writes are zero. The bounded last-150-line journal query contained no matching daily-summary request; no transport-log claim is made.
 
 Immediate frontend rollback: `a81545bf-4463-4dc3-9b33-3cad855888d7`, tag `backup/production-before-phase6-rcm-scope-20260918`, snapshot `core-client-frontend-backup-20260918T093908Z`. Earlier recovery points remain. This completes the client dependency only; core-read API identity activation and final main integration remain pending.
+
+## Independent financial and RCM read boundary — deployed
+
+Source `ab7d6a1fa1f9be5ba1e62ec20b944be84cc12d85` applied at 2026-09-18T14:09:31.452282+00:00; API main SHA256 `cc058c5e9b4dc86d3fb0cb0ad3f3d887f58c3a57eac908550c372f4f53da8eb5`. Twenty-three GET readers require current human identity, their existing page grants and the actual office selector. Unknown/conflicting/ignored selectors fail closed. Existing RCM Dashboard, Operations A/R/Payors and Executive Overview dependencies are preserved. Legacy extra field keys cannot elevate a non-Super-Admin or a job. REST literal encoding preserves Marketing/outreach scope; office-scoped statements withhold the company-wide total. Financial calculation ASTs, source records and posted/archive rules are unchanged.
+
+304 guarded native tests, 17 retained backend suites and 13 materializer tests PASS. A local rerun initially hit Windows sandbox temporary-directory permissions; the unchanged suite passed with normal filesystem access. Retained v1/v2 main and service bytes are identical. Other main functions and 28 materialized files are unchanged.
+
+Existing three validator credentials and expiries are preserved; only their already-used exact financial GET scopes were added. A separate cache-prewarmer identity is bound to its two existing loopback reads. Real credential validation passed with synthetic downstream handlers; no complete job was run. Missing/invalid identities return 401, off-scope jobs and writes return 403. Live same-period Summary and RCM Dashboard responses are unchanged; Payroll compatibility remains 200.
+
+All 79,171 guarded original Supabase rows and 83,983 original SQLite rows are preserved. Production/QA/API HTTP health PASS. Live signed-in RCM Dashboard / Brick / Last Month renders all six major panels with no alert, access failure, loading state or captured console error. Restricted/other-role positives and negatives were verified synthetically. Frontend deployments, provider configuration, financial records, schemas and schedules are unchanged.
+
+**Pending integration decision:** `/v2/rcm/ar-aging-official` and `/v2/rcm/ar-location-health` human gates remain inactive because the existing Collaboration API caches its daily-report helper and restarting it immediately ticks its scheduler. Dr. G has been asked whether to defer those two gates to a planned restart or allow restart and normal scheduled work. No Collaboration source, credential, process or scheduler was changed. The proposed source adapter is prepared only.
+
+Recovery: `backup/api-before-phase6-financial-reads-20260918`, `api-financial-read-backup-20260918T140856Z`. Private backups stay server-side; preserve current credential generation and never restore the revoked reconciliation token. Twenty-two provider declarations, those two deferred gates, final regression and normal canonical-main integration remain. Phase 6 is NOT complete; accounting follow-up remains frozen.
 
 ## RCM snapshot and eAssist read boundary — deployed
 
@@ -28,7 +42,7 @@ Recovery: `backup/api-before-phase6-rcm-snapshots-20260918`, `api-rcm-snapshot-b
 
 ## RCM A/R and eAssist request scope — deployed
 
-Frontend `009005b03767dc3dc9facdbfc5f9fa81fa001d49` is live in production `dcf8bc42-1a06-45f6-8010-80c1db7595be` and QA `ae279546-abd2-4720-a052-a9a34aa2d60b`. Selected A/R offices generate distinct validated requests; global or incomplete scoped replies fail closed. eAssist status carries the selected office, report filters honor the parent office, and parent scope changes isolate earlier responses. Existing calculations are unchanged. This completes the client dependency; the six-route snapshot/eAssist API candidate is local and NOT deployed.
+Frontend `009005b03767dc3dc9facdbfc5f9fa81fa001d49` is live in production `dcf8bc42-1a06-45f6-8010-80c1db7595be` and QA `ae279546-abd2-4720-a052-a9a34aa2d60b`. Selected A/R offices generate distinct validated requests; global or incomplete scoped replies fail closed. eAssist status carries the selected office, report filters honor the parent office, and parent scope changes isolate earlier responses. Existing calculations are unchanged. The later snapshot/eAssist API activation is documented above.
 
 All 1,678 frontend tests PASS with zero skips, both builds and environment isolation PASS. Each compiled environment passes six A/R scope, six Expense request isolation, six retained Expense denominator and three RCM status checks. Production entry is 8,835,047 bytes; no speedup claim. Live production eAssist Eatontown/Brick selection and settled Brick A/R Aging PASS with no captured errors, alerts or scope warnings. QA layout/banner PASS; its financial API remains intentionally disabled.
 
