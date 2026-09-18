@@ -32,7 +32,8 @@ def core_job_authorize(actor, scope):
 def scoped_job_authorize(actor, scope):
     from api_payroll_policy import payroll_authorize
     from api_expense_read_policy import expense_job_authorize
-    return payroll_authorize(actor, scope) or core_job_authorize(actor, scope) or expense_job_authorize(actor, scope)
+    from api_financial_read_policy import financial_job_authorize
+    return payroll_authorize(actor, scope) or core_job_authorize(actor, scope) or expense_job_authorize(actor, scope) or financial_job_authorize(actor, scope)
 
 # Human read activation is deployed separately after job compatibility.
 from api_identity import UserIdentity

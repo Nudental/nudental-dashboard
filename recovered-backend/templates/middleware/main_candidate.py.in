@@ -147,6 +147,7 @@ def _prewarm_caches_thread():
     """
     import time as _pw_time
     import requests as _pw_req
+    from api_background_reads import read_headers
     _pw_time.sleep(20)  # Let server finish startup
     _api_key = os.environ.get("NUDASHBOARD_API_KEY", __NUDASHBOARD_CONFIG_LITERAL_015__)
     _prewarm_port = os.environ.get("PREWARM_TARGET_PORT", os.environ.get("PORT", "8001"))
@@ -155,12 +156,12 @@ def _prewarm_caches_thread():
     logger.info(f"[prewarm] Cache prewarm thread started — target {_base}")
     while True:
         try:
-            _pw_req.get(f"{_base}/v2/rcm/ar-aging-official", headers=_hdrs, timeout=120)
+            _pw_req.get(f"{_base}/v2/rcm/ar-aging-official", headers={**_hdrs, **read_headers("cache-prewarmer", "/v2/rcm/ar-aging-official", _base)}, timeout=120, allow_redirects=False).raise_for_status()
             logger.info("[prewarm] ar-aging-official all-offices cache warmed")
         except Exception as _e:
             logger.warning(f"[prewarm] ar-aging-official failed: {_e}")
         try:
-            _pw_req.get(f"{_base}/v2/rcm/patient-balances?pageSize=1", headers=_hdrs, timeout=180)
+            _pw_req.get(f"{_base}/v2/rcm/patient-balances?pageSize=1", headers={**_hdrs, **read_headers("cache-prewarmer", "/v2/rcm/patient-balances?pageSize=1", _base)}, timeout=180, allow_redirects=False).raise_for_status()
             logger.info("[prewarm] patient-balances all-offices cache warmed")
         except Exception as _e:
             logger.warning(f"[prewarm] patient-balances failed: {_e}")
@@ -234,7 +235,7 @@ def startup_event():
 
 
 # Named background-job tokens have an exact route boundary on every path.
-from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary, WorkflowReadBoundary, OrderBoundary, ClinicalReadBoundary, MaintenanceBoundary, CoreReadBoundary, MetricReadBoundary, ExpenseReadBoundary, RcmSnapshotBoundary
+from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary, WorkflowReadBoundary, OrderBoundary, ClinicalReadBoundary, MaintenanceBoundary, CoreReadBoundary, MetricReadBoundary, ExpenseReadBoundary, RcmSnapshotBoundary, FinancialReadBoundary
 app.add_middleware(ScopedJobBoundary)
 app.add_middleware(ReportExportBoundary)
 app.add_middleware(CompensationBoundary, allowed_emails=PAYROLL_ALLOWED_EMAILS)
@@ -246,6 +247,7 @@ app.add_middleware(MaintenanceBoundary)
 app.add_middleware(CoreReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID)
 app.add_middleware(MetricReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID, allowed_emails=PAYROLL_ALLOWED_EMAILS)
 app.add_middleware(ExpenseReadBoundary)
+app.add_middleware(FinancialReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID)
 app.add_middleware(RcmSnapshotBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID, location_names=lambda: LOCATION_NAMES)
 app.add_middleware(WorkflowReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID)
 
@@ -9663,6 +9665,7 @@ def _normalize_statement(raw: dict) -> dict:
 
 @app.get("/v2/rcm/dentrix-statements", tags=["RCM"], dependencies=[Depends(verify_api_key)])
 async def list_dentrix_statements(
+    request: Request,
     patient_id: Optional[str] = Query(None, description="Dentrix patient ID"),
     location_id: Optional[str] = Query(None, description="Dentrix location ID"),
     start_date: Optional[str] = Query(None, description="Filter generatedDate >= (YYYY-MM-DD)"),
@@ -9705,7 +9708,7 @@ async def list_dentrix_statements(
         "count": len(rows),
         "page": page,
         "page_size": page_size,
-        "total": pagination.get("total"),
+        "total": pagination.get("total") if request.state.dashboard_actor.all_offices else None,
         "source": "dentrix_patientstatements",
         "_note": "patient_portion and please_pay are patient-responsible amounts for outreach. total_balance is reference only.",
     }
@@ -9802,6 +9805,7 @@ def patient_balance_outreach_summary(
     One row per patient_id + location_id merging both sources.
     READ-ONLY. Does NOT trigger any sends.
     """
+    from api_expense_read_policy import expense_filter_literal
     # --- Dentrix statements side ---
     dentrix_map: dict[str, dict] = {}
     try:
@@ -9852,11 +9856,11 @@ def patient_balance_outreach_summary(
     try:
         path = "patient_contact_attempts?order=contacted_at.desc"
         if location_id:
-            path += f"&location_id=eq.{location_id}"
+            path += f"&location_id=eq.{expense_filter_literal(location_id)}"
         if start_date:
-            path += f"&contacted_at=gte.{start_date}"
+            path += f"&contacted_at=gte.{expense_filter_literal(start_date)}"
         if end_date:
-            path += f"&contacted_at=lte.{end_date}"
+            path += f"&contacted_at=lte.{expense_filter_literal(end_date)}"
 
         status, result = _sb_rest("GET", path)
         if status < 400 and isinstance(result, list):
@@ -12072,6 +12076,7 @@ def marketing_amex_spend(
 
     Returns per-office breakdown + totals.
     """
+    from api_expense_read_policy import expense_filter_literal
     try:
         # ── Date range ────────────────────────────────────────────────────────
         if month and year:
@@ -12098,12 +12103,12 @@ def marketing_amex_spend(
             f"card_last4,cardholder_name,source_reference_id,expense_status"
             f"&source_tab=eq.amex"
             f"&expense_status=in.(posted,archived)"
-            f"&expense_date=gte.{start}"
-            f"&expense_date=lte.{end}"
+            f"&expense_date=gte.{expense_filter_literal(start)}"
+            f"&expense_date=lte.{expense_filter_literal(end)}"
             f"&order=expense_date.asc"
         )
         if locationId:
-            base_filter += f"&office_id=eq.{locationId}"
+            base_filter += f"&office_id=eq.{expense_filter_literal(locationId)}"
 
         rows = _sb_get(base_filter)
 

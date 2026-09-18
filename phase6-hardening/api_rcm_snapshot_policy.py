@@ -43,6 +43,9 @@ def snapshot_authorize(actor,scope,office_to_location,location_names):
  if not is_snapshot_read(scope) or not isinstance(actor,UserIdentity):return False
  if not snapshot_scope(actor,scope,office_to_location,location_names):return False
  if admin_reader(actor):return True
+ if scope['path'] in PAYOR_READS:
+  from api_financial_read_policy import ar_reader
+  return ar_reader(actor)
  if not has_core_page(actor,'finance.rcm.view'):return False
  tabs=('ar_aging','claims') if scope['path'] in PAYOR_READS else (
   ('eassist_daily','dashboard') if scope['path']==EASSIST_STATUS else ('eassist_daily',))

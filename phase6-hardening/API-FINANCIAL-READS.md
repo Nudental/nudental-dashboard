@@ -1,0 +1,13 @@
+# Financial and RCM read boundary
+
+Candidate verified; production activation is not claimed by this entry.
+
+Twenty-three independent GET routes gain current human identity, existing page grants and the office selector actually consumed by their handler. RCM Dashboard dependencies remain accessible with its current grant. Unknown, duplicate, conflicting and ignored office selectors fail closed. The legacy extra field key cannot elevate a current non-Super-Admin or unattended reader. Operations A/R, Payors and Executive Overview retain their existing A/R access, including the snapshot fallback.
+
+Three reproduced synthetic defects are addressed: an unknown RCM UUID dropping its office predicate; an unencoded Marketing date fragment dropping the later office filter; and office-scoped statement rows exposing a company count. REST literals are encoded, scoped statement company totals are unavailable, and calculations, posted/archive rules and financial source records are preserved. The outreach query receives the same literal encoding. No real malformed request was sent to production.
+
+Existing dashboard, reconciliation and data validators gain only their already-used exact GET routes, retaining current credentials and expiry. A distinct cache-prewarmer identity is limited to its two existing reads and loopback origins. It cannot follow redirects or write. No complete background job is executed for verification. The revoked reconciliation credential must never be restored.
+
+`/v2/rcm/ar-aging-official` and `/v2/rcm/ar-location-health` human gates are deliberately **inactive**, pending the existing Collaboration report helper's activation. That API caches imports; restarting it immediately ticks its scheduler and could dispatch work outside this Dashboard release. A user choice between a planned restart and explicitly allowing normal scheduler work is pending. This candidate does not modify or restart Collaboration, and does not provision its proposed identity. The pure source adapter is prepared only.
+
+Validation: 304 guarded native tests PASS (including actual handlers with synthetic storage and transport), 17 retained backend suites PASS. The retained suites ran against candidate v1; v2 has identical main and service bytes. Thirteen materializer checks PASS. Other main functions and 28 materialized files are unchanged. Production activation requires fresh source/configuration backups, row fingerprints, exact current baseline, live denials, unchanged read comparisons, health checks and immediate rollback. Provider actions and financial corrections are out of scope.

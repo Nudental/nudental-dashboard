@@ -365,11 +365,11 @@
   },
   {
     "source_file": "middleware/main_candidate.py",
-    "sha256": "21b7b3b958394af37d14b127f22ba36161a95d3a19930ed1c04d8cf68fb0d188",
-    "template_sha256": "168efcbf996db5ccf271eb30756aeef64b15ed27c52c26e55be0839ea6f888bf",
+    "sha256": "cc058c5e9b4dc86d3fb0cb0ad3f3d887f58c3a57eac908550c372f4f53da8eb5",
+    "template_sha256": "404e316122f045ba412fe5fb6a3d35cba19b0aea28ccf75646fe084d9a89cd23",
     "round_trip_exact": true,
     "previous_production_sha256": "a3961f234a8895617052de9cce99306cb6380f48c2d650f4395ab2c160bf0336",
-    "bytes": 865998
+    "bytes": 866751
   },
   {
     "file": "middleware/otp_auth.py",
@@ -754,11 +754,11 @@
   },
   {
     "source_file": "middleware/api_access_runtime.py",
-    "sha256": "1cc6c0bebe12ebe014e7600f38c98789825e964b872a76f3bee06cf9452c4ce4",
-    "template_sha256": "1cc6c0bebe12ebe014e7600f38c98789825e964b872a76f3bee06cf9452c4ce4",
+    "sha256": "770665c15c2c38ad71b4f8b6a71fdec9741225988f697a92238b677815d290f3",
+    "template_sha256": "770665c15c2c38ad71b4f8b6a71fdec9741225988f697a92238b677815d290f3",
     "round_trip_exact": true,
     "introduced": "phase6-api-identity",
-    "bytes": 12917
+    "bytes": 13607
   },
   {
     "source_file": "middleware/api_report_policy.py",
@@ -818,9 +818,9 @@
   },
   {
     "source_file": "middleware/api_core_read_policy.py",
-    "sha256": "4257ae4eb5c3ffd188da1530cd14d4f09f3012aa1ec874bb5a54214ca9b3c75c",
-    "template_sha256": "4257ae4eb5c3ffd188da1530cd14d4f09f3012aa1ec874bb5a54214ca9b3c75c",
-    "bytes": 5781
+    "sha256": "f958c64682da5aceb428b45e25d102d1c11681f01ed804e3e4db405e4896e45f",
+    "template_sha256": "f958c64682da5aceb428b45e25d102d1c11681f01ed804e3e4db405e4896e45f",
+    "bytes": 5888
   },
   {
     "source_file": "middleware/api_metric_read_policy.py",
@@ -836,8 +836,20 @@
   },
   {
     "source_file": "middleware/api_rcm_snapshot_policy.py",
-    "sha256": "97f62d31ef6c4b1d3f93dca628628e1e39d428df5777399c67ba2a4b8ddb8ab6",
-    "template_sha256": "97f62d31ef6c4b1d3f93dca628628e1e39d428df5777399c67ba2a4b8ddb8ab6",
-    "bytes": 3569
+    "sha256": "0555ff42dfa65245a761f215e10f4ffd7f104cd940fe75b7f0fda1ea55836538",
+    "template_sha256": "0555ff42dfa65245a761f215e10f4ffd7f104cd940fe75b7f0fda1ea55836538",
+    "bytes": 3679
+  },
+  {
+    "source_file": "middleware/api_financial_read_policy.py",
+    "sha256": "e9e598bafcee179f4270a0edd05f66e8bf59e43a9346366f6a558b21f5899087",
+    "template_sha256": "e9e598bafcee179f4270a0edd05f66e8bf59e43a9346366f6a558b21f5899087",
+    "bytes": 5684
+  },
+  {
+    "source_file": "middleware/api_background_reads.py",
+    "sha256": "5c712bb632e694c05b9cd22f4c7f2654542a617a7374f13ebec023bb768144be",
+    "template_sha256": "5c712bb632e694c05b9cd22f4c7f2654542a617a7374f13ebec023bb768144be",
+    "bytes": 2348
   }
 ]
