@@ -364,11 +364,11 @@
   },
   {
     "source_file": "middleware/main_candidate.py",
-    "sha256": "734a190e8f5558fe103e25186e9f960da33c77c7713e6034ae3a14440c709372",
-    "template_sha256": "a2f8e5196703daf0f61c40961bbd4fb30d3e1f79b40c7085b73a2d9115d3ff94",
+    "sha256": "242ced3002edd136a68548e5448454fb53d6586bd2f364e4ffe6821a4380cb11",
+    "template_sha256": "5eb46282639aa311c9b4f8e8ec19884aa763efa79f1278b02ce06b5e0e90b58b",
     "round_trip_exact": true,
     "previous_production_sha256": "a3961f234a8895617052de9cce99306cb6380f48c2d650f4395ab2c160bf0336",
-    "bytes": 859940
+    "bytes": 860209
   },
   {
     "file": "middleware/otp_auth.py",
@@ -738,11 +738,11 @@
   },
   {
     "source_file": "middleware/api_identity.py",
-    "sha256": "fa544a85f6ab339d339e0cb2fb5906c4f3864400a77d32973970f85e534ee0d8",
-    "template_sha256": "fa544a85f6ab339d339e0cb2fb5906c4f3864400a77d32973970f85e534ee0d8",
+    "sha256": "4d0c8a1a7776c4344afd9dfe9b9aa667bb1023dab63bfc771f9e292d4904632c",
+    "template_sha256": "4d0c8a1a7776c4344afd9dfe9b9aa667bb1023dab63bfc771f9e292d4904632c",
     "round_trip_exact": true,
     "introduced": "phase6-api-identity",
-    "bytes": 10888
+    "bytes": 11064
   },
   {
     "source_file": "middleware/api_payroll_policy.py",
@@ -753,11 +753,11 @@
   },
   {
     "source_file": "middleware/api_access_runtime.py",
-    "sha256": "88bbaa2712ebfaa8e220b9a7bfa45ed84de65402967026b033ef6fe2b328959b",
-    "template_sha256": "88bbaa2712ebfaa8e220b9a7bfa45ed84de65402967026b033ef6fe2b328959b",
+    "sha256": "934471419a57e89f54b055a101890586cb946cbe2233c3919d4cb9d992386725",
+    "template_sha256": "934471419a57e89f54b055a101890586cb946cbe2233c3919d4cb9d992386725",
     "round_trip_exact": true,
     "introduced": "phase6-api-identity",
-    "bytes": 7690
+    "bytes": 8354
   },
   {
     "source_file": "middleware/api_report_policy.py",
@@ -790,5 +790,11 @@
     "sha256": "ec8e5912fc3e635e0c792cc227c3df3611b13d009b94c5eb3994c2d31d68539a",
     "template_sha256": "ec8e5912fc3e635e0c792cc227c3df3611b13d009b94c5eb3994c2d31d68539a",
     "bytes": 2372
+  },
+  {
+    "source_file": "middleware/api_workflow_policy.py",
+    "sha256": "553c28922ec0f43d8881dd41e6cb0f7a71c2ef56a48044a87d7414390e103f36",
+    "template_sha256": "553c28922ec0f43d8881dd41e6cb0f7a71c2ef56a48044a87d7414390e103f36",
+    "bytes": 4300
   }
 ]

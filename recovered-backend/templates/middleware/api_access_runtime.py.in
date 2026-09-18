@@ -84,6 +84,22 @@ class ContactBoundary:
             await self.app(scope,receive,send)
 
 
+class WorkflowReadBoundary:
+    def __init__(self,app,*,office_to_location,users=None):
+        from api_workflow_policy import workflow_authorize
+        self.app=app
+        self.boundary=IdentityBoundary(app,users=users or CurrentUserResolver(),
+            jobs=JobResolver(job_configuration),
+            authorize=lambda actor,scope:workflow_authorize(actor,scope,office_to_location))
+
+    async def __call__(self,scope,receive,send):
+        from api_workflow_policy import is_workflow_path
+        if is_workflow_path(scope.get('path','')):
+            await self.boundary(scope,receive,send)
+        else:
+            await self.app(scope,receive,send)
+
+
 def private_json(path, *, absent=None):
     path = Path(path)
     if not path.exists() and absent is not None:

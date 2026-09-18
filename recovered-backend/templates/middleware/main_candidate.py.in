@@ -234,12 +234,13 @@ def startup_event():
 
 
 # Named background-job tokens have an exact route boundary on every path.
-from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary
+from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary, WorkflowReadBoundary
 app.add_middleware(ScopedJobBoundary)
 app.add_middleware(ReportExportBoundary)
 app.add_middleware(CompensationBoundary, allowed_emails=PAYROLL_ALLOWED_EMAILS)
 app.add_middleware(AdminBoundary)
 app.add_middleware(ContactBoundary)
+app.add_middleware(WorkflowReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID)
 
 # CORS
 app.add_middleware(
@@ -15710,7 +15711,7 @@ def eod_unscheduled_treatment(
 
 @app.get("/v2/eod/unscheduled-treatment/{queue_id}/contacts", tags=["EOD"],
          dependencies=[Depends(verify_api_key)])
-def eod_unscheduled_treatment_contact_history(queue_id: str):
+def eod_unscheduled_treatment_contact_history(queue_id: str, request: Request):
     """
     Read-only contact history for a single queue item.
     Returns all contact attempts ordered most recent first.
@@ -15741,6 +15742,8 @@ def eod_unscheduled_treatment_contact_history(queue_id: str):
 
     queue_item = q_resp.json()[0]
     office_uuid = queue_item["office_id"]
+    from api_workflow_policy import require_queue_office
+    require_queue_office(request, office_uuid)
     office_name = None
     for loc_id, name in LOCATION_NAMES.items():
         if LOCATION_TO_OFFICE.get(loc_id) == office_uuid:
@@ -15809,7 +15812,7 @@ def eod_unscheduled_treatment_assignees(
     # Fetch active users
     u_resp = _rq.get(
         f"{_sb_url}/user_profiles"
-        f"?is_active=eq.true"
+        f"?is_active=eq.true&is_approved=eq.true&status=eq.Active"
         f"&select=id,full_name,email,work_email,role,office_id",
         headers=_sb_hdrs, timeout=10,
     )

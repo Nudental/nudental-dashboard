@@ -113,6 +113,7 @@ class UserTests(unittest.TestCase):
         self.assertEqual(actor.id,USER); self.assertEqual(actor.role,'office_manager')
         self.assertEqual(actor.assigned_offices,frozenset({OFFICE,OTHER}))
         self.assertEqual(actor.permissions,frozenset({'workflow.tasks.view'}))
+        self.assertEqual(actor.disabled_permissions,frozenset({'finance.payroll.view'}))
         self.assertFalse(actor.all_offices)
         self.assertFalse(session.trust_env)
         self.assertTrue(all(c[1]['allow_redirects'] is False for c in session.calls))
