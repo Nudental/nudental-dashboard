@@ -100,6 +100,21 @@ class WorkflowReadBoundary:
             await self.app(scope,receive,send)
 
 
+class OrderBoundary:
+    def __init__(self,app,*,users=None):
+        from api_order_policy import order_authorize
+        self.app=app
+        self.boundary=IdentityBoundary(app,users=users or CurrentUserResolver(),
+            jobs=JobResolver(job_configuration),authorize=order_authorize)
+
+    async def __call__(self,scope,receive,send):
+        from api_order_policy import is_order_path
+        if is_order_path(scope.get('path','')):
+            await self.boundary(scope,receive,send)
+        else:
+            await self.app(scope,receive,send)
+
+
 def private_json(path, *, absent=None):
     path = Path(path)
     if not path.exists() and absent is not None:

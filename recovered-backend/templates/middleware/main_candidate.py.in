@@ -234,12 +234,13 @@ def startup_event():
 
 
 # Named background-job tokens have an exact route boundary on every path.
-from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary, WorkflowReadBoundary
+from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary, WorkflowReadBoundary, OrderBoundary
 app.add_middleware(ScopedJobBoundary)
 app.add_middleware(ReportExportBoundary)
 app.add_middleware(CompensationBoundary, allowed_emails=PAYROLL_ALLOWED_EMAILS)
 app.add_middleware(AdminBoundary)
 app.add_middleware(ContactBoundary)
+app.add_middleware(OrderBoundary)
 app.add_middleware(WorkflowReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID)
 
 # CORS
@@ -17316,30 +17317,34 @@ def amazon_orders_sync(
 
 @app.get("/amazon/orders/history", tags=["Amazon"])
 def amazon_orders_history(
+    request: Request,
     office: str = Query(None),
     month: str = Query(None),
     status: str = Query(None),
-    limit: int = Query(100),
-    offset: int = Query(0),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
     X_API_Key: Optional[str] = Header(None, alias="X-API-Key"),
 ):
-    """Amazon Orders History"""
+    """Existing read-only Amazon history, scoped to the verified office."""
+    from api_order_policy import require_order_actor, require_order_office, order_office_label
+    from urllib.parse import urlencode
     if not X_API_Key or X_API_Key != NUDASHBOARD_API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid or missing API key")
-
-    try:
-        filters = "front_desk_amazon_orders?select=*"
-        if office:
-            filters += f"&office_location=eq.{office}"
-        if month:
-            filters += f"&order_month=eq.{month}"
-        if status:
-            filters += f"&amazon_order_status=eq.{status}"
-        filters += f"&order=order_date.desc&limit={limit}&offset={offset}"
-        rows = _sb_get_full(filters)
-        return {"orders": rows, "count": len(rows), "limit": limit, "offset": offset}
-    except Exception as e:
-        raise HTTPException(500, str(e))
+        raise HTTPException(401, "Invalid or missing API key")
+    actor = require_order_actor(request)
+    if len(request.query_params.getlist('office')) > 1:
+        raise HTTPException(400, 'Ambiguous office')
+    params = {'select':'*','order':'order_date.desc','limit':str(limit),'offset':str(offset)}
+    if office:
+        matching = [oid for oid,lid in OFFICE_UUID_TO_LOCATION_ID.items() if order_office_label(LOCATION_NAMES.get(lid))==order_office_label(office)]
+        if len(matching)!=1: raise HTTPException(403,'This office is not permitted')
+        require_order_office(actor,matching[0],OFFICE_UUID_TO_LOCATION_ID)
+        params['office_location']='eq.'+office
+    elif not actor.all_offices:
+        raise HTTPException(403,'An assigned office is required')
+    if month: params['order_month']='eq.'+month
+    if status: params['amazon_order_status']='eq.'+status
+    rows = _sb_get_full('front_desk_amazon_orders?'+urlencode(params))
+    return {'orders':rows,'count':len(rows),'limit':limit,'offset':offset}
 
 @app.post("/amazon/orders/place-direct", tags=["Amazon"])
 async def amazon_place_direct(request: Request, X_API_Key: Optional[str] = Header(None, alias="X-API-Key")):
@@ -17360,138 +17365,111 @@ async def amazon_place_direct(request: Request, X_API_Key: Optional[str] = Heade
 
 @app.get("/amazon/order-requests", tags=["Amazon"])
 def list_order_requests(
+    request: Request,
     status: str = Query(None),
     office_id: str = Query(None),
-    limit: int = Query(50),
+    limit: int = Query(50, ge=1, le=500),
     X_API_Key: Optional[str] = Header(None, alias="X-API-Key"),
 ):
-    """List Order Requests"""
+    """Read existing requests only within the current human's office scope."""
+    from api_order_policy import require_order_actor, require_order_office
+    from urllib.parse import urlencode
     if not X_API_Key or X_API_Key != NUDASHBOARD_API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid or missing API key")
-
-    try:
-        filters = "amazon_order_requests?select=*&order=created_at.desc"
-        if status:
-            filters += f"&status=eq.{status}"
-        if office_id:
-            filters += f"&office_id=eq.{office_id}"
-        filters += f"&limit={limit}"
-        rows = _sb_get_full(filters)
-        return {"requests": rows, "count": len(rows)}
-    except Exception as e:
-        raise HTTPException(500, str(e))
+        raise HTTPException(401,'Invalid or missing API key')
+    actor=require_order_actor(request)
+    if len(request.query_params.getlist('office_id'))>1:
+        raise HTTPException(400,'Ambiguous office')
+    params={'select':'*','order':'created_at.desc','limit':str(limit)}
+    if office_id:
+        params['office_id']='eq.'+require_order_office(actor,office_id,OFFICE_UUID_TO_LOCATION_ID)
+    elif not actor.all_offices:
+        raise HTTPException(403,'An assigned office is required')
+    if status:params['status']='eq.'+status
+    rows=_sb_get_full('amazon_order_requests?'+urlencode(params))
+    return {'requests':rows,'count':len(rows)}
 
 @app.post("/amazon/order-requests", tags=["Amazon"])
 async def submit_order_request(request: Request, X_API_Key: Optional[str] = Header(None, alias="X-API-Key")):
-    """Submit Order Request"""
+    """Submit an existing request shape with verified actor/office attribution."""
+    from api_order_policy import require_order_actor, require_order_office
     if not X_API_Key or X_API_Key != NUDASHBOARD_API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid or missing API key")
-
-    body = await request.json()
-    required = ["user_id", "user_email", "office_location", "office_id", "cart_items", "estimated_total", "amazon_cart_id"]
-    for field in required:
-        if field not in body:
-            raise HTTPException(400, f"Missing required field: {field}")
-    try:
-        payload = amazon_service.build_order_request_payload(
-            user_id=body["user_id"],
-            user_email=body["user_email"],
-            office_location=body["office_location"],
-            office_id=body["office_id"],
-            cart_items=body["cart_items"],
-            estimated_total=body["estimated_total"],
-            amazon_cart_id=body["amazon_cart_id"],
-            notes=body.get("notes"),
-        )
-        import requests as _req
-        sb = _load_sb_config()
-        resp = _req.post(
-            f"{sb['project_url']}/rest/v1/amazon_order_requests",
-            json=payload,
-            headers={
-                "apikey": sb["secret_key"],
-                "Authorization": f"Bearer {sb['secret_key']}",
-                "Content-Type": "application/json",
-                "Prefer": "return=representation",
-            },
-            timeout=10,
-        )
-        if resp.status_code >= 400:
-            raise HTTPException(resp.status_code, resp.text)
-        return resp.json()
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(500, str(e))
+        raise HTTPException(401,'Invalid or missing API key')
+    actor=require_order_actor(request)
+    body=await request.json()
+    if not isinstance(body,dict):raise HTTPException(400,'A request object is required')
+    office=require_order_office(actor,body.get('office_id'),OFFICE_UUID_TO_LOCATION_ID)
+    for field in ['cart_items','estimated_total','amazon_cart_id']:
+        if field not in body:raise HTTPException(400,'Missing required field: '+field)
+    payload=amazon_service.build_order_request_payload(
+        user_id=actor.id,user_email=actor.email,
+        office_location=LOCATION_NAMES[OFFICE_UUID_TO_LOCATION_ID[office]],office_id=office,
+        cart_items=body['cart_items'],estimated_total=body['estimated_total'],
+        amazon_cart_id=body['amazon_cart_id'],notes=body.get('notes'))
+    code,data=_sb_rest('POST','amazon_order_requests',payload)
+    if code>=400:raise HTTPException(502,'Request storage failed')
+    if not isinstance(data,list) or len(data)!=1:raise HTTPException(502,'Request storage response invalid')
+    logger.info('Amazon request submitted actor=%s office=%s request=%s',actor.id,office,data[0].get('id'))
+    return data
 
 @app.post("/amazon/order-requests/{request_id}/approve", tags=["Amazon"])
 async def approve_order_request(request_id: str, request: Request, X_API_Key: Optional[str] = Header(None, alias="X-API-Key")):
-    """Approve Order Request"""
+    """Review a pending request; verified reviewer, office and no self-review."""
+    from api_order_policy import require_order_actor, require_order_review
+    from api_identity import uuid_value, AccessFailure
+    from urllib.parse import urlencode
     if not X_API_Key or X_API_Key != NUDASHBOARD_API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid or missing API key")
-
-    try:
-        body = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
-        import requests as _req
-        sb = _load_sb_config()
-        update = {
-            "status": "approved",
-            "approved_by": body.get("approved_by", "admin"),
-            "approved_at": datetime.now(timezone.utc).isoformat(),
-        }
-        resp = _req.patch(
-            f"{sb['project_url']}/rest/v1/amazon_order_requests?id=eq.{request_id}",
-            json=update,
-            headers={
-                "apikey": sb["secret_key"],
-                "Authorization": f"Bearer {sb['secret_key']}",
-                "Content-Type": "application/json",
-                "Prefer": "return=representation",
-            },
-            timeout=10,
-        )
-        if resp.status_code >= 400:
-            raise HTTPException(resp.status_code, resp.text)
-        return resp.json()
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(500, str(e))
+        raise HTTPException(401,'Invalid or missing API key')
+    actor=require_order_actor(request)
+    try:record_id=uuid_value(request_id)
+    except AccessFailure:raise HTTPException(400,'Invalid request ID') from None
+    body=await request.json() if request.headers.get('content-type','').startswith('application/json') else {}
+    if not isinstance(body,dict):raise HTTPException(400,'A request object is required')
+    query=urlencode({'id':'eq.'+record_id,'select':'id,office_id,requested_by_user_id,status','limit':'2'})
+    code,rows=_sb_rest('GET','amazon_order_requests?'+query)
+    if code>=400:raise HTTPException(502,'Request lookup failed')
+    if not isinstance(rows,list) or len(rows)!=1:raise HTTPException(404,'Request not found')
+    office,requester=require_order_review(actor,rows[0],OFFICE_UUID_TO_LOCATION_ID)
+    update={'status':'approved','approved_at':datetime.now(timezone.utc).isoformat()}
+    update.update(approved_by_user_id=actor.id,approved_by_email=actor.email)
+    # Compare-and-set keeps the original requester, office and pending status.
+    query=urlencode({'id':'eq.'+record_id,'office_id':'eq.'+office,
+        'requested_by_user_id':'eq.'+requester,'status':'eq.pending'})
+    code,data=_sb_rest('PATCH','amazon_order_requests?'+query,update)
+    if code>=400:raise HTTPException(502,'Request review failed')
+    if not isinstance(data,list) or len(data)!=1:raise HTTPException(409,'The request changed; reload before reviewing')
+    logger.info('Amazon request approved actor=%s office=%s request=%s',actor.id,office,record_id)
+    return data
 
 @app.post("/amazon/order-requests/{request_id}/reject", tags=["Amazon"])
 async def reject_order_request(request_id: str, request: Request, X_API_Key: Optional[str] = Header(None, alias="X-API-Key")):
-    """Reject Order Request"""
+    """Review a pending request; verified reviewer, office and no self-review."""
+    from api_order_policy import require_order_actor, require_order_review
+    from api_identity import uuid_value, AccessFailure
+    from urllib.parse import urlencode
     if not X_API_Key or X_API_Key != NUDASHBOARD_API_KEY:
-        raise HTTPException(status_code=401, detail="Invalid or missing API key")
-
-    try:
-        body = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
-        import requests as _req
-        sb = _load_sb_config()
-        update = {
-            "status": "rejected",
-            "rejected_by": body.get("rejected_by", "admin"),
-            "rejected_at": datetime.now(timezone.utc).isoformat(),
-            "rejection_reason": body.get("reason", ""),
-        }
-        resp = _req.patch(
-            f"{sb['project_url']}/rest/v1/amazon_order_requests?id=eq.{request_id}",
-            json=update,
-            headers={
-                "apikey": sb["secret_key"],
-                "Authorization": f"Bearer {sb['secret_key']}",
-                "Content-Type": "application/json",
-                "Prefer": "return=representation",
-            },
-            timeout=10,
-        )
-        if resp.status_code >= 400:
-            raise HTTPException(resp.status_code, resp.text)
-        return resp.json()
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(500, str(e))
+        raise HTTPException(401,'Invalid or missing API key')
+    actor=require_order_actor(request)
+    try:record_id=uuid_value(request_id)
+    except AccessFailure:raise HTTPException(400,'Invalid request ID') from None
+    body=await request.json() if request.headers.get('content-type','').startswith('application/json') else {}
+    if not isinstance(body,dict):raise HTTPException(400,'A request object is required')
+    query=urlencode({'id':'eq.'+record_id,'select':'id,office_id,requested_by_user_id,status','limit':'2'})
+    code,rows=_sb_rest('GET','amazon_order_requests?'+query)
+    if code>=400:raise HTTPException(502,'Request lookup failed')
+    if not isinstance(rows,list) or len(rows)!=1:raise HTTPException(404,'Request not found')
+    office,requester=require_order_review(actor,rows[0],OFFICE_UUID_TO_LOCATION_ID)
+    update={'status':'rejected','rejected_at':datetime.now(timezone.utc).isoformat()}
+    reason=body.get('reason','')
+    if not isinstance(reason,str):raise HTTPException(400,'A text rejection reason is required')
+    update['rejection_reason']=reason
+    # Compare-and-set keeps the original requester, office and pending status.
+    query=urlencode({'id':'eq.'+record_id,'office_id':'eq.'+office,
+        'requested_by_user_id':'eq.'+requester,'status':'eq.pending'})
+    code,data=_sb_rest('PATCH','amazon_order_requests?'+query,update)
+    if code>=400:raise HTTPException(502,'Request review failed')
+    if not isinstance(data,list) or len(data)!=1:raise HTTPException(409,'The request changed; reload before reviewing')
+    logger.info('Amazon request rejected actor=%s office=%s request=%s',actor.id,office,record_id)
+    return data
 
 
 # --- Gusto Status Route ---
