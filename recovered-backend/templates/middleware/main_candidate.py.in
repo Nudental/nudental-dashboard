@@ -4074,6 +4074,13 @@ async def plaid_webhook(request: Request):
     Receives Plaid webhook events and triggers sync for relevant updates.
     Handles: TRANSACTIONS_REMOVED, DEFAULT_UPDATE, INITIAL_UPDATE, HISTORICAL_UPDATE
     """
+    from api_plaid_webhook import verify_request, fetch_verification_key, WebhookFailure
+    try:
+        await verify_request(request,
+            lambda kid: fetch_verification_key(kid, PLAID_BASE_URL, PLAID_CLIENT_ID, PLAID_PRODUCTION_SECRET),
+            lambda: load_plaid_tokens(active_only=False))
+    except WebhookFailure as error:
+        raise HTTPException(status_code=error.status, detail="Webhook verification failed") from None
     import subprocess
     try:
         body = await request.json()

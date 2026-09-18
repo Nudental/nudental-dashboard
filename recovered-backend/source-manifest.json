@@ -364,11 +364,11 @@
   },
   {
     "source_file": "middleware/main_candidate.py",
-    "sha256": "cfd39140f772dd59a1fec46d4b22c1971cf1f6394ba0e600af275bed6df7d711",
-    "template_sha256": "0132f050d85f9ebc2a149683f66eaa82309432ce98df015c02fae119e2ca07f4",
+    "sha256": "674c553d5b4905b7f0357abae64bce3cb7fd5f983295f2214edf7c7b827ded98",
+    "template_sha256": "767b2e79f9cd372639f51a7a9b1f690120490c01cf4568c089967532eb556669",
     "round_trip_exact": true,
     "previous_production_sha256": "a3961f234a8895617052de9cce99306cb6380f48c2d650f4395ab2c160bf0336",
-    "bytes": 857623
+    "bytes": 858066
   },
   {
     "file": "middleware/otp_auth.py",
@@ -772,5 +772,11 @@
     "sha256": "af649c88fe9a8e7c76d3ccbcb7c08b93dbdf129ed229bbd6d41f5ab613de2676",
     "template_sha256": "af649c88fe9a8e7c76d3ccbcb7c08b93dbdf129ed229bbd6d41f5ab613de2676",
     "bytes": 1586
+  },
+  {
+    "source_file": "middleware/api_plaid_webhook.py",
+    "sha256": "c50b638a7cae3e4f4a54a3fd3884d1b1caaa778be144e0476742d58fe5d4e984",
+    "template_sha256": "c50b638a7cae3e4f4a54a3fd3884d1b1caaa778be144e0476742d58fe5d4e984",
+    "bytes": 5009
   }
 ]
