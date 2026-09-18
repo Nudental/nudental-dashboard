@@ -234,7 +234,7 @@ def startup_event():
 
 
 # Named background-job tokens have an exact route boundary on every path.
-from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary, WorkflowReadBoundary, OrderBoundary, ClinicalReadBoundary
+from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary, WorkflowReadBoundary, OrderBoundary, ClinicalReadBoundary, MaintenanceBoundary
 app.add_middleware(ScopedJobBoundary)
 app.add_middleware(ReportExportBoundary)
 app.add_middleware(CompensationBoundary, allowed_emails=PAYROLL_ALLOWED_EMAILS)
@@ -242,6 +242,7 @@ app.add_middleware(AdminBoundary)
 app.add_middleware(ContactBoundary)
 app.add_middleware(OrderBoundary)
 app.add_middleware(ClinicalReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID)
+app.add_middleware(MaintenanceBoundary)
 app.add_middleware(WorkflowReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID)
 
 # CORS

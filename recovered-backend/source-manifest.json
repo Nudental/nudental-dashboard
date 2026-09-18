@@ -365,11 +365,11 @@
   },
   {
     "source_file": "middleware/main_candidate.py",
-    "sha256": "2f95be52354db8cdb47a960fbecce8ef3dce0d1742232738f4cf7bf19dfaa72b",
-    "template_sha256": "832e960c2fd5cb2e931d47508990198788bf2d08fa6390fb65a218c0c7e2c07a",
+    "sha256": "c3e8cce7e212b3d56e043e98cab682745ed402346f646074edb467286d90b333",
+    "template_sha256": "bbb5d0536657e58a2e550cbeddcc29960ecf65ca124f38289d6b338403798b6e",
     "round_trip_exact": true,
     "previous_production_sha256": "a3961f234a8895617052de9cce99306cb6380f48c2d650f4395ab2c160bf0336",
-    "bytes": 862561
+    "bytes": 862622
   },
   {
     "file": "middleware/otp_auth.py",
@@ -754,11 +754,11 @@
   },
   {
     "source_file": "middleware/api_access_runtime.py",
-    "sha256": "46b64cffedb504b022f0804a59ba983a6c97c2debbc4488972db543e62373138",
-    "template_sha256": "46b64cffedb504b022f0804a59ba983a6c97c2debbc4488972db543e62373138",
+    "sha256": "42d99ca4a8fb43c58e23041a097b190ec3d79220f59d968ddcde65ecefadb26a",
+    "template_sha256": "42d99ca4a8fb43c58e23041a097b190ec3d79220f59d968ddcde65ecefadb26a",
     "round_trip_exact": true,
     "introduced": "phase6-api-identity",
-    "bytes": 9604
+    "bytes": 10193
   },
   {
     "source_file": "middleware/api_report_policy.py",
@@ -809,5 +809,11 @@
     "sha256": "9c3d8ece8cf4de5833a8e13fd0f6aa22107a0afd1d7b86fedaa553c0769dad8a",
     "template_sha256": "9c3d8ece8cf4de5833a8e13fd0f6aa22107a0afd1d7b86fedaa553c0769dad8a",
     "bytes": 4702
+  },
+  {
+    "source_file": "middleware/api_maintenance_policy.py",
+    "sha256": "0ccb4a94618ccfa82cf2546e832825534dcee367e30961772596f9c5f668bb79",
+    "template_sha256": "0ccb4a94618ccfa82cf2546e832825534dcee367e30961772596f9c5f668bb79",
+    "bytes": 1107
   }
 ]
