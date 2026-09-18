@@ -1,4 +1,10 @@
-# Dashboard production promotion — 2026-09-17
+# Current release documentation
+
+The application promotion below is historical and complete. Phase 6 is in progress: Group A and eight payroll API read protections are live; Groups B–E and the dependent client release remain pending. Current main has not incorporated Phase 6. Read [the full current report](CLOSURE.md), [current inventory](INVENTORY.md), and [saved checkpoint](../phase6-hardening/CHECKPOINT.md) before any release action. No deployment is authorized merely by this documentation update.
+
+## Preserved original promotion plan and verification
+
+### Dashboard production promotion — 2026-09-17
 
 Production-only application promotion from the verified Phase 5 source. Original main is `61c224b1bf9ec53d91ab69a8eb00e563204bf76d`; verified QA source remains `2859ae6416e59918af4487e781e343f790ab770a`.
 

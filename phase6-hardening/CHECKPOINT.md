@@ -1,5 +1,17 @@
 # Phase 6 release checkpoint
 
+Documentation synchronized: 2026-09-18T00:10:40.210286+00:00. Based on recorded checks, not a new live test run. Last implementation/verification checkpoint commit: `b748555f9dbb15e7548e30f204f0c10f563ee4b8`.
+
+Current documents: [full release report](../production-release/CLOSURE.md), [release inventory](../production-release/INVENTORY.md), [machine-readable inventory](../production-release/release-inventory.json). These supersede the earlier production-promotion-only status while preserving its history.
+
+## Resume without replaying completed work
+
+1. Confirm current branch, live frontend/API source and saved receipts before editing. Group A and the bounded payroll API release already ran; do not rerun their installation scripts or regenerate job credentials.
+2. Groups B–E require the existing pending approval after automatic review rejected B. Apply only after an explicit answer; then fresh backup, one group, unchanged-data guard and live verification before the next. This documentation request grants no new migration approval.
+3. Complete the dated Comparison check after the embedded-browser interruption. The page recovered; dated results are unverified. Other API route groups remain unclosed, not automatically covered by the eight-route payroll gate.
+4. The frontend candidate is QA-only and requires A plus D. Do not deploy the full Phase 6 branch or advance main until the intended production components pass their live gates.
+5. Preserve all rollback points and renew the two scoped validator credentials privately before December 16, 2026, 22:55 UTC. Keep accounting evidence/proposals frozen. Do not start another phase.
+
 Status: **IN PROGRESS — Group A and bounded payroll API identity release deployed; Groups B–E await exact approval after automatic review rejection**. This is not a Phase 6 completion report.
 
 ## Verified candidate
@@ -13,7 +25,7 @@ Status: **IN PROGRESS — Group A and bounded payroll API identity release deplo
 
 ## Live state
 
-Production remains `277f68be-3819-410c-8ca6-6aa5ffa2a95e`, source `bac8407c55ed684ffb2ec5dc3dd639cc0a736b4b`; main remains `820970ede7727830d95d8d03d518d02119da1acd`. Asset `index-BBYhCGiP.js`, 8,836,680 bytes, SHA256 `8283c272644d33cf02bd1bf669e38194a638d87268a1f680bead816572e719e5`. Production frontend/API HTTP 200. Existing Tasks screen loads with two completed tasks; Executive Overview baseline figures unchanged in read-only UI checks.
+Production frontend remains `277f68be-3819-410c-8ca6-6aa5ffa2a95e`, source `bac8407c55ed684ffb2ec5dc3dd639cc0a736b4b`; main remains `820970ede7727830d95d8d03d518d02119da1acd`. Asset `index-BBYhCGiP.js`, 8,836,680 bytes, SHA256 `8283c272644d33cf02bd1bf669e38194a638d87268a1f680bead816572e719e5`. Production frontend/API HTTP 200. Existing Tasks screen loads with two completed tasks; Executive Overview baseline figures unchanged in read-only UI checks.
 
 QA frontend only is updated: `c3c958d8-fede-4be7-85e6-c7a61b635af9`, source `545068b96113d532dfa2b66c86b856fb7b5d8451`, asset `index-BLRu3uLQ.js`, 8,832,072 bytes, SHA256 `8239368b48cb28f0f8586e10d9091a15e117f59972ff83f26cab3ee0c3aa8c6b`. QA frontend/API HTTP 200; API intentionally remains `product_api_ready=false`. Database, API configuration and external-execution guards are unchanged.
 

@@ -1,8 +1,32 @@
-# Dashboard production release inventory
+# NuDental Dashboard release inventory — current status
 
-All 487 changed paths are classified in release-inventory.json. A/B application changes are selected independently of QA infrastructure. C migrations were individually reviewed; only the two bounded adaptations listed below were applied. D files are excluded from production runtime. E accounting proposals are frozen and excluded.
+Updated 2026-09-18T00:10:40.210286+00:00 from saved evidence. Phase 6 is IN PROGRESS; this inventory update deploys nothing.
 
-## Application batches
+The original comparison remains main `61c224b1bf9ec53d91ab69a8eb00e563204bf76d` versus QA `2859ae6416e59918af4487e781e343f790ab770a`: 487 classified paths, including 79 promoted frontend paths and 42 database candidates. Those original classifications are preserved in `release-inventory.json`. Its `phase6_release` and per-repair `phase6_review` fields hold current status; a reviewed candidate is not an applied migration.
+
+Classes: A application repair; B performance/UX; C deliberate database/security migration; D QA-only or test infrastructure; E frozen financial/accounting correction. Phase 6 priorities P1/P2/P3/P4 are a separate classification. Group letters A–E are deployment groups, not release classes.
+
+## Phase 6 release layer
+
+| Change / group | Release class | Current disposition |
+|---|---|---|
+| Group A — profiles, user-office RPC, tasks, notifications | C — deliberate database/security adaptation | DEPLOYED and verified. Seven functions, two policies, five triggers; 4,425 rows unchanged. Office-assignment client activation remains pending. |
+| Payroll identity and two validator identities | A — application/security repair | DEPLOYED. Eight GET routes require verified identity/permissions; two distinct expiring read-only job scopes. Existing calculations, schedules and provider settings unchanged. |
+| Group B — Huddle/EOD | C | QA PASS; approval pending; NOT DEPLOYED. |
+| Group C — implant/bone history and access | C | QA PASS; approval pending; NOT DEPLOYED. Preserve deletion history during any rollback. |
+| Group D — supplies, Front Desk, urgent requests | C | QA PASS; approval pending; NOT DEPLOYED. RM/Admin/Super Admin only for review; no self-approval. |
+| Group E — insurance and service-goal access | C | QA PASS; approval pending; NOT DEPLOYED. |
+| Phase 6 client changes | A | Deployed to QA only. Production activation depends on A and D. No new production frontend deployment. |
+| QA environment, synthetic offices/actors, simulations and QA storage/security | D | Excluded from production. QA remains isolated. |
+| Frozen accounting corrections and metadata proposals | E | Excluded and unchanged. No reconciliation searches, corrections, imports or reclassification authorized here. |
+
+Production frontend remains `277f68be-3819-410c-8ca6-6aa5ffa2a95e`. API deployed source is `30521585ecb3f7e5f1d3651a817e0acc68000a3f`; canonical main remains `820970ede7727830d95d8d03d518d02119da1acd`. QA frontend is `c3c958d8-fede-4be7-85e6-c7a61b635af9`. Phase 6 frontend source is only a QA deployment/candidate; do not overwrite production with the full branch.
+
+## Preserved application batches — earlier production promotion
+
+The following rows describe the already-promoted Phase 4/5 application delta. They do not mark subsequent edits to the same files as deployed. Phase 6 changes to emailService, supplyRequestService, FrontDeskInventoryTab, Routes, navConfig and the new Front Desk review page are still candidate-only in production.
+
+### Original 79 frontend paths
 
 | Path | Class | Batch |
 |---|---|---|
@@ -86,53 +110,57 @@ All 487 changed paths are classified in release-inventory.json. A/B application 
 | src/services/supplyRequestService.js | C | 2-operations (dependencies applied) |
 | vite.config.mjs | A | 1-core (deployed) |
 
-## Individual database review
+## Individual database review — all 42 original entries
 
-| QA repair | Class | Production purpose | Disposition |
-|---|---|---|---|
-| 001-profile-access-boundary.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 002-office-workflow-boundary.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 003-eod-audit-coverage.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 004-eod-insert-boundary.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 005-eod-workflow-integrity.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 006-eod-history-identity.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 007-huddle-child-audit-coverage.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 008-task-page-permission.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 009-task-field-permission.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 010-notification-audit-coverage.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 011-huddle-review-permission.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 012-implant-office-boundary.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 013-task-identity-boundary.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 014-task-row-audit.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 015-implant-lookup-audit.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 016-implant-stock-transaction.sql | C | required for repaired write functionality | APPLIED: production migration 001; rows/ACL/owner preserved |
-| 017-implant-delete-audit.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 018-user-office-assignment-transaction.sql | C | required for repaired write functionality | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 019-office-goal-read-boundary.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 020-insurance-access-boundary.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 021-bone-inventory-access-boundary.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 022-bone-role-active-profile.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 023-bone-delete-audit-history.sql | C | required for repaired write functionality | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 024-supply-synthetic-offices.sql | D | QA-only | Exclude synthetic constraints/execution simulation |
-| 025-supply-request-access-boundary.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 026-supply-draft-transaction.sql | C | required for repaired write functionality | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 027-supply-submission-simulation.sql | D | QA-only | Exclude synthetic constraints/execution simulation |
-| 028-supply-fulfillment-access-boundary.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 029-supply-fulfillment-audit.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: requires production audit-namespace/permission adaptation; no QA namespace installed |
-| 030-supply-receipt-columns.sql | C | required for repaired write functionality | APPLIED: production migration 002; historical quantity/time null; original 480 rows intact |
-| 031-front-desk-synthetic-offices.sql | D | QA-only | Exclude synthetic constraints/execution simulation |
-| 032-front-desk-catalog-access.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 033-front-desk-catalog-audit.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: requires production audit-namespace/permission adaptation; no QA namespace installed |
-| 034-front-desk-order-access.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 035-clinical-stock-access.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 036-clinical-stock-create-history.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: requires production audit-namespace/permission adaptation; no QA namespace installed |
-| 037-supply-receipt-transaction.sql | C | required for repaired write functionality | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 038-urgent-request-audit-simulation.sql | D | QA-only | Exclude synthetic constraints/execution simulation |
-| 039-urgent-request-access-boundary.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
-| 040-front-desk-review-boundary.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: requires production audit-namespace/permission adaptation; no QA namespace installed |
-| 041-insurance-completed-form-lock.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: requires production audit-namespace/permission adaptation; no QA namespace installed |
-| 042-service-goal-read-boundary.sql | C | safe-hardening candidate requiring production role validation | DEFERRED: existing production policies preserved; role/office matrix and dependency rollout required |
+Only the two baseline adaptations (016/030) and adapted Phase 6 Group A are currently applied. Never apply original QA SQL packages wholesale.
 
-Required does not mean automatically authorized to execute an unchanged QA SQL file. Each candidate will be adapted and verified separately. No synthetic record, provider connection, production accounting record, QA credential, test adapter or QA runtime flag is included. Current production PH5-EXP-001 source is already on canonical main and retained.
+| QA repair | Original class | Phase 6 priority | Group | Current disposition |
+|---|---|---|---|---|
+| 001-profile-access-boundary.sql | C | P1 | A | DEPLOYED_VERIFIED: Adapted production Group A applied; row fingerprints and existing owners/grants preserved; native permission and representative UI checks pass. |
+| 002-office-workflow-boundary.sql | C | P1 | A / B | PARTIAL_A_LIVE_B_PENDING: Task foundation is live in A; Huddle/checklist portion in B passed QA but awaits approval and deployment. |
+| 003-eod-audit-coverage.sql | C | P1 | B | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group B passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 004-eod-insert-boundary.sql | C | P1 | B | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group B passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 005-eod-workflow-integrity.sql | C | P1 | B | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group B passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 006-eod-history-identity.sql | C | P1 | B | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group B passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 007-huddle-child-audit-coverage.sql | C | P1 | B | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group B passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 008-task-page-permission.sql | C | P1 | A | DEPLOYED_VERIFIED: Adapted production Group A applied; row fingerprints and existing owners/grants preserved; native permission and representative UI checks pass. |
+| 009-task-field-permission.sql | C | P1 | A | DEPLOYED_VERIFIED: Adapted production Group A applied; row fingerprints and existing owners/grants preserved; native permission and representative UI checks pass. |
+| 010-notification-audit-coverage.sql | C | P1 | A | DEPLOYED_VERIFIED: Adapted production Group A applied; row fingerprints and existing owners/grants preserved; native permission and representative UI checks pass. |
+| 011-huddle-review-permission.sql | C | P1 | B | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group B passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 012-implant-office-boundary.sql | C | P1 | C | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 013-task-identity-boundary.sql | C | P1 | A | DEPLOYED_VERIFIED: Adapted production Group A applied; row fingerprints and existing owners/grants preserved; native permission and representative UI checks pass. |
+| 014-task-row-audit.sql | C | P1 | A | DEPLOYED_VERIFIED: Adapted production Group A applied; row fingerprints and existing owners/grants preserved; native permission and representative UI checks pass. |
+| 015-implant-lookup-audit.sql | C | P2 | C | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 016-implant-stock-transaction.sql | C | Already live | — | BASELINE_ALREADY_LIVE: Preserve the September 17 production adaptation; no reapply or historical backfill. |
+| 017-implant-delete-audit.sql | C | P2 | C | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 018-user-office-assignment-transaction.sql | C | P1 | A | DATABASE_LIVE_CLIENT_PENDING: Atomic office-assignment RPC is live in A. Client activation is still in the frontend candidate dependent on A and D. |
+| 019-office-goal-read-boundary.sql | C | P1 | E | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group E passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 020-insurance-access-boundary.sql | C | P1 | E | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group E passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 021-bone-inventory-access-boundary.sql | C | P1 | C | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 022-bone-role-active-profile.sql | C | P1 | C | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 023-bone-delete-audit-history.sql | C | P2 | C | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 024-supply-synthetic-offices.sql | D | P4 | — | QA_ONLY_EXCLUDED: Synthetic offices or execution simulation; never promote. |
+| 025-supply-request-access-boundary.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 026-supply-draft-transaction.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 027-supply-submission-simulation.sql | D | P4 | — | QA_ONLY_EXCLUDED: Synthetic offices or execution simulation; never promote. |
+| 028-supply-fulfillment-access-boundary.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 029-supply-fulfillment-audit.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 030-supply-receipt-columns.sql | C | Already live | — | BASELINE_ALREADY_LIVE: Preserve the September 17 production adaptation; no reapply or historical backfill. |
+| 031-front-desk-synthetic-offices.sql | D | P4 | — | QA_ONLY_EXCLUDED: Synthetic offices or execution simulation; never promote. |
+| 032-front-desk-catalog-access.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 033-front-desk-catalog-audit.sql | C | P2 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 034-front-desk-order-access.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 035-clinical-stock-access.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 036-clinical-stock-create-history.sql | C | P2 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 037-supply-receipt-transaction.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 038-urgent-request-audit-simulation.sql | D | P4 as packaged | D | QA_PACKAGE_EXCLUDED_AUDIT_EXTRACTION_PENDING: Original simulation package stays excluded. Only independent audit coverage is adapted into D; D is not deployed. |
+| 039-urgent-request-access-boundary.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 040-front-desk-review-boundary.sql | C | P1 | D | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 041-insurance-completed-form-lock.sql | C | P1 | E | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group E passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
+| 042-service-goal-read-boundary.sql | C | P1 | E | QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED: Adapted Group E passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required. |
 
-All 79 frontend paths are included in the two production builds. QA-gated RPC/simulation behavior remains inactive in production, not promoted functionality. See CLOSURE.md for results and README.md for individual migration dependencies.
+For A, native permission/row guards and representative production UI checks PASS. For B–E, QA and rollback-only production preflight PASS; fresh snapshots, explicit approval, actual production apply and live checks remain pending. For 018 the database function is live but its atomic client is not; for 002 only the A task portion is live. For 038 the QA simulation package remains excluded even though its independent audit portion is adapted into pending D.
+
+Storage: production policies/photo permissions remain unchanged. QA-only storage work is not promoted. Existing production-safe UI handling remains part of the earlier release. Accounting class E and PH5-EXP-001 remain exactly as previously preserved; no financial correction is applied.
+
+See [full report](CLOSURE.md), [active checkpoint](../phase6-hardening/CHECKPOINT.md), [role matrix](../phase6-hardening/README.md), and [API scope/limits](../phase6-hardening/API-ACCESS.md). The JSON retains all original file and database fields; added review fields do not rewrite the original evidence.

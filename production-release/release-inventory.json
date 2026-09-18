@@ -3905,295 +3905,749 @@
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "A"
+        ],
+        "status": "DEPLOYED_VERIFIED",
+        "detail": "Adapted production Group A applied; row fingerprints and existing owners/grants preserved; native permission and representative UI checks pass."
+      }
     },
     {
       "repair": "002-office-workflow-boundary.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "A",
+          "B"
+        ],
+        "status": "PARTIAL_A_LIVE_B_PENDING",
+        "detail": "Task foundation is live in A; Huddle/checklist portion in B passed QA but awaits approval and deployment."
+      }
     },
     {
       "repair": "003-eod-audit-coverage.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "B"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group B passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "004-eod-insert-boundary.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "B"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group B passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "005-eod-workflow-integrity.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "B"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group B passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "006-eod-history-identity.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "B"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group B passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "007-huddle-child-audit-coverage.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "B"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group B passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "008-task-page-permission.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "A"
+        ],
+        "status": "DEPLOYED_VERIFIED",
+        "detail": "Adapted production Group A applied; row fingerprints and existing owners/grants preserved; native permission and representative UI checks pass."
+      }
     },
     {
       "repair": "009-task-field-permission.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "A"
+        ],
+        "status": "DEPLOYED_VERIFIED",
+        "detail": "Adapted production Group A applied; row fingerprints and existing owners/grants preserved; native permission and representative UI checks pass."
+      }
     },
     {
       "repair": "010-notification-audit-coverage.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "A"
+        ],
+        "status": "DEPLOYED_VERIFIED",
+        "detail": "Adapted production Group A applied; row fingerprints and existing owners/grants preserved; native permission and representative UI checks pass."
+      }
     },
     {
       "repair": "011-huddle-review-permission.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "B"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group B passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "012-implant-office-boundary.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "C"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "013-task-identity-boundary.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "A"
+        ],
+        "status": "DEPLOYED_VERIFIED",
+        "detail": "Adapted production Group A applied; row fingerprints and existing owners/grants preserved; native permission and representative UI checks pass."
+      }
     },
     {
       "repair": "014-task-row-audit.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "A"
+        ],
+        "status": "DEPLOYED_VERIFIED",
+        "detail": "Adapted production Group A applied; row fingerprints and existing owners/grants preserved; native permission and representative UI checks pass."
+      }
     },
     {
       "repair": "015-implant-lookup-audit.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P2",
+        "groups": [
+          "C"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "016-implant-stock-transaction.sql",
       "class": "C",
       "kind": "required for repaired write functionality",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "Already live",
+        "groups": [],
+        "status": "BASELINE_ALREADY_LIVE",
+        "detail": "Preserve the September 17 production adaptation; no reapply or historical backfill."
+      }
     },
     {
       "repair": "017-implant-delete-audit.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P2",
+        "groups": [
+          "C"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "018-user-office-assignment-transaction.sql",
       "class": "C",
       "kind": "required for repaired write functionality",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "A"
+        ],
+        "status": "DATABASE_LIVE_CLIENT_PENDING",
+        "detail": "Atomic office-assignment RPC is live in A. Client activation is still in the frontend candidate dependent on A and D."
+      }
     },
     {
       "repair": "019-office-goal-read-boundary.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "E"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group E passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "020-insurance-access-boundary.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "E"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group E passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "021-bone-inventory-access-boundary.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "C"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "022-bone-role-active-profile.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "C"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "023-bone-delete-audit-history.sql",
       "class": "C",
       "kind": "required for repaired write functionality",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P2",
+        "groups": [
+          "C"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group C passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "024-supply-synthetic-offices.sql",
       "class": "D",
       "kind": "QA-only",
       "disposition": "Exclude synthetic constraints/execution simulation",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P4",
+        "groups": [],
+        "status": "QA_ONLY_EXCLUDED",
+        "detail": "Synthetic offices or execution simulation; never promote."
+      }
     },
     {
       "repair": "025-supply-request-access-boundary.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "D"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "026-supply-draft-transaction.sql",
       "class": "C",
       "kind": "required for repaired write functionality",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "D"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "027-supply-submission-simulation.sql",
       "class": "D",
       "kind": "QA-only",
       "disposition": "Exclude synthetic constraints/execution simulation",
-      "qa_namespaced": true
+      "qa_namespaced": true,
+      "phase6_review": {
+        "priority": "P4",
+        "groups": [],
+        "status": "QA_ONLY_EXCLUDED",
+        "detail": "Synthetic offices or execution simulation; never promote."
+      }
     },
     {
       "repair": "028-supply-fulfillment-access-boundary.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "D"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "029-supply-fulfillment-audit.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
-      "qa_namespaced": true
+      "qa_namespaced": true,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "D"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "030-supply-receipt-columns.sql",
       "class": "C",
       "kind": "required for repaired write functionality",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "Already live",
+        "groups": [],
+        "status": "BASELINE_ALREADY_LIVE",
+        "detail": "Preserve the September 17 production adaptation; no reapply or historical backfill."
+      }
     },
     {
       "repair": "031-front-desk-synthetic-offices.sql",
       "class": "D",
       "kind": "QA-only",
       "disposition": "Exclude synthetic constraints/execution simulation",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P4",
+        "groups": [],
+        "status": "QA_ONLY_EXCLUDED",
+        "detail": "Synthetic offices or execution simulation; never promote."
+      }
     },
     {
       "repair": "032-front-desk-catalog-access.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "D"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "033-front-desk-catalog-audit.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
-      "qa_namespaced": true
+      "qa_namespaced": true,
+      "phase6_review": {
+        "priority": "P2",
+        "groups": [
+          "D"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "034-front-desk-order-access.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "D"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "035-clinical-stock-access.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "D"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "036-clinical-stock-create-history.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
-      "qa_namespaced": true
+      "qa_namespaced": true,
+      "phase6_review": {
+        "priority": "P2",
+        "groups": [
+          "D"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "037-supply-receipt-transaction.sql",
       "class": "C",
       "kind": "required for repaired write functionality",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "D"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "038-urgent-request-audit-simulation.sql",
       "class": "D",
       "kind": "QA-only",
       "disposition": "Exclude synthetic constraints/execution simulation",
-      "qa_namespaced": true
+      "qa_namespaced": true,
+      "phase6_review": {
+        "priority": "P4 as packaged",
+        "groups": [
+          "D"
+        ],
+        "status": "QA_PACKAGE_EXCLUDED_AUDIT_EXTRACTION_PENDING",
+        "detail": "Original simulation package stays excluded. Only independent audit coverage is adapted into D; D is not deployed."
+      }
     },
     {
       "repair": "039-urgent-request-access-boundary.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "D"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "040-front-desk-review-boundary.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
-      "qa_namespaced": true
+      "qa_namespaced": true,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "D"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group D passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "041-insurance-completed-form-lock.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Adapt QA namespace and audit dependencies; do not run verbatim",
-      "qa_namespaced": true
+      "qa_namespaced": true,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "E"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group E passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     },
     {
       "repair": "042-service-goal-read-boundary.sql",
       "class": "C",
       "kind": "safe-hardening candidate requiring production role validation",
       "disposition": "Review against current production schema; idempotent candidate and rollback required",
-      "qa_namespaced": false
+      "qa_namespaced": false,
+      "phase6_review": {
+        "priority": "P1",
+        "groups": [
+          "E"
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "detail": "Adapted Group E passed isolated QA and native rollback-only preflight. Fresh backup, approval, actual apply and live verification remain required."
+      }
     }
   ],
-  "financial_corrections": "E \u2014 all excluded; frozen private registers are not branch changes"
+  "financial_corrections": "E — all excluded; frozen private registers are not branch changes",
+  "phase6_release": {
+    "documentation_updated_utc": "2026-09-18T00:10:40.210286+00:00",
+    "phase_status": "IN_PROGRESS",
+    "evidence_checkpoint_commit": "b748555f9dbb15e7548e30f204f0c10f563ee4b8",
+    "canonical_main": "820970ede7727830d95d8d03d518d02119da1acd",
+    "branch": "phase6/nudashboard-production-hardening-20260917",
+    "production_frontend": {
+      "deployment": "277f68be-3819-410c-8ca6-6aa5ffa2a95e",
+      "source": "bac8407c55ed684ffb2ec5dc3dd639cc0a736b4b",
+      "asset": "/assets/index-BBYhCGiP.js",
+      "sha256": "8283c272644d33cf02bd1bf669e38194a638d87268a1f680bead816572e719e5",
+      "bytes": 8836680
+    },
+    "production_api": {
+      "status": "DEPLOYED_SERVER_PASS_REPRESENTATIVE_UI_PASS_WITH_LIMIT",
+      "source": "30521585ecb3f7e5f1d3651a817e0acc68000a3f",
+      "main_sha256": "5270a49bb0623b96c5eb372dab409026adc257f0efcc5dacf3b10f33cb5c31f8",
+      "read_routes": 8,
+      "restricted_validator_identities": 2,
+      "credential_expiry": "2026-12-16T22:55:05.380984+00:00",
+      "backup": "/home/openclaw/.cache/nudashboard-phase6-20260917/api-payroll-backup-20260917T225503Z"
+    },
+    "groups": {
+      "A": {
+        "repairs": [
+          1,
+          2,
+          8,
+          9,
+          10,
+          13,
+          14,
+          18
+        ],
+        "status": "DEPLOYED_VERIFIED",
+        "qa_checks": 12,
+        "rows": 4425
+      },
+      "B": {
+        "repairs": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          11
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "qa_checks": 11,
+        "rows": 18873
+      },
+      "C": {
+        "repairs": [
+          12,
+          15,
+          17,
+          21,
+          22,
+          23
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "qa_checks": 10,
+        "rows": 4405
+      },
+      "D": {
+        "repairs": [
+          25,
+          26,
+          28,
+          29,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38,
+          39,
+          40
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "qa_checks": 15,
+        "rows": 5678
+      },
+      "E": {
+        "repairs": [
+          19,
+          20,
+          41,
+          42
+        ],
+        "status": "QA_PASS_APPROVAL_PENDING_NOT_DEPLOYED",
+        "qa_checks": 10,
+        "rows": 5049
+      }
+    },
+    "frontend_candidate": {
+      "status": "QA_DEPLOYED_PRODUCTION_NOT_DEPLOYED",
+      "requires_groups": [
+        "A",
+        "D"
+      ],
+      "changes": [
+        "atomic user-office assignment",
+        "atomic supply drafts and receipts",
+        "permission-scoped Front Desk review route and no self-approval"
+      ]
+    },
+    "qa_frontend": {
+      "deployment": "c3c958d8-fede-4be7-85e6-c7a61b635af9",
+      "source": "545068b96113d532dfa2b66c86b856fb7b5d8451",
+      "bytes": 8832072,
+      "api_product_ready": false
+    },
+    "last_health_evidence_utc": "2026-09-17T23:15:36.133856+00:00",
+    "last_browser_evidence_utc": "2026-09-17T23:28:00.2734097Z",
+    "limitations": [
+      "Groups B-E await the existing explicit approval request after automatic review rejected B.",
+      "Dated comparison result not verified after embedded browser date-picker crash; fresh signed-in Payroll page recovered.",
+      "Other API route groups are not yet claimed fully authorized.",
+      "Main integration remains pending; do not deploy the complete Phase 6 branch blindly."
+    ],
+    "financial_changes": false,
+    "qa_credentials_or_fixtures_promoted": false,
+    "documentation_update_deploys_runtime": false
+  }
 }
