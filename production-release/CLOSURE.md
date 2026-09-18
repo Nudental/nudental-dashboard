@@ -1,6 +1,6 @@
 # NuDental Dashboard â€” full release report
 
-Updated 2026-09-18T13:21:15.505162+00:00 from saved deployment and live verification evidence.
+Updated 2026-09-18T13:37:55.081761+00:00 from saved deployment and live verification evidence.
 
 **Phase 6 IN PROGRESS: Groups Aâ€“E and the approved frontend are live. Remaining API route review, final regression and canonical-main integration remain open.** Dr. G explicitly approved Bâ€“E and the client activation; no migration approval is pending.
 
@@ -14,9 +14,19 @@ Updated 2026-09-18T13:21:15.505162+00:00 from saved deployment and live verifica
 | Previous deployment | `9509cba3-dd00-4084-9c14-e64ffd7ff390` |
 | Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` â€” final Phase 6 integration pending |
 | Branch | `phase6/nudashboard-production-hardening-20260917` |
-| API source | `0b108413241076358123eb0e4e1e87197c132ffb`; legacy status, Expense and prior reviewed boundaries live |
-| API main SHA256 | `681aa6a12f0b9b7fbef6e914d47b82bf441dbbfa0a3fd7f4e48af1923a9b3cce` |
+| API source | `91cb7ab8b9c45c359d1fdc6513480007f1c72278`; reviewed boundaries including RCM snapshots/eAssist live |
+| API main SHA256 | `21b7b3b958394af37d14b127f22ba36161a95d3a19930ed1c04d8cf68fb0d188` |
 | QA deployment | `ae279546-abd2-4720-a052-a9a34aa2d60b` |
+
+## RCM snapshot and eAssist read boundary — deployed
+
+API source `91cb7ab8b9c45c359d1fdc6513480007f1c72278` applied at 2026-09-18T13:31:39.774530+00:00; main SHA256 `21b7b3b958394af37d14b127f22ba36161a95d3a19930ed1c04d8cf68fb0d188`. Six GET routes require current human RCM/administrative authority and actual office scope. Office-scoped legacy snapshots no longer disclose company totals or reconciliation metadata; all-office calculations and values are preserved. eAssist literal query encoding prevents date fragments dropping later scope filters. Scoped status queries read only the requested office and skip global logs/staging counts. No job grant, credential, schedule, provider configuration, schema or financial source change.
+
+283 guarded native tests, all 17 retained suites and 13 materializer tests PASS. The old pagination harness's six unchanged tests passed with the new synthetic request/query context; the original failure remains preserved. Other route bodies and 29 materialized files are unchanged. Live missing/invalid identities return 401, unrelated jobs return 403, existing Summary/Payroll reads remain 200 and the saved Summary is unchanged.
+
+All 79,171 original guarded Supabase rows and 83,970 SQLite rows are preserved. Production/QA/API health PASS. Signed-in Super Admin eAssist / Brick renders without visible access failures, alerts or captured console errors. Other role/office positives and negatives, and legacy snapshot positive behavior, were tested with synthetic native handlers. The bounded journal query contained no matching access entry; no transport-log claim is made. No business/provider action was executed.
+
+Recovery: `backup/api-before-phase6-rcm-snapshots-20260918`, `api-rcm-snapshot-backup-20260918T133108Z`. Private backups stay server-side; never restore the revoked reconciliation credential. Remaining RCM/financial/provider route review, final regression and canonical-main integration remain pending. Phase 6 is NOT complete.
 
 ## RCM A/R and eAssist request scope — deployed
 

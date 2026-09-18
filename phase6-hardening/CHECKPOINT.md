@@ -1,10 +1,10 @@
 # Phase 6 active checkpoint
 
-Updated 2026-09-18T13:21:15.505162+00:00. Phase 6 remains IN PROGRESS. Continue autonomously under Dr. G's explicit Bâ€“E/client/API approval; no new phase and no financial corrections.
+Updated 2026-09-18T13:37:55.081761+00:00. Phase 6 remains IN PROGRESS. Continue autonomously under Dr. G's explicit Bâ€“E/client/API approval; no new phase and no financial corrections.
 
 ## Current production
 
-**Current verified state:** API `0b108413241076358123eb0e4e1e87197c132ffb`; production frontend `dcf8bc42-1a06-45f6-8010-80c1db7595be`; QA `ae279546-abd2-4720-a052-a9a34aa2d60b`. RCM client live verification PASS. Next: test/deploy local six-route snapshot/eAssist API candidate, remaining APIs, final regression and main integration. No accounting corrections.
+**Current verified state:** API `91cb7ab8b9c45c359d1fdc6513480007f1c72278`; production frontend `dcf8bc42-1a06-45f6-8010-80c1db7595be`; QA `ae279546-abd2-4720-a052-a9a34aa2d60b`. RCM client and snapshot/eAssist API live verification PASS. Next: remaining financial/RCM readers and exact unattended compatibility, provider routes, final regression and main integration. No accounting corrections.
 
 ## RCM selected-office status repair — deployed
 
@@ -15,6 +15,16 @@ All 1,654 frontend tests (zero skips), six compiled Expense isolation checks and
 Live production RCM / Eatontown / Last Month renders all eight sections, today's September 18 daily summary and an available payment breakdown; captured errors and alerts are empty. QA layout and banner render with financial reads intentionally disabled by `product_api_ready=false`. Production/QA HTTP and API health PASS. Four production/collections metric comparisons for August 1–31, all offices and Eatontown, are unchanged. All 17,363 guarded original rows are preserved, backend source is unchanged and business writes are zero. The bounded last-150-line journal query contained no matching daily-summary request; no transport-log claim is made.
 
 Immediate frontend rollback: `a81545bf-4463-4dc3-9b33-3cad855888d7`, tag `backup/production-before-phase6-rcm-scope-20260918`, snapshot `core-client-frontend-backup-20260918T093908Z`. Earlier recovery points remain. This completes the client dependency only; core-read API identity activation and final main integration remain pending.
+
+## RCM snapshot and eAssist read boundary — deployed
+
+API source `91cb7ab8b9c45c359d1fdc6513480007f1c72278` applied at 2026-09-18T13:31:39.774530+00:00; main SHA256 `21b7b3b958394af37d14b127f22ba36161a95d3a19930ed1c04d8cf68fb0d188`. Six GET routes require current human RCM/administrative authority and actual office scope. Office-scoped legacy snapshots no longer disclose company totals or reconciliation metadata; all-office calculations and values are preserved. eAssist literal query encoding prevents date fragments dropping later scope filters. Scoped status queries read only the requested office and skip global logs/staging counts. No job grant, credential, schedule, provider configuration, schema or financial source change.
+
+283 guarded native tests, all 17 retained suites and 13 materializer tests PASS. The old pagination harness's six unchanged tests passed with the new synthetic request/query context; the original failure remains preserved. Other route bodies and 29 materialized files are unchanged. Live missing/invalid identities return 401, unrelated jobs return 403, existing Summary/Payroll reads remain 200 and the saved Summary is unchanged.
+
+All 79,171 original guarded Supabase rows and 83,970 SQLite rows are preserved. Production/QA/API health PASS. Signed-in Super Admin eAssist / Brick renders without visible access failures, alerts or captured console errors. Other role/office positives and negatives, and legacy snapshot positive behavior, were tested with synthetic native handlers. The bounded journal query contained no matching access entry; no transport-log claim is made. No business/provider action was executed.
+
+Recovery: `backup/api-before-phase6-rcm-snapshots-20260918`, `api-rcm-snapshot-backup-20260918T133108Z`. Private backups stay server-side; never restore the revoked reconciliation credential. Remaining RCM/financial/provider route review, final regression and canonical-main integration remain pending. Phase 6 is NOT complete.
 
 ## RCM A/R and eAssist request scope — deployed
 
