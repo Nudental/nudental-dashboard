@@ -4,6 +4,10 @@ Dr. G approved existing signed-in user checks plus separate restricted identitie
 
 The confirmed defect is that a payroll read accepted the shared application key with no user session or an invalid session. The application key identifies the client application; it must not establish the person's identity.
 
+## Applied OTP administrative restriction
+
+OTP administrative helpers now require the current active/approved account as well as its existing role. One-file source `78cdc3c1994ac27dd3ac177abf1fd434984a8f06` is live, 99 native tests PASS, and all guarded device/settings/audit rows are unchanged. See [OTP evidence](API-OTP-ADMIN.md).
+
 ## Applied provider-compensation follow-on
 
 The three compensation routes now bind access to the verified account and existing grants/email allowlist. Source `a0454b2e243cce5be407bf8e900df1e066ffb61c` is live; 88 native tests, 17 retained suites and live denial/health checks PASS. See [compensation evidence](API-COMPENSATION.md). MCP mounted transport is already protected by its existing downstream dedicated-token verifier (local 401/proxy 403 without a valid token); no Collaboration Platform change. Remaining API review continues.

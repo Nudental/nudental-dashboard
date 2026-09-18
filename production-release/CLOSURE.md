@@ -1,6 +1,6 @@
 # NuDental Dashboard — full release report
 
-Updated 2026-09-18T06:25:30.725515+00:00 from saved deployment and live verification evidence.
+Updated 2026-09-18T06:45:21.934486+00:00 from saved deployment and live verification evidence.
 
 **Phase 6 IN PROGRESS: Groups A–E and the approved frontend are live. Remaining API route review, final regression and canonical-main integration remain open.** Dr. G explicitly approved B–E and the client activation; no migration approval is pending.
 
@@ -14,7 +14,7 @@ Updated 2026-09-18T06:25:30.725515+00:00 from saved deployment and live verifica
 | Previous deployment | `277f68be-3819-410c-8ca6-6aa5ffa2a95e` |
 | Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` — final Phase 6 integration pending |
 | Branch | `phase6/nudashboard-production-hardening-20260917` |
-| API source | `a0454b2e243cce5be407bf8e900df1e066ffb61c`; eight payroll reads, report export and three compensation routes protected |
+| API source | `78cdc3c1994ac27dd3ac177abf1fd434984a8f06`; payroll/report/compensation identity and OTP administrative restrictions live |
 | API main SHA256 | `cfd39140f772dd59a1fec46d4b22c1971cf1f6394ba0e600af275bed6df7d711` |
 | QA deployment | `c3c958d8-fede-4be7-85e6-c7a61b635af9` — unchanged |
 
@@ -57,6 +57,12 @@ Fresh guards preserved 15,927 expense rows, 535 Gusto expense-fact rows, 663 exp
 Source `a0454b2e243cce5be407bf8e900df1e066ffb61c` deployed at 2026-09-18T06:19:07.343197+00:00. Three compensation access/report/send routes now authorize only the verified signed-in account against its existing role/permission, all-office scope and unchanged existing email allowlist. A caller-supplied email cannot impersonate another user. Existing report calculations and send implementation are unchanged. No real export or email was executed.
 
 70 local tests, 88 native Python/FastAPI tests and 17 retained backend suites PASS. Candidate and live rejection checks return 401 for missing/invalid identities and 403 for read-only jobs; the existing payroll validator remains 200. All 17,218 original guarded financial/report-audit rows, configuration, job files, service units and frontend bytes are unchanged. Live Payroll and Provider Compensation render without access errors; no captured Payroll console errors. Production/QA health PASS. Recovery: `backup/api-before-phase6-compensation-20260918`, snapshot `api-compensation-backup-20260918T061853Z`.
+
+## Bounded OTP administrative restriction — deployed
+
+Source `78cdc3c1994ac27dd3ac177abf1fd434984a8f06` deployed at 2026-09-18T06:35:08.187866+00:00. OTP configuration and management of another user's trusted devices now require the account to remain active and approved, in addition to its existing administrative role. The one-file change does not alter ordinary login, OTP challenges, cookies, credentials or settings. All route bodies are unchanged.
+
+11 focused local and 99 native tests PASS. The other 20 materialized files match the compensation release; its 17 retained suites remain applicable to the unchanged main/service code. Candidate/live missing or invalid identities receive 401, jobs receive 403, and the existing payroll validator remains 200. All 20,790 guarded original rows are unchanged, including 186 trusted devices, one site-settings row and 3,385 authentication audit rows. No OTP, device revocation or setting change was performed. Production/QA health and refreshed Payroll UI PASS, no captured console errors. Backup: `api-otp-backup-20260918T063451Z`; tag: `backup/api-before-phase6-otp-admin-20260918`.
 
 ## Data, audit and performance limits
 

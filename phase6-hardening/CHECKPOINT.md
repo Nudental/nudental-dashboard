@@ -1,6 +1,6 @@
 # Phase 6 active checkpoint
 
-Updated 2026-09-18T06:25:30.725515+00:00. Phase 6 remains IN PROGRESS; continue autonomously under Dr. G's explicit B–E/client approval.
+Updated 2026-09-18T06:45:21.934486+00:00. Phase 6 remains IN PROGRESS; continue autonomously under Dr. G's explicit B–E/client approval.
 
 ## Do not repeat completed deployments
 
@@ -9,6 +9,8 @@ Groups A–E are applied and verified. Approved migration hashes and fresh backu
 Production frontend `a81545bf-4463-4dc3-9b33-3cad855888d7` from `145adebb5e9367d3854fe96edd913464fd33053e` is live; entry `index-BnAyRbiv.js` SHA256 `3b395fa391d7b95f909644c528ef8b2290536fabef95a2edaaea7c929f09d715`. Dedicated Front Desk review UI passes, new client is active, QA unchanged. Fresh 1,648 tests, build and six compiled checks PASS.
 
 API now includes payroll, report-export and provider-compensation identity releases from `a0454b2e243cce5be407bf8e900df1e066ffb61c`, main hash `cfd39140f772dd59a1fec46d4b22c1971cf1f6394ba0e600af275bed6df7d711`. Compensation applied at 2026-09-18T06:19:07.343197+00:00: 70 local/88 native tests, 17 retained suites, live 401/403 denial checks, existing payroll job 200, production/QA health PASS. All 17,218 financial/report-audit original rows and configuration/jobs unchanged. No actual report/export/email. Payroll and Provider Compensation UI PASS. Backup `api-compensation-backup-20260918T061853Z`, pushed tag `backup/api-before-phase6-compensation-20260918`. Do not reapply. Prior report source `fa1730c752c4f26956c4d79b21e025e035a69f55` and its backup remain preserved.
+
+Latest API source is now `78cdc3c1994ac27dd3ac177abf1fd434984a8f06` following the one-file OTP administrative restriction at 2026-09-18T06:35:08.187866+00:00. Main hash is unchanged; OTP hash `c97d66935708e9b4a13151a73167d2f189e73645ed3d1ba6937e09d8aea4529e`. 99 native tests PASS; 20 unchanged materialized files retain the prior 17-suite verification. All 20,790 financial/device/settings/auth-audit original rows unchanged. Missing/invalid identity 401, jobs 403, existing payroll validator 200; production/QA health and refreshed Payroll UI PASS. Backup `api-otp-backup-20260918T063451Z`, pushed tag `backup/api-before-phase6-otp-admin-20260918`. Do not reapply.
 
 Canonical main remains `820970ede7727830d95d8d03d518d02119da1acd`; final integration pending.
 
@@ -30,4 +32,8 @@ Current browser: production tab 68 on Payroll / Provider Compensation, signed in
 
 MCP review COMPLETE: existing Collaboration Platform FastMCP service on port 5222 uses its dedicated EnvironmentTokenVerifier. Mounted local `/mcp` without/with invalid identity returns 401; public `/mcp/mcp` returns 403. Public OAuth metadata does not grant downstream data access. No MCP tool executed and no Collaboration configuration changed. Evidence: `mcp-effective-boundary-review.private.json`.
 
-Remaining findings to address in bounded groups: other Dashboard reads need verified human role/office checks; RCM contact writes trust body actor/office; Amazon approval handlers need current identity/office/no-self checks; OTP administrative role helpers currently do not require active/approved profile; Plaid webhook/Gusto callback need downstream verification review. Do not execute financial/clinical writes, callbacks, provider syncs, emails, purchases or scheduled jobs while testing. Compensation release is complete. Next bounded review: OTP administrative helpers, then remaining read/job, operational write and provider callback boundaries. Canonical main remains pending final gates.
+Remaining findings to address in bounded groups: other Dashboard reads need verified human role/office checks; RCM contact writes trust body actor/office; Amazon approval handlers need current identity/office/no-self checks; Plaid webhook/Gusto callback need downstream verification review. Do not execute financial/clinical writes, callbacks, provider syncs, emails, purchases or scheduled jobs while testing. Compensation release is complete. OTP administrative helpers are now fixed. Next: Plaid webhook signature verification, then remaining read/job, operational write and callback boundaries. Canonical main remains pending final gates.
+
+## Current candidate in progress
+
+Plaid webhook: preserved unsigned handler reproduced dispatch using a subprocess stub only. New candidate verifies ES256 with installed PyJWT 2.12.1/cryptography 49.0.0, timestamp, raw-body SHA256 and existing item mapping before dispatch. No real provider call, sync or alert has been performed. Candidate module/test are not yet native-verified or deployed; continue `stage-test-webhook-v1.py` after materialization. Existing Gusto configuration has no pending OAuth state and no Gusto-named authorization script was found by the bounded inspection; callback review remains open. No credentials/configuration changed.
