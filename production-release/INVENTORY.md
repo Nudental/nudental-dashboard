@@ -1,6 +1,6 @@
 # NuDental Dashboard release inventory â€” current status
 
-Updated 2026-09-18T09:53:46.139563+00:00 from saved evidence. Phase 6 is IN PROGRESS; Groups Aâ€“E and the approved frontend are deployed and verified.
+Updated 2026-09-18T10:21:05.247164+00:00 from saved evidence. Phase 6 is IN PROGRESS; Groups Aâ€“E and the approved frontend are deployed and verified.
 
 The original comparison remains main `61c224b1bf9ec53d91ab69a8eb00e563204bf76d` versus QA `2859ae6416e59918af4487e781e343f790ab770a`: 487 classified paths, including 79 promoted frontend paths and 42 database candidates. Those original classifications are preserved in `release-inventory.json`. Its `phase6_release` and per-repair `phase6_review` fields hold current status; a reviewed candidate is not an applied migration.
 
@@ -26,12 +26,13 @@ Classes: A application repair; B performance/UX; C deliberate database/security 
 | Group C â€” implant/bone history and access | C | DEPLOYED; native role/row guards and representative UI checks PASS. Preserve deletion history during any rollback. |
 | Group D â€” supplies, Front Desk, urgent requests | C | DEPLOYED; native role/row guards and representative UI checks PASS. RM/Admin/Super Admin only for review; no self-approval. |
 | Group E â€” insurance and service-goal access | C | DEPLOYED; native role/row guards and representative UI checks PASS. |
+| Existing validator core-read compatibility | A — application/security repair | DEPLOYED; 220 native tests, exact GET scopes, three live unchanged read results. Exposed reconciliation credential revoked and equivalently rotated. |
 | RCM status selected-office propagation | A — application repair | DEPLOYED in production and QA; 1,654 frontend tests, six compiled isolation and six compiled RCM cases PASS. |
 | Phase 6 client changes | A | DEPLOYED to production after Aâ€“E verification; atomic office/draft/receipt clients and restricted review route active. |
 | QA environment, synthetic offices/actors, simulations and QA storage/security | D | Excluded from production. QA remains isolated. |
 | Frozen accounting corrections and metadata proposals | E | Excluded and unchanged. No reconciliation searches, corrections, imports or reclassification authorized here. |
 
-Production frontend is `08f84700-056f-4af4-8f13-526a66ad8187`, source `f3e427f7b94c96eb44424e7791c10051f30817cd`. API source is now `288fdf7dc9feff34685ee169acef872ca5e1d7d5`; broader API review is open. Main remains `820970ede7727830d95d8d03d518d02119da1acd` pending final integration. QA is `707f2962-0ed0-406e-baa5-25cc49f40bc4`; its isolation is preserved.
+Production frontend is `08f84700-056f-4af4-8f13-526a66ad8187`, source `f3e427f7b94c96eb44424e7791c10051f30817cd`. API source is now `471290102ae1c28bcd08170529cbc97adcfdbb10`; broader API review is open. Main remains `820970ede7727830d95d8d03d518d02119da1acd` pending final integration. QA is `707f2962-0ed0-406e-baa5-25cc49f40bc4`; its isolation is preserved.
 
 ## Preserved application batches â€” earlier production promotion
 

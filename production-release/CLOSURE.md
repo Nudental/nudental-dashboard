@@ -1,6 +1,6 @@
 # NuDental Dashboard â€” full release report
 
-Updated 2026-09-18T09:53:46.139563+00:00 from saved deployment and live verification evidence.
+Updated 2026-09-18T10:21:05.247164+00:00 from saved deployment and live verification evidence.
 
 **Phase 6 IN PROGRESS: Groups Aâ€“E and the approved frontend are live. Remaining API route review, final regression and canonical-main integration remain open.** Dr. G explicitly approved Bâ€“E and the client activation; no migration approval is pending.
 
@@ -14,9 +14,19 @@ Updated 2026-09-18T09:53:46.139563+00:00 from saved deployment and live verifica
 | Previous deployment | `a81545bf-4463-4dc3-9b33-3cad855888d7` |
 | Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` â€” final Phase 6 integration pending |
 | Branch | `phase6/nudashboard-production-hardening-20260917` |
-| API source | `288fdf7dc9feff34685ee169acef872ca5e1d7d5`; reviewed identity boundaries through clinical reads and legacy goal/EOD maintenance live |
+| API source | `471290102ae1c28bcd08170529cbc97adcfdbb10`; reviewed boundaries and background-reader compatibility live |
 | API main SHA256 | `c3e8cce7e212b3d56e043e98cab682745ed402346f646074edb467286d90b333` |
 | QA deployment | `707f2962-0ed0-406e-baa5-25cc49f40bc4` |
+
+## Existing validator read compatibility — deployed
+
+Source `471290102ae1c28bcd08170529cbc97adcfdbb10` applied at 2026-09-18T10:13:00.519802+00:00. The existing dashboard and reconciliation validators now have only their reviewed additional GET routes; the existing data validator has its own separate exact read-only identity. Schedules, provider configuration, calculation logic and human access are unchanged. All application route bodies and 27 unrelated materialized files match the preceding release.
+
+220 native identity/framework/helper tests and 13 materializer checks PASS. The 17 retained business suites are reused from the identical maintenance implementation, not claimed as rerun. Three live validator reads return 200 with unchanged responses; off-scope reads and writes return 403. No full job, provider action, financial write or schema change was executed. All 78,449 guarded original rows and 83,957 SQLite rows are preserved. Production/QA health PASS; current frontend remains `08f84700-056f-4af4-8f13-526a66ad8187`.
+
+A release-script variable collision exposed the existing reconciliation-validator credential in tool output. It was replaced privately; the prior token now returns 401, the replacement read returns 200 and off-scope/write attempts return 403. Its routes and December 16 expiry are unchanged. Other job credentials are unchanged. Receipt handling was repaired and private original evidence preserved. Never reinstate the exposed credential when restoring an earlier configuration snapshot.
+
+Recovery: `backup/api-before-phase6-core-jobs-20260918`, `api-core-jobs-backup-20260918T100733Z`, plus the equivalent-rotation record `core-job-equivalent-rotation-20260918T101520Z`. Source and private configuration backups remain on the server. Only the sanitized receipt is copied locally; automatic approval review rejected local transfer of credential-bearing recovery files. The human core-read gate is the next separate candidate; Phase 6 and main integration remain in progress.
 
 ## RCM selected-office status repair — deployed
 
