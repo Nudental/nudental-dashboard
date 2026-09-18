@@ -143,7 +143,7 @@ def _get_user_profile(user_id: str) -> Optional[dict]:
     """Fetch user_profiles row for a user (role, email, is_active, etc.)."""
     r = http_requests.get(
         _sb_url("user_profiles"),
-        params={"select": "id,email,username,role,is_active", "id": f"eq.{user_id}"},
+        params={"select": "id,email,username,role,is_active,is_approved,status", "id": f"eq.{user_id}"},
         headers=_sb_headers(),
         timeout=10,
     )
@@ -152,14 +152,20 @@ def _get_user_profile(user_id: str) -> Optional[dict]:
     return None
 
 
+def _is_active_approved(profile: dict) -> bool:
+    """Administrative privileges require the account's current approved state."""
+    return (isinstance(profile, dict) and profile.get("is_active") is True
+            and profile.get("is_approved") is True and profile.get("status") == "Active")
+
+
 def _is_admin_or_super(profile: dict) -> bool:
-    """Check if profile has admin or super_admin role."""
-    return profile.get("role") in ("admin", "super_admin")
+    """Check current active/approved admin or super_admin privileges."""
+    return _is_active_approved(profile) and profile.get("role") in ("admin", "super_admin")
 
 
 def _is_super_admin(profile: dict) -> bool:
-    """Check if profile has super_admin role."""
-    return profile.get("role") == "super_admin"
+    """Check current active/approved super_admin privileges."""
+    return _is_active_approved(profile) and profile.get("role") == "super_admin"
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────

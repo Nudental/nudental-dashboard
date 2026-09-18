@@ -399,9 +399,10 @@
   },
   {
     "source_file": "middleware/otp_auth.py",
-    "sha256": "04408177700c1005b2538e63de769de1a043656793c91713f340c222e332874e",
-    "template_sha256": "6b8001b96c6e6fbf4606932a0e27b2601b2cd262c4260349755fb58b6bc70874",
-    "round_trip_exact": true
+    "sha256": "c97d66935708e9b4a13151a73167d2f189e73645ed3d1ba6937e09d8aea4529e",
+    "template_sha256": "7b3cf216f229157c2c323c9193fd2152577cc33845b2414c788a03566e52ec80",
+    "round_trip_exact": true,
+    "bytes": 36700
   },
   {
     "file": "middleware/payroll_report.py",
