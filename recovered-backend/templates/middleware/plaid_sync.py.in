@@ -165,7 +165,10 @@ def sb_req(method, path, data=None, sb_url=None, sb_key=None):
 
 def plaid_get(path):
     """Call our middleware Plaid endpoints."""
-    with urllib.request.urlopen(f"{MIDDLEWARE}/{path}", timeout=30) as r:
+    from api_background_reads import read_headers, read_open
+    route = '/' + path
+    request = urllib.request.Request(MIDDLEWARE + route, headers=read_headers('plaid-sync', route, MIDDLEWARE))
+    with read_open(request, timeout=30, job_id='plaid-sync') as r:
         return json.loads(r.read())
 
 def plaid_direct_fetch(item_id: str, days: int) -> list:

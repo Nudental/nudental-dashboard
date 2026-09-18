@@ -225,6 +225,21 @@ class FinancialReadBoundary:
             await self.app(scope,receive,send)
 
 
+class ProviderBoundary:
+    def __init__(self,app,*,users=None):
+        from api_provider_policy import provider_authorize
+        self.app=app
+        self.boundary=IdentityBoundary(app,users=users or CurrentUserResolver(),
+            jobs=JobResolver(job_configuration),authorize=provider_authorize)
+
+    async def __call__(self,scope,receive,send):
+        from api_provider_policy import is_provider_path
+        if scope['type']=='http' and is_provider_path(scope['path']):
+            await self.boundary(scope,receive,send)
+        else:
+            await self.app(scope,receive,send)
+
+
 def private_json(path, *, absent=None):
     path = Path(path)
     if not path.exists() and absent is not None:

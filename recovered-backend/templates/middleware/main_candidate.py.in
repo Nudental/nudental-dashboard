@@ -235,7 +235,7 @@ def startup_event():
 
 
 # Named background-job tokens have an exact route boundary on every path.
-from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary, WorkflowReadBoundary, OrderBoundary, ClinicalReadBoundary, MaintenanceBoundary, CoreReadBoundary, MetricReadBoundary, ExpenseReadBoundary, RcmSnapshotBoundary, FinancialReadBoundary
+from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary, WorkflowReadBoundary, OrderBoundary, ClinicalReadBoundary, MaintenanceBoundary, CoreReadBoundary, MetricReadBoundary, ExpenseReadBoundary, RcmSnapshotBoundary, FinancialReadBoundary, ProviderBoundary
 app.add_middleware(ScopedJobBoundary)
 app.add_middleware(ReportExportBoundary)
 app.add_middleware(CompensationBoundary, allowed_emails=PAYROLL_ALLOWED_EMAILS)
@@ -248,6 +248,7 @@ app.add_middleware(CoreReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_
 app.add_middleware(MetricReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID, allowed_emails=PAYROLL_ALLOWED_EMAILS)
 app.add_middleware(ExpenseReadBoundary)
 app.add_middleware(FinancialReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID)
+app.add_middleware(ProviderBoundary)
 app.add_middleware(RcmSnapshotBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID, location_names=lambda: LOCATION_NAMES)
 app.add_middleware(WorkflowReadBoundary, office_to_location=OFFICE_UUID_TO_LOCATION_ID)
 
@@ -2200,44 +2201,49 @@ def twiml_nuholding():
 # Gusto OAuth Callback
 # ---------------------------------------------------------------------------
 
+@app.get("/gusto/auth-url")
+def gusto_auth_url(request: Request):
+    """Initiate the existing Gusto connection without modifying its credentials."""
+    import json as _json
+    from urllib.parse import urlencode
+    from api_provider_oauth import provider_oauth_state
+    with open("/home/openclaw/.config/gusto/nudental.json") as f:
+        creds = _json.load(f)
+    state = provider_oauth_state().issue('gusto', request.state.dashboard_actor.id)
+    return {'auth_url': 'https://api.gusto.com/oauth/authorize?' + urlencode({
+        'client_id': creds['client_id'], 'redirect_uri': 'https://api.nudashboard.com/gusto/callback',
+        'response_type': 'code', 'state': state})}
+
+
 @app.get("/gusto/callback")
 async def gusto_callback(code: str = None, error: str = None, state: str = None):
-    """Receives Gusto OAuth authorization code and exchanges it for tokens."""
+    """Only a current administrator's one-use OAuth intent may exchange a code."""
     import httpx, json as _json
-    if error:
-        return FastAPIResponse(content=f"<html><body><h2>Error: {error}</h2></body></html>", media_type="text/html")
-    if not code:
-        return FastAPIResponse(content="<html><body><h2>No code received</h2></body></html>", media_type="text/html")
-
-    # Exchange code for token
-    creds = _json.load(open("/home/openclaw/.config/gusto/nudental.json"))
-    token_url = "https://api.gusto.com/oauth/token"
-    payload = {
-        "client_id": creds["client_id"],
-        "client_secret": creds["client_secret"],
-        "redirect_uri": "https://api.nudashboard.com/gusto/callback",
-        "code": code,
-        "grant_type": "authorization_code",
-    }
-    async with httpx.AsyncClient() as client:
-        resp = await client.post(token_url, data=payload)
-        token_data = resp.json()
-
-    # Save token
-    token_path = "/home/openclaw/.config/gusto/token.json"
-    with open(token_path, "w") as f:
-        _json.dump(token_data, f, indent=2)
-
-    if "access_token" in token_data:
-        return FastAPIResponse(
-            content="<html><body style='font-family:sans-serif;text-align:center;padding:50px'><h2 style='color:green'>&#10003; Gusto Connected Successfully!</h2><p>You can close this tab. Yabezy is finishing the setup.</p></body></html>",
-            media_type="text/html"
-        )
-    else:
-        return FastAPIResponse(
-            content=f"<html><body><h2>Token error</h2><pre>{token_data}</pre></body></html>",
-            media_type="text/html"
-        )
+    from api_provider_oauth import provider_oauth_state, OAuthIntentError, atomic_private_json
+    try:
+        provider_oauth_state().consume('gusto', state)
+    except OAuthIntentError:
+        return FastAPIResponse(content="Authorization request is missing, expired or already used", status_code=400)
+    if error or not code:
+        return FastAPIResponse(content="Authorization was not completed", status_code=400)
+    try:
+        with open("/home/openclaw/.config/gusto/nudental.json") as f:
+            creds = _json.load(f)
+        payload = {
+            "client_id": creds["client_id"], "client_secret": creds["client_secret"],
+            "redirect_uri": "https://api.nudashboard.com/gusto/callback",
+            "code": code, "grant_type": "authorization_code",
+        }
+        async with httpx.AsyncClient(timeout=20, follow_redirects=False) as client:
+            resp = await client.post("https://api.gusto.com/oauth/token", data=payload)
+            resp.raise_for_status()
+            token_data = resp.json()
+        if not isinstance(token_data, dict) or not all(isinstance(token_data.get(k), str) and token_data[k] for k in ('access_token', 'refresh_token')):
+            raise ValueError('Incomplete token response')
+        atomic_private_json("/home/openclaw/.config/gusto/token.json", token_data)
+    except Exception:
+        return FastAPIResponse(content="Authorization exchange failed; existing connection preserved", status_code=502)
+    return FastAPIResponse(content="<html><body><h2>Gusto Connected Successfully</h2><p>You can close this tab.</p></body></html>", media_type="text/html")
 
 
 # ---------------------------------------------------------------------------
@@ -17236,35 +17242,34 @@ def amazon_status():
     }
 
 @app.get("/amazon/auth-url", tags=["Amazon"])
-def amazon_auth_url():
-    """Amazon Auth Url"""
-    return amazon_service.get_authorization_url()
+def amazon_auth_url(request: Request):
+    """Start authorization for the current verified administrator."""
+    return amazon_service.get_authorization_url(actor_id=request.state.dashboard_actor.id)
 
 @app.get("/amazon/auth", tags=["Amazon"])
-def amazon_auth():
-    """Amazon Auth — returns authorization URL for Dr. G to visit."""
-    result = amazon_service.get_authorization_url()
-    html = f"""<html><body style="font-family:sans-serif;text-align:center;padding:50px">
-    <h2>Amazon Business Authorization</h2>
-    <p>Click below to authorize the dashboard:</p>
-    <a href="{result['auth_url']}" style="display:inline-block;padding:12px 24px;background:#00B5CC;color:white;text-decoration:none;border-radius:6px;font-size:16px">Authorize with Amazon</a>
-    </body></html>"""
-    return _HTMLResponse(content=html)
+def amazon_auth(request: Request):
+    """Return the existing authorization link after current administrator checks."""
+    import html
+    result = amazon_service.get_authorization_url(actor_id=request.state.dashboard_actor.id)
+    return _HTMLResponse(content='<html><body><h2>Amazon Business Authorization</h2><a href="'+html.escape(result['auth_url'], quote=True)+'">Authorize with Amazon</a></body></html>')
 
 @app.get("/amazon/callback", tags=["Amazon"])
 def amazon_callback(code: str = None, state: str = None, error: str = None):
-    """Amazon Callback"""
-    if error:
-        return _HTMLResponse(content=f"<html><body><h2>Error: {error}</h2></body></html>")
-    if not code:
-        return _HTMLResponse(content="<html><body><h2>No authorization code received</h2></body></html>")
+    """Validate a one-use intent before touching the existing connection."""
+    from api_provider_oauth import provider_oauth_state, OAuthIntentError
+    if error or not code:
+        try:
+            provider_oauth_state().consume('amazon', state)
+        except OAuthIntentError:
+            pass
+        return _HTMLResponse(content="Authorization was not completed", status_code=400)
     try:
-        result = amazon_service.exchange_code_for_tokens(code, state or "")
-        return _HTMLResponse(
-            content="<html><body style=\'font-family:sans-serif;text-align:center;padding:50px\'><h2 style=\'color:green\'>&#10003; Amazon Business Connected!</h2><p>You can close this tab.</p></body></html>"
-        )
-    except Exception as e:
-        return _HTMLResponse(content=f"<html><body><h2>Authorization failed: {e}</h2></body></html>", status_code=500)
+        amazon_service.exchange_code_for_tokens(code, state or "")
+    except OAuthIntentError:
+        return _HTMLResponse(content="Authorization request is missing, expired or already used", status_code=400)
+    except Exception:
+        return _HTMLResponse(content="Authorization exchange failed; existing connection preserved", status_code=502)
+    return _HTMLResponse(content="<html><body><h2>Amazon Business Connected</h2><p>You can close this tab.</p></body></html>")
 
 @app.get("/amazon/products/search", tags=["Amazon"])
 def amazon_product_search(

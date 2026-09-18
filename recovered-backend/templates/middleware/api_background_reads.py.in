@@ -1,4 +1,4 @@
-"""Credentials for two existing unattended readers; no job execution here."""
+"""Exact credentials for existing unattended readers; no job execution here."""
 from urllib.parse import urlsplit
 from pathlib import Path
 import re,os,stat,json
@@ -11,11 +11,17 @@ class ReadAccessFailure(PermissionError):
 BACKGROUND_READS={
  'cache-prewarmer':frozenset({'/v2/rcm/ar-aging-official','/v2/rcm/patient-balances'}),
  'collab-daily-report':frozenset({'/v2/rcm/ar-aging-official','/v2/rcm/ar-location-health'}),
+ 'plaid-sync':frozenset({'/plaid/accounts','/plaid/transactions'}),
+ 'morning-brief':frozenset({'/plaid/accounts'}),
+ 'payroll-balance-watch':frozenset({'/plaid/accounts'}),
 }
 
 ORIGINS={
  'cache-prewarmer':frozenset({'http://127.0.0.1:8001','http://127.0.0.1:8002','http://localhost:8001','http://localhost:8002'}),
  'collab-daily-report':frozenset({'http://localhost:8001','http://127.0.0.1:8001'}),
+ 'plaid-sync':frozenset({'http://localhost:8001','http://127.0.0.1:8001'}),
+ 'morning-brief':frozenset({'http://localhost:8001','http://127.0.0.1:8001'}),
+ 'payroll-balance-watch':frozenset({'http://localhost:8001','http://127.0.0.1:8001'}),
 }
 
 def read_headers(job_id,path,origin,*,load_credentials=None):
@@ -36,12 +42,20 @@ def private_credential(path):
  if not stat.S_ISREG(info.st_mode) or stat.S_IMODE(info.st_mode)&0o077 or info.st_uid not in {0,os.geteuid()} or info.st_size>65536:raise ReadAccessFailure(503)
  return json.loads(path.read_text())
 
-def read_open(request,*,timeout):
+def read_open(request,*,timeout,job_id='collab-daily-report'):
  """An internal report credential must never follow a redirect off origin."""
  import urllib.request
  parsed=urlsplit(request.full_url)
  read_origin=parsed.scheme+'://'+parsed.netloc
- if read_origin not in ORIGINS['collab-daily-report'] or parsed.path not in BACKGROUND_READS['collab-daily-report'] or parsed.fragment:raise ReadAccessFailure(403)
+ if read_origin not in ORIGINS.get(job_id,()) or parsed.path not in BACKGROUND_READS[job_id] or parsed.fragment:raise ReadAccessFailure(403)
  class NoRedirect(urllib.request.HTTPRedirectHandler):
   def redirect_request(self,req,fp,code,msg,headers,newurl):return None
  return urllib.request.build_opener(NoRedirect()).open(request,timeout=timeout)
+
+def read_get(job_id,path,origin,*,timeout):
+ """Preserve requests.Response while refusing redirects before credentials leak."""
+ import requests
+ response=requests.get(origin+path,headers=read_headers(job_id,path,origin),timeout=timeout,allow_redirects=False)
+ if 300<=response.status_code<400:raise ReadAccessFailure(403)
+ response.raise_for_status()
+ return response

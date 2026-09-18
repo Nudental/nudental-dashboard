@@ -66,15 +66,16 @@ def _save_tokens(tokens: dict):
 
 # ─── OAuth Flow ──────────────────────────────────────────────────────────────
 
-def get_authorization_url(state: Optional[str] = None) -> dict:
+def get_authorization_url(*, actor_id: str) -> dict:
     """
     Returns the URL Dr. G must visit to authorize the app.
     Dr. G signs in to Amazon Business, clicks Allow.
     Amazon redirects to /amazon/callback?code=...&state=...
     """
     creds = _load_creds()
-    if not state:
-        state = secrets.token_urlsafe(32)
+    from api_provider_oauth import provider_oauth_state
+    from urllib.parse import urlencode
+    state = provider_oauth_state().issue("amazon", actor_id)
 
     params = {
         "client_id": creds["client_id"],
@@ -83,13 +84,8 @@ def get_authorization_url(state: Optional[str] = None) -> dict:
         "redirect_uri": creds["redirect_uri"],
         "state": state,
     }
-    qs = "&".join(f"{k}={v}" for k, v in params.items())
+    qs = urlencode(params)
     url = f"{LWA_AUTH_URL}?{qs}"
-
-    # Save state for CSRF validation
-    tokens = _load_tokens()
-    tokens["oauth_state"] = state
-    _save_tokens(tokens)
 
     return {"auth_url": url, "state": state}
 
@@ -99,13 +95,9 @@ def exchange_code_for_tokens(code: str, state: str) -> dict:
     Exchange authorization code for access_token + refresh_token.
     Called by the /amazon/callback endpoint.
     """
+    from api_provider_oauth import provider_oauth_state, atomic_private_json
+    provider_oauth_state().consume('amazon', state)
     creds = _load_creds()
-
-    # Validate state (CSRF protection)
-    tokens = _load_tokens()
-    saved_state = tokens.get("oauth_state")
-    if saved_state and saved_state != state:
-        raise ValueError(f"OAuth state mismatch — possible CSRF. Expected: {saved_state}, got: {state}")
 
     resp = requests.post(LWA_TOKEN_URL, data={
         "grant_type": "authorization_code",
@@ -113,12 +105,14 @@ def exchange_code_for_tokens(code: str, state: str) -> dict:
         "redirect_uri": creds["redirect_uri"],
         "client_id": creds["client_id"],
         "client_secret": creds["client_secret"],
-    })
+    }, timeout=20, allow_redirects=False)
     resp.raise_for_status()
+    if resp.status_code != 200:
+        raise ValueError("Unexpected token response")
     data = resp.json()
 
-    if "refresh_token" not in data:
-        raise ValueError(f"Token exchange failed: {data}")
+    if not isinstance(data, dict) or not all(isinstance(data.get(k), str) and data[k] for k in ("access_token", "refresh_token")):
+        raise ValueError("Incomplete token response")
 
     tokens = {
         "access_token": data["access_token"],
@@ -129,7 +123,7 @@ def exchange_code_for_tokens(code: str, state: str) -> dict:
         "scopes": SCOPES,
         "note": "Amazon Business OAuth tokens for Nu Dental. Refresh token is long-lived."
     }
-    _save_tokens(tokens)
+    atomic_private_json(TOKENS_PATH, tokens)
     logger.info("Amazon Business tokens obtained and saved.")
     return {"status": "authorized", "scopes": SCOPES}
 
