@@ -167,9 +167,10 @@ def job_configuration():
 class ScopedJobBoundary:
     """A job token cannot bypass its scope through an older unreviewed route."""
     def __init__(self, app, *, load_jobs=job_configuration):
+        from api_core_read_policy import scoped_job_authorize
         self.app = app
         self.boundary = IdentityBoundary(app, users=None, jobs=JobResolver(load_jobs),
-                                         authorize=payroll_authorize)
+                                         authorize=scoped_job_authorize)
 
     async def __call__(self, scope, receive, send):
         credentials = [v for k,v in scope.get('headers',[]) if k.lower()==b'authorization']
@@ -212,7 +213,7 @@ def validator_headers(job_id, path, origin, *, load_credentials=None):
     parsed = urlsplit(path)
     if parsed.scheme or parsed.netloc or parsed.fragment or not parsed.path.startswith('/v2/'):
         return {}
-    if job_id not in {'dashboard-validator', 'reconciliation-validator'}:
+    if job_id not in {'dashboard-validator', 'reconciliation-validator', 'data-validator'}:
         raise AccessFailure(403)
     if load_credentials is None:
         file = Path.home() / '.config/nudashboard' / (job_id + '.json')
