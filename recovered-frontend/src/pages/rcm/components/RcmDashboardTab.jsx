@@ -1511,7 +1511,7 @@ const FollowUpQueueSection = ({ dateRange, officeId, refreshKey, onTabLink, enab
 //    - NEW: tries payments.breakdown_available, payment_methods (object)
 //    - Field audit panel shows actual top-level keys from live response
 
-const DataSourceStatusSection = ({ refreshKey, onEassistTabLink, onDentrixTabLink, phase1Enabled, phase2Enabled, showFieldAudit }) => {
+const DataSourceStatusSection = ({ officeId, refreshKey, onEassistTabLink, onDentrixTabLink, phase1Enabled, phase2Enabled, showFieldAudit }) => {
   const [eassistData, setEassistData] = useState(null);
   const [eassistLoading, setEassistLoading] = useState(true);
   const [eassistError, setEassistError] = useState(null);
@@ -1542,7 +1542,7 @@ const DataSourceStatusSection = ({ refreshKey, onEassistTabLink, onDentrixTabLin
     setDentrixError(null);
     try {
       const result = await withTimeout(
-        fetchDashboardDentrixDailySummary(),
+        fetchDashboardDentrixDailySummary(officeId),
         30000,
         'Dentrix Daily Summary'
       );
@@ -1552,7 +1552,7 @@ const DataSourceStatusSection = ({ refreshKey, onEassistTabLink, onDentrixTabLin
     } finally {
       setDentrixLoading(false);
     }
-  }, [refreshKey]);
+  }, [refreshKey, officeId]);
 
   useEffect(() => {
     if (phase1Enabled) { loadDentrix(); }
@@ -2094,6 +2094,7 @@ const RcmDashboardTab = ({ dateRange, officeId, refreshKey, offices, onTabChange
 
       {/* Section 7 — Data Source Status (Dentrix=Phase1, eAssist=Phase2) */}
       <DataSourceStatusSection
+        officeId={officeId}
         refreshKey={refreshKey}
         onEassistTabLink={() => handleTabLink('eassist_reports')}
         onDentrixTabLink={() => handleTabLink('eassist_daily')}

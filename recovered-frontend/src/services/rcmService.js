@@ -2897,16 +2897,18 @@ export const fetchDashboardEassistStatus = async () => {
 /**
  * fetchDashboardDentrixDailySummary
  * Fetches the latest Dentrix Daily Summary status for the Dashboard status card.
- * Source: GET /v2/reports/daily-summary (today's date, no locationId = all offices)
+ * Source: GET /v2/reports/daily-summary (today's date, selected office)
  * Dentrix-only source — not eAssist.
  *
  * @returns {Promise<object>}
  */
-export const fetchDashboardDentrixDailySummary = async () => {
+export const fetchDashboardDentrixDailySummary = async (officeId = null) => {
   const t0 = Date.now();
   try {
     const today = new Date()?.toISOString()?.slice(0, 10);
-    const raw = await ascendApi?.getDailySummary(today, null);
+    const locationId = officeId && officeId !== 'all' ? resolveLocationId(officeId) : null;
+    if (officeId && officeId !== 'all' && !locationId) throw new Error('Unknown office selection');
+    const raw = await ascendApi?.getDailySummary(today, locationId);
 
     // V468 AUDIT: Log raw response shape
     console.info('[V468 AUDIT] /v2/reports/daily-summary raw response top-level keys:', raw ? Object.keys(raw) : 'null/undefined');
