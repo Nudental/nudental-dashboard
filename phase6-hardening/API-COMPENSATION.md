@@ -1,6 +1,6 @@
 # Provider-compensation identity repair
 
-Candidate status: native runtime verification PASS; production deployment pending.
+Status: DEPLOYED and live boundary verification PASS at 2026-09-18T06:19:07.343197+00:00 from `a0454b2e243cce5be407bf8e900df1e066ffb61c`.
 
 The three existing routes `/v2/auth/payroll-access`, `GET /v2/reports/provider-compensation`, and `POST /v2/reports/provider-compensation/send` accepted the caller's `userEmail` as authorization. A synthetic execution of the preserved live handler reproduced unauthorized report rendering using another address; no production report or email was generated.
 
@@ -9,3 +9,5 @@ The adapted candidate uses the existing verified Supabase identity boundary and 
 Validation: 70 local tests and 88 native Python/FastAPI tests PASS, with the isolated guard loaded and zero blocked attempts. Actual route bodies were exercised using synthetic reports and a mail stub. Tests cover missing/invalid identity, email spoofing, role/scope denial, current authorized access, preserved argument passing and safe invalid-parameter probes. The report and send calculation bodies are AST-identical; all unrelated main-module code and 18 materialized files remain unchanged. All 17 retained backend suites also PASS under the production-data safety guard.
 
 Release requires a fresh source/configuration snapshot, current Pages ID and entry hash, financial/report-audit row fingerprints, annotated backup tag, candidate-service verification before the live service restart, denial probes, existing payroll-validator continuity and production/QA health. No actual payroll report delivery, provider synchronization, schema change or financial edit is part of this release. Rollback restores precisely the three affected files and restarts the existing services.
+
+Live evidence: /home/openclaw/.cache/nudashboard-phase6-20260917/api-compensation-backup-20260918T061853Z; original financial/report-audit rows unchanged, existing payroll job 200, invalid human 401, jobs 403. Production/QA health and Payroll/Provider Compensation UI PASS. Frontend unchanged. No actual export/send.

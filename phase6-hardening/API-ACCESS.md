@@ -4,6 +4,10 @@ Dr. G approved existing signed-in user checks plus separate restricted identitie
 
 The confirmed defect is that a payroll read accepted the shared application key with no user session or an invalid session. The application key identifies the client application; it must not establish the person's identity.
 
+## Applied provider-compensation follow-on
+
+The three compensation routes now bind access to the verified account and existing grants/email allowlist. Source `a0454b2e243cce5be407bf8e900df1e066ffb61c` is live; 88 native tests, 17 retained suites and live denial/health checks PASS. See [compensation evidence](API-COMPENSATION.md). MCP mounted transport is already protected by its existing downstream dedicated-token verifier (local 401/proxy 403 without a valid token); no Collaboration Platform change. Remaining API review continues.
+
 ## Applied report-export follow-on
 
 The verified report-export identity repair is now live from `fa1730c752c4f26956c4d79b21e025e035a69f55`. 75 native tests and 17 retained suites PASS; body identity is ignored, verified attribution is used, jobs are denied, internal reads forward the human identity, and original business/audit rows are unchanged. See [report-export evidence](API-REPORT-EXPORT.md). Remaining route review is still open.

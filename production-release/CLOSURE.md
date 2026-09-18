@@ -1,6 +1,6 @@
 # NuDental Dashboard — full release report
 
-Updated 2026-09-18T06:01:38.445119+00:00 from saved deployment and live verification evidence.
+Updated 2026-09-18T06:25:30.725515+00:00 from saved deployment and live verification evidence.
 
 **Phase 6 IN PROGRESS: Groups A–E and the approved frontend are live. Remaining API route review, final regression and canonical-main integration remain open.** Dr. G explicitly approved B–E and the client activation; no migration approval is pending.
 
@@ -14,8 +14,8 @@ Updated 2026-09-18T06:01:38.445119+00:00 from saved deployment and live verifica
 | Previous deployment | `277f68be-3819-410c-8ca6-6aa5ffa2a95e` |
 | Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` — final Phase 6 integration pending |
 | Branch | `phase6/nudashboard-production-hardening-20260917` |
-| API source | `fa1730c752c4f26956c4d79b21e025e035a69f55`; eight payroll reads plus report export protected |
-| API main SHA256 | `a08923dcad7fad1cd935ba17c845255ea0c8a72c16da5ea5f83edbe0fc1921cc` |
+| API source | `a0454b2e243cce5be407bf8e900df1e066ffb61c`; eight payroll reads, report export and three compensation routes protected |
+| API main SHA256 | `cfd39140f772dd59a1fec46d4b22c1971cf1f6394ba0e600af275bed6df7d711` |
 | QA deployment | `c3c958d8-fede-4be7-85e6-c7a61b635af9` — unchanged |
 
 ## Applied migration groups
@@ -51,6 +51,12 @@ Source `fa1730c752c4f26956c4d79b21e025e035a69f55` deployed at 2026-09-18 05:53:5
 64 local tests, 75 native Python/FastAPI tests and all 17 retained backend suites PASS. All 28 report calculation/rendering/audit-writer functions are unchanged. Live missing/invalid sessions return 401; read-only job returns 403; existing payroll validator remains 200. No real export was executed. Authorized report generation was tested with the actual handler, synthetic data and an in-memory audit.
 
 Fresh guards preserved 15,927 expense rows, 535 Gusto expense-fact rows, 663 expense-fact rows and all 93 export-audit rows. Configuration, existing job files and service units are unchanged. Production Reports still renders all eight sections/four export controls with no captured console errors. Production and QA health PASS. Recovery: `backup/api-before-phase6-reports-20260918`, private snapshot `api-report-backup-20260918T055345Z`.
+
+## Bounded provider-compensation API repair — deployed
+
+Source `a0454b2e243cce5be407bf8e900df1e066ffb61c` deployed at 2026-09-18T06:19:07.343197+00:00. Three compensation access/report/send routes now authorize only the verified signed-in account against its existing role/permission, all-office scope and unchanged existing email allowlist. A caller-supplied email cannot impersonate another user. Existing report calculations and send implementation are unchanged. No real export or email was executed.
+
+70 local tests, 88 native Python/FastAPI tests and 17 retained backend suites PASS. Candidate and live rejection checks return 401 for missing/invalid identities and 403 for read-only jobs; the existing payroll validator remains 200. All 17,218 original guarded financial/report-audit rows, configuration, job files, service units and frontend bytes are unchanged. Live Payroll and Provider Compensation render without access errors; no captured Payroll console errors. Production/QA health PASS. Recovery: `backup/api-before-phase6-compensation-20260918`, snapshot `api-compensation-backup-20260918T061853Z`.
 
 ## Data, audit and performance limits
 
