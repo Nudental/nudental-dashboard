@@ -35,6 +35,7 @@ class UserIdentity:
     permissions: frozenset
     # Supabase Auth supplies the attribution address; never trust a request body.
     email: str = ''
+    display_name: str = ''
 
 
 @dataclass(frozen=True)
@@ -71,7 +72,7 @@ class UserResolver:
             except AccessFailure:
                 raise AccessFailure(401) from None
             rows = self._get(session, '/rest/v1/user_profiles', params={
-                'id': 'eq.' + user_id, 'select': 'id,role,office_id,is_active,is_approved,status', 'limit': '2'})
+                'id': 'eq.' + user_id, 'select': 'id,role,office_id,is_active,is_approved,status,full_name,username', 'limit': '2'})
             if not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict):
                 raise AccessFailure(403)
             profile = rows[0]
@@ -106,7 +107,8 @@ class UserResolver:
             if row.get('enabled') is True:
                 enabled.add(key)
         email = user.get('email')
-        return UserIdentity(user_id, profile['role'], primary, frozenset(offices), bool(all_offices), frozenset(enabled), email if isinstance(email, str) else '')
+        display_name = profile.get('full_name') or profile.get('username') or email or user_id
+        return UserIdentity(user_id, profile['role'], primary, frozenset(offices), bool(all_offices), frozenset(enabled), email if isinstance(email, str) else '', display_name if isinstance(display_name,str) else user_id)
 
     def _get(self, session, path, *, token=None, params=None):
         headers = {'apikey': self.service_key, 'Authorization': 'Bearer ' + (token or self.service_key)}

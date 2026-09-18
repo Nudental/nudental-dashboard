@@ -119,6 +119,16 @@ class UserTests(unittest.TestCase):
         self.assertEqual(session.calls[0][1]['headers']['Authorization'],'Bearer signed-user-token')
         self.assertEqual(session.calls[1][1]['headers']['Authorization'],'Bearer private-server-key')
 
+    def test_contact_display_name_comes_from_current_profile(self):
+        data=responses();data[0][1].update(email='verified@example.invalid',user_metadata={'full_name':'Spoof'})
+        data[1][1][0].update(full_name='Current Profile',username='Fallback')
+        actor,_=self.resolve(data)
+        self.assertEqual(actor.display_name,'Current Profile')
+        data[1][1][0]['full_name']=None
+        self.assertEqual(self.resolve(data)[0].display_name,'Fallback')
+        data[1][1][0]['username']=None
+        self.assertEqual(self.resolve(data)[0].display_name,'verified@example.invalid')
+
     def test_inactive_unapproved_wrong_state_unknown_role(self):
         for key,value in [('is_active',False),('is_approved',False),('status','Pending'),('role','invented_role')]:
             with self.subTest(key=key):

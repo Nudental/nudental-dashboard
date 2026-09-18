@@ -69,6 +69,21 @@ class AdminBoundary:
             await self.app(scope, receive, send)
 
 
+class ContactBoundary:
+    def __init__(self, app, *, users=None):
+        from api_contact_policy import contact_authorize
+        self.app=app
+        self.boundary=IdentityBoundary(app,users=users or CurrentUserResolver(),
+            jobs=JobResolver(job_configuration),authorize=contact_authorize)
+
+    async def __call__(self, scope, receive, send):
+        from api_contact_policy import is_contact_path
+        if is_contact_path(scope.get('path','')):
+            await self.boundary(scope,receive,send)
+        else:
+            await self.app(scope,receive,send)
+
+
 def private_json(path, *, absent=None):
     path = Path(path)
     if not path.exists() and absent is not None:

@@ -234,11 +234,12 @@ def startup_event():
 
 
 # Named background-job tokens have an exact route boundary on every path.
-from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary
+from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary, AdminBoundary, ContactBoundary
 app.add_middleware(ScopedJobBoundary)
 app.add_middleware(ReportExportBoundary)
 app.add_middleware(CompensationBoundary, allowed_emails=PAYROLL_ALLOWED_EMAILS)
 app.add_middleware(AdminBoundary)
+app.add_middleware(ContactBoundary)
 
 # CORS
 app.add_middleware(
@@ -9407,6 +9408,11 @@ def _sb_rest(method: str, path: str, body: dict | None = None, headers_extra: di
 async def create_contact_attempt(request: Request):
     """Create one manual contact attempt log entry."""
     body = await request.json()
+    from api_contact_policy import actor_for, checked_location
+    actor = actor_for(request)
+    if not isinstance(body, dict):
+        raise HTTPException(400, "A contact record is required")
+    location_id = checked_location(request, body.get("location_id"), LOCATION_TO_OFFICE)
 
     # Validate required fields
     patient_id = body.get("patient_id")
@@ -9427,15 +9433,15 @@ async def create_contact_attempt(request: Request):
     row = {
         "patient_id": patient_id,
         "chart_number": body.get("chart_number"),
-        "location_id": body.get("location_id"),
-        "office_name": body.get("office_name"),
+        "location_id": location_id,
+        "office_name": LOCATION_NAMES[location_id],
         "balance_at_contact": body.get("balance_at_contact"),
         "contact_method": contact_method,
         "contact_outcome": contact_outcome,
         "contact_note": body.get("contact_note"),
         "contacted_at": body.get("contacted_at"),  # None → DB default now()
-        "contacted_by": body.get("contacted_by"),   # TODO: populate from authenticated user when RBAC is ready
-        "contacted_by_name": body.get("contacted_by_name"),  # TODO: populate from authenticated user when RBAC is ready
+        "contacted_by": actor.id,
+        "contacted_by_name": actor.display_name or actor.email or actor.id,
         "next_followup_date": body.get("next_followup_date"),
         "is_resolved": body.get("is_resolved", False),
         "source_tab": body.get("source_tab", "patient_balances"),
@@ -9454,17 +9460,22 @@ async def create_contact_attempt(request: Request):
 
 @app.get("/v2/rcm/contact-attempts", tags=["RCM"], dependencies=[Depends(verify_api_key)])
 async def list_contact_attempts(
+    request: Request,
     patient_id: str = Query(..., description="Dentrix patient ID"),
     location_id: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=500),
     include_resolved: bool = Query(True),
 ):
     """List contact attempts for a patient, sorted by contacted_at DESC."""
-    path = f"patient_contact_attempts?patient_id=eq.{patient_id}&order=contacted_at.desc&limit={limit}"
+    from api_contact_policy import checked_query_location
+    from urllib.parse import urlencode
+    location_id = checked_query_location(request, location_id, LOCATION_TO_OFFICE)
+    params = [("patient_id", f"eq.{patient_id}"), ("order", "contacted_at.desc"), ("limit", str(limit))]
     if location_id:
-        path += f"&location_id=eq.{location_id}"
+        params.append(("location_id", f"eq.{location_id}"))
     if not include_resolved:
-        path += "&is_resolved=eq.false"
+        params.append(("is_resolved", "eq.false"))
+    path = "patient_contact_attempts?" + urlencode(params)
 
     status, result = _sb_rest("GET", path)
     if status >= 400:
@@ -9474,6 +9485,7 @@ async def list_contact_attempts(
 
 @app.get("/v2/rcm/contact-attempts/summary", tags=["RCM"], dependencies=[Depends(verify_api_key)])
 async def contact_attempts_summary(
+    request: Request,
     location_id: Optional[str] = Query(None),
     start_date: Optional[str] = Query(None, description="Filter contacted_at >= this date"),
     end_date: Optional[str] = Query(None, description="Filter contacted_at <= this date"),
@@ -9486,15 +9498,19 @@ async def contact_attempts_summary(
     ar-aging data — NOT joined server-side.
     """
     # Fetch all attempts matching filters, ordered by contacted_at DESC
-    path = "patient_contact_attempts?order=contacted_at.desc"
+    from api_contact_policy import checked_query_location
+    from urllib.parse import urlencode
+    location_id = checked_query_location(request, location_id, LOCATION_TO_OFFICE)
+    params = [("order", "contacted_at.desc")]
     if location_id:
-        path += f"&location_id=eq.{location_id}"
+        params.append(("location_id", f"eq.{location_id}"))
     if start_date:
-        path += f"&contacted_at=gte.{start_date}"
+        params.append(("contacted_at", f"gte.{start_date}"))
     if end_date:
-        path += f"&contacted_at=lte.{end_date}"
+        params.append(("contacted_at", f"lte.{end_date}"))
     if not include_resolved:
-        path += "&is_resolved=eq.false"
+        params.append(("is_resolved", "eq.false"))
+    path = "patient_contact_attempts?" + urlencode(params)
 
     status, result = _sb_rest("GET", path)
     if status >= 400:
@@ -9527,6 +9543,17 @@ async def contact_attempts_summary(
 async def update_contact_attempt(attempt_id: str, request: Request):
     """Update an existing contact attempt (outcome, note, followup, resolved)."""
     body = await request.json()
+    from api_contact_policy import checked_record_id, checked_location
+    from urllib.parse import urlencode
+    attempt_id = checked_record_id(attempt_id)
+    if not isinstance(body, dict):
+        raise HTTPException(400, "A contact update is required")
+    status, current = _sb_rest("GET", "patient_contact_attempts?" + urlencode({"id": f"eq.{attempt_id}", "select": "id,location_id", "limit": "2"}))
+    if status >= 400:
+        raise HTTPException(503, "Contact access verification is temporarily unavailable")
+    if not isinstance(current, list) or len(current) != 1 or current[0].get("id") != attempt_id:
+        raise HTTPException(404, "Contact record not found")
+    location_id = checked_location(request, current[0].get("location_id"), LOCATION_TO_OFFICE, optional=True)
 
     allowed_fields = {"contact_outcome", "contact_note", "next_followup_date", "is_resolved"}
     update = {}
@@ -9542,7 +9569,10 @@ async def update_contact_attempt(attempt_id: str, request: Request):
 
     update["updated_at"] = datetime.now(timezone.utc).isoformat()
 
-    status, result = _sb_rest("PATCH", f"patient_contact_attempts?id=eq.{attempt_id}", update)
+    # Bind the update to the office just checked, preventing a concurrent move
+    # from converting this authorization into a write against another office.
+    path = "patient_contact_attempts?" + urlencode({"id": f"eq.{attempt_id}", "location_id": f"eq.{location_id}" if location_id else "is.null"})
+    status, result = _sb_rest("PATCH", path, update)
     if status >= 400:
         raise HTTPException(status, result.get("error", "Failed to update contact attempt"))
 
