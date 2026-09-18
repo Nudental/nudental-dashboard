@@ -14,6 +14,16 @@ Live production RCM / Eatontown / Last Month renders all eight sections, today's
 
 Immediate frontend rollback: `a81545bf-4463-4dc3-9b33-3cad855888d7`, tag `backup/production-before-phase6-rcm-scope-20260918`, snapshot `core-client-frontend-backup-20260918T093908Z`. Earlier recovery points remain. This completes the client dependency only; core-read API identity activation and final main integration remain pending.
 
+## Metric and legacy helper read boundary — deployed
+
+Source `749d8ee3900c25169f7c59e467f764665c91329b` applied at 2026-09-18T11:37:25.643504+00:00; main SHA256 `bbfa92220cdc8ca29592393b69ea84dffa1943ea39a1eaf9bc6b60b9f6c789a0`. Eight remaining metric/helper reads now require current human identity and their existing page/office authority. KPI hygiene and the provider alias retain actual scoped readers; Finance filter options validate the numeric multi-location parameter the handler consumes. Provider-email access follows existing compensation authority. Raw legacy diagnostics without a current frontend/job caller require the existing all-office administrative reader. Startup's stream reference is echo-only. No new background-job scope was granted.
+
+253 guarded native tests, 17 retained backend suites and 13 materializer tests PASS. The original shared-key-only bypass was reproduced in three actual handlers using synthetic data. All route bodies and 27 unrelated materialized files are unchanged. Candidate/live missing identities return 401 on all eight routes; unattended job reads are denied 403. Existing scoped summary/payroll reads remain 200, summary content is unchanged and job writes remain 403. All 78,465 guarded original business/audit rows and 83,957 SQLite rows are preserved. Provider/configuration/job/frontend checks and production/QA HTTP/API health PASS.
+
+Live signed-in KPI Main and Specialty views and Financial Analytics render without unavailable/permission warnings, alerts or captured console errors. Live positive checks used the existing Super Admin session. Raw legacy reads and provider-email lookup were not exercised against real records; their positive/negative cases passed natively. No provider sync, export, email, purchase, approval, clinical write or financial correction was executed.
+
+Recovery: `backup/api-before-phase6-metric-reads-20260918`, `api-metric-read-backup-20260918T113657Z`. Private source/configuration recovery files remain on the server. Do not restore the revoked reconciliation-validator credential from an older backup. Remaining financial/RCM/provider route review, final regression and normal main integration are still pending.
+
 ## Core aggregate read identity and office boundary — deployed
 
 Source `14933358e819deb11559daa1703f23aa7a0ea427` applied at 2026-09-18T11:03:00.050385+00:00; main SHA256 `23f8ec28eb5e2c63dadea80cf34bf97a7f32c2d4c8ee8bf1b800675073aa3eb4`. Sixteen aggregate GET routes now require current human identity, actual page grants and the office selector used by the handler. Global-only handlers require all-office authority; unknown/conflicting selectors fail closed. Existing exact GET-only job identities and expiry remain unchanged. Goal writes retain their separate maintenance policy. No calculation body, schema, business rule or provider connection changed.
@@ -80,4 +90,4 @@ One Huddle page initialized an unsubmitted September 18 draft at 04:18:07 UTC, w
 
 Financial follow-up is frozen: no record/classification/archive/card metadata changes, reconciliation searches, bank logins, provider syncs, emails, purchases, approvals, clinical writes or real workflow execution. TwiML is an existing intentionally external static call flow and remains separate. Do not alter Collaboration Platform or begin another phase.
 
-Current browser: production tab 68 on RCM Dashboard; September 18 source status and payment breakdown available, no captured errors/alerts. Expense, KPI, Executive and Reports checks completed. QA tab 69 remains available.
+Current browser: production tab 68 on Financial Analytics. KPI Main/Specialty and Finance checks passed after the metric/helper gate; no warnings, captured errors or business actions. QA tab 69 remains available.

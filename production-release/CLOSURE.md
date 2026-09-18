@@ -14,9 +14,19 @@ Updated 2026-09-18T11:03:15.566910+00:00 from saved deployment and live verifica
 | Previous deployment | `08f84700-056f-4af4-8f13-526a66ad8187` |
 | Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` â€” final Phase 6 integration pending |
 | Branch | `phase6/nudashboard-production-hardening-20260917` |
-| API source | `14933358e819deb11559daa1703f23aa7a0ea427`; core aggregate reads and prior reviewed boundaries live |
+| API source | `749d8ee3900c25169f7c59e467f764665c91329b`; reviewed metric/helper, core and prior boundaries live |
 | API main SHA256 | `c3e8cce7e212b3d56e043e98cab682745ed402346f646074edb467286d90b333` |
 | QA deployment | `559189b1-5a28-4cea-90ba-c0e00bbe2a5e` |
+
+## Metric and legacy helper read boundary — deployed
+
+Source `749d8ee3900c25169f7c59e467f764665c91329b` applied at 2026-09-18T11:37:25.643504+00:00; main SHA256 `bbfa92220cdc8ca29592393b69ea84dffa1943ea39a1eaf9bc6b60b9f6c789a0`. Eight remaining metric/helper reads now require current human identity and their existing page/office authority. KPI hygiene and the provider alias retain actual scoped readers; Finance filter options validate the numeric multi-location parameter the handler consumes. Provider-email access follows existing compensation authority. Raw legacy diagnostics without a current frontend/job caller require the existing all-office administrative reader. Startup's stream reference is echo-only. No new background-job scope was granted.
+
+253 guarded native tests, 17 retained backend suites and 13 materializer tests PASS. The original shared-key-only bypass was reproduced in three actual handlers using synthetic data. All route bodies and 27 unrelated materialized files are unchanged. Candidate/live missing identities return 401 on all eight routes; unattended job reads are denied 403. Existing scoped summary/payroll reads remain 200, summary content is unchanged and job writes remain 403. All 78,465 guarded original business/audit rows and 83,957 SQLite rows are preserved. Provider/configuration/job/frontend checks and production/QA HTTP/API health PASS.
+
+Live signed-in KPI Main and Specialty views and Financial Analytics render without unavailable/permission warnings, alerts or captured console errors. Live positive checks used the existing Super Admin session. Raw legacy reads and provider-email lookup were not exercised against real records; their positive/negative cases passed natively. No provider sync, export, email, purchase, approval, clinical write or financial correction was executed.
+
+Recovery: `backup/api-before-phase6-metric-reads-20260918`, `api-metric-read-backup-20260918T113657Z`. Private source/configuration recovery files remain on the server. Do not restore the revoked reconciliation-validator credential from an older backup. Remaining financial/RCM/provider route review, final regression and normal main integration are still pending.
 
 ## Core aggregate read identity and office boundary — deployed
 
