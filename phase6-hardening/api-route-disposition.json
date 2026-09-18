@@ -1,0 +1,1328 @@
+{
+  "caution": "Working routing inventory, not a vulnerability count; verify actual handler and callsites before final disposition.",
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/",
+      "handler": "root",
+      "review_group": [
+        "public_static_or_health"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "handler": "health",
+      "review_group": [
+        "public_static_or_health"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/oauth2/token",
+      "handler": "issue_token",
+      "review_group": [
+        "legacy_exchange_no_current_human_authority"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/stream",
+      "handler": "stream_events",
+      "review_group": [
+        "metric_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/offices",
+      "handler": "list_offices",
+      "review_group": [
+        "clinical"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/providers",
+      "handler": "list_providers",
+      "review_group": [
+        "clinical"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/providers/email",
+      "handler": "provider_email_lookup",
+      "review_group": [
+        "metric_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/providers/{provider_id}/schedule",
+      "handler": "get_provider_schedule",
+      "review_group": [
+        "clinical"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/patients",
+      "handler": "list_patients",
+      "review_group": [
+        "clinical"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/patients/summary",
+      "handler": "patients_summary",
+      "review_group": [
+        "clinical"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/patients/demographics",
+      "handler": "patients_demographics",
+      "review_group": [
+        "clinical"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/appointments/summary",
+      "handler": "appointments_summary",
+      "review_group": [
+        "clinical"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/appointments",
+      "handler": "list_appointments",
+      "review_group": [
+        "clinical"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/production/summary",
+      "handler": "production_summary",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/production/monthly",
+      "handler": "production_monthly",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/production/by-provider",
+      "handler": "production_by_provider",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/hygiene/retention-metrics",
+      "handler": "hygiene_retention_metrics",
+      "review_group": [
+        "metric_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/hygiene/procedure-metrics",
+      "handler": "hygiene_procedure_metrics",
+      "review_group": [
+        "metric_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/production/by-cdt-category",
+      "handler": "production_by_cdt_category",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/production/by-provider-and-cdt-category",
+      "handler": "production_by_provider_and_cdt_category",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/production/by-service",
+      "handler": "production_by_service",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/collections/summary",
+      "handler": "collections_summary",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/collections/by-provider",
+      "handler": "collections_by_provider",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/payments",
+      "handler": "list_payments",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/adjustments",
+      "handler": "list_adjustments",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/adjustments/summary",
+      "handler": "adjustments_summary",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/ledger/adjustments",
+      "handler": "ledger_adjustments",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/write-offs",
+      "handler": "write_offs",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/accounts-receivable",
+      "handler": "accounts_receivable",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/ar",
+      "handler": "accounts_receivable_alias",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/ar/patients",
+      "handler": "ar_patients",
+      "review_group": [
+        "disabled_patient_ar"
+      ],
+      "evidence": "Unconditionally raises 403 before any reader; leave disabled."
+    },
+    {
+      "method": "GET",
+      "path": "/v2/ar/trend",
+      "handler": "ar_trend",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/reports/daily-summary",
+      "handler": "daily_summary",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/reports/monthly-summary",
+      "handler": "monthly_summary",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/reports/kpi-summary",
+      "handler": "kpi_summary",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/reports/provider-performance",
+      "handler": "provider_performance",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/payroll/summary",
+      "handler": "payroll_summary",
+      "review_group": [
+        "payroll"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/auth/payroll-access",
+      "handler": "payroll_access_check",
+      "review_group": [
+        "compensation"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/reports/provider-compensation",
+      "handler": "provider_compensation_report",
+      "review_group": [
+        "compensation"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v2/reports/provider-compensation/send",
+      "handler": "send_provider_compensation_reports",
+      "review_group": [
+        "compensation"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/provider-performance",
+      "handler": "provider_performance_alias",
+      "review_group": [
+        "metric_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/goals",
+      "handler": "list_goals",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v2/goals",
+      "handler": "create_goal",
+      "review_group": [
+        "maintenance"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/daily-entries",
+      "handler": "get_daily_entries",
+      "review_group": [
+        "metric_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/reconciliation",
+      "handler": "reconciliation_report",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v2/cache/clear",
+      "handler": "clear_cache",
+      "review_group": [
+        "admin"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/sync/status",
+      "handler": "sync_status",
+      "review_group": [
+        "legacy_status_deployed"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v2/sync/trigger",
+      "handler": "trigger_sync",
+      "review_group": [
+        "admin"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/stream/status",
+      "handler": "stream_status",
+      "review_group": [
+        "core_reads"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/supabase/status",
+      "handler": "supabase_status",
+      "review_group": [
+        "legacy_status_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/compliance",
+      "handler": "compliance_status",
+      "review_group": [
+        "static_not_configured_status"
+      ],
+      "reason": "Static empty checks and not_configured notice plus date; no business record lookup or real compliance execution"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/compliance/status",
+      "handler": "compliance_status",
+      "review_group": [
+        "static_not_configured_status"
+      ],
+      "reason": "Static empty checks and not_configured notice plus date; no business record lookup or real compliance execution"
+    },
+    {
+      "method": "GET",
+      "path": "/twiml/nuholding-voicemail",
+      "handler": "twiml_nuholding_voicemail",
+      "review_group": [
+        "public_static_or_health"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/twiml/nuholding-voicemail",
+      "handler": "twiml_nuholding_voicemail",
+      "review_group": [
+        "public_static_or_health"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/twiml/nuholding",
+      "handler": "twiml_nuholding",
+      "review_group": [
+        "public_static_or_health"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/twiml/nuholding",
+      "handler": "twiml_nuholding",
+      "review_group": [
+        "public_static_or_health"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/gusto/callback",
+      "handler": "gusto_callback",
+      "review_group": [
+        "provider_callback_intent_deployed"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/plaid/link-token",
+      "handler": "plaid_create_link_token",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/plaid/exchange-token",
+      "handler": "plaid_exchange_token",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/plaid/accounts",
+      "handler": "plaid_get_accounts",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/plaid/transactions",
+      "handler": "plaid_get_transactions",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/plaid/summary",
+      "handler": "plaid_summary",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/expenses/filters",
+      "handler": "expense_filters",
+      "review_group": [
+        "expense_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/expenses/summary",
+      "handler": "expense_summary",
+      "review_group": [
+        "expense_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/expenses/lines",
+      "handler": "expense_lines",
+      "review_group": [
+        "expense_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/expenses/breakdown",
+      "handler": "expense_breakdown",
+      "review_group": [
+        "expense_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/expenses/amex",
+      "handler": "expense_amex",
+      "review_group": [
+        "expense_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/expenses/payroll",
+      "handler": "expense_payroll",
+      "review_group": [
+        "expense_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/expenses/wf",
+      "handler": "wf_expenses",
+      "review_group": [
+        "expense_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/payroll/runs",
+      "handler": "payroll_runs",
+      "review_group": [
+        "payroll"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/payroll/contractors",
+      "handler": "payroll_contractors",
+      "review_group": [
+        "payroll"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/payroll/employees",
+      "handler": "payroll_employees",
+      "review_group": [
+        "payroll"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/payroll/expense-facts",
+      "handler": "payroll_expense_facts",
+      "review_group": [
+        "payroll"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/payroll/crosswalk",
+      "handler": "payroll_crosswalk",
+      "review_group": [
+        "payroll"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/payroll/comparison",
+      "handler": "payroll_comparison",
+      "review_group": [
+        "payroll"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/payroll/mappings",
+      "handler": "payroll_mappings",
+      "review_group": [
+        "payroll"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/plaid/webhook",
+      "handler": "plaid_webhook",
+      "review_group": [
+        "signed_provider_webhook"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/claims",
+      "handler": "rcm_claims",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/claim-submissions",
+      "handler": "rcm_claim_submissions",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/patient-statements",
+      "handler": "rcm_patient_statements",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/payment-arrangements",
+      "handler": "rcm_payment_arrangements",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/pos-collections",
+      "handler": "rcm_pos_collections",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/collection-refunds",
+      "handler": "rcm_collection_refunds",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/adjustments-review",
+      "handler": "rcm_adjustments_review",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/ar-aging-official",
+      "handler": "rcm_ar_aging_official",
+      "review_group": [
+        "report_compatibility_activation_pending"
+      ],
+      "evidence": "Policy tested but human gate inactive; no Collaboration restart authorized yet"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/ar-aging",
+      "handler": "rcm_ar_aging",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/patient-balances",
+      "handler": "rcm_patient_balances",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/payor-aging",
+      "handler": "rcm_payor_aging",
+      "review_group": [
+        "rcm_snapshot_deployed"
+      ],
+      "evidence": "91cb7ab; 283 native, 17 retained, live denies/health, eAssist UI PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/aging-receivables/by-payor",
+      "handler": "rcm_payor_aging",
+      "review_group": [
+        "rcm_snapshot_deployed"
+      ],
+      "evidence": "91cb7ab; 283 native, 17 retained, live denies/health, eAssist UI PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/aging-receivables-live",
+      "handler": "rcm_payor_aging",
+      "review_group": [
+        "rcm_snapshot_deployed"
+      ],
+      "evidence": "91cb7ab; 283 native, 17 retained, live denies/health, eAssist UI PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/aging-receivables/live",
+      "handler": "rcm_payor_aging",
+      "review_group": [
+        "rcm_snapshot_deployed"
+      ],
+      "evidence": "91cb7ab; 283 native, 17 retained, live denies/health, eAssist UI PASS"
+    },
+    {
+      "method": "POST",
+      "path": "/v2/rcm/contact-attempts",
+      "handler": "create_contact_attempt",
+      "review_group": [
+        "contacts"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/contact-attempts",
+      "handler": "list_contact_attempts",
+      "review_group": [
+        "contacts"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/contact-attempts/summary",
+      "handler": "contact_attempts_summary",
+      "review_group": [
+        "contacts"
+      ]
+    },
+    {
+      "method": "PATCH",
+      "path": "/v2/rcm/contact-attempts/{attempt_id}",
+      "handler": "update_contact_attempt",
+      "review_group": [
+        "contacts"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/dentrix-statements",
+      "handler": "list_dentrix_statements",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/dentrix-statements/summary",
+      "handler": "dentrix_statements_summary",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/patient-balance-outreach-summary",
+      "handler": "patient_balance_outreach_summary",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/dashboard",
+      "handler": "rcm_dashboard",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/guarantor-reconciliation",
+      "handler": "rcm_guarantor_reconciliation",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/financial/filter-options",
+      "handler": "financial_filter_options",
+      "review_group": [
+        "metric_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/admin/executive-reconcile",
+      "handler": "executive_reconcile",
+      "review_group": [
+        "admin"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v2/admin/recompute-month",
+      "handler": "recompute_month_endpoint",
+      "review_group": [
+        "admin"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v2/admin/backfill-history",
+      "handler": "backfill_history",
+      "review_group": [
+        "admin"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v2/admin/seed-precomputed",
+      "handler": "seed_precomputed",
+      "review_group": [
+        "admin"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/plaid/item/{item_id}/activate",
+      "handler": "plaid_activate_item",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/plaid/update-mode",
+      "handler": "plaid_update_mode",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "DELETE",
+      "path": "/plaid/item/{item_id}",
+      "handler": "plaid_remove_item",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/plaid/item/{item_id}/status",
+      "handler": "plaid_item_status",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/plaid/health",
+      "handler": "plaid_health_check",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/plaid/transactions/cursor",
+      "handler": "plaid_transactions_cursor",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/marketing/amex-spend",
+      "handler": "marketing_amex_spend",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/metrics",
+      "handler": "normalized_metrics",
+      "review_group": [
+        "metric_reads_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/admin/diagnostics",
+      "handler": "admin_diagnostics",
+      "review_group": [
+        "admin"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/admin/data-freshness",
+      "handler": "data_freshness",
+      "review_group": [
+        "admin"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/admin/benchmark",
+      "handler": "benchmark_reconciliation",
+      "review_group": [
+        "admin"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/eassist/daily",
+      "handler": "eassist_daily_reports",
+      "review_group": [
+        "rcm_snapshot_deployed"
+      ],
+      "evidence": "91cb7ab; 283 native, 17 retained, live denies/health, eAssist UI PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/eassist/ingest/status",
+      "handler": "eassist_ingest_status",
+      "review_group": [
+        "rcm_snapshot_deployed"
+      ],
+      "evidence": "91cb7ab; 283 native, 17 retained, live denies/health, eAssist UI PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/daily-comparison",
+      "handler": "rcm_daily_comparison",
+      "review_group": [
+        "financial_reads_deployed"
+      ],
+      "evidence": "ab7d6a1; 304 native, 17 retained, live denial/health/unchanged reads and RCM Dashboard PASS"
+    },
+    {
+      "method": "GET",
+      "path": "/v2/huddle/prefill",
+      "handler": "huddle_prefill",
+      "review_group": [
+        "workflow"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/eod/daily-report",
+      "handler": "eod_daily_report",
+      "review_group": [
+        "workflow"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/eod/unscheduled-treatment",
+      "handler": "eod_unscheduled_treatment",
+      "review_group": [
+        "workflow"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/eod/unscheduled-treatment/{queue_id}/contacts",
+      "handler": "eod_unscheduled_treatment_contact_history",
+      "review_group": [
+        "workflow"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/eod/unscheduled-treatment/assignees",
+      "handler": "eod_unscheduled_treatment_assignees",
+      "review_group": [
+        "workflow"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/v2/eod/unscheduled-treatment/sync",
+      "handler": "eod_unscheduled_treatment_sync",
+      "review_group": [
+        "maintenance"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/eod/treatment-plan-completion",
+      "handler": "eod_treatment_plan_completion",
+      "review_group": [
+        "workflow"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/amazon/status",
+      "handler": "amazon_status",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/amazon/auth-url",
+      "handler": "amazon_auth_url",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/amazon/auth",
+      "handler": "amazon_auth",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/amazon/callback",
+      "handler": "amazon_callback",
+      "review_group": [
+        "provider_callback_intent_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/amazon/products/search",
+      "handler": "amazon_product_search",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/amazon/products/{asin}",
+      "handler": "amazon_product_detail",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/amazon/cart",
+      "handler": "amazon_create_cart",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/amazon/cart/{cart_id}",
+      "handler": "amazon_get_cart",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/amazon/orders/sync",
+      "handler": "amazon_orders_sync",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/amazon/orders/history",
+      "handler": "amazon_orders_history",
+      "review_group": [
+        "orders"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/amazon/orders/place-direct",
+      "handler": "amazon_place_direct",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/amazon/order-requests",
+      "handler": "list_order_requests",
+      "review_group": [
+        "orders"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/amazon/order-requests",
+      "handler": "submit_order_request",
+      "review_group": [
+        "orders"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/amazon/order-requests/{request_id}/approve",
+      "handler": "approve_order_request",
+      "review_group": [
+        "orders"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/amazon/order-requests/{request_id}/reject",
+      "handler": "reject_order_request",
+      "review_group": [
+        "orders"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/gusto/status",
+      "handler": "gusto_status",
+      "review_group": [
+        "legacy_status_deployed"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/admin/sync-dashboard",
+      "handler": "admin_sync_dashboard",
+      "review_group": [
+        "admin"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/v2/rcm/ar-location-health",
+      "handler": "rcm_ar_location_health",
+      "review_group": [
+        "report_compatibility_activation_pending"
+      ],
+      "evidence": "Policy tested but human gate inactive; no Collaboration restart authorized yet"
+    },
+    {
+      "method": "GET",
+      "path": "/.well-known/oauth-authorization-server",
+      "handler": "oauth_metadata",
+      "review_group": [
+        "mcp_public_protocol_metadata"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/mcp/.well-known/oauth-authorization-server",
+      "handler": "oauth_metadata_mcp",
+      "review_group": [
+        "mcp_public_protocol_metadata"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/mcp/.well-known/oauth-protected-resource",
+      "handler": "mcp_protected_resource_metadata",
+      "review_group": [
+        "mcp_public_protocol_metadata"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/mcp-auth/authorize",
+      "handler": "mcp_oauth_authorize",
+      "review_group": [
+        "legacy_oauth_stub_no_downstream_authority"
+      ],
+      "reason": "Creates random compatibility tokens without installing them in the existing dedicated-token verifier. Proxy forwards supplied Authorization unchanged and injects no private credential. OAuth interoperability is not claimed; no flow or MCP operation executed."
+    },
+    {
+      "method": "POST",
+      "path": "/mcp-auth/token",
+      "handler": "mcp_oauth_token",
+      "review_group": [
+        "legacy_oauth_stub_no_downstream_authority"
+      ],
+      "reason": "Creates random compatibility tokens without installing them in the existing dedicated-token verifier. Proxy forwards supplied Authorization unchanged and injects no private credential. OAuth interoperability is not claimed; no flow or MCP operation executed."
+    },
+    {
+      "method": "GET POST OPTIONS",
+      "path": "/mcp",
+      "handler": "mcp_proxy",
+      "review_group": [
+        "mcp_dedicated_downstream_token_verified"
+      ]
+    },
+    {
+      "method": "GET POST OPTIONS",
+      "path": "/mcp/{path:path}",
+      "handler": "mcp_proxy",
+      "review_group": [
+        "mcp_dedicated_downstream_token_verified"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/check-trusted-device",
+      "handler": "check_trusted_device",
+      "review_group": [
+        "existing_otp_human"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/send-login-otp",
+      "handler": "send_login_otp",
+      "review_group": [
+        "existing_otp_human"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/verify-login-otp",
+      "handler": "verify_login_otp",
+      "review_group": [
+        "existing_otp_human"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/revoke-trusted-device",
+      "handler": "revoke_trusted_device",
+      "review_group": [
+        "existing_otp_human"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/trusted-devices",
+      "handler": "list_trusted_devices",
+      "review_group": [
+        "existing_otp_human"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/otp-config",
+      "handler": "get_otp_config",
+      "review_group": [
+        "existing_otp_human"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/otp-config",
+      "handler": "update_otp_config",
+      "review_group": [
+        "existing_otp_human"
+      ]
+    },
+    {
+      "method": "POST",
+      "path": "/export",
+      "handler": "export_report",
+      "review_group": [
+        "report_export_mounted"
+      ]
+    },
+    {
+      "method": "GET",
+      "path": "/gusto/auth-url",
+      "handler": "gusto_auth_url",
+      "review_group": [
+        "provider_current_identity_deployed"
+      ]
+    }
+  ],
+  "updated_utc": "2026-09-18T14:57:45.285536+00:00",
+  "source_commit": "78cc78da4affc54f4308a4731551a46f30854e17",
+  "remaining_unreviewed": 0,
+  "pending_activations": [
+    "/v2/rcm/ar-aging-official",
+    "/v2/rcm/ar-location-health"
+  ]
+}

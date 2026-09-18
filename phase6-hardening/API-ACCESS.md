@@ -1,5 +1,29 @@
 # API identity rollout — in progress
 
+## Independent Phase 6 release closure
+
+All independent Dashboard work is deployed and verified. Groups A-E, frontend dependencies, dated Payroll Comparison and all route reviews are dispositioned. Six final production pages pass read-only UI checks: Executive Overview, Financial Analytics, Reports, Inventory, Huddle History and Insurance; prior RCM/Expense/dated Payroll checks remain preserved. API/production/QA health, source parity, artifact hashes and original-row guards PASS. Additional scheduled-script inspection found no unadapted literal provider consumer in the inspected script/calendar directories. No real provider call or scheduled job was executed for validation.
+
+Canonical integration uses a normal fast-forward from `820970ede7727830d95d8d03d518d02119da1acd` to the Phase 6 closure commit containing this report. Application source is `78cc78da4affc54f4308a4731551a46f30854e17`; subsequent changes in this closure are documentation only. Recovery tag: `backup/main-before-phase6-independent-closure-20260918`. The exact resulting main SHA is recorded in the saved release pointer and final Git verification receipt after push. Preserve the Phase 6 branch and all prior tags; no force push.
+
+**Phase 6 is NOT complete.** Only two already-reviewed human gates await the pending Collaboration activation decision: `/v2/rcm/ar-aging-official` and `/v2/rcm/ar-location-health`. Its cached report helper needs a process restart; startup immediately ticks the scheduler and may dispatch due work. No answer authorizing that side effect is recorded. Choose a planned restart/deferment or explicitly allow restart and normal scheduled work. Dashboard releases and source closure do not authorize that action. All other currently available independent work is complete. Accounting residuals remain separate and frozen.
+
+## Provider access and OAuth callbacks - deployed
+
+Source `78cc78da4affc54f4308a4731551a46f30854e17` applied at 2026-09-18T14:36:16.903788+00:00; API main SHA256 `7b85a17d6a9bac738bb4239b83326199c99957b499d14335e7d6934a95607917`. All 22 previously remaining provider declarations are reviewed: 20 existing control/read declarations require current human identity, and two public redirect callbacks require a valid short-lived, one-use administrator-created intent. A minimal authenticated Gusto authorization-URL route provides the missing intent initiation, making 21 control/read declarations. Catalog/status use the existing Front Desk grant; global provider controls require the active approved Super Admin. Existing request/review permissions remain unchanged.
+
+Gusto no longer exchanges a missing-state callback or overwrites its token file after a failed exchange. Amazon no longer accepts callback state when no intent was saved. Intent hashes are held separately from provider credentials and process locking prevents replay. Existing credentials, scopes, redirect destinations and refresh logic are preserved. Positive provider tests used synthetic transports only; no real authorization, sync, delivery or purchase was executed.
+
+Separate `plaid-sync`, `morning-brief` and `payroll-balance-watch` identities retain only their existing exact GETs. Fixed loopback origins and redirect rejection prevent credential forwarding. Their schedule and business-processing AST remain unchanged. Four prior identities and their credentials/expiry are preserved. All seven identities retain the existing December 16 renewal deadline; never restore the revoked reconciliation-validator token.
+
+**Verification:** 324 guarded native tests, 17 retained backend suites, 13 materializer tests and two exact external-caller checks PASS. Live missing/invalid identity checks return 401; unrelated jobs and writes return 403; both callbacks reject missing intent before a provider call. Same-period Summary/RCM results remain unchanged. All 79,171 guarded original Supabase rows and 83,991 original SQLite rows are preserved. Schemas, provider configuration, scheduled jobs and financial source records are unchanged.
+
+Final read-only parity at 2026-09-18T14:52:28.766982+00:00: all 36 materialized files and both external caller adapters match. Production/QA/API HTTP health PASS; QA retains `product_api_ready=false`. Frontend artifacts remain production `index-DRITFcr0.js` (8,835,047 bytes) and QA `index-BXvFvJGj.js` (8,833,878 bytes). No new speedup claim is made.
+
+Recovery: `backup/api-before-phase6-provider-reads-20260918`, `api-provider-read-backup-20260918T143542Z`. Full source/config/caller recovery copies stay private on the server. Existing frontend rollback deployments and all earlier tags remain.
+
+**Remaining:** Two report-dependent human gates await the Collaboration restart/scheduler decision. Independent regression and source closure are complete; Phase 6 remains incomplete pending that activation decision. No Collaboration source, credential, process or scheduler was changed. Accounting follow-up remains frozen.
+
 Dr. G approved existing signed-in user checks plus separate restricted identities for approved background jobs. The first bounded eight-route payroll release deployed on 2026-09-17 at 22:55 UTC from source `30521585ecb3f7e5f1d3651a817e0acc68000a3f`. Server verification passed; live browser verification is tracked separately in CHECKPOINT.md.
 
 The confirmed defect is that a payroll read accepted the shared application key with no user session or an invalid session. The application key identifies the client application; it must not establish the person's identity.
@@ -172,4 +196,4 @@ All 79,171 guarded original Supabase rows and 83,983 original SQLite rows are pr
 
 **Pending integration decision:** `/v2/rcm/ar-aging-official` and `/v2/rcm/ar-location-health` human gates remain inactive because the existing Collaboration API caches its daily-report helper and restarting it immediately ticks its scheduler. Dr. G has been asked whether to defer those two gates to a planned restart or allow restart and normal scheduled work. No Collaboration source, credential, process or scheduler was changed. The proposed source adapter is prepared only.
 
-Recovery: `backup/api-before-phase6-financial-reads-20260918`, `api-financial-read-backup-20260918T140856Z`. Private backups stay server-side; preserve current credential generation and never restore the revoked reconciliation token. Twenty-two provider declarations, those two deferred gates, final regression and normal canonical-main integration remain. Phase 6 is NOT complete; accounting follow-up remains frozen.
+Recovery: `backup/api-before-phase6-financial-reads-20260918`, `api-financial-read-backup-20260918T140856Z`. Private backups stay server-side; preserve current credential generation and never restore the revoked reconciliation token. The provider declarations are now dispositioned by the later provider release; the two report-dependent gates remain pending. Phase 6 is NOT complete; accounting follow-up remains frozen.

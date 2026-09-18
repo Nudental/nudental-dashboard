@@ -1,6 +1,6 @@
 # Provider access and OAuth callback hardening
 
-Candidate verification: **PASS; deployment receipt is authoritative for activation**.
+**DEPLOYED and verified** at 2026-09-18T14:36:16.903788+00:00, source `78cc78da4affc54f4308a4731551a46f30854e17`. Recovery: `api-provider-read-backup-20260918T143542Z`.
 
 Review covers 22 existing route declarations: 20 provider controls/readers and two OAuth callbacks. One minimal Gusto authorization-URL route is added because no existing state-producing Gusto setup caller was found in the available source. Twenty-one control/read declarations use the current-human boundary. Catalog/status retain the existing Front Desk page permission. Global banking/provider setup, unscoped carts, sync and direct ordering require the current active approved Super Admin; an office parameter or shared key cannot grant that access. Existing office-scoped request/review rules remain unchanged.
 
@@ -10,7 +10,7 @@ Reproduced defects: Gusto ignored authorization state and could overwrite a save
 
 Verification: **324 guarded native API tests**, **17 retained backend suites**, **13 materializer tests**, and **two exact external-caller synthetic transport checks** PASS. No blocked network/business-write attempts. Unrelated main route bodies, Amazon refresh/business functions, Plaid financial processing, and 28 other materialized files are unchanged.
 
-Evidence: `api-provider-read-contracts-v1/receipt.json`, `api-provider-read-retained-v1/summary.json`, `api-provider-callers-v1/manifest.json`, and `production-api-provider-read-receipt.json` in the existing private Phase 6 server evidence directory. The last file does not exist until a successful release. Source/config/caller snapshots and current Pages IDs are recorded before activation; rollback restores only this bounded release and preserves the previously rotated validator credential.
+Evidence: `api-provider-read-contracts-v1/receipt.json`, `api-provider-read-retained-v1/summary.json`, `api-provider-callers-v1/manifest.json`, and `production-api-provider-read-receipt.json` in the existing private Phase 6 server evidence directory. The release receipt reports PASS. Source/config/caller snapshots and current Pages IDs are recorded before activation; rollback restores only this bounded release and preserves the previously rotated validator credential.
 
 The two Collaboration daily-report gates remain independently pending: `/v2/rcm/ar-aging-official` and `/v2/rcm/ar-location-health`. No Collaboration restart or scheduler activation is included in this release.
 
