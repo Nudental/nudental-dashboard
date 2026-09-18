@@ -392,6 +392,7 @@ const RcmModule = () => {
           {/* eAssist Reports — intentionally independent: uses its own office selector (excludes Staten Island) */}
           {activeTab === 'eassist_reports' && (isSuperAdmin || hasPermission(TAB_PERMISSION_MAP?.eassist_reports)) && (
             <EAssistReportsTab
+              key={`${selectedOfficeId || 'all'}:${dateRange?.start}:${dateRange?.end}`}
               dateRange={dateRange}
               officeId={selectedOfficeId}
               refreshKey={refreshKey}

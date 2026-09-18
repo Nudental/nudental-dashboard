@@ -14,6 +14,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
+import { OFFICE_MAP } from '../../../constants/offices';
 import { fetchEAssistDailyReports, fetchEAssistIngestStatus, fmtCurrency, fmtDate } from '../../../services/rcmService';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -282,13 +283,13 @@ const IngestStatusPanel = ({ status, loading, error }) => {
         <div className="bg-muted/40 rounded-lg p-3">
           <div className="text-xs text-muted-foreground mb-1">Staged / Needs Review</div>
           <div className={`text-sm font-semibold ${(staging?.stagedCount || 0) > 0 ? 'text-amber-600' : 'text-foreground'}`}>
-            {staging?.stagedCount ?? 0}
+            {staging?.stagedCount ?? '—'}
           </div>
         </div>
         <div className="bg-muted/40 rounded-lg p-3">
           <div className="text-xs text-muted-foreground mb-1">Conflicts</div>
           <div className={`text-sm font-semibold ${(staging?.conflictCount || 0) > 0 ? 'text-red-600' : 'text-foreground'}`}>
-            {staging?.conflictCount ?? 0}
+            {staging?.conflictCount ?? '—'}
           </div>
         </div>
       </div>
@@ -309,7 +310,7 @@ const IngestStatusPanel = ({ status, loading, error }) => {
         <div className="mb-4">
           <div className="text-xs font-medium text-muted-foreground mb-2">Latest Report by Office</div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {EASSIST_OFFICES?.map((office) => {
+            {(coverage?.expectedOffices || EASSIST_OFFICES)?.map((office) => {
               const info = latestByOffice?.[office] || latestByOffice?.[office?.toLowerCase()];
               const isMissing = !info || info?.missing || info?.parser_status === 'missing' || (info?.confidence ?? info?.parser_confidence) === 0;
               const isConflict = info?.conflict;
@@ -367,6 +368,7 @@ const EAssistReportsTab = ({ officeId, dateRange, refreshKey }) => {
   const [startDate, setStartDate] = useState(dateRange?.start || '');
   const [endDate, setEndDate] = useState(dateRange?.end || '');
   const [officeFilter, setOfficeFilter] = useState('all');
+  const parentOffice = officeId && officeId !== 'all' ? OFFICE_MAP[officeId]?.name : null;
   const [parseStatus, setParseStatus] = useState('all');
   const [validationStatus, setValidationStatus] = useState('all');
   const [pageSize, setPageSize] = useState(50);
@@ -394,7 +396,7 @@ const EAssistReportsTab = ({ officeId, dateRange, refreshKey }) => {
     return false; // resolved below via officeFilter
   })();
 
-  const showStatenIslandMsg = officeFilter === 'staten_island';
+  const showStatenIslandMsg = parentOffice === 'Staten Island' || (!parentOffice && officeFilter === 'staten_island');
 
   // Sync date range from parent when it changes
   useEffect(() => {
@@ -404,17 +406,18 @@ const EAssistReportsTab = ({ officeId, dateRange, refreshKey }) => {
 
   // Load ingest status
   const loadIngestStatus = useCallback(async () => {
+    if (showStatenIslandMsg) { setIngestStatus(null); setIngestLoading(false); return; }
     setIngestLoading(true);
     setIngestError(null);
     try {
-      const data = await fetchEAssistIngestStatus();
+      const data = await fetchEAssistIngestStatus(officeId);
       setIngestStatus(data);
     } catch (e) {
       setIngestError(e?.message || 'Failed to load ingestion status');
     } finally {
       setIngestLoading(false);
     }
-  }, []);
+  }, [officeId, showStatenIslandMsg]);
 
   // Load reports
   const loadReports = useCallback(async () => {
@@ -433,7 +436,9 @@ const EAssistReportsTab = ({ officeId, dateRange, refreshKey }) => {
         if (startDate) params.startDate = startDate;
         if (endDate) params.endDate = endDate;
       }
-      if (officeFilter && officeFilter !== 'all') params.office = officeFilter;
+      if (officeId && officeId !== 'all' && !parentOffice) throw new Error('Unknown office selection');
+      if (parentOffice) params.office = parentOffice;
+      else if (officeFilter && officeFilter !== 'all') params.office = officeFilter;
 
       const result = await fetchEAssistDailyReports(params);
       setRows(result?.data || []);
@@ -445,11 +450,11 @@ const EAssistReportsTab = ({ officeId, dateRange, refreshKey }) => {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, parseStatus, validationStatus, reportDate, startDate, endDate, officeFilter, showStatenIslandMsg]);
+  }, [page, pageSize, parseStatus, validationStatus, reportDate, startDate, endDate, officeFilter, showStatenIslandMsg, officeId, parentOffice]);
 
   useEffect(() => {
     loadIngestStatus();
-  }, [refreshKey]);
+  }, [loadIngestStatus, refreshKey]);
 
   useEffect(() => {
     setPage(1);
@@ -596,7 +601,8 @@ const EAssistReportsTab = ({ officeId, dateRange, refreshKey }) => {
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-muted-foreground font-medium">Office</label>
                 <select
-                  value={officeFilter}
+                  value={parentOffice === 'Staten Island' ? 'staten_island' : parentOffice || officeFilter}
+                  disabled={!!(officeId && officeId !== 'all')}
                   onChange={e => setOfficeFilter(e?.target?.value)}
                   className="text-sm border border-border rounded-lg px-3 py-1.5 bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
                 >

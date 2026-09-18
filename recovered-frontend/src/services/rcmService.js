@@ -128,10 +128,12 @@ export const fetchEAssistDailyReports = async (params = {}) => {
  * Returns coverage, missing reports, staged/conflict counts, latest run info.
  * Source: eAssist email report ingestion pipeline.
  */
-export const fetchEAssistIngestStatus = async () => {
+export const fetchEAssistIngestStatus = async (officeId = null) => {
   const t0 = Date.now();
   try {
-    const raw = await ascendApi?.getEAssistIngestStatus();
+    const locationId = officeId && officeId !== 'all' ? resolveLocationId(officeId) : null;
+    if (officeId && officeId !== 'all' && !locationId) throw new Error('Unknown office selection');
+    const raw = await ascendApi?.getEAssistIngestStatus(locationId);
     recordDiagnostic('eassist_ingest_status', {
       source: raw?._source || 'eassist_email_report',
       durationMs: Date.now() - t0,
@@ -667,24 +669,42 @@ export const fetchAgingReceivablesLive = async ({ officeIds = [] } = {}) => {
     `${API_BASE_V2}/aging-receivables/by-payor`,
   ];
 
+  if (!Array.isArray(officeIds)) throw new Error('Invalid office selection');
+  const selectedIds = [...new Set(officeIds)];
+  const locations = selectedIds.map(id => LOCATION_ID_MAP[id] ||
+    (DENTRIX_LOCATION_ID_TO_NAME[id] ? String(id) : null));
+  if (locations.some(id => !id)) throw new Error('Unknown office selection');
+
   let lastError = null;
   let sourceUsed = null;
 
   for (let url of endpoints) {
     try {
-      const res = await fetch(url, { headers });
-      if (!res?.ok) {
-        lastError = new Error(`HTTP ${res.status} from ${url}`);
-        continue;
-      }
-      const json = await res?.json();
-      // Normalize: unwrap common envelope shapes
-      const payload = json?.data ?? json?.result ?? json?.snapshot ?? json;
+      const targets = locations.length ? locations : [null];
+      const payloads = await Promise.all(targets.map(async locationId => {
+        const scopedUrl = locationId ? `${url}?locationId=${encodeURIComponent(locationId)}` : url;
+        const res = await fetch(scopedUrl, { headers });
+        if (!res?.ok) throw new Error(`HTTP ${res.status} from ${url}`);
+        const json = await res?.json();
+        const payload = json?.data ?? json?.result ?? json?.snapshot ?? json;
+        if (!locationId) return payload;
+        // The primary API returns one flat office; compatible readers may
+        // return one office row. Never accept a company response and hide it locally.
+        const offices = Array.isArray(payload?.offices) ? payload.offices :
+          (String(payload?.locationId) === locationId ? [payload] : []);
+        if (offices.length !== 1 || String(offices[0]?.locationId) !== locationId) {
+          throw new Error('Selected office A/R snapshot unavailable');
+        }
+        return { ...payload, offices };
+      }));
+      const payload = locations.length
+        ? { ...payloads[0], offices: payloads.flatMap(item => item.offices) }
+        : payloads[0];
 
       // V337: Normalize top-level verified fields into the shape expected by all consumers.
       // Some endpoints return flat top-level fields; others nest under fullAR/agingBuckets.
       // Merge both shapes so all consumers get a consistent object.
-      const normalized = normalizeArPayload(scopeArPayload(payload, officeIds));
+      const normalized = normalizeArPayload(scopeArPayload(payload, selectedIds));
 
       sourceUsed = url;
       recordDiagnostic('aging-receivables-live', {
@@ -2858,10 +2878,12 @@ export const fetchDashboardDailyComparison = async ({ start, end, officeId }) =>
  *
  * @returns {Promise<object>}
  */
-export const fetchDashboardEassistStatus = async () => {
+export const fetchDashboardEassistStatus = async (officeId = null) => {
   const t0 = Date.now();
   try {
-    const raw = await ascendApi?.getEAssistIngestStatus();
+    const locationId = officeId && officeId !== 'all' ? resolveLocationId(officeId) : null;
+    if (officeId && officeId !== 'all' && !locationId) throw new Error('Unknown office selection');
+    const raw = await ascendApi?.getEAssistIngestStatus(locationId);
 
     // V468 AUDIT: Log raw response shape
     console.info('[V468 AUDIT] /v2/eassist/ingest/status raw response top-level keys:', raw ? Object.keys(raw) : 'null/undefined');

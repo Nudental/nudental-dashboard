@@ -1525,7 +1525,7 @@ const DataSourceStatusSection = ({ officeId, refreshKey, onEassistTabLink, onDen
     setEassistError(null);
     try {
       const result = await withTimeout(
-        fetchDashboardEassistStatus(),
+        fetchDashboardEassistStatus(officeId),
         45000,
         'eAssist Status'
       );
@@ -1535,7 +1535,7 @@ const DataSourceStatusSection = ({ officeId, refreshKey, onEassistTabLink, onDen
     } finally {
       setEassistLoading(false);
     }
-  }, [refreshKey]);
+  }, [refreshKey, officeId]);
 
   const loadDentrix = useCallback(async () => {
     setDentrixLoading(true);

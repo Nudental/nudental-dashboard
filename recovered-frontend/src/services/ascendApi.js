@@ -689,6 +689,6 @@ export const ascendApi = {
    * missing reports, staged/conflict counts, and latest report by office.
    * Source: eAssist email report ingestion pipeline.
    */
-  getEAssistIngestStatus: () =>
-    safeFetch(`${API_BASE}/eassist/ingest/status`),
+  getEAssistIngestStatus: (locationId = null) =>
+    safeFetch(`${API_BASE}/eassist/ingest/status${locationId ? `?locationId=${encodeURIComponent(locationId)}` : ''}`),
 };
