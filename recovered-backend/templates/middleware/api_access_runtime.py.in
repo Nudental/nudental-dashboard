@@ -36,6 +36,23 @@ class ReportExportBoundary:
             await self.app(scope, receive, send)
 
 
+class CompensationBoundary:
+    """Protect only the three reviewed routes; retain the existing email list."""
+    def __init__(self, app, *, allowed_emails, users=None):
+        from api_compensation_policy import compensation_authorize
+        self.app = app
+        self.boundary = IdentityBoundary(app, users=users or CurrentUserResolver(),
+            jobs=JobResolver(job_configuration),
+            authorize=lambda actor, scope: compensation_authorize(actor, scope, allowed_emails))
+
+    async def __call__(self, scope, receive, send):
+        from api_compensation_policy import COMPENSATION_PATHS
+        if scope.get('path') in COMPENSATION_PATHS:
+            await self.boundary(scope, receive, send)
+        else:
+            await self.app(scope, receive, send)
+
+
 def private_json(path, *, absent=None):
     path = Path(path)
     if not path.exists() and absent is not None:

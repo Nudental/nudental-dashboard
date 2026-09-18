@@ -234,9 +234,10 @@ def startup_event():
 
 
 # Named background-job tokens have an exact route boundary on every path.
-from api_access_runtime import ScopedJobBoundary, ReportExportBoundary
+from api_access_runtime import ScopedJobBoundary, ReportExportBoundary, CompensationBoundary
 app.add_middleware(ScopedJobBoundary)
 app.add_middleware(ReportExportBoundary)
+app.add_middleware(CompensationBoundary, allowed_emails=PAYROLL_ALLOWED_EMAILS)
 
 # CORS
 app.add_middleware(
@@ -1647,14 +1648,20 @@ def payroll_summary(
 
 # ── Payroll access check (called by frontend to show/hide the payroll section) ─
 @app.get("/v2/auth/payroll-access", tags=["Auth"], dependencies=[Depends(verify_api_key)])
-def payroll_access_check(userEmail: str = Query(...)):
-    """Returns whether the given email has payroll report access."""
-    allowed = userEmail.strip().lower() in {e.lower() for e in PAYROLL_ALLOWED_EMAILS}
-    return {"email": userEmail, "hasPayrollAccess": allowed}
+def payroll_access_check(request: Request, userEmail: str = Query(...)):
+    """Return only the verified current account's payroll report access."""
+    from api_compensation_policy import verified_compensation_actor, has_compensation_access
+    from api_identity import AccessFailure
+    try:
+        actor = verified_compensation_actor(request, PAYROLL_ALLOWED_EMAILS)
+    except AccessFailure as error:
+        raise HTTPException(status_code=error.status, detail="Payroll access denied.") from None
+    return {"email": actor.email, "hasPayrollAccess": has_compensation_access(actor, PAYROLL_ALLOWED_EMAILS)}
 
 # ── Provider Compensation / Payroll Reports ────────────────────────────────────
 @app.get("/v2/reports/provider-compensation", tags=["Reports"], dependencies=[Depends(verify_api_key)])
 def provider_compensation_report(
+    request: Request,
     startDate: str = Query(..., description="Pay period start (YYYY-MM-DD)"),
     endDate:   str = Query(..., description="Pay period end (YYYY-MM-DD)"),
     providerId: Optional[str] = Query(None, description="Single provider ID (omit for all)"),
@@ -1666,8 +1673,12 @@ def provider_compensation_report(
     Restricted to PAYROLL_ALLOWED_EMAILS. Returns a ZIP (all providers, PDF+HTML each),
     or single provider HTML/PDF. Handles split-month periods with correct tier rates.
     """
-    if userEmail.strip().lower() not in {e.lower() for e in PAYROLL_ALLOWED_EMAILS}:
-        raise HTTPException(status_code=403, detail="Payroll report access denied for this user.")
+    from api_compensation_policy import verified_compensation_actor
+    from api_identity import AccessFailure
+    try:
+        verified_compensation_actor(request, PAYROLL_ALLOWED_EMAILS)
+    except AccessFailure as error:
+        raise HTTPException(status_code=error.status, detail="Payroll report access denied for this user.") from None
     import tempfile, os
     from fastapi.responses import FileResponse, HTMLResponse, Response as FastAPIResponse
     try:
@@ -1730,14 +1741,19 @@ def provider_compensation_report(
 # ── Send payroll reports directly to each provider via email ─────────────────
 @app.post("/v2/reports/provider-compensation/send", tags=["Reports"], dependencies=[Depends(verify_api_key)])
 def send_provider_compensation_reports(
+    request: Request,
     startDate:  str = Query(...),
     endDate:    str = Query(...),
     userEmail:  str = Query(..., description="Must be a payroll-allowed email"),
     dryRun:     bool = Query(False, description="Preview without sending"),
 ):
     __NUDASHBOARD_CONFIG_LITERAL_017__
-    if userEmail.strip().lower() not in {e.lower() for e in PAYROLL_ALLOWED_EMAILS}:
-        raise HTTPException(status_code=403, detail="Payroll access denied.")
+    from api_compensation_policy import verified_compensation_actor
+    from api_identity import AccessFailure
+    try:
+        verified_compensation_actor(request, PAYROLL_ALLOWED_EMAILS)
+    except AccessFailure as error:
+        raise HTTPException(status_code=error.status, detail="Payroll access denied.") from None
     try:
         from payroll_report import send_all_reports
     except ImportError as e:
