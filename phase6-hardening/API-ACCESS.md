@@ -4,6 +4,14 @@ Dr. G approved existing signed-in user checks plus separate restricted identitie
 
 The confirmed defect is that a payroll read accepted the shared application key with no user session or an invalid session. The application key identifies the client application; it must not establish the person's identity.
 
+## Administrative API boundary — deployed
+
+Source `cf9cff66d030b7c14943f60d10f51e895a9cc650` applied at 2026-09-18T07:26:41.952563+00:00; main SHA256 `8b057829ac239c2d4aa4b9815b6823ea114fb90a3885829c669235728655e8ef`. Ten diagnostic/maintenance routes now require verified human identity, existing role/page permission and all-office scope. Jobs are denied. Existing route bodies are unchanged. 136 native tests, 17 retained backend suites and 13 materializer checks PASS. Candidate and production denial probes PASS; the existing payroll validator remains 200.
+
+Fresh guards preserved all 20,868 original rows; provider configuration, job credentials, schedules, service settings and frontend artifact are unchanged. Live Sync Dashboard renders API Proxy Online and 29 job entries, with no captured console errors. No sync, recomputation, seed or other maintenance action was triggered. Production and QA HTTP/API health PASS. Recovery: `backup/api-before-phase6-admin-20260918`, `api-admin-backup-20260918T072624Z`. The full private backup is preserved locally and on the existing server.
+
+These row counts are per-deployment snapshots. Intervening records existed before this release; no cause is attributed and accounting follow-up remains frozen.
+
 ## Applied signed provider-webhook boundary
 
 Plaid callbacks now require a valid provider signature, age/body check and existing item before dispatch. Source `bad155018f53baaf129f0f8681481bea62b6b634` is deployed, 124 native tests and 17 retained suites PASS; connection files and all fresh guarded rows are preserved. Live probes trigger no provider activity. See [webhook evidence](API-PLAID-WEBHOOK.md). Other callback and read/office/job reviews remain open.

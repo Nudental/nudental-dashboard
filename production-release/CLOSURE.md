@@ -1,6 +1,6 @@
 # NuDental Dashboard — full release report
 
-Updated 2026-09-18T07:10:28.471835+00:00 from saved deployment and live verification evidence.
+Updated 2026-09-18T07:34:36.915169+00:00 from saved deployment and live verification evidence.
 
 **Phase 6 IN PROGRESS: Groups A–E and the approved frontend are live. Remaining API route review, final regression and canonical-main integration remain open.** Dr. G explicitly approved B–E and the client activation; no migration approval is pending.
 
@@ -14,9 +14,17 @@ Updated 2026-09-18T07:10:28.471835+00:00 from saved deployment and live verifica
 | Previous deployment | `277f68be-3819-410c-8ca6-6aa5ffa2a95e` |
 | Canonical main | `820970ede7727830d95d8d03d518d02119da1acd` — final Phase 6 integration pending |
 | Branch | `phase6/nudashboard-production-hardening-20260917` |
-| API source | `bad155018f53baaf129f0f8681481bea62b6b634`; payroll/report/compensation identity, OTP administration and signed Plaid webhook live |
-| API main SHA256 | `674c553d5b4905b7f0357abae64bce3cb7fd5f983295f2214edf7c7b827ded98` |
+| API source | `cf9cff66d030b7c14943f60d10f51e895a9cc650`; verified payroll/report/compensation, OTP, signed webhook and administrative boundaries live |
+| API main SHA256 | `8b057829ac239c2d4aa4b9815b6823ea114fb90a3885829c669235728655e8ef` |
 | QA deployment | `c3c958d8-fede-4be7-85e6-c7a61b635af9` — unchanged |
+
+## Administrative API boundary — deployed
+
+Source `cf9cff66d030b7c14943f60d10f51e895a9cc650` applied at 2026-09-18T07:26:41.952563+00:00; main SHA256 `8b057829ac239c2d4aa4b9815b6823ea114fb90a3885829c669235728655e8ef`. Ten diagnostic/maintenance routes now require verified human identity, existing role/page permission and all-office scope. Jobs are denied. Existing route bodies are unchanged. 136 native tests, 17 retained backend suites and 13 materializer checks PASS. Candidate and production denial probes PASS; the existing payroll validator remains 200.
+
+Fresh guards preserved all 20,868 original rows; provider configuration, job credentials, schedules, service settings and frontend artifact are unchanged. Live Sync Dashboard renders API Proxy Online and 29 job entries, with no captured console errors. No sync, recomputation, seed or other maintenance action was triggered. Production and QA HTTP/API health PASS. Recovery: `backup/api-before-phase6-admin-20260918`, `api-admin-backup-20260918T072624Z`. The full private backup is preserved locally and on the existing server.
+
+These row counts are per-deployment snapshots. Intervening records existed before this release; no cause is attributed and accounting follow-up remains frozen.
 
 ## Applied migration groups
 

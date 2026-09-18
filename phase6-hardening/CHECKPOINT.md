@@ -1,6 +1,6 @@
 # Phase 6 active checkpoint
 
-Updated 2026-09-18T07:10:28.471835+00:00. Phase 6 remains IN PROGRESS; continue autonomously under Dr. G's explicit B–E/client approval.
+Updated 2026-09-18T07:34:36.915169+00:00. Phase 6 remains IN PROGRESS; continue autonomously under Dr. G's explicit B–E/client approval.
 
 ## Do not repeat completed deployments
 
@@ -13,6 +13,14 @@ API now includes payroll, report-export and provider-compensation identity relea
 Latest API source is now `78cdc3c1994ac27dd3ac177abf1fd434984a8f06` following the one-file OTP administrative restriction at 2026-09-18T06:35:08.187866+00:00. Main hash is unchanged; OTP hash `c97d66935708e9b4a13151a73167d2f189e73645ed3d1ba6937e09d8aea4529e`. 99 native tests PASS; 20 unchanged materialized files retain the prior 17-suite verification. All 20,790 financial/device/settings/auth-audit original rows unchanged. Missing/invalid identity 401, jobs 403, existing payroll validator 200; production/QA health and refreshed Payroll UI PASS. Backup `api-otp-backup-20260918T063451Z`, pushed tag `backup/api-before-phase6-otp-admin-20260918`. Do not reapply.
 
 Current deployed API source is `bad155018f53baaf129f0f8681481bea62b6b634`, main SHA256 `674c553d5b4905b7f0357abae64bce3cb7fd5f983295f2214edf7c7b827ded98`, after signed Plaid webhook release at 2026-09-18T06:56:25.484273+00:00. OTP module remains the preceding verified version. 124 native tests, 17 retained suites and live 401/403 probes PASS; existing payroll job 200. All 20,835 fresh guarded rows, Plaid connections and job/service configuration unchanged. Zero test-triggered provider calls/syncs/emails. Snapshot `api-webhook-backup-20260918T065608Z`, pushed tag `backup/api-before-phase6-webhook-20260918`. Executive Overview/production/QA health PASS. Do not reapply.
+
+## Administrative API boundary — deployed
+
+Source `cf9cff66d030b7c14943f60d10f51e895a9cc650` applied at 2026-09-18T07:26:41.952563+00:00; main SHA256 `8b057829ac239c2d4aa4b9815b6823ea114fb90a3885829c669235728655e8ef`. Ten diagnostic/maintenance routes now require verified human identity, existing role/page permission and all-office scope. Jobs are denied. Existing route bodies are unchanged. 136 native tests, 17 retained backend suites and 13 materializer checks PASS. Candidate and production denial probes PASS; the existing payroll validator remains 200.
+
+Fresh guards preserved all 20,868 original rows; provider configuration, job credentials, schedules, service settings and frontend artifact are unchanged. Live Sync Dashboard renders API Proxy Online and 29 job entries, with no captured console errors. No sync, recomputation, seed or other maintenance action was triggered. Production and QA HTTP/API health PASS. Recovery: `backup/api-before-phase6-admin-20260918`, `api-admin-backup-20260918T072624Z`. The full private backup is preserved locally and on the existing server.
+
+These row counts are per-deployment snapshots. Intervening records existed before this release; no cause is attributed and accounting follow-up remains frozen.
 
 Canonical main remains `820970ede7727830d95d8d03d518d02119da1acd`; final integration pending.
 
@@ -38,10 +46,14 @@ Remaining findings to address in bounded groups: other Dashboard reads need veri
 
 ## Remaining API review / next work
 
-Plaid webhook release is complete. Current user-role/office reads, scoped job compatibility, RCM contact writes, Amazon order actions and Gusto/Amazon OAuth callbacks remain. Inspect actual consumers before tightening; do not trigger jobs, provider syncs, emails, approvals, purchases or financial/clinical writes. A new read-only `inspect-dashboard-api-callers.py` inventory covers middleware, existing scripts and Collaboration MCP references; retrieve `dashboard-api-callers-review.json` before implementing the next route group. No Collaboration Platform edits are authorized by this task.
+Plaid webhook release is complete. Current user-role/office reads, scoped job compatibility, RCM contact writes, Amazon order actions and Gusto/Amazon OAuth callbacks remain. Inspect actual consumers before tightening; do not trigger jobs, provider syncs, emails, approvals, purchases or financial/clinical writes. Caller inventory is saved as `dashboard-api-callers-review.json`: scheduled validators, Plaid/cache readers and Collaboration daily-report readers must remain compatible. No jobs were executed. No Collaboration Platform edits are authorized by this task.
 
 Core-read design must preserve exact existing page permissions and Office Manager scope; do not treat arbitrary/ignored query parameters as proof of filtering. Current UserResolver retains only enabled permissions, so any mirroring of frontend Admin/regional fallback grants must also retain explicit false rows. Existing `get_providers` is professional reference metadata (ID/name/NPI/title/specialty, no office field); schedules/patient detail require a separate object/office review. Shared-key validators and scheduled Plaid/cache reads need exact service scopes before their routes are gated. Existing 90-day validator credentials must not be regenerated.
 
 Gusto callback currently ignores state and saves a response before checking token success; bounded inspection found no pending Gusto state or Gusto-named authorization script. Amazon callback checks state only when a saved state exists, and includes state values in its error. Review legitimate setup consumers before choosing the smallest safe nonce/token-persistence repair. No OAuth flow or credentials have been changed.
 
 Fresh webhook preflight already contained 43 additional expenses and two additional auth-audit rows compared with the OTP preflight; no cause is attributed. Each deployment's original rows were preserved. Do not reopen accounting investigations. Final main integration still awaits remaining API review and final regression.
+
+## Current follow-on candidate (not deployed)
+
+RCM contact-attempt routes have confirmed actor spoofing and no office authorization. `contact-attribution-reproduction.json` reproduced the exact preserved create handler with synthetic in-memory storage (zero network/writes). Four-route contact candidate is being edited locally; production remains the verified administrative release above. It binds creation attribution to the current account, checks read/create/update office scope and URL-encodes filters. Run guarded native/retained tests and a fresh release backup before promotion. Remaining read/job, EOD object scope, Amazon operational actions and provider setup/callback reviews remain open.
