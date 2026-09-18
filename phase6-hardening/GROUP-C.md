@@ -1,6 +1,6 @@
 # Group C — implant and bone/tissue inventory
 
-Candidate only; not deployed. Adapted from 012, 015, 017 and 021–023. Preserves the already-live stock transaction repair. Adds office/parent/active-account boundaries and missing audit events without modifying clinical records or stock.
+DEPLOYED and verified 2026-09-18T04:37:44.758416+00:00. Fresh row guard preserved 4,428 rows; all 13 active production actors matched the fresh candidate inside the apply transaction. The native checks and representative UI passed. Backup `production-c-20260918T043735Z`. The figures below describe the earlier preflight. Adapted from 012, 015, 017 and 021–023. Preserves the already-live stock transaction repair. Adds office/parent/active-account boundaries and missing audit events without modifying clinical records or stock.
 
 Verification: retained implant/bone access, active-role, lookup, stock and deletion suites passed; 10 hosted QA contracts passed; native production repeated migration and exact rollback passed with 4,405 rows unchanged. Existing function/table ownership and grants are preserved.
 

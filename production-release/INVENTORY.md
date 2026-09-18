@@ -1,6 +1,6 @@
 # NuDental Dashboard release inventory — current status
 
-Updated 2026-09-18T00:10:40.210286+00:00 from saved evidence. Phase 6 is IN PROGRESS; this inventory update deploys nothing.
+Updated 2026-09-18T05:15:32.821682+00:00 from saved evidence. Phase 6 is IN PROGRESS; Groups A–E and the approved frontend are deployed and verified.
 
 The original comparison remains main `61c224b1bf9ec53d91ab69a8eb00e563204bf76d` versus QA `2859ae6416e59918af4487e781e343f790ab770a`: 487 classified paths, including 79 promoted frontend paths and 42 database candidates. Those original classifications are preserved in `release-inventory.json`. Its `phase6_release` and per-repair `phase6_review` fields hold current status; a reviewed candidate is not an applied migration.
 
@@ -10,21 +10,21 @@ Classes: A application repair; B performance/UX; C deliberate database/security 
 
 | Change / group | Release class | Current disposition |
 |---|---|---|
-| Group A — profiles, user-office RPC, tasks, notifications | C — deliberate database/security adaptation | DEPLOYED and verified. Seven functions, two policies, five triggers; 4,425 rows unchanged. Office-assignment client activation remains pending. |
+| Group A — profiles, user-office RPC, tasks, notifications | C — deliberate database/security adaptation | DEPLOYED and verified. Seven functions, two policies, five triggers; 4,425 rows unchanged. Office-assignment client is active in the new production frontend. |
 | Payroll identity and two validator identities | A — application/security repair | DEPLOYED. Eight GET routes require verified identity/permissions; two distinct expiring read-only job scopes. Existing calculations, schedules and provider settings unchanged. |
-| Group B — Huddle/EOD | C | QA PASS; approval pending; NOT DEPLOYED. |
-| Group C — implant/bone history and access | C | QA PASS; approval pending; NOT DEPLOYED. Preserve deletion history during any rollback. |
-| Group D — supplies, Front Desk, urgent requests | C | QA PASS; approval pending; NOT DEPLOYED. RM/Admin/Super Admin only for review; no self-approval. |
-| Group E — insurance and service-goal access | C | QA PASS; approval pending; NOT DEPLOYED. |
-| Phase 6 client changes | A | Deployed to QA only. Production activation depends on A and D. No new production frontend deployment. |
+| Group B — Huddle/EOD | C | DEPLOYED; native role/row guards and representative UI checks PASS. |
+| Group C — implant/bone history and access | C | DEPLOYED; native role/row guards and representative UI checks PASS. Preserve deletion history during any rollback. |
+| Group D — supplies, Front Desk, urgent requests | C | DEPLOYED; native role/row guards and representative UI checks PASS. RM/Admin/Super Admin only for review; no self-approval. |
+| Group E — insurance and service-goal access | C | DEPLOYED; native role/row guards and representative UI checks PASS. |
+| Phase 6 client changes | A | DEPLOYED to production after A–E verification; atomic office/draft/receipt clients and restricted review route active. |
 | QA environment, synthetic offices/actors, simulations and QA storage/security | D | Excluded from production. QA remains isolated. |
 | Frozen accounting corrections and metadata proposals | E | Excluded and unchanged. No reconciliation searches, corrections, imports or reclassification authorized here. |
 
-Production frontend remains `277f68be-3819-410c-8ca6-6aa5ffa2a95e`. API deployed source is `30521585ecb3f7e5f1d3651a817e0acc68000a3f`; canonical main remains `820970ede7727830d95d8d03d518d02119da1acd`. QA frontend is `c3c958d8-fede-4be7-85e6-c7a61b635af9`. Phase 6 frontend source is only a QA deployment/candidate; do not overwrite production with the full branch.
+Production frontend is `a81545bf-4463-4dc3-9b33-3cad855888d7`, source `145adebb5e9367d3854fe96edd913464fd33053e`. API source remains `30521585ecb3f7e5f1d3651a817e0acc68000a3f`; broader API review is open. Main remains `820970ede7727830d95d8d03d518d02119da1acd` pending final integration. QA remains `c3c958d8-fede-4be7-85e6-c7a61b635af9`.
 
 ## Preserved application batches — earlier production promotion
 
-The following rows describe the already-promoted Phase 4/5 application delta. They do not mark subsequent edits to the same files as deployed. Phase 6 changes to emailService, supplyRequestService, FrontDeskInventoryTab, Routes, navConfig and the new Front Desk review page are still candidate-only in production.
+The following rows describe the already-promoted Phase 4/5 application delta. They do not mark subsequent edits to the same files as deployed. Phase 6 changes to emailService, supplyRequestService, FrontDeskInventoryTab, Routes, navConfig and the new Front Desk review page are now live in the approved Phase 6 frontend.
 
 ### Original 79 frontend paths
 

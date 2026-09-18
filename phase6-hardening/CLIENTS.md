@@ -1,6 +1,6 @@
 # Phase 6 client candidate
 
-Deployed to isolated QA only (`c3c958d8-fede-4be7-85e6-c7a61b635af9`, source `545068b`). Production remains unchanged and depends on successful Group A and D installation before enabling these clients. Previous QA deployment `7e91a103` and source tag `backup/qa-before-phase6-20260917` are preserved. QA branch history, database and API configuration are unchanged.
+Deployed to production `a81545bf-4463-4dc3-9b33-3cad855888d7` from source `145adebb5e9367d3854fe96edd913464fd33053e` after Groups A–E passed. QA remains `c3c958d8-fede-4be7-85e6-c7a61b635af9`. New Front Desk review route and production asset hash verified. Previous production Pages deployment and annotated frontend backup tag remain available.
 
 - Office assignments use the existing reviewed atomic RPC in both environments. Failure cannot fall back to delete/reinsert. Existing assignment audit remains.
 - Supply drafts normalize optional identifiers and use one reviewed draft transaction. Receipts use one reviewed receipt transaction and require a confirmed success result; no partial-write fallback remains.

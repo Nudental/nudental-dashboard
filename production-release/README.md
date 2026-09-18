@@ -1,6 +1,6 @@
 # Current release documentation
 
-The application promotion below is historical and complete. Phase 6 is in progress: Group A and eight payroll API read protections are live; Groups B–E and the dependent client release remain pending. Current main has not incorporated Phase 6. Read [the full current report](CLOSURE.md), [current inventory](INVENTORY.md), and [saved checkpoint](../phase6-hardening/CHECKPOINT.md) before any release action. No deployment is authorized merely by this documentation update.
+The application promotion is complete. Phase 6 Groups A–E, eight payroll API protections and the approved client are live. Remaining API review, final regression and canonical main integration are in progress. Read [the full report](CLOSURE.md), [inventory](INVENTORY.md), and [checkpoint](../phase6-hardening/CHECKPOINT.md) before continuing.
 
 ## Preserved original promotion plan and verification
 

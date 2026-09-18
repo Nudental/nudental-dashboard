@@ -1,61 +1,25 @@
-# Phase 6 release checkpoint
+# Phase 6 active checkpoint
 
-Documentation synchronized: 2026-09-18T00:10:40.210286+00:00. Based on recorded checks, not a new live test run. Last implementation/verification checkpoint commit: `b748555f9dbb15e7548e30f204f0c10f563ee4b8`.
+Updated 2026-09-18T05:15:32.821682+00:00. Phase 6 remains IN PROGRESS; continue autonomously under Dr. G's explicit B–E/client approval.
 
-Current documents: [full release report](../production-release/CLOSURE.md), [release inventory](../production-release/INVENTORY.md), [machine-readable inventory](../production-release/release-inventory.json). These supersede the earlier production-promotion-only status while preserving its history.
+## Do not repeat completed deployments
 
-## Resume without replaying completed work
+Groups A–E are applied and verified. Approved migration hashes and fresh backup directories are in the [full report](../production-release/CLOSURE.md) and [inventory](../production-release/release-inventory.json). Do not rerun apply scripts or regenerate the validator credentials. B's first attempt was rolled back because its verifier used stale counts; the unchanged SQL passed fresh in-transaction role guards on retry.
 
-1. Confirm current branch, live frontend/API source and saved receipts before editing. Group A and the bounded payroll API release already ran; do not rerun their installation scripts or regenerate job credentials.
-2. Groups B–E require the existing pending approval after automatic review rejected B. Apply only after an explicit answer; then fresh backup, one group, unchanged-data guard and live verification before the next. This documentation request grants no new migration approval.
-3. Complete the dated Comparison check after the embedded-browser interruption. The page recovered; dated results are unverified. Other API route groups remain unclosed, not automatically covered by the eight-route payroll gate.
-4. The frontend candidate is QA-only and requires A plus D. Do not deploy the full Phase 6 branch or advance main until the intended production components pass their live gates.
-5. Preserve all rollback points and renew the two scoped validator credentials privately before December 16, 2026, 22:55 UTC. Keep accounting evidence/proposals frozen. Do not start another phase.
+Production frontend `a81545bf-4463-4dc3-9b33-3cad855888d7` from `145adebb5e9367d3854fe96edd913464fd33053e` is live; entry `index-BnAyRbiv.js` SHA256 `3b395fa391d7b95f909644c528ef8b2290536fabef95a2edaaea7c929f09d715`. Dedicated Front Desk review UI passes, new client is active, QA unchanged. Fresh 1,648 tests, build and six compiled checks PASS.
 
-Status: **IN PROGRESS — Group A and bounded payroll API identity release deployed; Groups B–E await exact approval after automatic review rejection**. This is not a Phase 6 completion report.
+API remains the eight-route payroll identity release from `30521585ecb3f7e5f1d3651a817e0acc68000a3f`, main hash `5270a49bb0623b96c5eb372dab409026adc257f0efcc5dacf3b10f33cb5c31f8`. Canonical main remains `820970ede7727830d95d8d03d518d02119da1acd`; final integration pending.
 
-## Verified candidate
+## Remaining execution
 
-- All 42 original QA migration entries classified; Groups A–E adapted without importing synthetic records or simulation adapters.
-- All 1,648 frontend tests PASS, no skips/failures; production/QA builds PASS; 6 compiled request-isolation checks PASS; 17 retained backend suites and 13 materializer tests PASS.
-- Hosted QA contracts: A 12, B 11, C 10, D 15, E 10 = 58 PASS, using production permission configuration and rolled-back synthetic fixtures.
-- All five group catalog/idempotence/owner/grant/rollback checks PASS. Native production rollback-only preflights PASS. Additional history-safe rollback checks: 5 PASS.
-- Existing 13 active production accounts across 24 operational tables compared under baseline/candidate policies in rollback-only transactions. No increased record visibility; Super Admin visibility unchanged.
-- Revised Group D closes a reproduced candidate reviewer-edit bypass. Approval-only access cannot create, edit request content, fulfill or self-approve.
+1. Finish the remaining API authorization review and bounded safe protections. Static inventory is `work/phase6/evidence/remaining-api-route-inventory.json` (159 route declarations across main, OTP and report export). Inspect downstream identity, existing permissions/office scope and caller inventory; declaration counts are not vulnerability counts. Report export currently trusts body identity/role and calls child APIs without forwarding the current human; cache prewarming and existing validators need exact scoped identities if their routes are tightened. Preserve provider callbacks and normal schedules.
+2. Dated Payroll Comparison UI PASS on August 2–15, 2026: 13 filtered rows and no date guard. Browser keyboard/fill succeeded; never reopen the native picker. Request-log corroboration is being investigated separately, not a reason to repeat payroll processing.
+3. Finish final read-only production/QA regression and data/config checks, record precise limitations, then normally fast-forward verified intended source into main and push. No force push; do not claim completion before these gates.
 
-## Live state
+## Recovery and data notes
 
-Production frontend remains `277f68be-3819-410c-8ca6-6aa5ffa2a95e`, source `bac8407c55ed684ffb2ec5dc3dd639cc0a736b4b`; main remains `820970ede7727830d95d8d03d518d02119da1acd`. Asset `index-BBYhCGiP.js`, 8,836,680 bytes, SHA256 `8283c272644d33cf02bd1bf669e38194a638d87268a1f680bead816572e719e5`. Production frontend/API HTTP 200. Existing Tasks screen loads with two completed tasks; Executive Overview baseline figures unchanged in read-only UI checks.
+Frontend rollback: `277f68be-3819-410c-8ca6-6aa5ffa2a95e`, `backup/production-before-phase6-frontend-20260918`, `frontend-backup-20260918T045834Z`. All group snapshots and earlier tags remain preserved. Group C rollback must preserve deleted-object audit history. Financial proposals remain frozen.
 
-QA frontend only is updated: `c3c958d8-fede-4be7-85e6-c7a61b635af9`, source `545068b96113d532dfa2b66c86b856fb7b5d8451`, asset `index-BLRu3uLQ.js`, 8,832,072 bytes, SHA256 `8239368b48cb28f0f8586e10d9091a15e117f59972ff83f26cab3ee0c3aa8c6b`. QA frontend/API HTTP 200; API intentionally remains `product_api_ready=false`. Database, API configuration and external-execution guards are unchanged.
+One existing Huddle page auto-initialized an unsubmitted September 18 draft at 04:18:07 UTC with 19 blank checklist and four blank provider children. Preserve it; use history/review pages for further read-only tests. Original-row migration guards PASS; do not claim zero incidental operational inserts. Existing EOD freshness warning remains; no sync triggered.
 
-Live QA Front Desk route: Super Admin PASS; Office Manager direct URL denied with review heading absent; Regional Manager navigation/access PASS; one review-page heading/mount; zero captured console errors. Only QA Office A/B appear. Existing QA identities were used; no password change or business test record was needed. Temporary login-helper process stopped and its tab closed. The browser is left signed in as the synthetic QA Regional Manager.
-
-These client checks do not claim production migration deployment or persistent QA installation of the new SQL. Native candidate database write/bypass/audit tests were performed in rollback-only QA transactions.
-
-## Recovery and outstanding gates
-
-- `backup/production-before-phase6-group-a-20260917` preserves previous main.
-- `backup/qa-before-phase6-20260917` preserves previous QA source `be846c8`; previous Pages deployment `7e91a103-ef44-4f3a-a667-447e112e6997` remains available. Source QA branch remains `2859ae6`.
-- Per-group private schema snapshots, rollback SQL, row hashes and native receipts are retained locally and on the existing server. Never delete historical audit rows to restore Group C's old FK.
-- Dr. G explicitly approved Group A and separate restricted background-job API access. Group A applied 2026-09-17 21:51 UTC; 4,425 row fingerprints unchanged, seven functions/two policies/five triggers, existing owners/grants preserved. Fresh rollback directory: production-a-20260917T215054Z on the existing server. Live Tasks/Profile PASS; all 13 active actors across Tasks/Notifications match reviewed visibility; production and QA frontend/API HTTP 200.
-- Automatic review rejected Group B because the latest explicit approval named only Group A. One combined B–E approval request is pending; do not retry production apply until answered.
-- API design decision approved: signed-in user access plus separate scoped unattended access. The reproduced payroll probe formerly accepted missing/invalid user sessions with the shared application key. The eight-route payroll release now rejects those requests. Two existing validators have separate expiring read-only credentials, limited to their exact reviewed routes. The original application key, provider credentials, schedules and environment configuration are unchanged. Source inspection found 100 shared-key route declarations; this is not proof that every route lacks indirect authorization, and remaining route groups are not claimed complete.
-- Specialized implant/bone/supply audit tables have actor/office/action/state/time fields but no immutable historical actor-role field. Common `audit_logs` candidate context records actor role. Current-profile role lookup must not be presented as historical proof.
-
-Continue with the approved API design while B–E approval is pending: fresh per-group backup/data guards → bounded production apply → live workflow/permission/audit verification → main fast-forward only after PASS. Frozen accounting remains outside this phase.
-
-
-## Approved API release
-
-The first bounded API release protects eight existing payroll read routes with current Supabase identity, active/approved profile, page permissions and office scope, plus separate scoped read-only identities for the two existing validators. Calculation/data-reader syntax trees are unchanged. Other API route groups remain explicitly unclosed; see API-ACCESS.md. The reviewed API modules and two validator request helpers are deployed through the two existing API services. No schedule, provider configuration or financial record changed.
-
-Deployed API main SHA256 5270a49bb0623b96c5eb372dab409026adc257f0efcc5dacf3b10f33cb5c31f8, source commit 30521585ecb3f7e5f1d3651a817e0acc68000a3f, applied 2026-09-17 22:55 UTC. Nineteen-file materialization PASS; 13 materializer tests PASS; 52 local tests and 58 native runtime/framework tests PASS with guard active and no blocked network/data attempts. All 17 retained backend suites PASS; five isolated test harnesses were adapted without removing assertions or changing original test files. QA identity resolution PASS for three existing active fixtures plus invalid-token rejection.
-
-Server deployment and post-release checks PASS: both API services active; missing application key, missing human identity and invalid human identity return 401; the two separate validators pass only their allowed empty-result reads; unrelated reads are denied. Zero write requests and zero scheduled job execution. Frontend/API HTTP 200 in production and QA; QA retains `product_api_ready=false`; production environment bytes unchanged. Existing frontend asset hash remains the baseline above.
-
-Recovery: annotated tag `backup/api-before-phase6-payroll-20260917` preserves prior main. Private rollback source/config directory `api-payroll-backup-20260917T225503Z` is retained on the server and copied locally. Job credentials expire 2026-12-16 22:55 UTC; renew privately with the same restricted scopes before expiry. No credential is stored in Git.
-
-Live signed-in production representative checks PASS: Dentrix selected Sep 4 run / Aug 17–30 period, nine doctors/five hygienists unchanged; Gusto Overview loads; Payroll Runs 20 records; Employees 164 with pagination; Contractors 2026 empty state and All-years 89 payments with preserved missing-identity warning. Read-only source count independently confirms contractor counts (89 overall, zero in 2026). No console errors captured on the checked screens. The comparison page loads its date-required guard, but its dated result was NOT VERIFIED: automated date filling did not update the guard, and invoking the native date picker crashed the embedded browser tab. A fresh tab recovered the signed-in Payroll page with no captured console errors. This is a recorded browser-validation limit, not proof of an application or authorization defect. No frontend change or rollback was made.
-
-The deployment receipt records the server checks; the separate `production-api-payroll-browser-verification.json` records representative UI results and the comparison limitation. No claim is made that every API route or business workflow is closed. Group A's atomic office-assignment client is prepared in the broader frontend candidate, which also depends on Group D; that frontend has not been promoted. Groups B–E, their dependent frontend release and final main integration remain pending.
+Current browser after recovery: production tab 68 on Payroll Comparison, signed in; previous tab 67 disappeared. Use current browser inventory if this changes. Server prefix: `/home/openclaw/.cache/nudashboard-phase6-20260917`; repository `work/phase6/release`. No password reset, bank login, provider sync, financial edit or new phase is authorized.

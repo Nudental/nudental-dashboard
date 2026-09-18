@@ -1,6 +1,6 @@
 # Group D — supplies, Front Desk and urgent requests
 
-Candidate only; not deployed. Adapted from 025, 026, 028, 029, 032–037, 039, 040 and the independent audit portion of 038. Synthetic office changes, execution intents and notification simulations are excluded.
+DEPLOYED and verified 2026-09-18T04:43:49.098781+00:00. Fresh row guard preserved 5,701 rows; all 13 active production actors matched the fresh candidate inside the apply transaction. The native checks and representative UI passed. Backup `production-d-20260918T044339Z`. The figures below describe the earlier preflight. Adapted from 025, 026, 028, 029, 032–037, 039, 040 and the independent audit portion of 038. Synthetic office changes, execution intents and notification simulations are excluded.
 
 Production directory labels differ from stored supply labels. Four explicit aliases map “Nu Dental of Eatontown/Brick/Barnegat/Staten Island” to the existing directory names only for authorization lookups. No record labels are rewritten. Other labels remain unchanged and require an existing matching office.
 
