@@ -28,4 +28,4 @@ One build and policy pass October 2 (20,000 collections; 70,000 monthly; 34%; 6,
 
 Native synthetic October 30 CSV and PDF files arrived in Downloads. Their actual content matches the table/report calculation ID, policy version, cutoff, monthly basis and estimate; the PDF was visually checked. These are synthetic-only test files.
 
-Production activation and final live evidence are recorded in the release closure document when complete. No payroll submission, emails, provider sync, financial edits, permission changes, scheduler changes or Collaboration restart are part of this work.
+Production activation and final live evidence are recorded in `PAYROLL-CONTINUITY-RELEASE.md`. No payroll submission, emails, provider sync, financial edits, permission changes, scheduler changes or Collaboration restart are part of this work.
