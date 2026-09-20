@@ -2,7 +2,8 @@ import { dashboardFetch as fetch } from '../../../lib/dashboardFetch';
 import { DASHBOARD_API_ORIGIN } from '../../../config/dashboardEnvironment';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
-import { getPayrollScheduleForYear, getScheduleYears, formatDateShort, fetchPayrollData,  } from '../../../services/payrollService';
+import { getScheduleYears, formatDateShort, fetchPayrollData } from '../../../services/payrollService';
+import { useCompensationPeriods } from '../../../hooks/gusto/useCompensationPeriods';
 import { ALL_DENTRIX_OFFICES } from '../../../services/dentrixNormalizedService';
 import { normalizeOfficeName } from '../../../utils/officeResolver';
 import {
@@ -1527,12 +1528,16 @@ export default function ProviderCompensationNew() {
   const isAdmin = userProfile?.role === 'super_admin' || userProfile?.role === 'admin';
 
   const [year, setYear] = useState(currentYear);
-  const [payPeriods, setPayPeriods] = useState([]);
-  const [selectedPeriodId, setSelectedPeriodId] = useState('');
+  const { periods: payPeriods, selectedId: selectedPeriodId, loading: periodsLoading,
+    error: periodsError, selectPeriod, refresh: refreshPeriods, revision } = useCompensationPeriods(year);
   const [selectedOffice, setSelectedOffice] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [providers, setProviders] = useState([]);
+  const [providerRows, setProviders] = useState([]);
+  const [resultSelection, setResultSelection] = useState('');
+  const requestGeneration = useRef(0);
+  const selectionKey = `${year}:${selectedPeriodId}:${selectedOffice}:${revision}`;
+  const providers = !periodsLoading && resultSelection === selectionKey ? providerRows : [];
   const [selectedPcts, setSelectedPcts] = useState({});
   const [expandedProvider, setExpandedProvider] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
@@ -1558,20 +1563,15 @@ export default function ProviderCompensationNew() {
     setToasts(prev => prev?.filter(t => t?.id !== id));
   }, []);
 
-  // Load pay periods for selected year
+  // A new selection invalidates old rows and any preview of the prior period.
   useEffect(() => {
-    const periods = getPayrollScheduleForYear(year)?.filter(p => p?.is_regular);
-    setPayPeriods(periods);
-    if (periods?.length > 0) {
-      const defaultPeriod = periods?.[8] || periods?.[periods?.length - 1];
-      setSelectedPeriodId(defaultPeriod?.id || '');
-    } else {
-      setSelectedPeriodId('');
-    }
-    setProviders([]);
     setSelectedPcts({});
     setDebugInfo(null);
-  }, [year]);
+    setExpandedProvider(null);
+    setLocalPreview(null);
+    setRemotePreview(null);
+    setActionModal(null);
+  }, [selectionKey, periodsLoading]);
 
   // Load /v2/providers for fallback identity map
   useEffect(() => {
@@ -1592,6 +1592,9 @@ export default function ProviderCompensationNew() {
   }, []);
 
   const selectedPeriod = payPeriods?.find(p => p?.id === selectedPeriodId);
+  const ascendWindow = selectedPeriod
+    ? getDentrixCollectionWindow(selectedPeriod.pay_period_start, selectedPeriod.pay_period_end)
+    : null;
 
   const resolveLocationId = (officeName) => {
     if (!officeName) return null;
@@ -1602,7 +1605,11 @@ export default function ProviderCompensationNew() {
   };
 
   const fetchData = useCallback(async () => {
-    if (!selectedPeriod) return;
+    const generation = ++requestGeneration.current;
+    setProviders([]);
+    setDebugInfo(null);
+    setError(null);
+    if (!selectedPeriod || periodsLoading) { setLoading(false); return; }
 
     const startDate = selectedPeriod?.pay_period_start;
     const endDate = selectedPeriod?.pay_period_end;
@@ -1615,7 +1622,7 @@ export default function ProviderCompensationNew() {
     // Canonical example: Gusto Aug 17–Aug 30 → Dentrix Aug 16–Aug 29.
     // This offset applies ONLY to this provider-compensation Dentrix query.
     // It does NOT affect Gusto payroll totals, payroll runs, or any other date filter.
-    const { dentrixStart, dentrixEnd } = getDentrixCollectionWindow(startDate, endDate);
+    const { dentrixStart, dentrixEnd } = ascendWindow;
 
     console.log('[ProviderComp] selectedPayPeriod', { id: selectedPeriod?.id, startDate, endDate, payday: selectedPeriod?.payday });
     console.log('[ProviderComp] officeFilter', { selectedOffice, locationId });
@@ -1630,7 +1637,12 @@ export default function ProviderCompensationNew() {
         endDate: dentrixEnd,
         locationId,
         payrollRun: selectedPeriod,
+        requireComplete: true,
       });
+      if (generation !== requestGeneration.current) return;
+      if (result?.error || result?.dataSourceWarning) {
+        throw new Error(result.error || result.dataSourceWarning);
+      }
 
       console.log('[ProviderComp] fetchPayrollData result', result);
 
@@ -1690,8 +1702,8 @@ export default function ProviderCompensationNew() {
           type = classifyByName(name);
         }
 
-        const collections = parseFloat((row?.collections)||(row?.totalCollections)||0);
-        const monthlyCollections = parseFloat((row?.moCollections)||(row?.monthlyCollections)||collections);
+        const collections = parseFloat(row?.collections ?? row?.totalCollections ?? 0);
+        const monthlyCollections = parseFloat(row?.moCollections ?? row?.monthlyCollections ?? collections);
         const office = row?.officeName || row?.canonicalOffice || normalizeOfficeName(row?.rawOffice) || '';
 
         const providerId =
@@ -1729,6 +1741,8 @@ export default function ProviderCompensationNew() {
       const dbg = {
         startDate,
         endDate,
+        dentrixStart,
+        dentrixEnd,
         selectedOffice: selectedOffice || 'All Offices',
         locationId,
         dataSource: result?.dataSource || 'dentrix_fastapi',
@@ -1747,19 +1761,22 @@ export default function ProviderCompensationNew() {
         console.warn('[ProviderComp] ZERO providers after classification. dataSource:', result?.dataSource, 'warning:', result?.dataSourceWarning);
       }
 
+      setResultSelection(selectionKey);
       setProviders(normalizedProviders);
     } catch (err) {
+      if (generation !== requestGeneration.current) return;
       console.error('[ProviderComp] fetchData error:', err?.message, err);
       setError(err?.message || 'Failed to fetch provider compensation data');
       setDebugInfo(prev => ({ ...(prev || {}), error: err?.message }));
     } finally {
-      setLoading(false);
+      if (generation === requestGeneration.current) setLoading(false);
     }
-  }, [selectedPeriod, selectedOffice]);
+  }, [selectedPeriod, selectedOffice, periodsLoading, selectionKey]);
 
   useEffect(() => {
-    if (selectedPeriodId) fetchData();
-  }, [selectedPeriodId, selectedOffice, fetchData]);
+    fetchData();
+    return () => { requestGeneration.current += 1; };
+  }, [fetchData]);
 
   const payStart = selectedPeriod?.pay_period_start || '';
   const payEnd = selectedPeriod?.pay_period_end || '';
@@ -1996,12 +2013,14 @@ export default function ProviderCompensationNew() {
           <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Pay Period</label>
           <select
             value={selectedPeriodId}
-            onChange={e => setSelectedPeriodId(e?.target?.value)}
+            onChange={e => selectPeriod(e?.target?.value)}
+            disabled={periodsLoading}
+            aria-label="Compensation pay period"
             className="border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00B5CC]"
           >
-            {payPeriods?.length === 0 && <option value="">No periods available</option>}
+            {(!selectedPeriodId || payPeriods.length === 0) && <option value="">{periodsLoading ? 'Loading imported periods…' : 'Select a period'}</option>}
             {payPeriods?.map(p => (
-              <option key={p?.id} value={p?.id}>{p?.payroll_name}</option>
+              <option key={p?.id} value={p?.id}>Payday {formatDateShort(p.payday)} · {formatDateShort(p.pay_period_start)} – {formatDateShort(p.pay_period_end)}{p.source === 'historical_schedule' ? ' · Historical schedule' : ''}</option>
             ))}
           </select>
         </div>
@@ -2023,14 +2042,19 @@ export default function ProviderCompensationNew() {
 
         {/* Fetch Button */}
         <button
-          onClick={fetchData}
-          disabled={loading || !selectedPeriod}
+          onClick={refreshPeriods}
+          disabled={loading || periodsLoading}
           className="flex items-center gap-2 px-4 py-2 bg-[#00B5CC] hover:bg-[#009ab0] text-white rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <Icon name={loading ? 'Loader2' : 'RefreshCw'} size={14} className={loading ? 'animate-spin' : ''} />
-          {loading ? 'Loading…' : 'Refresh'}
+          {loading || periodsLoading ? 'Loading…' : 'Refresh'}
         </button>
       </div>
+
+      {periodsError && <div role="alert" className="rounded-xl bg-rose-50 p-4 text-rose-700">{periodsError}</div>}
+      {!periodsLoading && !periodsError && payPeriods.length === 0 && (
+        <p role="status">No eligible regular compensation periods are available for this year.</p>
+      )}
 
       {/* ── Period Info Banner ── */}
       {selectedPeriod && (
@@ -2040,26 +2064,26 @@ export default function ProviderCompensationNew() {
             {selectedPeriod?.payroll_name}
           </div>
           <span className="text-gray-500 dark:text-gray-400">
-            Pay Period: {formatDateShort(selectedPeriod?.pay_period_start)} – {formatDateShort(selectedPeriod?.pay_period_end)}
+            Gusto payroll period: {formatDateShort(selectedPeriod?.pay_period_start)} – {formatDateShort(selectedPeriod?.pay_period_end)}
           </span>
           <span className="text-gray-400 dark:text-gray-500">
             Payday: {formatDateShort(selectedPeriod?.payday)}
           </span>
           <span className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
-            Source: /v2/reports/provider-performance (same as Dentrix Ascend tab)
+            Ascend collections: {formatDateShort(ascendWindow?.dentrixStart)} – {formatDateShort(ascendWindow?.dentrixEnd)}
           </span>
         </div>
       )}
 
       {/* ── Error ── */}
-      {error && (
+      {!periodsLoading && error && (
         <div className="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl p-4 flex items-start gap-3">
           <Icon name="AlertTriangle" size={16} className="text-rose-500 mt-0.5 flex-shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-rose-700 dark:text-rose-400">Failed to load provider compensation data</p>
+            <p className="text-sm font-semibold text-rose-700 dark:text-rose-400">Ascend compensation data unavailable or incomplete</p>
             <p className="text-xs text-rose-600 dark:text-rose-500 mt-0.5">{error}</p>
           </div>
-          <button onClick={fetchData} className="ml-auto text-xs text-rose-600 dark:text-rose-400 underline hover:no-underline">Retry</button>
+          <button onClick={refreshPeriods} className="ml-auto text-xs text-rose-600 dark:text-rose-400 underline hover:no-underline">Retry</button>
         </div>
       )}
 

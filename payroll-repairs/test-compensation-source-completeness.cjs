@@ -1,0 +1,19 @@
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const root=path.resolve(__dirname,'../recovered-frontend');
+const parser=require(path.join(process.env.NDASH_PARSER_ROOT||root,'node_modules/@babel/parser'));
+const source=fs.readFileSync(path.join(root,'src/services/payrollService.js'),'utf8');
+const ast=parser.parse(source,{sourceType:'module'});
+const fn=ast.program.body.find(n=>n.type==='ExportNamedDeclaration'&&n.declaration?.id?.name==='fetchPayrollData').declaration;
+function fixture({failure,report,directoryError}={}){
+ const calls=[];const row={providerId:'qa-doctor',provider_name:'QA Doctor',name:'QA Doctor',providerType:'doctor',collections:123.45,moCollections:7000,grossProduction:400};
+ const env={console:{log(){},warn(){},error(){}},ascendApi:{getProviders:async()=>{if(failure==='providers')throw Error('403');return {providers:[{id:'qa-doctor',name:'QA Doctor'}]};},getProductionByProvider:async(...args)=>{calls.push(args);if(failure==='collections')throw Error('503');return report||{providers:[row]};}},supabase:{from:()=>({select:()=>({order:async()=>({data:[],error:directoryError})})})},normalizeOfficeName:v=>v,enrichPayrollRows:async rows=>rows.map(r=>({...r,displayName:r.providerName,canonicalOffice:'QA Office'})),classifyEnrichedRows:rows=>({doctors:rows,hygienists:[],unknowns:[],placeholders:[],resolvedPlaceholders:[]}),calcDoctorCompensation:()=>({}),calcHygienistCompensation:()=>({}),buildImportDiagnostics:()=>({})};
+ const load=vm.runInNewContext('('+source.slice(fn.start,fn.end)+')',env);
+ return {calls,row,load:options=>load({startDate:'2026-08-30',endDate:'2026-09-12',locationId:'qa-office',requireComplete:true,...options})};
+}
+test('service forwards already shifted dates and exact office without shifting again',async()=>{const h=fixture(),r=await h.load();assert.deepEqual(h.calls[0],['2026-08-30','2026-09-12','qa-office']);assert.equal(r.doctors[0].providerId,'qa-doctor');assert.equal(r.doctors[0].totalCollections,123.45);assert.equal(r.doctors[0].monthlyCollections,7000);});
+for(const failure of ['providers','collections'])test('failed '+failure+' read is unavailable, not a synthetic zero payroll',async()=>{const r=await fixture({failure}).load();assert.ok(r.error);assert.equal(r.doctors.length,0);assert.equal(r.summary.totalCollections,undefined);});
+for(const report of [{providers:[],complete:false},{providers:[],incomplete:true},{providers:[],partial:true},{providers:[],total:10},{error:'source unavailable'}, {providers:[{providerId:'missing-amount',providerType:'doctor',moCollections:500}]},{providers:[{providerId:'missing-tier',providerType:'doctor',collections:500}]}])test('incomplete collection response is explicit: '+JSON.stringify(report),async()=>{const r=await fixture({report}).load();assert.ok(r.error);assert.equal(r.doctors.length,0);});
+test('empty Ascend result keeps a clear warning instead of fabricated compensation',async()=>{const r=await fixture({report:{providers:[]}}).load();assert.match(r.dataSourceWarning,/no provider payroll data/i);assert.equal(r.doctors.length,0);});
+test('identity-directory failure cannot show unverified compensation',async()=>{const r=await fixture({directoryError:{message:'read denied'}}).load();assert.match(r.error,/identity/i);});
+test('zero monthly collections is a real input and never replaced by current-period collection',async()=>{const r=await fixture({report:{providers:[{providerId:'qa-doctor',provider_name:'QA Doctor',providerType:'doctor',collections:123.45,moCollections:0}]}}).load();assert.equal(r.doctors[0].monthlyCollections,0);});
+test('other payroll consumers retain their prior optional fallback behavior',async()=>{const r=await fixture({failure:'collections'}).load({requireComplete:false});assert.equal(r.error,null);assert.equal(r.dataSource,'dentrix_fastapi_empty');});

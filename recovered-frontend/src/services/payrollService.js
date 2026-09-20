@@ -427,12 +427,31 @@ export function calcHygienistCompensation(totalCollections) {
  * @param {string} [params.providerType]
  * @param {object} [params.payrollRun] - the selected PAYROLL_SCHEDULE entry (for metadata)
  */
-export async function fetchPayrollData({ startDate, endDate, locationId, providerId, providerType, payrollRun }) {
+export async function fetchPayrollData({ startDate, endDate, locationId, providerId, providerType, payrollRun, requireComplete = false }) {
   try {
     const [providersRes, providerPerfRes] = await Promise.allSettled([
       ascendApi?.getProviders(locationId),
       ascendApi?.getProductionByProvider(startDate, endDate, locationId),
     ]);
+
+    if (requireComplete) {
+      if (providersRes.status !== 'fulfilled' || providerPerfRes.status !== 'fulfilled') {
+        throw new Error('Ascend provider or collections data could not be loaded. Retry this period.');
+      }
+      const report = providerPerfRes.value;
+      const rows = report?.providers || report?.data || report;
+      if (!Array.isArray(rows) || report?.error || report?.incomplete === true ||
+          report?.complete === false || report?.partial === true ||
+          (Number.isFinite(report?.total) && report.total > rows.length)) {
+        throw new Error('Ascend returned incomplete provider collections for this period.');
+      }
+      const validAmount = value => value !== null && value !== undefined && value !== '' && Number.isFinite(Number(value));
+      if (rows.some(row => !validAmount(row.collections ?? row.total_collections ?? row.totalCollections) ||
+          (String(row.providerType || row.provider_type || '').toLowerCase() === 'doctor' &&
+           !validAmount(row.moCollections ?? row.monthlyCollections)))) {
+        throw new Error('Ascend collection or monthly-tier inputs are incomplete for this period.');
+      }
+    }
 
     const rawProviders = providersRes?.status === 'fulfilled'
       ? (providersRes?.value?.providers || providersRes?.value?.data || providersRes?.value || [])
@@ -450,10 +469,12 @@ export async function fetchPayrollData({ startDate, endDate, locationId, provide
     });
 
     // Load providers from Supabase for classification + office name resolution
-    const { data: supabaseProviders } = await supabase
+    const { data: supabaseProviders, error: providerDirectoryError } = await supabase
       ?.from('providers')
       ?.select('id, name, provider_type, office_id, offices(name)')
       ?.order('name');
+
+    if (requireComplete && providerDirectoryError) throw new Error('Provider identity data could not be loaded. Retry this period.');
 
     const supabaseProviderMap = {};
     (supabaseProviders || [])?.forEach(p => {
@@ -501,7 +522,9 @@ export async function fetchPayrollData({ startDate, endDate, locationId, provide
       const grossProduction = parseFloat(perf?.gross_production || perf?.grossProduction || perf?.production || 0);
       const adjustedProduction = parseFloat(perf?.adjusted_production || perf?.adjustedProduction || perf?.net_production || perf?.netProduction || grossProduction);
       const totalCollections = Math.abs(parseFloat(perf?.collections || perf?.total_collections || perf?.totalCollections || 0));
-      const monthlyCollections = parseFloat((perf?.moCollections) || (perf?.monthlyCollections) || totalCollections);
+      const monthlyCollections = parseFloat(requireComplete
+        ? (perf?.moCollections ?? perf?.monthlyCollections ?? totalCollections)
+        : ((perf?.moCollections) || (perf?.monthlyCollections) || totalCollections));
 
       if (providerId && pid !== providerId) return;
 
