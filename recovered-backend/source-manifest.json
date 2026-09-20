@@ -869,37 +869,58 @@
   },
   {
     "source_file": "middleware/compensation_ledger.py",
-    "sha256": "389953bd04a5cb1401d45f5fb327094b53c9860e88b862a80be229d11047252b",
-    "template_sha256": "389953bd04a5cb1401d45f5fb327094b53c9860e88b862a80be229d11047252b",
-    "bytes": 13097,
+    "sha256": "43b6b24f9dcdadf56b5224ea1a83590c833ae574e418b6a1f17e0e91842b1631",
+    "template_sha256": "43b6b24f9dcdadf56b5224ea1a83590c833ae574e418b6a1f17e0e91842b1631",
+    "bytes": 13965,
     "round_trip_exact": true
   },
   {
     "source_file": "middleware/compensation_source.py",
-    "sha256": "0261b3dfc48516b8553582599840a41e5c02b0385f8d94bb54dec9c8a3a3e105",
-    "template_sha256": "0261b3dfc48516b8553582599840a41e5c02b0385f8d94bb54dec9c8a3a3e105",
-    "bytes": 8694,
+    "sha256": "bb1fc662793e039a0ad083630b325bb5640876ccacd39eba31a9904455233e2a",
+    "template_sha256": "bb1fc662793e039a0ad083630b325bb5640876ccacd39eba31a9904455233e2a",
+    "bytes": 10233,
     "round_trip_exact": true
   },
   {
     "source_file": "middleware/compensation_runtime.py",
-    "sha256": "e28ea8f31578af45474b3a9ddf7ec3f2a05995d8eaf6840adbe3e2c0f5029bdf",
-    "template_sha256": "e28ea8f31578af45474b3a9ddf7ec3f2a05995d8eaf6840adbe3e2c0f5029bdf",
-    "bytes": 8621,
+    "sha256": "63afac912a600d42bcc1b30276ff5f26aeacde4c4c96708cbf4053ac662d8c2f",
+    "template_sha256": "63afac912a600d42bcc1b30276ff5f26aeacde4c4c96708cbf4053ac662d8c2f",
+    "bytes": 13026,
     "round_trip_exact": true
   },
   {
     "source_file": "middleware/compensation_views.py",
-    "sha256": "70f4d5c5168b468854fae6319c4f3c7ec81a33e25783c0d8befeb1b9c4df6208",
-    "template_sha256": "70f4d5c5168b468854fae6319c4f3c7ec81a33e25783c0d8befeb1b9c4df6208",
-    "bytes": 5933,
+    "sha256": "9f421956a3eef12b2c35c6a6f1d9162c7cd7134ad95b6fc0fa5e78b98378dedd",
+    "template_sha256": "9f421956a3eef12b2c35c6a6f1d9162c7cd7134ad95b6fc0fa5e78b98378dedd",
+    "bytes": 7306,
     "round_trip_exact": true
   },
   {
     "source_file": "middleware/compensation_endpoint.py",
-    "sha256": "2552004b9045289de5da4f5b2c1a18954d5b91af375e46e33985568f958f736a",
-    "template_sha256": "2552004b9045289de5da4f5b2c1a18954d5b91af375e46e33985568f958f736a",
-    "bytes": 3330,
+    "sha256": "ff2b71fb8408678e4aacaa608496699ac1372cff5b2db5c4e6a052b49cd271bc",
+    "template_sha256": "ff2b71fb8408678e4aacaa608496699ac1372cff5b2db5c4e6a052b49cd271bc",
+    "bytes": 3744,
     "round_trip_exact": true
+  },
+  {
+    "source_file": "middleware/compensation_policy.py",
+    "round_trip_exact": true,
+    "sha256": "58f0271c0b417151d2c82dc56b43ceb6fea7c44bb8c4983b41a1c4db5afc738a",
+    "template_sha256": "58f0271c0b417151d2c82dc56b43ceb6fea7c44bb8c4983b41a1c4db5afc738a",
+    "bytes": 9330
+  },
+  {
+    "source_file": "middleware/compensation_store.py",
+    "round_trip_exact": true,
+    "sha256": "b81b596ae9fdaa0ed90ab34bb65f1374a6280f71313470fd87ac412363c05893",
+    "template_sha256": "b81b596ae9fdaa0ed90ab34bb65f1374a6280f71313470fd87ac412363c05893",
+    "bytes": 3488
+  },
+  {
+    "source_file": "middleware/compensation_checks.py",
+    "round_trip_exact": true,
+    "sha256": "d3071b2b5c9831239db4ecc09fb02e0b9a03d7c7ef487050ac04d8a3ea8d99ac",
+    "template_sha256": "d3071b2b5c9831239db4ecc09fb02e0b9a03d7c7ef487050ac04d8a3ea8d99ac",
+    "bytes": 3238
   }
 ]

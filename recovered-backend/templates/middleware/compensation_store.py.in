@@ -1,0 +1,45 @@
+"""Private immutable derived snapshots, separate from source/paid-payroll data."""
+from pathlib import Path
+from datetime import datetime,timezone
+from contextlib import closing
+import hashlib,json,os,re,sqlite3,stat
+ROOT=Path.home()/'.local/share/nudashboard/compensation-snapshots'
+
+class SnapshotStore:
+    def __init__(self,root=ROOT):self.root=Path(root)
+    def _connect(self):
+        if not self.root.exists():self.root.mkdir(parents=True,mode=0o700)
+        info=self.root.lstat()
+        if not stat.S_ISDIR(info.st_mode) or self.root.is_symlink() or (os.name!='nt' and (stat.S_IMODE(info.st_mode)&0o077 or info.st_uid!=os.geteuid())):
+            raise ValueError('Unsafe calculation snapshot directory')
+        path=self.root/'calculations.sqlite3'
+        try:os.close(os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600))
+        except FileExistsError:pass
+        info=path.lstat()
+        if not stat.S_ISREG(info.st_mode) or path.is_symlink() or (os.name!='nt' and (stat.S_IMODE(info.st_mode)&0o077 or info.st_uid!=os.geteuid())):raise ValueError('Unsafe snapshot file')
+        db=sqlite3.connect(path,timeout=10)
+        db.executescript('''CREATE TABLE IF NOT EXISTS calculations(
+          id TEXT PRIMARY KEY,actor TEXT NOT NULL,run_id TEXT NOT NULL,start_date TEXT NOT NULL,end_date TEXT NOT NULL,
+          created_at TEXT NOT NULL,result TEXT NOT NULL,sha256 TEXT NOT NULL);
+          CREATE INDEX IF NOT EXISTS calculation_history ON calculations(actor,run_id,created_at DESC);
+          CREATE TRIGGER IF NOT EXISTS immutable_calculation_update BEFORE UPDATE ON calculations BEGIN SELECT RAISE(ABORT,'Immutable calculation');END;
+          CREATE TRIGGER IF NOT EXISTS immutable_calculation_delete BEFORE DELETE ON calculations BEGIN SELECT RAISE(ABORT,'Immutable calculation');END;''')
+        return db
+    def put(self,key,actor,result):
+        if not re.fullmatch('[0-9a-f]{32}',key):raise ValueError('Invalid snapshot identity')
+        payload=json.dumps(result,sort_keys=True,separators=(',',':'));stamp=datetime.now(timezone.utc).isoformat()
+        with closing(self._connect()) as db,db:
+            db.execute('INSERT INTO calculations VALUES(?,?,?,?,?,?,?,?)',(key,actor,result['gusto']['run_id'],*result['applied_window'],stamp,payload,hashlib.sha256(payload.encode()).hexdigest()))
+    def get(self,key,actor):
+        if not re.fullmatch('[0-9a-f]{32}',key):raise KeyError('Invalid snapshot')
+        with closing(self._connect()) as db:
+            row=db.execute('SELECT result,sha256 FROM calculations WHERE id=? AND actor=?',(key,actor)).fetchone()
+        if not row or hashlib.sha256(row[0].encode()).hexdigest()!=row[1]:raise KeyError('Snapshot unavailable or inaccessible')
+        return json.loads(row[0])
+    def history(self,actor,run_id,start,end):
+        with closing(self._connect()) as db:
+            rows=db.execute('SELECT id,created_at,result FROM calculations WHERE actor=? AND run_id=? AND start_date=? AND end_date=? ORDER BY created_at DESC LIMIT 21',(actor,run_id,start,end)).fetchall()
+        out=[]
+        for key,stamp,raw in rows[:20]:
+            result=json.loads(raw);out.append({'snapshot_id':key,'created_at':stamp,'source_as_of':result['source_snapshot'].get('read_as_of'),'policy_version':result.get('policy',{}).get('version'),'status':result['status'],'cutoffs':{k:v['cutoff'] for k,v in result['scopes'].items()}})
+        return {'calculations':out,'older_results_available':len(rows)>20,'limit':20}

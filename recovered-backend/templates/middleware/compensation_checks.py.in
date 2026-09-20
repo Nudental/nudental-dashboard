@@ -1,0 +1,33 @@
+"""Runtime invariants, distinct from retained independent HR reconciliation."""
+from decimal import Decimal,ROUND_HALF_UP
+import hashlib,json
+from compensation_ledger import IncompleteCollectionEvidence
+
+def check_result(result):
+    if not result['source_snapshot'].get('complete'):raise IncompleteCollectionEvidence('Source coverage is incomplete')
+    ids=set()
+    for row in result['doctors']:
+        name=row['provider_name']
+        def require(ok,reason):
+            if not ok:raise IncompleteCollectionEvidence(name+': '+reason+'; calculation withheld for review')
+        require(row['provider_id'] not in ids,'duplicate person result');ids.add(row['provider_id'])
+        require(row['applied_window']==result['applied_window'],'period identity mismatch')
+        require(row['source_snapshot']==result['source_snapshot'],'source snapshot mismatch')
+        require(len({m['month'] for m in row['months']})==len(row['months']),'duplicate calendar month')
+        for m in row['months']:
+            require(m['month'] in result['scopes'] and m['cutoff']==result['scopes'][m['month']]['cutoff'],'month cutoff mismatch')
+            require(all(type(m[k]) is int for k in ('period_collection_cents','monthly_basis_cents','automatic_percent','applied_percent','estimate_cents')),'non-integer calculation cents')
+            require(sum(o['monthly_collection_cents'] for o in m['office_detail'])==m['monthly_basis_cents'],'office monthly sum mismatch')
+            require(sum(o['period_collection_cents'] for o in m['office_detail'])==m['period_collection_cents'],'office period sum mismatch')
+            require(len({o['office_id'] for o in m['office_detail']})==len(m['office_detail']),'duplicate office aggregation')
+            rate=next(p for cap,p in [(5000000,32),(6500000,33),(8000000,34),(None,35)] if cap is None or m['monthly_basis_cents']<=cap)
+            require(m['automatic_percent']==rate,'flat monthly tier mismatch')
+            require(m['applied_percent']==(row['override']['percent'] if row['override'] else rate),'unrecorded percentage override')
+            exact=int((Decimal(m['period_collection_cents'])*Decimal(m['applied_percent'])/100).quantize(Decimal('1'),rounding=ROUND_HALF_UP))
+            require(exact==m['estimate_cents'],'monthly rounding mismatch')
+        require(sum(m['estimate_cents'] for m in row['months'])==row['estimate_cents'],'cross-month estimate sum mismatch')
+        require(sum(m['period_collection_cents'] for m in row['months'])==row['eligible_period_cents'],'period collection sum mismatch')
+        require(sum(d['signed_cents'] for d in row['daily_collection'])==row['raw_hr_collection_cents'],'signed daily control sum mismatch')
+        check=dict(row);check.pop('calculation_id',None)
+        require(hashlib.sha256(json.dumps(check,sort_keys=True,separators=(',',':')).encode()).hexdigest()==row['calculation_id'],'calculation identity mismatch')
+    return {'source_coverage':True,'pagination':True,'date_semantics':True,'category_membership':True,'unique_application_groups':True,'revision_links':True,'provider_identity':result['complete_doctor_scope'],'office_attribution':True,'monthly_aggregation':True,'tier_calculation':True,'calculation_integrity':True}

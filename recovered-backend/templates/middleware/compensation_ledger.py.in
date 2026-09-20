@@ -156,7 +156,7 @@ def compensation(collection_cents, percent):
     return int((Decimal(collection_cents)*percent/100).quantize(Decimal('1'), rounding=ROUND_HALF_UP))
 
 
-def monthly_scopes(start, end, payday):
+def monthly_scopes(start, end, payday, as_of_day=None):
     """Fixed run-relative cutoff; refreshing later never advances an open month."""
     first = date.fromisoformat(start); last = date.fromisoformat(end)
     pay = date.fromisoformat(payday)
@@ -165,7 +165,7 @@ def monthly_scopes(start, end, payday):
     result = {}; current = first.replace(day=1)
     while current <= last:
         finish = current.replace(day=monthrange(current.year, current.month)[1])
-        closed = finish < pay
+        closed = finish < pay and (as_of_day is None or finish < date.fromisoformat(as_of_day))
         cutoff = finish if closed else min(finish, last)
         result[current.strftime('%Y-%m')] = {'start':current.isoformat(),
             'cutoff':cutoff.isoformat(), 'closed':closed,
@@ -187,11 +187,18 @@ def calculate_doctor(policy, events, scopes, start, end, gusto, source_snapshot,
         raise IncompleteCollectionEvidence('Monthly scope exceeds confirmed office policy')
     if override is not None and (override.get('percent') not in (32,33,34,35) or not override.get('actor_id')):
         raise ValueError('Explicit authorized override identity is required')
-    eligible = [e for e in relevant if e['report_location_id'] in allowed]
+    def assigned(day):
+        if not policy.get('office_rules'):return allowed
+        rules=[r for r in policy['office_rules'] if r['effective_start']<=day and (r.get('effective_end') is None or day<=r['effective_end'])]
+        if len(rules)!=1:raise IncompleteCollectionEvidence('Missing or conflicting effective office policy for '+policy['name']+' on '+day)
+        return set(rules[0]['offices'])
+    def qualifies(event):return event['report_location_id'] in assigned(event['applied_date'])
+    relevant=[e for e in relevant if e['applied_date'][:7] in scopes and scopes[e['applied_date'][:7]]['start']<=e['applied_date']<=scopes[e['applied_date'][:7]]['cutoff']]
+    eligible = [e for e in relevant if qualifies(e)]
     monthly_exceptions = defaultdict(int)
     for e in relevant:
         scope=scopes.get(e['applied_date'][:7])
-        if scope and scope['start']<=e['applied_date']<=scope['cutoff'] and e['report_location_id'] not in allowed:
+        if scope and scope['start']<=e['applied_date']<=scope['cutoff'] and not qualifies(e):
             monthly_exceptions[(e['provider_id'],e['report_location_id'],e['applied_date'])]+=e['signed_cents']
     daily = defaultdict(int)
     for e in relevant:
@@ -219,13 +226,15 @@ def calculate_doctor(policy, events, scopes, start, end, gusto, source_snapshot,
         'eligible_period_cents':sum(m['period_collection_cents'] for m in months),
         'estimate_cents':sum(m['estimate_cents'] for m in months),'override':override,
         'exceptions':[{'source_provider_id':k[0],'office_id':k[1],'applied_date':k[2],'signed_cents':v,
-            'reason':'Outside confirmed compensation offices; retained for review'} for k,v in sorted(daily.items()) if k[1] not in allowed],
+            'reason':'Outside confirmed compensation offices; retained for review'} for k,v in sorted(daily.items()) if k[1] not in assigned(k[2])],
         'monthly_exceptions':[{'source_provider_id':k[0],'office_id':k[1],'applied_date':k[2],'signed_cents':v,
             'reason':'Outside confirmed offices; excluded from monthly tier basis, retained for review'} for k,v in sorted(monthly_exceptions.items())],
         'daily_collection':[{'source_provider_id':k[0],'office_id':k[1],'applied_date':k[2],'signed_cents':v} for k,v in sorted(daily.items())],
         'status':'SOURCE_CALCULATED_ESTIMATE','independent_hr_status':'NOT_AUTOMATICALLY_CERTIFIED',
         'rounding':'half-away-from-zero per calendar month, then sum',
         'month_end_adjustment':{'status':'MISSING_VERIFIED_PAID_BASELINE','requires_hr_approval':True,'proposed_adjustment_cents':None,'included_in_estimate':False}}
+    if policy.get('policy_version'):
+        result['policy_version']=policy['policy_version'];result['effective_office_rules']=policy['office_rules']
     result['negative_review_required']=any(m['period_collection_cents']<0 or m['monthly_basis_cents']<0 for m in months)
     result['calculation_id']=hashlib.sha256(json.dumps(result,sort_keys=True,separators=(',',':')).encode()).hexdigest()
     return result

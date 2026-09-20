@@ -5,11 +5,18 @@ from fastapi.responses import JSONResponse,HTMLResponse,Response
 from compensation_ledger import IncompleteCollectionEvidence
 from compensation_runtime import JOBS,request_calculation,reprice
 from compensation_views import report_html,report_csv,prepared_payload
+from compensation_policy import load as load_policy
+from compensation_checks import check_result
 
 
 def respond(actor,read_runs,start,end,run_id,request_id,job_id,provider_id,format,overrides):
     headers={'Cache-Control':'private, no-store'}
     try:
+        if format=='ledger-policy':
+            approved=load_policy()
+            return JSONResponse(approved,headers=headers)
+        if format=='ledger-history':
+            return JSONResponse(JOBS.store.history(actor.id,run_id,start,end),headers=headers)
         if format not in ('ledger-json','ledger-html','ledger-pdf','ledger-csv','ledger-payload'):
             raise ValueError('Unsupported compensation format')
         job_id=job_id or request_calculation(actor,read_runs,start,end,run_id,request_id)
@@ -22,6 +29,7 @@ def respond(actor,read_runs,start,end,run_id,request_id,job_id,provider_id,forma
         for provider,percent in selected.items():
             if type(percent) is not int or percent not in (32,33,34,35):raise ValueError('Invalid rate override')
             result=reprice(result,provider,percent,actor.id)
+        result['automated_checks']=check_result(result)
         if provider_id:
             result['doctors']=[r for r in result['doctors'] if r['provider_id']==provider_id]
             if not result['doctors']:raise ValueError('Provider calculation is unavailable')

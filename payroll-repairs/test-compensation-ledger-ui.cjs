@@ -19,7 +19,7 @@ function harness(){
  const state={},pending=[],timers=[];
  const env={generation:{current:0},AbortController,DOMException,crypto:{randomUUID:()=> 'synthetic-request-identity'},period,window,key:'sep18:revision0',periodsLoading:false,ledgerSelectionMatches:api.ledgerSelectionMatches,
   readLedgerReport:(o,i)=>new Promise((resolve,reject)=>pending.push({options:o,init:i,resolve,reject})),setTimeout:fn=>{timers.push(fn);return timers.length;},clearTimeout:()=>{}};
- for(const name of ['Result','ResultKey','Error','Preview','Overrides','ActionBusy','Busy'])env['set'+name]=value=>state[name]=value;
+ for(const name of ['Result','ResultKey','Error','Preview','Overrides','ActionBusy','Busy','PolicyView','History'])env['set'+name]=value=>state[name]=value;
  const run=vm.runInNewContext('('+component.slice(effect.start,effect.end)+')',env);
  return {env,state,pending,timers,run};
 }

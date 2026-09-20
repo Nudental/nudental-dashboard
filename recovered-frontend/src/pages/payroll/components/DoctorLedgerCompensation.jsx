@@ -12,6 +12,8 @@ export default function DoctorLedgerCompensation({ period, window, revision, per
   const [overrides, setOverrides] = useState({});
   const [preview, setPreview] = useState(null);
   const [actionBusy, setActionBusy] = useState(false);
+  const [policyView, setPolicyView] = useState(null);
+  const [history, setHistory] = useState(null);
   const generation = useRef(0);
   const key = `${period?.id}:${window?.dentrixStart}:${window?.dentrixEnd}:${revision}:${periodsLoading}`;
   const [resultKey, setResultKey] = useState(null);
@@ -21,7 +23,7 @@ export default function DoctorLedgerCompensation({ period, window, revision, per
     const current = ++generation.current;
     const controller = new AbortController();
     let timer;
-    setResult(null); setResultKey(null); setError(null); setPreview(null); setOverrides({}); setActionBusy(false);
+    setResult(null); setResultKey(null); setError(null); setPreview(null); setOverrides({}); setActionBusy(false); setPolicyView(null); setHistory(null);
     if (!period || periodsLoading) { setBusy(false); return () => controller.abort(); }
     setBusy(true);
     const requestId = crypto.randomUUID();
@@ -83,16 +85,42 @@ export default function DoctorLedgerCompensation({ period, window, revision, per
     finally { if (current === generation.current) setActionBusy(false); }
   };
 
+  const inspect = async format => {
+    const current = generation.current; setActionBusy(true); setError(null);
+    try {
+      const response = await readLedgerReport({ period, window, format }); const data = await response.json();
+      if (current !== generation.current) return;
+      if (format === 'ledger-policy') setPolicyView(data); else setHistory(data);
+    } catch (e) { if (current === generation.current) setError(e.message); }
+    finally { if (current === generation.current) setActionBusy(false); }
+  };
+  const loadSaved = async snapshot => {
+    const current = generation.current; setActionBusy(true); setError(null);
+    try {
+      const response = await readLedgerReport({ period, window, snapshot }); const data = await response.json();
+      if (current !== generation.current) return;
+      if (response.status !== 200 || !ledgerSelectionMatches(data, period, window) || !data.source_snapshot?.complete) throw new Error('Saved calculation does not cover the selected period. No current result was replaced.');
+      setResult(data); setResultKey(key); setPreview(null); setOverrides({});
+    } catch (e) { if (current === generation.current) setError(e.message); }
+    finally { if (current === generation.current) setActionBusy(false); }
+  };
+
   const verifiedIds = new Set((ready ? result.doctors : []).flatMap(r => r.source_provider_ids));
   const unverified = ready ? additionalProviders.filter(p => !verifiedIds.has(String(p.providerId))) : [];
   const doctors = ready ? visibleLedgerDoctors(result, officeId) : [];
   return <section aria-label="Doctor Ledger compensation" className="rounded-xl border bg-white dark:bg-gray-800 p-5 space-y-4">
     <h3 className="text-lg font-bold">Doctors · Ascend Ledger collections</h3>
-    <p className="text-sm text-gray-600 dark:text-gray-300">Monthly tiers use combined qualifying offices. August and September are calculated separately. These are estimates; no paid payroll is changed.</p>
+    <p className="text-sm text-gray-600 dark:text-gray-300">Monthly tiers use combined qualifying offices and the approved rules effective on each Applied Date. Separate calendar months are calculated separately. These are estimates; no paid payroll is changed.</p>
+    {period && !periodsLoading && <div className="flex flex-wrap gap-2"><button className={button} disabled={actionBusy} onClick={() => inspect('ledger-policy')}>Approved office rules</button><button className={button} disabled={actionBusy || busy} onClick={() => inspect('ledger-history')}>Saved calculations</button></div>}
+    {policyView && <div className="rounded border p-3 text-sm" aria-label="Approved compensation office rules"><p>Version {policyView.version.slice(0,12)} · Approved by {policyView.document.approved_by} · {policyView.document.approval_reference}</p>{policyView.document.doctors.map(p => <details key={p.id}><summary>{p.name}</summary>{p.office_rules.map(r => <p key={r.effective_start}>{r.effective_start} – {r.effective_end || 'Until superseded'}: {r.offices.map(o => policyView.document.office_names[o]).join(', ')} · {r.approval_reference}</p>)}</details>)}<p>These compensation rules do not change anyone’s login or office access.</p></div>}
+    {history && <div className="rounded border p-3 text-sm" aria-label="Saved calculation history"><p>Saved results are immutable. Refresh creates a new source read; it does not replace these results.</p>{history.calculations.map(h => <p key={h.snapshot_id}>{h.created_at} · Policy {h.policy_version?.slice(0,12)} · {h.status === 'NEEDS_REVIEW' ? 'Needs review' : 'Ready for HR review'} <button className={button} disabled={actionBusy || busy} onClick={() => loadSaved(h.snapshot_id)}>View saved calculation</button></p>)}{history.calculations.length === 0 && <p>No saved calculation for this period yet.</p>}{history.older_results_available && <p>Showing the latest 20 results; older snapshots remain preserved.</p>}</div>}
     {busy && <p role="status">Reading complete Ascend collection history and monthly controls…</p>}
     {error && <p role="alert" className="rounded bg-rose-50 text-rose-800 p-3">{error}</p>}
     {ready && <>
-      <p className="text-sm">Eligible doctor collections: <strong>{cash(doctors.reduce((s, r) => s + r.eligible_period_cents, 0))}</strong> · Estimated compensation: <strong>{cash(doctors.reduce((s, r) => s + r.estimate_cents, 0))}</strong></p>
+      <p role="status" className="rounded bg-slate-50 text-slate-900 p-3">{result.status === 'NEEDS_REVIEW' ? 'Needs review — see the named exceptions below.' : 'Ready for HR review — automated checks passed.'} No payroll approval, payment or email has been performed.</p>
+      {result.exceptions?.length > 0 && <div aria-label="Compensation review exceptions" className="rounded border border-amber-300 p-3 text-sm">{result.exceptions.map((e,i) => <p key={`${e.provider_id}:${i}`}><strong>{e.provider_name}</strong> · {e.period.join(' – ')} · {e.reason}. Required action: {e.action}.</p>)}</div>}
+      {doctors.length > 0 ? <p className="text-sm">{result.complete_doctor_scope === false ? 'Configured-doctor subtotal — incomplete payroll scope' : 'Eligible doctor collections'}: <strong>{cash(doctors.reduce((s, r) => s + r.eligible_period_cents, 0))}</strong> · Estimated compensation{result.complete_doctor_scope === false ? ' subtotal' : ''}: <strong>{cash(doctors.reduce((s, r) => s + r.estimate_cents, 0))}</strong></p> : <p>No verified doctor estimate is available for this scope. This is not a zero-compensation result.</p>}
+      {result.policy && <p className="text-xs">Policy version {result.policy.version.slice(0,12)} · Saved calculation {result.job_id} · Automated validation; not a new independent HR-report comparison.</p>}
       {officeId && <p className="text-sm">Showing doctors assigned to {result.office_names[officeId]}. Amounts and tiers retain all their qualifying offices; office subtotals appear in Details.</p>}
       <div className="flex flex-wrap gap-2">
         <button className={button} disabled={actionBusy} onClick={() => report('ledger-csv')}>Export doctor CSV · all qualifying offices</button>

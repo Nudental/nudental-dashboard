@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from contextlib import closing
 import hashlib, json, sqlite3
-from compensation_ledger import IncompleteCollectionEvidence, applied_date, reference
+from compensation_ledger import IncompleteCollectionEvidence, applied_date, reference, reconstruct
 
 FIELDS = ('id','ledgerType','amount','distributions','provider','location',
     'transactionDate','entryDate','modifiedDate','lastModified','isActive',
@@ -93,6 +93,7 @@ class LedgerReader:
             self._dependencies(self.records[previous],visited|{tid})
 
     def read(self, start, end, office_ids, *, as_of=None):
+        self.read_scope=(start,end)
         as_of=as_of or datetime.now(timezone.utc).isoformat().replace('+00:00','Z')
         if not office_ids or len(office_ids)>20:raise IncompleteCollectionEvidence('Invalid office scope')
         for table, endpoint in ENDPOINTS.items():
@@ -133,3 +134,24 @@ class LedgerReader:
             'read_as_of':as_of,'applied_scope':[start,end],'complete':True,'pages':len(self.receipts),
             'linked_source_reads':self.linked_reads,'source':'Ascend v1 complete revision history; read only',
             'report_data_as_of':None}}
+
+    def provider_catalog(self,policies):
+        """Native identity metadata only; never infer identity or type from a name."""
+        known={i for p in policies for i in p['source_ids']}
+        events=reconstruct(self.records,self.charges,self.categories,*self.read_scope)
+        ids={e['provider_id'] for e in events}-known;catalog={}
+        for provider in sorted(ids):
+            raw=None
+            with closing(sqlite3.connect('file:'+self.db_path.as_posix()+'?mode=ro',uri=True)) as db:
+                db.execute('PRAGMA query_only=ON')
+                if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='providers'").fetchone():
+                    row=db.execute('SELECT raw FROM providers WHERE id=?',(provider,)).fetchone()
+                    if row:raw=json.loads(row[0])
+            if not raw or str(raw.get('id'))!=provider:
+                try:raw=self._get('/v1/providers/'+provider,{'responseFields':'id,firstName,lastName,specialty,isNonPersonEntity'}).get('data')
+                except IncompleteCollectionEvidence:raw=None
+            if not isinstance(raw,dict) or str(raw.get('id'))!=provider:
+                catalog[provider]={'lookup_complete':False};continue
+            catalog[provider]={'name':' '.join(str(raw.get(k) or '').strip() for k in ('firstName','lastName')).strip(),
+                'specialty':raw.get('specialty'),'isNonPersonEntity':raw.get('isNonPersonEntity') is True,'lookup_complete':True}
+        return catalog

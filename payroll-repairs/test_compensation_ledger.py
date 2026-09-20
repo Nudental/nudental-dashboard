@@ -8,6 +8,8 @@ def load(name):
  loader=importlib.machinery.SourceFileLoader(name,str(T/(name+'.py.in')))
  spec=importlib.util.spec_from_loader(name,loader);mod=importlib.util.module_from_spec(spec);sys.modules[name]=mod;loader.exec_module(mod);return mod
 ledger=load('compensation_ledger');source=load('compensation_source')
+policy=load('compensation_policy');store=load('compensation_store')
+checks=load('compensation_checks')
 
 def row(tid,amount=-100,kind='PatientProcedurePayment',when='2026-09-09 13:00:00',charge='91',provider='11',category='1',office='21',previous=None,allocations=None):
  result={'id':tid,'amount':amount,'ledgerType':kind,'modifiedDate':when,'lastModified':'2026-09-18T03:00:00Z',

@@ -1,0 +1,1 @@
+export const supabase={auth:{getSession:async()=>({data:{session:{access_token:'verified'}}})},from:()=>{throw Error('QA must not connect to Supabase');},functions:{invoke:()=>{throw Error('QA external execution blocked');}}};

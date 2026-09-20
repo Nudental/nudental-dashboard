@@ -12,6 +12,11 @@ def report_html(result):
     parts.append('<h1>Provider compensation estimate</h1><p>Payday '+h(gusto['payday'])+' · Gusto period '+h(gusto.get('pay_period_start',''))+' – '+h(gusto.get('pay_period_end',''))+'</p>')
     parts.append('<p>Ascend Applied Date window: '+h(' – '.join(result['applied_window']))+'</p>')
     parts.append('<p class="notice">Signed HR Ledger Total Collection is preserved. Eligible earned collections reverse that ledger sign once. Monthly tiers combine only approved offices. Estimates do not change paid payroll.</p>')
+    if result.get('policy'):
+        parts.append('<p>Policy version '+h(result['policy']['version'])+' · Snapshot '+h(result.get('job_id',''))+'</p>')
+        parts.append('<p>'+('Needs review — named exceptions below.' if result.get('exceptions') else 'Ready for HR review — automated checks passed.')+' Automated validation is not a new independent HR-report reconciliation.</p>')
+    if result.get('complete_doctor_scope') is False:parts.append('<p class="notice">Configured-doctor results are incomplete payroll scope; no partial total is certified as complete.</p>')
+    for e in result.get('exceptions',[]):parts.append('<p class="notice">'+h(e['provider_name'])+' · '+h(' – '.join(e['period']))+' · '+h(e['reason'])+' · Required action: '+h(e['action'])+'</p>')
     for row in result['doctors']:
         parts.append('<article><h2>'+h(row['provider_name'])+'</h2><p>Approved offices: '+h(', '.join(offices.get(i,i) for i in row['office_ids']))+'</p>')
         parts.append('<p>Raw HR Total Collection: $'+money(row['raw_hr_collection_cents'])+' · Eligible period: $'+money(row['eligible_period_cents'])+' · Estimate: $'+money(row['estimate_cents'])+'</p>')
@@ -39,10 +44,11 @@ def report_html(result):
 
 def report_csv(result):
     stream=io.StringIO(newline='');writer=csv.writer(stream)
-    writer.writerow(['Provider','Provider ID','Payday','Gusto start','Gusto end','Ascend start','Ascend end','Month','Cutoff','Basis status','Period collections','Monthly basis','Automatic percent','Applied percent','Manual override','Estimate','Calculation ID','Source snapshot','Office detail','Raw HR signed period','Office exceptions','Month-end adjustment'])
+    writer.writerow(['Provider','Provider ID','Payday','Gusto start','Gusto end','Ascend start','Ascend end','Month','Cutoff','Basis status','Period collections','Monthly basis','Automatic percent','Applied percent','Manual override','Estimate','Calculation ID','Source snapshot','Office detail','Raw HR signed period','Office exceptions','Month-end adjustment','Policy version','Snapshot ID','Source as of','Automated status','Complete doctor scope','Review exceptions'])
     for r in result['doctors']:
         for m in r['months']:
             values=[r['provider_name'],r['provider_id'],result['gusto']['payday'],result['gusto'].get('pay_period_start',''),result['gusto'].get('pay_period_end',''),*result['applied_window'],m['month'],m['cutoff'],m['basis_label'],money(m['period_collection_cents']),money(m['monthly_basis_cents']),m['automatic_percent'],m['applied_percent'],bool(r['override']),money(m['estimate_cents']),r['calculation_id'],r['source_snapshot']['sha256'],json.dumps(m['office_detail']),money(r['raw_hr_collection_cents']),json.dumps(r.get('monthly_exceptions',r['exceptions'])),'Pending verified paid baseline; separate HR approval']
+            values.extend([result.get('policy',{}).get('version',''),result.get('job_id',''),result['source_snapshot'].get('read_as_of',''),result.get('status',''),result.get('complete_doctor_scope',True),json.dumps(result.get('exceptions',[]))])
             writer.writerow(["'"+v if isinstance(v,str) and v[:1] in ('=','+','@') else v for v in values])
     return stream.getvalue()
 
@@ -51,4 +57,6 @@ def prepared_payload(result):
     """Future send preparation consumes these exact rows; this does not send."""
     return {'purpose':'compensation report preparation only','delivery_performed':False,
             'gusto':result['gusto'],'applied_window':result['applied_window'],
-            'source_snapshot':result['source_snapshot'],'calculations':result['doctors']}
+            'source_snapshot':result['source_snapshot'],'calculations':result['doctors'],
+            'policy':result.get('policy'),'snapshot_id':result.get('job_id'),'automated_status':result.get('status'),
+            'complete_doctor_scope':result.get('complete_doctor_scope',True),'exceptions':result.get('exceptions',[])}

@@ -1,0 +1,133 @@
+"""Effective-dated compensation configuration; never changes login permissions.
+
+Uses the existing protected server-configuration mechanism. Administrator writes
+are explicit, versioned and audited; runtime requests only read approved rules.
+"""
+from pathlib import Path
+from datetime import date,datetime,timezone,timedelta
+import copy,hashlib,json,os,stat,getpass
+from compensation_ledger import IncompleteCollectionEvidence
+
+ROOT=Path.home()/'.config/nudashboard/payroll-policy'
+TIERS=[{'through_cents':5000000,'percent':32},{'through_cents':6500000,'percent':33},{'through_cents':8000000,'percent':34},{'through_cents':None,'percent':35}]
+
+def canonical(value):return json.dumps(value,sort_keys=True,separators=(',',':')).encode()
+def digest(value):return hashlib.sha256(canonical(value)).hexdigest()
+
+def validate(document):
+    if document.get('schema')!=1 or document.get('tiers')!=TIERS:
+        raise IncompleteCollectionEvidence('Compensation policy schema or approved tiers changed; administrator review required')
+    if not all(document.get(k) for k in ('approved_by','approval_reference','recorded_at','recorded_by')):
+        raise IncompleteCollectionEvidence('Policy approval provenance is missing')
+    offices=document.get('office_names',{});people=document.get('doctors',[])
+    if not offices or not people:raise IncompleteCollectionEvidence('Compensation office policy is empty')
+    owners={};person_ids=set()
+    for p in people:
+        if not p.get('id') or not p.get('name') or p['id'] in person_ids:raise IncompleteCollectionEvidence('Duplicate or unnamed compensation person')
+        person_ids.add(p['id'])
+        ids=p.get('source_ids',[])
+        if not ids or len(set(ids))!=len(ids):raise IncompleteCollectionEvidence('Missing or duplicate verified provider identities')
+        for source in ids:
+            if not str(source).isdigit() or source in owners:raise IncompleteCollectionEvidence('A provider identity belongs to more than one doctor')
+            owners[source]=p['id']
+        rules=p.get('office_rules',[])
+        if not rules:raise IncompleteCollectionEvidence('Missing effective office rules for '+p['name'])
+        previous=None
+        for rule in rules:
+            first=date.fromisoformat(rule['effective_start']);last=date.fromisoformat(rule['effective_end']) if rule.get('effective_end') else None
+            if last is not None and last<first:raise IncompleteCollectionEvidence('Invalid policy date range')
+            if previous is not None and (previous['effective_end'] is None or first<=date.fromisoformat(previous['effective_end'])):
+                raise IncompleteCollectionEvidence('Overlapping or unordered effective office rules')
+            if not rule.get('approval_reference') or not rule.get('approved_by'):raise IncompleteCollectionEvidence('Missing office-rule approval provenance')
+            assigned=rule.get('offices',[])
+            if not assigned or len(set(assigned))!=len(assigned) or not set(assigned)<=set(offices):raise IncompleteCollectionEvidence('Unknown or duplicate compensation office')
+            previous=rule
+    return document
+
+def office_rule(person,day):
+    matches=[r for r in person['office_rules'] if r['effective_start']<=day and (r.get('effective_end') is None or day<=r['effective_end'])]
+    if len(matches)!=1:raise IncompleteCollectionEvidence(person['name']+' has no unambiguous approved office rule on '+day+'; administrator must supply the effective assignment')
+    return matches[0]
+
+def policy_for_period(person,start,end,version):
+    day=date.fromisoformat(start);last=date.fromisoformat(end);offices=set()
+    while day<=last:
+        offices.update(office_rule(person,day.isoformat())['offices']);day+=timedelta(days=1)
+    return {**copy.deepcopy(person),'offices':sorted(offices),'effective_start':start,'effective_end':end,'policy_version':version}
+
+def _private(path,directory=False):
+    info=path.lstat()
+    if path.is_symlink() or (directory and not stat.S_ISDIR(info.st_mode)) or (not directory and not stat.S_ISREG(info.st_mode)):
+        raise IncompleteCollectionEvidence('Unsafe payroll policy storage path')
+    if os.name!='nt' and (stat.S_IMODE(info.st_mode)&0o077 or info.st_uid not in (0,os.geteuid())):
+        raise IncompleteCollectionEvidence('Payroll policy storage permissions require administrator review')
+
+def load(root=ROOT):
+    try:
+        root=Path(root);_private(root,True);pointer=root/'current.json';_private(pointer)
+        version=json.loads(pointer.read_text())['version']
+        if len(version)!=64 or any(c not in '0123456789abcdef' for c in version):raise ValueError()
+        path=root/(version+'.json');_private(path)
+        if path.stat().st_size>262144:raise ValueError()
+        document=validate(json.loads(path.read_text()))
+        if digest(document)!=version:raise ValueError()
+        return {'version':version,'document':document}
+    except IncompleteCollectionEvidence:raise
+    except Exception:raise IncompleteCollectionEvidence('Approved payroll policy is unavailable; administrator must restore the versioned configuration') from None
+
+def approve(document,*,expected_version=None,root=ROOT):
+    """Existing server administrator operation, never invoked by report requests."""
+    root=Path(root)
+    if not root.exists():root.mkdir(parents=True,mode=0o700)
+    _private(root,True);lock=root/'update.lock'
+    fd=os.open(lock,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
+    try:
+        current=load(root) if (root/'current.json').exists() else None
+        if (current['version'] if current else None)!=expected_version:raise ValueError('Policy changed; review current version before approval')
+        doc=copy.deepcopy(document);doc.update(previous_version=expected_version,recorded_at=datetime.now(timezone.utc).isoformat(),recorded_by=getpass.getuser())
+        validate(doc)
+        if current:
+            effective=date.fromisoformat(doc.get('change_effective_date',''))
+            if effective<date.today():raise ValueError('A prospective configuration change cannot rewrite historical effective rules')
+            new_people={p['id']:p for p in doc['doctors']}
+            for old_person in current['document']['doctors']:
+                new_person=new_people.get(old_person['id'])
+                if not new_person or new_person['source_ids']!=old_person['source_ids']:raise ValueError('Preserve verified historical identities; additions require a separately reviewed identity migration')
+                boundaries={r['effective_start'] for r in old_person['office_rules']+new_person['office_rules']}
+                boundaries|={str(date.fromisoformat(r['effective_end'])+timedelta(days=1)) for r in old_person['office_rules']+new_person['office_rules'] if r.get('effective_end')}
+                for day in sorted(boundaries):
+                    if day>=effective.isoformat():continue
+                    def assignment(person):
+                        try:return sorted(office_rule(person,day)['offices'])
+                        except IncompleteCollectionEvidence:return None
+                    if assignment(old_person)!=assignment(new_person):raise ValueError('Historical assignment changed before the approved effective date')
+        version=digest(doc);path=root/(version+'.json')
+        with path.open('xb') as out:out.write(canonical(doc));out.flush();os.fsync(out.fileno())
+        path.chmod(0o600)
+        tmp=root/'current.pending';assert not tmp.exists()
+        with tmp.open('xb') as out:out.write(canonical({'version':version}));out.flush();os.fsync(out.fileno())
+        tmp.chmod(0o600);os.replace(tmp,root/'current.json')
+        return version
+    finally:
+        os.close(fd);lock.unlink()
+
+def initial_document(historical,offices):
+    """Owner-approved continuity; historical office intervals stay unchanged."""
+    provenance='Dr. G ongoing-payroll authorization, September 20 2026'
+    people=[]
+    for p in historical:
+        people.append({'id':p['id'],'name':p['name'],'source_ids':p['source_ids'], 'office_rules':[
+            {'effective_start':p['effective_start'],'effective_end':p['effective_end'],'offices':p['offices'],'approved_by':'Dr. G','approval_reference':'Completed September 4/18 HR reconciliation and explicit office confirmations'},
+            {'effective_start':'2026-10-01','effective_end':None,'offices':p['offices'],'approved_by':'Dr. G','approval_reference':provenance}]})
+    return {'schema':1,'tiers':TIERS,'office_names':offices,'doctors':people,'approved_by':'Dr. G','approval_reference':provenance}
+
+if __name__=='__main__':
+    import argparse
+    parser=argparse.ArgumentParser(description='Existing server administrator payroll policy configuration')
+    parser.add_argument('action',choices=['inspect','approve']);parser.add_argument('--document');parser.add_argument('--expected-version')
+    args=parser.parse_args()
+    if args.action=='inspect':
+        p=load();print(json.dumps({'version':p['version'],'approved_by':p['document']['approved_by'],'recorded_at':p['document']['recorded_at'],'doctors':len(p['document']['doctors'])}))
+    else:
+        if not args.document:parser.error('--document is required')
+        print(json.dumps({'approved_version':approve(json.loads(Path(args.document).read_text()),expected_version=args.expected_version)}))

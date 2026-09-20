@@ -5,12 +5,16 @@ Every report uses the same immutable result. Expired results require an explicit
 refresh, never a silent recalculation under the identity of an older report.
 """
 from concurrent.futures import ThreadPoolExecutor
-from datetime import date, timedelta
+from datetime import date, timedelta,datetime,timezone
 from threading import RLock
 from time import monotonic
 import copy, re, uuid
 from compensation_ledger import IncompleteCollectionEvidence, monthly_scopes, reconstruct, calculate_doctor
 from compensation_source import LedgerReader
+from compensation_policy import load as load_policy, policy_for_period
+from compensation_store import SnapshotStore
+from compensation_checks import check_result
+from zoneinfo import ZoneInfo
 
 OFFICES = {'14000000000432':'Staten Island','14000000000433':'Eatontown',
            '14000000000434':'Barnegat','14000000000435':'Brick'}
@@ -51,23 +55,58 @@ def validate_run(rows, run_id, start, end):
             'pay_period_end':last.isoformat(),'payday':payday.isoformat(),'status':'processed regular'}
 
 
-def calculate_snapshot(source, start, end, gusto, policies=POLICIES):
-    scopes=monthly_scopes(start,end,gusto['payday'])
+def source_day(value):
+    stamp=datetime.fromisoformat(value.replace('Z','+00:00'))
+    if stamp.tzinfo is None:raise IncompleteCollectionEvidence('Source-as-of timezone is missing')
+    return stamp.astimezone(ZoneInfo('America/New_York')).date().isoformat()
+
+def calculate_snapshot(source, start, end, gusto, policies=POLICIES, configuration=None):
+    as_of=source['snapshot'].get('read_as_of')
+    as_of_day=source_day(as_of) if as_of else None
+    scopes=monthly_scopes(start,end,gusto['payday'],as_of_day)
     evidence_start=min(s['start'] for s in scopes.values())
     evidence_end=max(s['cutoff'] for s in scopes.values())
     if source['snapshot']['applied_scope']!=[evidence_start,evidence_end] or not source['snapshot']['complete']:
         raise IncompleteCollectionEvidence('Monthly source coverage is incomplete')
     events=reconstruct(source['records'],source['charges'],source['categories'],evidence_start,evidence_end)
-    doctors=[calculate_doctor(p,events,scopes,start,end,gusto,source['snapshot'],set(OFFICES)) for p in policies]
+    unique={(e['transaction_id'],e['charge_id'],e['provider_id'],e['report_location_id']) for e in events}
+    if len(unique)!=len(events):raise IncompleteCollectionEvidence('Duplicate reconstructed application event; source review required')
+    exceptions=[];doctors=[]
+    if configuration:
+        policies=configuration['document']['doctors']
+        if configuration['document']['office_names']!=OFFICES:raise IncompleteCollectionEvidence('Configured office identity does not match authorized report scope')
+    for p in policies:
+        try:
+            effective=policy_for_period(p,evidence_start,evidence_end,configuration['version']) if configuration else p
+            doctors.append(calculate_doctor(effective,events,scopes,start,end,gusto,source['snapshot'],set(OFFICES)))
+        except IncompleteCollectionEvidence as error:
+            if not configuration:raise
+            exceptions.append({'provider_id':p['id'],'provider_name':p['name'],'period':[start,end],'reason':str(error),'action':'Administrator must confirm the missing effective-dated rule; other independent doctor results may still be reviewed','blocks_complete_total':True})
     known={i for p in policies for i in p['source_ids']}
     # Preserve the separate report-selected Rigby identity without merging it.
     extra=[e for e in events if e['provider_id']=='14000000027462' and e['provider_id'] not in known]
-    return {'doctors':doctors,'office_names':OFFICES,'gusto':gusto,'applied_window':[start,end],
+    if configuration:
+        catalog=source.get('provider_catalog',{})
+        for provider in sorted({e['provider_id'] for e in events}-known):
+            metadata=catalog.get(provider,{})
+            if metadata.get('specialty')=='HYGIENIST' or metadata.get('isNonPersonEntity') is True:continue
+            exceptions.append({'provider_id':provider,'provider_name':metadata.get('name') or 'Unmapped source provider '+provider,'period':[start,end],'reason':'No verified doctor/source identity policy covers this collection history','action':'Administrator must verify the person and effective offices; no name-based merging or guessed compensation','blocks_complete_total':True})
+        for doctor in doctors:
+            if doctor['monthly_exceptions'] or doctor['negative_review_required']:
+                exceptions.append({'provider_id':doctor['provider_id'],'provider_name':doctor['provider_name'],'period':[start,end],'reason':'Out-of-assignment office collections or negative source amounts require review','action':'Review the retained signed source detail; do not rewrite source transactions','blocks_complete_total':False})
+    complete=not any(e['blocks_complete_total'] for e in exceptions)
+    out={'doctors':doctors,'office_names':OFFICES,'gusto':gusto,'applied_window':[start,end],
             'source_snapshot':source['snapshot'],'scopes':scopes,
             'unmapped_report_identities':[{'provider_id':'14000000027462',
                 'signed_cents':sum(e['signed_cents'] for e in extra),
                 'status':'Separate source identity; office/person approval required'}] if extra else [],
-            'status':'SOURCE_CALCULATED_ESTIMATE','saved_payroll_modified':False}
+            'status':'NEEDS_REVIEW' if exceptions else 'READY_FOR_HR_REVIEW','saved_payroll_modified':False,
+            'exceptions':exceptions,'complete_doctor_scope':complete,
+            'independent_hr_status':'NOT_AUTOMATICALLY_CERTIFIED'}
+    if configuration:
+        out['policy']={'version':configuration['version'],'approved_by':configuration['document']['approved_by'],'approval_reference':configuration['document']['approval_reference'],'recorded_at':configuration['document']['recorded_at']}
+    out['automated_checks']=check_result(out)
+    return out
 
 
 def reprice(result, provider_id, percent, actor_id):
@@ -92,8 +131,8 @@ def reprice(result, provider_id, percent, actor_id):
 
 
 class SnapshotJobs:
-    def __init__(self):
-        self.lock=RLock();self.jobs={};self.executor=ThreadPoolExecutor(max_workers=1,thread_name_prefix='compensation-read')
+    def __init__(self,store=None):
+        self.store=store;self.lock=RLock();self.jobs={};self.executor=ThreadPoolExecutor(max_workers=1,thread_name_prefix='compensation-read')
 
     def start(self, actor, request_id, signature, build):
         if not re.fullmatch(r'[a-zA-Z0-9_-]{16,80}',request_id or ''):raise ValueError('Invalid calculation request identity')
@@ -108,18 +147,25 @@ class SnapshotJobs:
             if len(self.jobs)>=32 or sum(not j['future'].done() for j in self.jobs.values())>=4:
                 raise IncompleteCollectionEvidence('A collection read is already pending; retry when it finishes')
             key=uuid.uuid4().hex
-            self.jobs[key]={'actor':actor,'request':request_id,'signature':signature,'created':now,'future':self.executor.submit(build)}
+            def build_and_preserve():
+                result=build()
+                if self.store:self.store.put(key,actor,result)
+                return result
+            self.jobs[key]={'actor':actor,'request':request_id,'signature':signature,'created':now,'future':self.executor.submit(build_and_preserve)}
             return key
 
     def result(self,key,actor):
         with self.lock:
             j=self.jobs.get(key)
-            if not j or j['actor']!=actor:raise KeyError('Calculation expired or inaccessible; refresh the selected period')
+            if not j:
+                if self.store:return self.store.get(key,actor)
+                raise KeyError('Calculation expired or inaccessible; refresh the selected period')
+            if j['actor']!=actor:raise KeyError('Calculation inaccessible')
             if not j['future'].done():return None
             return copy.deepcopy(j['future'].result())
 
 
-JOBS=SnapshotJobs()
+JOBS=SnapshotJobs(store=SnapshotStore())
 
 
 class _NoResponseLog:
@@ -133,14 +179,23 @@ def request_calculation(actor, read_runs, start, end, run_id, request_id):
     if not re.fullmatch(r'[a-zA-Z0-9_-]{1,100}',run_id or ''):raise ValueError('Select an imported regular payroll run')
     fields='id,check_date,pay_period_start,pay_period_end,off_cycle,off_cycle_reason,processed,reversed,needs_reprocessing'
     gusto=validate_run(read_runs('gusto_payroll_runs?select='+fields+'&id=eq.'+run_id,strict=True),run_id,start,end)
-    scopes=monthly_scopes(start,end,gusto['payday'])
+    configuration=load_policy()
+    as_of=datetime.now(timezone.utc).isoformat().replace('+00:00','Z')
+    as_of_day=source_day(as_of)
+    scopes=monthly_scopes(start,end,gusto['payday'],as_of_day)
     first=min(s['start'] for s in scopes.values());last=max(s['cutoff'] for s in scopes.values())
-    if first<'2026-08-01' or last>'2026-09-30':
-        raise IncompleteCollectionEvidence('Confirmed doctor office rules cover August–September 2026 only. This historical or later period needs its effective office rules; it remains selectable.')
+    if last>=as_of_day:raise IncompleteCollectionEvidence('The required source cutoff has not completed yet; retry after '+last+' ends. No incomplete month or zero estimate was substituted.')
+    covered=0
+    for person in configuration['document']['doctors']:
+        try:policy_for_period(person,first,last,configuration['version']);covered+=1
+        except IncompleteCollectionEvidence:pass
+    if not covered:raise IncompleteCollectionEvidence('No approved doctor office rules cover '+first+' through '+last+'. An administrator must supply the historical effective rules; unchanged future rules do not need reconfirmation.')
     def build():
         from ascend_service import AscendClient, PROD_CREDS_PATH, DB_PATH
         client=AscendClient(creds_path=PROD_CREDS_PATH)
         client.call_log=_NoResponseLog()
-        source=LedgerReader(client,DB_PATH).read(first,last,OFFICES)
-        return calculate_snapshot(source,start,end,gusto)
-    return JOBS.start(actor.id,request_id,(run_id,start,end),build)
+        reader=LedgerReader(client,DB_PATH)
+        source=reader.read(first,last,OFFICES,as_of=as_of)
+        source['provider_catalog']=reader.provider_catalog(configuration['document']['doctors'])
+        return calculate_snapshot(source,start,end,gusto,configuration=configuration)
+    return JOBS.start(actor.id,request_id,(run_id,start,end,configuration['version']),build)
