@@ -12,6 +12,6 @@ Verification: **324 guarded native API tests**, **17 retained backend suites**, 
 
 Evidence: `api-provider-read-contracts-v1/receipt.json`, `api-provider-read-retained-v1/summary.json`, `api-provider-callers-v1/manifest.json`, and `production-api-provider-read-receipt.json` in the existing private Phase 6 server evidence directory. The release receipt reports PASS. Source/config/caller snapshots and current Pages IDs are recorded before activation; rollback restores only this bounded release and preserves the previously rotated validator credential.
 
-The two Collaboration daily-report gates remain independently pending: `/v2/rcm/ar-aging-official` and `/v2/rcm/ar-location-health`. No Collaboration restart or scheduler activation is included in this release.
+The two Collaboration daily-report gates were subsequently activated and live-verified on September 20, 2026. Phase 6 is COMPLETE. The final Dashboard-only activation is documented in CHECKPOINT.md and REPORT-GATES-CLOSURE-20260920.json; it did not restart Collaboration or run scheduled/provider work.
 
 Protocol references: [Gusto OAuth](https://docs.gusto.com/app-integrations/docs/oauth2) and [Login with Amazon authorization code grant](https://developer.amazon.com/docs/login-with-amazon/authorization-code-grant.html).

@@ -1,0 +1,99 @@
+{
+  "result": "PASS",
+  "verified_at": "2026-09-20T05:28:30.170683+00:00",
+  "source_commit": "19cfc40081b3b6cfd1422073c4fed66dad9adc45",
+  "source_files_matching": 36,
+  "human": {
+    "result": "PASS",
+    "at": "2026-09-20T05:24:39.295599+00:00",
+    "authentication": "ordinary existing Supabase password sign-in; no fabricated identity",
+    "checks": [
+      {
+        "port": 8001,
+        "path": "/v2/rcm/ar-aging-official",
+        "human_authenticated_http": 200
+      },
+      {
+        "port": 8001,
+        "path": "/v2/rcm/ar-location-health",
+        "human_authenticated_http": 200
+      },
+      {
+        "port": 8002,
+        "path": "/v2/rcm/ar-aging-official",
+        "human_authenticated_http": 200
+      },
+      {
+        "port": 8002,
+        "path": "/v2/rcm/ar-location-health",
+        "human_authenticated_http": 200
+      }
+    ],
+    "financial_writes": 0,
+    "provider_syncs": 0,
+    "credential_saved": false,
+    "temporary_auth_session_logout_http": 204
+  },
+  "denial_and_job_checks": 34,
+  "health": {
+    "production": {
+      "status": 200
+    },
+    "candidate": {
+      "status": 200
+    },
+    "collaboration": {
+      "status": 200
+    },
+    "qa": {
+      "status": 200,
+      "product_api_ready": false,
+      "qa_database_connected": true,
+      "internet_sockets_blocked": true,
+      "production_home_hidden": true
+    }
+  },
+  "frontends": [
+    {
+      "origin": "https://nudashboard.com",
+      "entry": "/assets/index-DRITFcr0.js",
+      "sha256": "25917d222e808abba8861d054c048cac90f7a6677743e9837d8c9023821a55fc"
+    },
+    {
+      "origin": "https://nudashboard-qa.pages.dev",
+      "entry": "/assets/index-BXvFvJGj.js",
+      "sha256": "48716bfc332598a4462e23fa5cb92cf59a934c3f7eff475195ad4890ac05d8c8"
+    }
+  ],
+  "processes": {
+    "nudashboard-middleware.service": 1462955,
+    "nudashboard-middleware-candidate.service": 1462638,
+    "collab-api.service": 1444861
+  },
+  "backup": "/home/openclaw/.cache/nudashboard-phase6-20260917/api-report-gates-backup-20260920T051649Z",
+  "policy_sha256": "ebebed3b76e1046671bf08f9ed6b25dca2fea28268fac349254aec2642f5def7",
+  "collaboration_restart": false,
+  "frontend_deployment": false,
+  "financial_changes": false,
+  "provider_actions": false,
+  "phase6_status": "COMPLETE",
+  "previous_main": "0fb2de80ed3901d187dab8b2a9a80c552cde7681",
+  "branch": "phase6/nudashboard-production-hardening-20260917",
+  "backup_tag": "backup/api-before-phase6-report-gates-20260920",
+  "native_tests": 328,
+  "materializer_tests": 13,
+  "live_rcm": {
+    "verified_at": "2026-09-20T05:25:35.560439+00:00",
+    "url": "https://nudashboard.com/rcm",
+    "signed_in_role": "Super Administrator",
+    "rcm_dashboard": "PASS",
+    "official_ar_panel": "PASS",
+    "browser_errors": 0,
+    "visible_official_ar_total": 524371,
+    "financial_edit": false,
+    "not_an_accounting_reconciliation": true
+  },
+  "frontend_and_retained_tests": "Prior passing evidence retained; not rerun for this one-policy activation",
+  "temporary_sign_in_checker_stopped": true,
+  "financial_register_unchanged": true
+}

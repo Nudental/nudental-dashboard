@@ -695,9 +695,9 @@
       "path": "/v2/rcm/ar-aging-official",
       "handler": "rcm_ar_aging_official",
       "review_group": [
-        "report_compatibility_activation_pending"
+        "report_compatibility_activation_deployed"
       ],
-      "evidence": "Policy tested but human gate inactive; no Collaboration restart authorized yet"
+      "evidence": "2026-09-20: deployed policy 19cfc40; 328 native tests, 34 denial/job checks and four real-human HTTP 200 checks PASS; exact two-GET Collaboration identity; no business writes."
     },
     {
       "method": "GET",
@@ -1183,9 +1183,9 @@
       "path": "/v2/rcm/ar-location-health",
       "handler": "rcm_ar_location_health",
       "review_group": [
-        "report_compatibility_activation_pending"
+        "report_compatibility_activation_deployed"
       ],
-      "evidence": "Policy tested but human gate inactive; no Collaboration restart authorized yet"
+      "evidence": "2026-09-20: deployed policy 19cfc40; 328 native tests, 34 denial/job checks and four real-human HTTP 200 checks PASS; exact two-GET Collaboration identity; no business writes."
     },
     {
       "method": "GET",
@@ -1318,11 +1318,8 @@
       ]
     }
   ],
-  "updated_utc": "2026-09-18T14:57:45.285536+00:00",
-  "source_commit": "78cc78da4affc54f4308a4731551a46f30854e17",
+  "updated_utc": "2026-09-20T05:30:38.721286+00:00",
+  "source_commit": "19cfc40081b3b6cfd1422073c4fed66dad9adc45",
   "remaining_unreviewed": 0,
-  "pending_activations": [
-    "/v2/rcm/ar-aging-official",
-    "/v2/rcm/ar-location-health"
-  ]
+  "pending_activations": []
 }

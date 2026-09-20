@@ -1,36 +1,36 @@
-# NuDental Dashboard - active Phase 6 checkpoint
+# NuDental Dashboard — Phase 6 final checkpoint
 
-Updated 2026-09-18T14:57:45.285536+00:00. **Phase 6 remains in progress. Do not begin another phase.**
+Updated 2026-09-20T05:30:38.721286+00:00.
 
-## Current release
+## Phase 6 COMPLETE — September 20, 2026
 
-- Phase 6 branch: `phase6/nudashboard-production-hardening-20260917`.
-- Canonical branch: `main`, normal fast-forward to the verified Phase 6 closure containing this checkpoint. Previous main: `820970ede7727830d95d8d03d518d02119da1acd`. Exact new main SHA is in the external saved release pointer/closure receipt after push; application source remains `78cc78da4affc54f4308a4731551a46f30854e17`.
-- Live API source: `78cc78da4affc54f4308a4731551a46f30854e17`; main SHA256 `7b85a17d6a9bac738bb4239b83326199c99957b499d14335e7d6934a95607917`. All 36 materialized files match production.
-- Production Pages: `dcf8bc42-1a06-45f6-8010-80c1db7595be`; `/assets/index-DRITFcr0.js`, 8,835,047 bytes.
-- QA Pages: `ae279546-abd2-4720-a052-a9a34aa2d60b`; `/assets/index-BXvFvJGj.js`, 8,833,878 bytes; `product_api_ready=false` is intentionally QA-only.
-- Frontend source: `009005b03767dc3dc9facdbfc5f9fa81fa001d49`; retained full 1,678 frontend checks and both builds PASS, with 21 compiled checks in each environment. No frontend change in the provider release.
+The final two reviewed report-read gates are active and live-verified: `/v2/rcm/ar-aging-official` and `/v2/rcm/ar-location-health`. This completes the approved Phase 6 hardening scope. No next phase is authorized or started. Earlier pending-status statements below describe historical checkpoints and are superseded by this closure.
 
-## Completed - do not repeat deployment
+Only the reviewed `api_financial_read_policy.py` was deployed from `19cfc40081b3b6cfd1422073c4fed66dad9adc45` at 2026-09-20T05:20:45.804119+00:00. Its canonical template, materializer manifest and focused regression tests were updated with it. The two pending exclusions were removed; route handlers, calculations and all other executable policy behavior were preserved. Of 36 materialized runtime files, exactly one changed and 35 remained identical. Final source/process/asset parity passed at `2026-09-20T05:28:30.170683+00:00`.
 
-Adapted Groups A-E, atomic office assignment/review client, dated August 2-15 Payroll Comparison, and independent API boundaries are deployed and verified. Provider access/OAuth is the latest release: 324 native tests, 17 retained suites, 13 materializer tests and two exact external-caller checks PASS. 79,171 original Supabase rows and 83,991 original SQLite rows preserved. Same-period metrics, provider configuration, schedules and schema unchanged. Final source/asset/health parity PASS at 2026-09-18T14:52:28.766982+00:00.
+| Final live check | Result |
+|---|---|
+| Real signed-in human, both routes on production and candidate | PASS: four HTTP 200 results |
+| Missing or invalid human identity | PASS: HTTP 401 |
+| Installed `collab-daily-report` identity | PASS: HTTP 200 for exactly the two approved GETs |
+| Unrelated job identity, report-job access outside scope, POST/PUT/PATCH/DELETE | PASS: HTTP 403; no write executed |
+| Signed-in production RCM Dashboard and Official A/R panel | PASS; no captured browser errors |
+| Production API, candidate API, Collaboration and QA health | PASS: HTTP 200 |
+| Production and QA frontend hashes | PASS: unchanged |
+| QA database isolation and execution restrictions | PASS: retained |
 
-Seven separate exact-GET job identities exist: the three validators, cache-prewarmer, plaid-sync, morning-brief, payroll-balance-watch. Existing expiry is `2026-12-16T22:55:05.380984+00:00`. Do not display credentials. The previously exposed reconciliation token is revoked; never restore it from an older backup.
+Fresh verification: **328 guarded native API tests, 13 materializer tests, 34 live denial/job checks and four real-human report checks PASS**. Guards recorded no blocked network/business-write attempts. Earlier 1,678 frontend tests, both frontend builds and 17 retained backend suites remain preserved passing evidence; they were not rerun for this one-policy activation. Positive financial/provider write execution was intentionally not tested live. The temporary human verification session signed out with HTTP 204 and its local helper was stopped; no password or token was saved.
 
-## Pending decision and remaining work
+Only the two existing Dashboard API processes restarted: candidate 974384 → 1462638 and production 974401 → 1462955. Collaboration PID 1444861 stayed unchanged in this activation. The earlier separately approved Collaboration restart and exact report-caller adapter are preserved. No frontend restart or deployment occurred.
 
-1. `/v2/rcm/ar-aging-official` and `/v2/rcm/ar-location-health` human gates remain deliberately inactive. Collaboration caches its daily-report caller; restarting its API immediately runs the scheduler and may dispatch due work. A pending user question asks whether to defer to a planned restart or allow restart and normal scheduled work. **No answer is recorded. Do not treat elapsed time as approval.** No Collaboration source/config/credential/service was changed. Its pure adapter is prepared only in `patch-daily-report-read-identity.py`.
-2. Independent read-only regression and canonical source closure are complete. Before resuming, read the saved Git verification receipt to confirm main/branch equality. All earlier branches/tags remain; no force push. No independent Dashboard implementation remains queued.
-3. If the decision remains unavailable, keep Phase 6 explicitly incomplete with this exact external activation dependency; do not repeat completed investigations or provider/login/sync work.
+Production remains Pages `dcf8bc42-1a06-45f6-8010-80c1db7595be`, asset `/assets/index-DRITFcr0.js`, 8,835,047 bytes, SHA256 `25917d222e808abba8861d054c048cac90f7a6677743e9837d8c9023821a55fc`. QA remains Pages `ae279546-abd2-4720-a052-a9a34aa2d60b`, asset `/assets/index-BXvFvJGj.js`, 8,833,878 bytes, SHA256 `48716bfc332598a4462e23fa5cb92cf59a934c3f7eff475195ad4890ac05d8c8`. QA still has `product_api_ready=false`, a connected isolated QA database, blocked internet sockets and a hidden production home. No speedup is claimed for this activation.
 
-Final UI PASS: Executive Overview, Financial Analytics, Reports, Inventory, Huddle History and Insurance. Prior RCM/Expense/dated Payroll evidence remains. QA label and API isolation flag preserved. No real provider or workflow execution.
+Canonical development branch: `main`. Previous main: `0fb2de80ed3901d187dab8b2a9a80c552cde7681`. Integration is a normal fast-forward containing runtime source `19cfc40081b3b6cfd1422073c4fed66dad9adc45` plus this documentation closure; the exact resulting main SHA is recorded in `outputs/nudental-dashboard-current-release.json` and the saved source-closure receipt after push. Preserve `phase6/nudashboard-production-hardening-20260917` and all earlier branches/tags; no force push.
 
-## Recovery and safety
+Rollback: annotated tag `backup/api-before-phase6-report-gates-20260920` and private server snapshot `/home/openclaw/.cache/nudashboard-phase6-20260917/api-report-gates-backup-20260920T051649Z`. The snapshot includes the current API source/configuration, process identities and current restricted-job registry. All eight installed identities and their exact scopes were preserved; the existing renewal deadline is 2026-12-16T22:55:05.380984+00:00. Never restore the previously revoked reconciliation-validator token from an older backup.
 
-Latest backup `/home/openclaw/.cache/nudashboard-phase6-20260917/api-provider-read-backup-20260918T143542Z`; Git tag `backup/api-before-phase6-provider-reads-20260918`. Existing frontend rollback and earlier API/schema backups remain. Production and QA remain healthy. Private snapshots stay on the server.
+No database schema, financial source records, classifications, archives, accounting proposals, provider credentials, scheduled-job definitions, frontend assets or QA configuration changed in this activation. No provider sync, financial write, workflow execution, email delivery or purchase was run. Phase 5 residual accounting registers remain frozen and unchanged.
 
-One earlier daily-Huddle visit initialized a September 18 draft with 19 blank checklist and four blank provider children; preserve it. Avoid daily-Huddle auto-initialization. Huddle History mount was source-reviewed: it selects offices/history and subscribes to changes; no write occurs without a separate user action. Automatic review initially blocked its navigation, then allowed the source-confirmed read-only history view. No approval, unlock or review action was performed.
+Nonblocking follow-up remains separate: the preexisting Collaboration trash-retention foreign-key failure on a referenced expired draft is unchanged; no purge or schema change was attempted. Preserve the earlier unsubmitted September 18 Huddle draft (19 blank checklist and four blank provider children). Job-identity renewal remains due by the existing December deadline. No additional Phase 6 implementation remains queued.
 
-Financial residuals remain frozen: no reconciliation searches, bank logins, provider syncs, source/classification/archive/card metadata edits, real purchases, emails, approvals or clinical writes. No QA records/configuration promoted. No watchdog or new phase.
-
-See `production-release/CLOSURE.md`, `production-release/INVENTORY.md`, `phase6-hardening/API-ACCESS.md` and `API-PROVIDERS.md`. Earlier checkpoint versions remain recoverable in Git, including `c0ae90bb23a423f93745ba0ba99b13a66a415d74`.
+Evidence: `phase6-hardening/REPORT-GATES-CLOSURE-20260920.json`, local final-verification/human/native/UI receipts and the private server rollback directory. Prior detailed release evidence follows where present.

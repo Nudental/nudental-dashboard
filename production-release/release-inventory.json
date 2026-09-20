@@ -4522,12 +4522,12 @@
       }
     }
   ],
-  "financial_corrections": "E \u2014 all excluded; frozen private registers are not branch changes",
+  "financial_corrections": "E — all excluded; frozen private registers are not branch changes",
   "phase6_release": {
-    "documentation_updated_utc": "2026-09-18T14:16:01.894634+00:00",
-    "phase_status": "WAITING_ONLY_ON_REPORT_GATE_ACTIVATION_DECISION",
+    "documentation_updated_utc": "2026-09-20T05:30:38.721286+00:00",
+    "phase_status": "COMPLETE",
     "evidence_checkpoint_commit": "ab7d6a1fa1f9be5ba1e62ec20b944be84cc12d85",
-    "canonical_main": "main (normal fast-forward to this verified closure)",
+    "canonical_main": "main (normal fast-forward containing verified policy 19cfc40081b3b6cfd1422073c4fed66dad9adc45 and final closure)",
     "branch": "phase6/nudashboard-production-hardening-20260917",
     "production_frontend": {
       "deployment": "dcf8bc42-1a06-45f6-8010-80c1db7595be",
@@ -4537,10 +4537,11 @@
       "bytes": 8835047
     },
     "production_api": {
-      "source_commit": "78cc78da4affc54f4308a4731551a46f30854e17",
+      "source_commit": "19cfc40081b3b6cfd1422073c4fed66dad9adc45",
       "main_sha256": "7b85a17d6a9bac738bb4239b83326199c99957b499d14335e7d6934a95607917",
       "verification": "PASS",
-      "receipt": "provider-production-api-provider-read-receipt.json"
+      "receipt": "phase6-hardening/REPORT-GATES-CLOSURE-20260920.json",
+      "policy_sha256": "ebebed3b76e1046671bf08f9ed6b25dca2fea28268fac349254aec2642f5def7"
     },
     "groups": {
       "A": {
@@ -4647,17 +4648,19 @@
       "asset": "/assets/index-BXvFvJGj.js",
       "sha256": "48716bfc332598a4462e23fa5cb92cf59a934c3f7eff475195ad4890ac05d8c8"
     },
-    "last_health_evidence_utc": "2026-09-18T14:52:28.766982+00:00",
-    "last_browser_evidence_utc": "2026-09-18T15:15:23.295856+00:00",
+    "last_health_evidence_utc": "2026-09-20T05:28:30.170683+00:00",
+    "last_browser_evidence_utc": "2026-09-20T05:25:35.560439+00:00",
     "limitations": [
-      "Remaining API route authorization/caller review is open.",
-      "Final full production regression and normal main integration remain pending.",
-      "Existing Huddle auto-initialization created one unsubmitted draft and 23 default child rows; preserved, no financial change."
+      "Live provider actions, financial writes, purchases, emails and workflow execution intentionally excluded from this narrow activation.",
+      "Phase 5 residual accounting register remains frozen; no corrections authorized.",
+      "Preexisting Collaboration trash-retention foreign-key issue remains separate and unchanged.",
+      "Preserve the earlier unsubmitted September 18 Huddle draft and 23 default children.",
+      "Existing restricted-job identities require renewal by 2026-12-16T22:55:05.380984+00:00."
     ],
     "financial_changes": false,
     "qa_credentials_or_fixtures_promoted": false,
     "documentation_update_deploys_runtime": false,
-    "approval": "Explicit B-E and frontend production approval received; no pending migration approval",
+    "approval": "Explicit narrow two-report policy activation and restart of the two Dashboard APIs; completed. No approval pending.",
     "dated_comparison": {
       "ui": "PASS",
       "dates": [
@@ -4724,7 +4727,7 @@
       "backup": "rcm-read-client-frontend-backup-20260918T130751Z",
       "rollback_tag": "backup/production-before-phase6-rcm-read-scope-20260918"
     },
-    "updated_utc": "2026-09-18T14:57:45.285536+00:00",
+    "updated_utc": "2026-09-20T05:30:38.721286+00:00",
     "provider_access": {
       "status": "DEPLOYED_PASS",
       "source_commit": "78cc78da4affc54f4308a4731551a46f30854e17",
@@ -4744,11 +4747,8 @@
       "provider_actions": 0,
       "financial_changes": 0
     },
-    "pending_report_gates": [
-      "/v2/rcm/ar-aging-official",
-      "/v2/rcm/ar-location-health"
-    ],
-    "pending_user_decision": "Planned Collaboration restart versus restart with normal scheduler activity; no answer received.",
+    "pending_report_gates": [],
+    "pending_user_decision": null,
     "previous_api_release_evidence": {
       "status": "REVIEWED_BOUNDARIES_INCLUDING_23_FINANCIAL_READS_DEPLOYED_VERIFIED",
       "source": "ab7d6a1fa1f9be5ba1e62ec20b944be84cc12d85",
@@ -5006,13 +5006,13 @@
     "independent_regression": "PASS",
     "independent_work_complete": true,
     "source_closure": {
-      "previous_main": "820970ede7727830d95d8d03d518d02119da1acd",
-      "application_source": "78cc78da4affc54f4308a4731551a46f30854e17",
+      "previous_main": "0fb2de80ed3901d187dab8b2a9a80c552cde7681",
+      "application_source": "19cfc40081b3b6cfd1422073c4fed66dad9adc45",
       "method": "normal_fast_forward",
-      "backup_tag": "backup/main-before-phase6-independent-closure-20260918",
-      "exact_main_sha_evidence": "external phase6-independent-source-closure.json after push",
+      "backup_tag": "backup/api-before-phase6-report-gates-20260920",
+      "exact_main_sha_evidence": "outputs/nudental-dashboard-current-release.json and phase6-final-source-closure-20260920.json after push",
       "force_push": false,
-      "phase6_complete": false
+      "phase6_complete": true
     },
     "final_ui": {
       "result": "PASS",
@@ -5093,6 +5093,105 @@
         "production-group-d-receipt.json",
         "production-group-e-receipt.json"
       ]
+    },
+    "report_gate_activation": {
+      "result": "PASS",
+      "verified_at": "2026-09-20T05:28:30.170683+00:00",
+      "source_commit": "19cfc40081b3b6cfd1422073c4fed66dad9adc45",
+      "source_files_matching": 36,
+      "human": {
+        "result": "PASS",
+        "at": "2026-09-20T05:24:39.295599+00:00",
+        "authentication": "ordinary existing Supabase password sign-in; no fabricated identity",
+        "checks": [
+          {
+            "port": 8001,
+            "path": "/v2/rcm/ar-aging-official",
+            "human_authenticated_http": 200
+          },
+          {
+            "port": 8001,
+            "path": "/v2/rcm/ar-location-health",
+            "human_authenticated_http": 200
+          },
+          {
+            "port": 8002,
+            "path": "/v2/rcm/ar-aging-official",
+            "human_authenticated_http": 200
+          },
+          {
+            "port": 8002,
+            "path": "/v2/rcm/ar-location-health",
+            "human_authenticated_http": 200
+          }
+        ],
+        "financial_writes": 0,
+        "provider_syncs": 0,
+        "credential_saved": false,
+        "temporary_auth_session_logout_http": 204
+      },
+      "denial_and_job_checks": 34,
+      "health": {
+        "production": {
+          "status": 200
+        },
+        "candidate": {
+          "status": 200
+        },
+        "collaboration": {
+          "status": 200
+        },
+        "qa": {
+          "status": 200,
+          "product_api_ready": false,
+          "qa_database_connected": true,
+          "internet_sockets_blocked": true,
+          "production_home_hidden": true
+        }
+      },
+      "frontends": [
+        {
+          "origin": "https://nudashboard.com",
+          "entry": "/assets/index-DRITFcr0.js",
+          "sha256": "25917d222e808abba8861d054c048cac90f7a6677743e9837d8c9023821a55fc"
+        },
+        {
+          "origin": "https://nudashboard-qa.pages.dev",
+          "entry": "/assets/index-BXvFvJGj.js",
+          "sha256": "48716bfc332598a4462e23fa5cb92cf59a934c3f7eff475195ad4890ac05d8c8"
+        }
+      ],
+      "processes": {
+        "nudashboard-middleware.service": 1462955,
+        "nudashboard-middleware-candidate.service": 1462638,
+        "collab-api.service": 1444861
+      },
+      "backup": "/home/openclaw/.cache/nudashboard-phase6-20260917/api-report-gates-backup-20260920T051649Z",
+      "policy_sha256": "ebebed3b76e1046671bf08f9ed6b25dca2fea28268fac349254aec2642f5def7",
+      "collaboration_restart": false,
+      "frontend_deployment": false,
+      "financial_changes": false,
+      "provider_actions": false
+    },
+    "previous_independent_source_closure": {
+      "previous_main": "820970ede7727830d95d8d03d518d02119da1acd",
+      "application_source": "78cc78da4affc54f4308a4731551a46f30854e17",
+      "method": "normal_fast_forward",
+      "backup_tag": "backup/main-before-phase6-independent-closure-20260918",
+      "exact_main_sha_evidence": "external phase6-independent-source-closure.json after push",
+      "force_push": false,
+      "phase6_complete": false
+    },
+    "final_report_ui": {
+      "verified_at": "2026-09-20T05:25:35.560439+00:00",
+      "url": "https://nudashboard.com/rcm",
+      "signed_in_role": "Super Administrator",
+      "rcm_dashboard": "PASS",
+      "official_ar_panel": "PASS",
+      "browser_errors": 0,
+      "visible_official_ar_total": 524371,
+      "financial_edit": false,
+      "not_an_accounting_reconciliation": true
     }
   }
 }
