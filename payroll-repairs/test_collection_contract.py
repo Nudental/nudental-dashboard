@@ -18,6 +18,8 @@ def fixture():
                 applied_window=('2026-08-30','2026-09-12'),gusto={'run_id':'synthetic-regular','period':['2026-08-31','2026-09-13'],'payday':'2026-09-18'},
                 events=rows,daily_controls={('alias-a','office-a','2026-08-30'):-70_000,('alias-b','office-b','2026-08-31'):-30_000,
                                           ('alias-a','office-a','2026-09-01'):-8_000_000,('alias-a','office-b','2026-09-12'):-100_000},
+                approved_monthly_scopes={'2026-08':{'cutoff':'2026-08-31','closed':True,'approval_reference':'synthetic-owner-20260920'},
+                                         '2026-09':{'cutoff':'2026-09-12','closed':False,'approval_reference':'synthetic-owner-20260920'}},
                 monthly_controls={'2026-08':{'cutoff':'2026-08-31','closed':True,'complete':True,'signed_collection_cents':-6_000_000,'evidence_reference':'independent-synthetic-august'},
                                   '2026-09':{'cutoff':'2026-09-12','closed':False,'complete':True,'signed_collection_cents':-8_100_000,'evidence_reference':'independent-synthetic-september','cutoff_policy_reference':'owner-period-end'}},
                 source_snapshot='2026-09-13T05:00:00Z')
@@ -79,6 +81,7 @@ class AppliedCollectionAcceptance(unittest.TestCase):
         self.assertEqual(r['months'],[])
     def test_outside_office_rows_preserved_as_exceptions(self):
         f=fixture();f['events'].append(event('exception','2026-09-10',-123,office='office-c'))
+        f['authorized_offices'].add('office-c')
         f['daily_controls'][('alias-a','office-c','2026-09-10')]=-123;r=calculate_provider(**f)
         self.assertEqual(r['exceptions'][0]['signed_cents'],-123)
         self.assertEqual(r['estimate_cents'],2868000)
@@ -127,6 +130,7 @@ class AppliedCollectionAcceptance(unittest.TestCase):
         f=fixture();first=calculate_provider(**f);preserved=copy.deepcopy(first)
         f['gusto']['period'][0]='2026-09-01';f['monthly_controls']['2026-09']['cutoff']='2026-09-30'
         f['monthly_controls']['2026-09']['closed']=True;f['events'].append(event('later','2026-09-30',-100))
+        f['approved_monthly_scopes']['2026-09']={'cutoff':'2026-09-30','closed':True,'approval_reference':'synthetic-later-month-end-review'}
         f['monthly_controls']['2026-09']['signed_collection_cents']=-8100100
         later=calculate_provider(**f);self.assertEqual(first,preserved);self.assertNotEqual(later['calculation_id'],first['calculation_id'])
     def test_uncontrolled_extra_rows_are_visible(self):
@@ -151,10 +155,49 @@ class AppliedCollectionAcceptance(unittest.TestCase):
     def test_year_and_leap_month_boundaries(self):
         for start,end in [('2024-02-28','2024-03-01'),('2025-12-31','2026-01-01')]:
             f=fixture();f.update(events=[],daily_controls={},monthly_controls={},applied_window=(start,end),policy_window=('2024-01-01','2026-12-31'))
+            from calendar import monthrange
+            first_month=start[:7];y,m=map(int,first_month.split('-'))
+            f['approved_monthly_scopes']={first_month:{'cutoff':f'{first_month}-{monthrange(y,m)[1]}','closed':True,'approval_reference':'synthetic-boundary'},
+                                         end[:7]:{'cutoff':end,'closed':False,'approval_reference':'synthetic-boundary'}}
             self.assertEqual(len(calculate_provider(**f)['months']),2)
     def test_cents_do_not_accept_float_or_bool(self):
         for value in (False,1.2,'12'):
             with self.assertRaises(ValueError):doctor_rate(value)
+
+    def test_evidence_cannot_silently_advance_approved_september_cutoff(self):
+        f=fixture();f['monthly_controls']['2026-09']['cutoff']='2026-09-19'
+        with self.assertRaisesRegex(ValueError,'approved cutoff'):calculate_provider(**f)
+    def test_provisional_label_shared_by_all_candidate_surfaces(self):
+        r=calculate_provider(**fixture());label='Provisional through September 12, 2026'
+        self.assertEqual(r['months'][1]['basis_label'],label)
+        self.assertEqual(presentation_rows(r)[1]['basis_label'],label)
+        self.assertIn(label,export_csv(r));self.assertIn(label,report_html(r))
+    def test_approved_scope_is_separate_from_source_report_refresh_time(self):
+        f=fixture();f['monthly_controls']['2026-09'].update(report_generated_at='2026-09-20T00:59:04',report_data_as_of='2026-09-19T23:00:00')
+        r=calculate_provider(**f);month=r['months'][1]
+        self.assertEqual(month['cutoff'],'2026-09-12');self.assertEqual(month['report_generated_at'],'2026-09-20T00:59:04')
+        self.assertEqual(month['report_data_as_of'],'2026-09-19T23:00:00')
+    def test_missing_report_refresh_time_is_unknown_not_generation_time(self):
+        f=fixture();f['monthly_controls']['2026-09']['report_generated_at']='2026-09-20T00:59:04'
+        self.assertIsNone(calculate_provider(**f)['months'][1]['report_data_as_of'])
+    def test_policy_cannot_be_inferred_from_evidence_alone(self):
+        f=fixture();f['approved_monthly_scopes']={}
+        with self.assertRaisesRegex(ValueError,'approved monthly scope'):calculate_provider(**f)
+    def test_no_second_shift_in_payroll_or_calendar_month_boundaries(self):
+        r=calculate_provider(**fixture())
+        self.assertEqual(r['gusto']['period'],['2026-08-31','2026-09-13'])
+        self.assertEqual(r['applied_window'],['2026-08-30','2026-09-12'])
+        self.assertEqual([m['cutoff'] for m in r['months']],['2026-08-31','2026-09-12'])
+    def test_approved_scope_snapshot_does_not_mutate_with_caller(self):
+        f=fixture();r=calculate_provider(**f);f['approved_monthly_scopes']['2026-09']['cutoff']='2026-09-30'
+        self.assertEqual(r['approved_monthly_scopes']['2026-09']['cutoff'],'2026-09-12')
+    def test_policy_exception_cannot_leak_unauthorized_office_amount(self):
+        f=fixture();f['events'].append(event('restricted','2026-09-10',-987654,office='restricted-office'))
+        f['daily_controls'][('alias-a','restricted-office','2026-09-10')]=-987654
+        r=calculate_provider(**f)
+        self.assertEqual(r['status'],'INCOMPLETE_AUTHORIZED_SCOPE')
+        self.assertNotIn('exceptions',r);self.assertNotIn('raw_hr_collection_cents',r)
+        self.assertNotIn('reconciliation',r);self.assertEqual(r['months'],[])
 
 class MonthEndAcceptance(unittest.TestCase):
     def proposal(self,entries=None,**extra):

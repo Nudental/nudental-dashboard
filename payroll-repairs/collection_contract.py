@@ -12,7 +12,7 @@ from decimal import Decimal, ROUND_HALF_UP
 import csv, hashlib, html, io, json
 from copy import deepcopy
 
-VERSION = 'doctor-applied-collection-monthly-v1-candidate'
+VERSION = 'doctor-applied-collection-monthly-v2-candidate'
 
 
 def integer_cents(value):
@@ -86,7 +86,8 @@ def reconcile_daily(actual, controls):
 
 def calculate_provider(*, provider_id, source_ids, allowed_offices, authorized_offices,
                        policy_window, applied_window, gusto, events, daily_controls,
-                       monthly_controls, source_snapshot, override=None, override_allowed=False):
+                       monthly_controls, source_snapshot, approved_monthly_scopes,
+                       override=None, override_allowed=False):
     """Build one versioned result. No finalized tier from incomplete scope/evidence.
 
     Monthly controls must come from an independently supplied same-measure HR
@@ -96,6 +97,7 @@ def calculate_provider(*, provider_id, source_ids, allowed_offices, authorized_o
     """
     result={'version':VERSION,'provider_id':provider_id,'gusto':deepcopy(gusto),
             'applied_window':list(applied_window),'source_snapshot':source_snapshot,
+            'approved_monthly_scopes':deepcopy(approved_monthly_scopes),
             'status':'UNVERIFIED','months':[],'estimate_cents':None,'exceptions':[],
             'rounding':'half-away-from-zero per month, then sum','source_provider_ids':sorted(source_ids)}
     if not set(allowed_offices) <= set(authorized_offices):
@@ -108,6 +110,10 @@ def calculate_provider(*, provider_id, source_ids, allowed_offices, authorized_o
     try: rows=canonical_events(events,set(source_ids))
     except ValueError as e:
         result['reason']=str(e);return result
+    # Even policy-excluded offices contain protected financial evidence. Do not
+    # expose their raw totals or exception amounts to a narrower-scope caller.
+    if any(e['report_location_id'] not in authorized_offices for e in rows):
+        return {'version':VERSION,'provider_id':provider_id,'status':'INCOMPLETE_AUTHORIZED_SCOPE','months':[],'estimate_cents':None}
     actual=daily_totals(rows,start,end)
     differences=reconcile_daily(actual,daily_controls)
     result['reconciliation']={'status':'MATCHED' if not differences else 'UNRESOLVED','differences':differences}
@@ -120,16 +126,30 @@ def calculate_provider(*, provider_id, source_ids, allowed_offices, authorized_o
     while month<=end[:7]:
         y,m=map(int,month.split('-'));first=f'{month}-01';last=f'{month}-{monthrange(y,m)[1]:02}'
         control=monthly_controls.get(month)
+        scope=approved_monthly_scopes.get(month)
+        if not scope or not scope.get('approval_reference') or type(scope.get('closed')) is not bool:
+            raise ValueError('An independently approved monthly scope is required')
+        approved_cutoff=iso_date(scope.get('cutoff'))
+        if not first<=approved_cutoff<=last or approved_cutoff<min(end,last):
+            raise ValueError('Approved monthly scope does not cover the selected period')
+        if scope['closed'] and approved_cutoff!=last:
+            raise ValueError('Approved closed-month scope must cover the full calendar month')
         portion=-sum(e['signed_cents'] for e in qualifying if max(start,first)<=e['applied_date']<=min(end,last))
-        segment={'month':month,'period_collection_cents':portion,'monthly_basis_cents':None,'automatic_percent':None,'estimate_cents':None,'status':'MISSING_INDEPENDENT_MONTHLY_CONTROL'}
+        label=('Final month through ' if scope['closed'] else 'Provisional through ')+date.fromisoformat(approved_cutoff).strftime('%B %d, %Y').replace(' 0',' ')
+        segment={'month':month,'period_collection_cents':portion,'monthly_basis_cents':None,'automatic_percent':None,'estimate_cents':None,'status':'MISSING_INDEPENDENT_MONTHLY_CONTROL',
+                 'cutoff':approved_cutoff,'basis_label':label,'provisional':not scope['closed'],
+                 'cutoff_approval_reference':scope['approval_reference']}
         if control:
             cutoff=iso_date(control.get('cutoff'))
+            if cutoff!=approved_cutoff or control.get('closed') is not scope['closed']:
+                raise ValueError('Independent monthly evidence must match the approved cutoff and final/provisional status')
             if not first<=cutoff<=last or cutoff<min(end,last):raise ValueError('Monthly cutoff does not cover the selected period')
             if first<pstart or cutoff>pend:raise ValueError('Monthly scope requires effective-date practice evidence')
             if control.get('closed') and cutoff!=last:raise ValueError('Closed month requires full calendar month')
             if not control.get('closed') and not control.get('cutoff_policy_reference'):raise ValueError('Open-month cutoff policy is unspecified')
             signed=sum(e['signed_cents'] for e in qualifying if first<=e['applied_date']<=cutoff)
-            segment.update(cutoff=cutoff,independent_control=control.get('evidence_reference'),provisional=not control.get('closed'),source_snapshot=source_snapshot)
+            segment.update(independent_control=control.get('evidence_reference'),source_snapshot=source_snapshot,
+                           report_generated_at=control.get('report_generated_at'),report_data_as_of=control.get('report_data_as_of'))
             same_measure=(control.get('measure')=='Ledger.Collection' and control.get('date_basis')=='Applied Date'
                           and set(control.get('source_provider_ids',[]))==set(source_ids)
                           and set(control.get('office_ids',[]))==set(allowed_offices))
@@ -173,6 +193,8 @@ def presentation_rows(result):
     return [{'calculation_id':result.get('calculation_id'),'provider_id':result['provider_id'],
              'month':m['month'],'period_collection_cents':m['period_collection_cents'],
              'monthly_basis_cents':m.get('monthly_basis_cents'),'cutoff':m.get('cutoff'),
+             'basis_label':m.get('basis_label'),'report_generated_at':m.get('report_generated_at'),
+             'report_data_as_of':m.get('report_data_as_of'),
              'automatic_percent':m.get('automatic_percent'),'applied_percent':m.get('applied_percent'),
              'estimate_cents':m['estimate_cents'],'status':m['status']} for m in result['months']]
 
