@@ -1,0 +1,146 @@
+"""User-requested, read-only compensation snapshots behind the existing human gate.
+
+No scheduler, provider sync, financial write, or payment action is installed here.
+Every report uses the same immutable result. Expired results require an explicit
+refresh, never a silent recalculation under the identity of an older report.
+"""
+from concurrent.futures import ThreadPoolExecutor
+from datetime import date, timedelta
+from threading import RLock
+from time import monotonic
+import copy, re, uuid
+from compensation_ledger import IncompleteCollectionEvidence, monthly_scopes, reconstruct, calculate_doctor
+from compensation_source import LedgerReader
+
+OFFICES = {'14000000000432':'Staten Island','14000000000433':'Eatontown',
+           '14000000000434':'Barnegat','14000000000435':'Brick'}
+# Explicit owner-confirmed August/September scope. No retrospective guess about
+# other earning months, fuzzy name merging, or home-office substitution.
+_RULES = [
+ ('14000000029178','John Fitzpatrick',['14000000029178'],['14000000000434']),
+ ('14000000008445','Admasu Gizachew',['14000000008445','14000000008385'],list(OFFICES)),
+ ('14000000028397','Mark Henin',['14000000028397'],['14000000000433','14000000000434']),
+ ('14000000028777','Norman Margolies',['14000000028777'],['14000000000435']),
+ ('14000000028561','Glenn Marie',['14000000028561'],['14000000000433','14000000000434']),
+ ('14000000027507','James Clifford Rigby',['14000000027507'],['14000000000435']),
+ ('14000000008422','Alan Schwartz',['14000000008422'],['14000000000434']),
+ ('14000000021583','Amtul Siddiqui',['14000000021583'],['14000000000435']),
+ ('14000000024525','Nelson Wollek',['14000000024525'],['14000000000433','14000000000434']),
+]
+POLICIES = [dict(id=i,name=n,source_ids=ids,offices=offices,
+    effective_start='2026-08-01',effective_end='2026-09-30') for i,n,ids,offices in _RULES]
+
+
+def validate_run(rows, run_id, start, end):
+    if len(rows)!=1 or str(rows[0].get('id'))!=run_id:
+        raise IncompleteCollectionEvidence('The selected imported payroll run is unavailable')
+    r=rows[0]
+    if not (r.get('off_cycle') is False and r.get('processed') is True
+            and r.get('reversed') is not True and r.get('needs_reprocessing') is not True
+            and not r.get('off_cycle_reason')):
+        raise IncompleteCollectionEvidence('A processed regular payroll run is required')
+    first=date.fromisoformat(r['pay_period_start']);last=date.fromisoformat(r['pay_period_end'])
+    payday=date.fromisoformat(r['check_date'])
+    if not first<=last<=payday or (last-first).days>31:
+        raise IncompleteCollectionEvidence('Invalid imported payroll calendar')
+    # Validate the already-shifted request; never shift its actual query again.
+    if (date.fromisoformat(start)+timedelta(days=1)!=first
+            or date.fromisoformat(end)+timedelta(days=1)!=last):
+        raise IncompleteCollectionEvidence('Ascend dates do not match the approved one-day mapping')
+    return {'run_id':run_id,'pay_period_start':first.isoformat(),
+            'pay_period_end':last.isoformat(),'payday':payday.isoformat(),'status':'processed regular'}
+
+
+def calculate_snapshot(source, start, end, gusto, policies=POLICIES):
+    scopes=monthly_scopes(start,end,gusto['payday'])
+    evidence_start=min(s['start'] for s in scopes.values())
+    evidence_end=max(s['cutoff'] for s in scopes.values())
+    if source['snapshot']['applied_scope']!=[evidence_start,evidence_end] or not source['snapshot']['complete']:
+        raise IncompleteCollectionEvidence('Monthly source coverage is incomplete')
+    events=reconstruct(source['records'],source['charges'],source['categories'],evidence_start,evidence_end)
+    doctors=[calculate_doctor(p,events,scopes,start,end,gusto,source['snapshot'],set(OFFICES)) for p in policies]
+    known={i for p in policies for i in p['source_ids']}
+    # Preserve the separate report-selected Rigby identity without merging it.
+    extra=[e for e in events if e['provider_id']=='14000000027462' and e['provider_id'] not in known]
+    return {'doctors':doctors,'office_names':OFFICES,'gusto':gusto,'applied_window':[start,end],
+            'source_snapshot':source['snapshot'],'scopes':scopes,
+            'unmapped_report_identities':[{'provider_id':'14000000027462',
+                'signed_cents':sum(e['signed_cents'] for e in extra),
+                'status':'Separate source identity; office/person approval required'}] if extra else [],
+            'status':'SOURCE_CALCULATED_ESTIMATE','saved_payroll_modified':False}
+
+
+def reprice(result, provider_id, percent, actor_id):
+    """Explicit existing user override, not a change to the automatic tier."""
+    from compensation_ledger import compensation
+    import hashlib,json
+    out=copy.deepcopy(result)
+    found=False
+    for row in out['doctors']:
+        if row['provider_id']!=provider_id:continue
+        found=True
+        if percent is not None and percent not in (32,33,34,35):raise ValueError('Invalid doctor override')
+        row['override']={'percent':percent,'actor_id':actor_id} if percent is not None else None
+        for month in row['months']:
+            month['applied_percent']=percent if percent is not None else month['automatic_percent']
+            month['estimate_cents']=compensation(month['period_collection_cents'],month['applied_percent'])
+        row['estimate_cents']=sum(m['estimate_cents'] for m in row['months'])
+        row.pop('calculation_id',None)
+        row['calculation_id']=hashlib.sha256(json.dumps(row,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+    if not found:raise ValueError('Unknown provider calculation')
+    return out
+
+
+class SnapshotJobs:
+    def __init__(self):
+        self.lock=RLock();self.jobs={};self.executor=ThreadPoolExecutor(max_workers=1,thread_name_prefix='compensation-read')
+
+    def start(self, actor, request_id, signature, build):
+        if not re.fullmatch(r'[a-zA-Z0-9_-]{16,80}',request_id or ''):raise ValueError('Invalid calculation request identity')
+        with self.lock:
+            now=monotonic()
+            for key,j in list(self.jobs.items()):
+                if now-j['created']>3600 and j['future'].done():self.jobs.pop(key)
+            for key,j in self.jobs.items():
+                if j['actor']==actor and j['request']==request_id:
+                    if j['signature']!=signature:raise ValueError('Request identity cannot change periods')
+                    return key
+            if len(self.jobs)>=32 or sum(not j['future'].done() for j in self.jobs.values())>=4:
+                raise IncompleteCollectionEvidence('A collection read is already pending; retry when it finishes')
+            key=uuid.uuid4().hex
+            self.jobs[key]={'actor':actor,'request':request_id,'signature':signature,'created':now,'future':self.executor.submit(build)}
+            return key
+
+    def result(self,key,actor):
+        with self.lock:
+            j=self.jobs.get(key)
+            if not j or j['actor']!=actor:raise KeyError('Calculation expired or inaccessible; refresh the selected period')
+            if not j['future'].done():return None
+            return copy.deepcopy(j['future'].result())
+
+
+JOBS=SnapshotJobs()
+
+
+class _NoResponseLog:
+    def append(self, entry):
+        # Existing AscendClient captures response samples. Payroll evidence must
+        # not enter its shared application diagnostic log, even in memory.
+        pass
+
+
+def request_calculation(actor, read_runs, start, end, run_id, request_id):
+    if not re.fullmatch(r'[a-zA-Z0-9_-]{1,100}',run_id or ''):raise ValueError('Select an imported regular payroll run')
+    fields='id,check_date,pay_period_start,pay_period_end,off_cycle,off_cycle_reason,processed,reversed,needs_reprocessing'
+    gusto=validate_run(read_runs('gusto_payroll_runs?select='+fields+'&id=eq.'+run_id,strict=True),run_id,start,end)
+    scopes=monthly_scopes(start,end,gusto['payday'])
+    first=min(s['start'] for s in scopes.values());last=max(s['cutoff'] for s in scopes.values())
+    if first<'2026-08-01' or last>'2026-09-30':
+        raise IncompleteCollectionEvidence('Confirmed doctor office rules cover August–September 2026 only. This historical or later period needs its effective office rules; it remains selectable.')
+    def build():
+        from ascend_service import AscendClient, PROD_CREDS_PATH, DB_PATH
+        client=AscendClient(creds_path=PROD_CREDS_PATH)
+        client.call_log=_NoResponseLog()
+        source=LedgerReader(client,DB_PATH).read(first,last,OFFICES)
+        return calculate_snapshot(source,start,end,gusto)
+    return JOBS.start(actor.id,request_id,(run_id,start,end),build)

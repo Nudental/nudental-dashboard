@@ -22,8 +22,9 @@ class CompensationFrameworkTests(unittest.TestCase):
     def setUp(self):
         self.effects=[]
         module=ModuleType('payroll_report')
-        module._get_providers=lambda:[{'id':'synthetic','name':'Synthetic QA','specialty':'General'}]
+        module._get_providers=lambda:[{'id':'synthetic','name':'Synthetic QA','specialty':'Hygienist'}]
         module._collections_by_date=lambda *a: {}
+        module._is_hygienist=lambda specialty: specialty == 'Hygienist'
         def html(*args):
             self.effects.append(('render',args));return '<p>Synthetic only</p>',7,3
         def send(*args,**kwargs):
@@ -88,7 +89,7 @@ class CompensationFrameworkTests(unittest.TestCase):
     def test_current_allowed_human_keeps_html_report(self):
         r=self.call(token='verified',params={**self.params,'userEmail':'forged@example.invalid'})
         self.assertEqual(r.status_code,200,r.text);self.assertIn('Synthetic only',r.text)
-        self.assertEqual(self.effects,[('render',('synthetic','Synthetic QA','General','2099-01-01','2099-01-01'))])
+        self.assertEqual(self.effects,[('render',('synthetic','Synthetic QA','Hygienist','2099-01-01','2099-01-01'))])
 
     def test_own_access_result_does_not_echo_claimed_email(self):
         r=self.call(ACCESS_PATH,'verified')

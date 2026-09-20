@@ -1678,7 +1678,11 @@ def provider_compensation_report(
     startDate: str = Query(..., description="Pay period start (YYYY-MM-DD)"),
     endDate:   str = Query(..., description="Pay period end (YYYY-MM-DD)"),
     providerId: Optional[str] = Query(None, description="Single provider ID (omit for all)"),
-    format: str = Query("zip", description="Output format: zip | html | pdf"),
+    format: str = Query("zip", description="Output format: zip | html | pdf | ledger-json | ledger-html | ledger-pdf | ledger-csv"),
+    runId: Optional[str] = Query(None, max_length=100),
+    calculationRequest: Optional[str] = Query(None, max_length=80),
+    calculationSnapshot: Optional[str] = Query(None, max_length=80),
+    rateOverrides: Optional[str] = Query(None, max_length=1000),
     userEmail: str = Query(..., description="Authenticated user email — payroll access check"),
 ):
     """
@@ -1689,9 +1693,13 @@ def provider_compensation_report(
     from api_compensation_policy import verified_compensation_actor
     from api_identity import AccessFailure
     try:
-        verified_compensation_actor(request, PAYROLL_ALLOWED_EMAILS)
+        actor = verified_compensation_actor(request, PAYROLL_ALLOWED_EMAILS)
     except AccessFailure as error:
         raise HTTPException(status_code=error.status, detail="Payroll report access denied for this user.") from None
+    if format.startswith("ledger-"):
+        from compensation_endpoint import respond
+        return respond(actor, _sb_get_full, startDate, endDate, runId, calculationRequest,
+                       calculationSnapshot, providerId, format, rateOverrides)
     import tempfile, os
     from fastapi.responses import FileResponse, HTMLResponse, Response as FastAPIResponse
     try:
@@ -1700,13 +1708,8 @@ def provider_compensation_report(
         raise HTTPException(status_code=500, detail=f"payroll_report module error: {e}")
 
     if format == "zip" and not providerId:
-        # All providers — return ZIP
-        out_dir = tempfile.mkdtemp(prefix="nudental_payroll_")
-        zip_path = generate_all_reports(startDate, endDate, out_dir)
-        fname = os.path.basename(zip_path)
-        return FileResponse(zip_path, media_type="application/zip",
-                            headers={"Content-Disposition": f'attachment; filename="{fname}"'})
-
+        # Mixed doctor archives must use one reviewed canonical calculation.
+        raise HTTPException(409, "Open the current Doctor Ledger detailed report to export its calculation snapshot.")
     # Single provider
     if not providerId:
         raise HTTPException(status_code=400, detail="providerId required when format != zip")
@@ -1730,6 +1733,9 @@ def provider_compensation_report(
             raise HTTPException(status_code=404, detail=f"Provider {providerId} not found")
 
     p = providers[providerId]
+    from payroll_report import _is_hygienist
+    if not _is_hygienist(p["specialty"]):
+        raise HTTPException(409, "Doctor reports require the selected Ledger calculation snapshot. Refresh Provider Compensation.")
     html, coll, comp = build_html(p["id"], p["name"], p["specialty"], startDate, endDate)
 
     if format == "html":

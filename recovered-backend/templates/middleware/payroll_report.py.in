@@ -191,12 +191,22 @@ def _m(v: float) -> str:
 
 # ── HTML report builder ───────────────────────────────────────────────────────
 def build_html(provider_id: str, provider_name: str, specialty: str,
-               pay_start: str, pay_end: str) -> tuple[str, float, float]:
+               pay_start: str, pay_end: str, canonical_result=None) -> tuple[str, float, float]:
     """
     Returns (html_string, total_collections, total_compensation).
     Handles split-month periods by applying each month's tier separately.
     """
     is_hyg  = _is_hygienist(specialty)
+    if not is_hyg:
+        if canonical_result is None:
+            raise ValueError("Doctor reports require a verified-identity Ledger calculation snapshot")
+        rows=[r for r in canonical_result['doctors'] if r['provider_id']==str(provider_id)]
+        gusto=canonical_result['gusto']
+        if len(rows)!=1 or gusto['pay_period_start']!=pay_start or gusto['pay_period_end']!=pay_end:
+            raise ValueError("Doctor report does not match the selected calculation")
+        from compensation_views import report_html
+        row=rows[0]
+        return report_html({**canonical_result,'doctors':rows}), row['eligible_period_cents']/100, row['estimate_cents']/100
     hyg_rate = hygienist_rate(provider_name) if is_hyg else None
 
     # Location override (applies to collections AND tier basis)
@@ -708,6 +718,11 @@ def send_all_reports(pay_start: str, pay_end: str, output_dir: Optional[str] = N
         output_dir = tempfile.mkdtemp(prefix="nudental_payroll_email_")
 
     providers = _get_providers()
+    # Prevent partial delivery followed by an unvalidated doctor report. The
+    # canonical prepared payload is available separately; no legacy doctor math
+    # is permitted in an email even when an old client calls this helper.
+    if any(not _is_hygienist(p['specialty']) for p in providers):
+        raise ValueError("Bulk doctor delivery requires a reviewed canonical calculation payload; no messages were sent")
     results = {"sent": [], "skipped": [], "failed": [], "no_email": []}
 
     for p in providers:

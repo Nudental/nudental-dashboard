@@ -1,5 +1,7 @@
 # HR Collection / monthly-tier correction — candidate only
 
+Historical preparation checkpoint, superseded by [HR-COLLECTION-RELEASE.md](HR-COLLECTION-RELEASE.md). Retained to preserve earlier findings; use the release record for current status.
+
 This work is **not deployed, not collection-parity certified, and not wage approval**. Main and production retain the verified dynamic Gusto-period release. The previous release's UI/API consistency check does not establish parity with the later supplied independent HR evidence.
 
 ## Unblocked implementation

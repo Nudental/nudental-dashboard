@@ -366,11 +366,11 @@
   },
   {
     "source_file": "middleware/main_candidate.py",
-    "sha256": "7b85a17d6a9bac738bb4239b83326199c99957b499d14335e7d6934a95607917",
-    "template_sha256": "79d6870543423285df94d6f951132ee2cedfafa82ed2051cba922853c7e9dc47",
+    "sha256": "14dfdaffc052f58433a3a1cc5f03a82a0ecb2f94575e1d399487f311693e2ef2",
+    "template_sha256": "dd128d68224e44f89a0122ca168e05a201a09837733e892831532ecd52dea005",
     "round_trip_exact": true,
     "previous_production_sha256": "a3961f234a8895617052de9cce99306cb6380f48c2d650f4395ab2c160bf0336",
-    "bytes": 867691
+    "bytes": 868304
   },
   {
     "file": "middleware/otp_auth.py",
@@ -568,9 +568,10 @@
   },
   {
     "source_file": "middleware/payroll_report.py",
-    "sha256": "e77fe6e072ab4a8499a8bc046a0c45f401b93a51bf1feb114f4cb2a71d0a048b",
-    "template_sha256": "939c7dfa429cd02841fb73a07478fc698f9d3516352d69990e08b280e947865a",
-    "round_trip_exact": true
+    "sha256": "80e94f504424a2b07257a2bad0d87b00f7ce744d8667210f370495e0a471b8b4",
+    "template_sha256": "87f7d6ae84bf257091fea6394061680a73ff5b0b78bafaa5651573d59c8978d1",
+    "round_trip_exact": true,
+    "bytes": 35377
   },
   {
     "file": "middleware/plaid_sync.py",
@@ -865,5 +866,40 @@
     "sha256": "aa86e50dcd3a8b03d44a8f5fff3d45a200d929ff8243179f7f5930b567cbd42c",
     "template_sha256": "aa86e50dcd3a8b03d44a8f5fff3d45a200d929ff8243179f7f5930b567cbd42c",
     "bytes": 3097
+  },
+  {
+    "source_file": "middleware/compensation_ledger.py",
+    "sha256": "389953bd04a5cb1401d45f5fb327094b53c9860e88b862a80be229d11047252b",
+    "template_sha256": "389953bd04a5cb1401d45f5fb327094b53c9860e88b862a80be229d11047252b",
+    "bytes": 13097,
+    "round_trip_exact": true
+  },
+  {
+    "source_file": "middleware/compensation_source.py",
+    "sha256": "0261b3dfc48516b8553582599840a41e5c02b0385f8d94bb54dec9c8a3a3e105",
+    "template_sha256": "0261b3dfc48516b8553582599840a41e5c02b0385f8d94bb54dec9c8a3a3e105",
+    "bytes": 8694,
+    "round_trip_exact": true
+  },
+  {
+    "source_file": "middleware/compensation_runtime.py",
+    "sha256": "e28ea8f31578af45474b3a9ddf7ec3f2a05995d8eaf6840adbe3e2c0f5029bdf",
+    "template_sha256": "e28ea8f31578af45474b3a9ddf7ec3f2a05995d8eaf6840adbe3e2c0f5029bdf",
+    "bytes": 8621,
+    "round_trip_exact": true
+  },
+  {
+    "source_file": "middleware/compensation_views.py",
+    "sha256": "70f4d5c5168b468854fae6319c4f3c7ec81a33e25783c0d8befeb1b9c4df6208",
+    "template_sha256": "70f4d5c5168b468854fae6319c4f3c7ec81a33e25783c0d8befeb1b9c4df6208",
+    "bytes": 5933,
+    "round_trip_exact": true
+  },
+  {
+    "source_file": "middleware/compensation_endpoint.py",
+    "sha256": "2552004b9045289de5da4f5b2c1a18954d5b91af375e46e33985568f958f736a",
+    "template_sha256": "2552004b9045289de5da4f5b2c1a18954d5b91af375e46e33985568f958f736a",
+    "bytes": 3330,
+    "round_trip_exact": true
   }
 ]

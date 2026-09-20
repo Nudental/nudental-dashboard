@@ -1,0 +1,54 @@
+"""Read-only presentations of an already calculated snapshot; no payroll math."""
+import csv,io,json
+from decimal import Decimal
+from html import escape
+
+def money(cents):return format(Decimal(cents)/100,',.2f')
+
+def report_html(result):
+    h=lambda value:escape(str(value))
+    gusto=result['gusto'];offices=result['office_names'];parts=[]
+    parts.append('<!doctype html><html><head><meta charset="utf-8"><title>Provider compensation</title><style>body{font:14px Arial;color:#162536;padding:24px}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{padding:8px;text-align:left;border-bottom:1px solid #ccd5df}small{overflow-wrap:anywhere}article{break-inside:avoid}h1,h2{color:#007f91}.notice{background:#f3f7fa;padding:12px}</style></head><body>')
+    parts.append('<h1>Provider compensation estimate</h1><p>Payday '+h(gusto['payday'])+' · Gusto period '+h(gusto.get('pay_period_start',''))+' – '+h(gusto.get('pay_period_end',''))+'</p>')
+    parts.append('<p>Ascend Applied Date window: '+h(' – '.join(result['applied_window']))+'</p>')
+    parts.append('<p class="notice">Signed HR Ledger Total Collection is preserved. Eligible earned collections reverse that ledger sign once. Monthly tiers combine only approved offices. Estimates do not change paid payroll.</p>')
+    for row in result['doctors']:
+        parts.append('<article><h2>'+h(row['provider_name'])+'</h2><p>Approved offices: '+h(', '.join(offices.get(i,i) for i in row['office_ids']))+'</p>')
+        parts.append('<p>Raw HR Total Collection: $'+money(row['raw_hr_collection_cents'])+' · Eligible period: $'+money(row['eligible_period_cents'])+' · Estimate: $'+money(row['estimate_cents'])+'</p>')
+        parts.append('<table><tr><th>Month / cutoff</th><th>Period collections</th><th>Monthly basis</th><th>Automatic tier</th><th>Applied rate</th><th>Estimate</th></tr>')
+        for m in row['months']:
+            parts.append('<tr><td>'+h(m['month'])+'<br>'+h(m['basis_label'])+'</td><td>$'+money(m['period_collection_cents'])+'</td><td>$'+money(m['monthly_basis_cents'])+'</td><td>'+str(m['automatic_percent'])+'%</td><td>'+str(m['applied_percent'])+'%'+(' manual override' if row['override'] else '')+'</td><td>$'+money(m['estimate_cents'])+'</td></tr>')
+        parts.append('</table><h3>Office collections</h3><table><tr><th>Month</th><th>Office</th><th>Period collections</th><th>Monthly basis</th></tr>')
+        for m in row['months']:
+            for o in m['office_detail']:
+                parts.append('<tr><td>'+h(m['month'])+'</td><td>'+h(offices.get(o['office_id'],o['office_id']))+'</td><td>$'+money(o['period_collection_cents'])+'</td><td>$'+money(o['monthly_collection_cents'])+'</td></tr>')
+        parts.append('</table><h3>Signed HR daily collection</h3><table><tr><th>Source provider</th><th>Office</th><th>Applied Date</th><th>Total Collection</th></tr>')
+        for d in row['daily_collection']:
+            parts.append('<tr><td>'+h(d['source_provider_id'])+'</td><td>'+h(offices.get(d['office_id'],d['office_id']))+'</td><td>'+h(d['applied_date'])+'</td><td>$'+money(d['signed_cents'])+'</td></tr>')
+        parts.append('</table>')
+        if row.get('monthly_exceptions'):
+            parts.append('<p class="notice">Office exceptions retained for review; excluded from eligible compensation.</p><ul>')
+            for e in row['monthly_exceptions']:
+                parts.append('<li>'+h(e['applied_date'])+' · '+h(offices.get(e['office_id'],e['office_id']))+' · $'+money(e['signed_cents'])+' · '+h(e['reason'])+'</li>')
+            parts.append('</ul>')
+        if row['negative_review_required']:parts.append('<p>Negative collection/estimate requires HR review; no automatic deduction.</p>')
+        parts.append('<p>Month-end adjustment: pending verified compensation already paid for the same earning month and separate HR approval. No adjustment is included.</p><small>Calculation '+h(row['calculation_id'])+'<br>Source snapshot '+h(row['source_snapshot']['sha256'])+'<br>Retrieved '+h(row['source_snapshot']['retrieved_at'])+'; source report freshness not supplied by API.<br>Independent HR comparison is a separate release check; a current refresh is not automatically certified.</small></article>')
+    parts.append('</body></html>')
+    return ''.join(parts)
+
+
+def report_csv(result):
+    stream=io.StringIO(newline='');writer=csv.writer(stream)
+    writer.writerow(['Provider','Provider ID','Payday','Gusto start','Gusto end','Ascend start','Ascend end','Month','Cutoff','Basis status','Period collections','Monthly basis','Automatic percent','Applied percent','Manual override','Estimate','Calculation ID','Source snapshot','Office detail','Raw HR signed period','Office exceptions','Month-end adjustment'])
+    for r in result['doctors']:
+        for m in r['months']:
+            values=[r['provider_name'],r['provider_id'],result['gusto']['payday'],result['gusto'].get('pay_period_start',''),result['gusto'].get('pay_period_end',''),*result['applied_window'],m['month'],m['cutoff'],m['basis_label'],money(m['period_collection_cents']),money(m['monthly_basis_cents']),m['automatic_percent'],m['applied_percent'],bool(r['override']),money(m['estimate_cents']),r['calculation_id'],r['source_snapshot']['sha256'],json.dumps(m['office_detail']),money(r['raw_hr_collection_cents']),json.dumps(r.get('monthly_exceptions',r['exceptions'])),'Pending verified paid baseline; separate HR approval']
+            writer.writerow(["'"+v if isinstance(v,str) and v[:1] in ('=','+','@') else v for v in values])
+    return stream.getvalue()
+
+
+def prepared_payload(result):
+    """Future send preparation consumes these exact rows; this does not send."""
+    return {'purpose':'compensation report preparation only','delivery_performed':False,
+            'gusto':result['gusto'],'applied_window':result['applied_window'],
+            'source_snapshot':result['source_snapshot'],'calculations':result['doctors']}

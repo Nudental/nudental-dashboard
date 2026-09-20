@@ -1,0 +1,47 @@
+"""Adapter for the existing protected provider-compensation GET route."""
+import json
+from fastapi import HTTPException
+from fastapi.responses import JSONResponse,HTMLResponse,Response
+from compensation_ledger import IncompleteCollectionEvidence
+from compensation_runtime import JOBS,request_calculation,reprice
+from compensation_views import report_html,report_csv,prepared_payload
+
+
+def respond(actor,read_runs,start,end,run_id,request_id,job_id,provider_id,format,overrides):
+    headers={'Cache-Control':'private, no-store'}
+    try:
+        if format not in ('ledger-json','ledger-html','ledger-pdf','ledger-csv','ledger-payload'):
+            raise ValueError('Unsupported compensation format')
+        job_id=job_id or request_calculation(actor,read_runs,start,end,run_id,request_id)
+        result=JOBS.result(job_id,actor.id)
+        if result is None:return JSONResponse({'status':'reading','job_id':job_id},status_code=202,headers=headers)
+        if result['applied_window']!=[start,end] or result['gusto']['run_id']!=run_id:
+            raise ValueError('Calculation identity does not match the selected period')
+        selected=json.loads(overrides or '{}')
+        if not isinstance(selected,dict) or len(selected)>20:raise ValueError('Invalid rate overrides')
+        for provider,percent in selected.items():
+            if type(percent) is not int or percent not in (32,33,34,35):raise ValueError('Invalid rate override')
+            result=reprice(result,provider,percent,actor.id)
+        if provider_id:
+            result['doctors']=[r for r in result['doctors'] if r['provider_id']==provider_id]
+            if not result['doctors']:raise ValueError('Provider calculation is unavailable')
+        result['job_id']=job_id
+        if format=='ledger-json':return JSONResponse(result,headers=headers)
+        if format=='ledger-payload':return JSONResponse(prepared_payload(result),headers=headers)
+        name='provider-compensation-'+result['gusto']['payday']
+        if format=='ledger-csv':return Response(report_csv(result),media_type='text/csv',headers={**headers,'Content-Disposition':f'attachment; filename="{name}.csv"'})
+        html=report_html(result)
+        if format=='ledger-html':return HTMLResponse(html,headers=headers)
+        import tempfile,subprocess
+        from pathlib import Path
+        with tempfile.TemporaryDirectory(prefix='nudental_compensation_') as folder:
+            page=Path(folder)/'report.html';pdf=Path(folder)/'report.pdf';page.write_text(html,encoding='utf-8')
+            subprocess.run(['/home/linuxbrew/.linuxbrew/bin/weasyprint',str(page),str(pdf)],check=True,capture_output=True,timeout=30)
+            return Response(pdf.read_bytes(),media_type='application/pdf',headers={**headers,'Content-Disposition':f'attachment; filename="{name}.pdf"'})
+    except KeyError:
+        raise HTTPException(410,'Calculation expired or inaccessible. Refresh the selected period.') from None
+    except (ValueError,IncompleteCollectionEvidence) as error:
+        raise HTTPException(422,str(error)) from None
+    except Exception:
+        # Do not leak raw source records, tokens, or provider client errors.
+        raise HTTPException(503,'Ascend collection evidence could not be completed. No previous-period result was substituted. Retry the selected period.') from None

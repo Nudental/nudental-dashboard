@@ -2,6 +2,7 @@ import { dashboardFetch as fetch } from '../../../lib/dashboardFetch';
 import { DASHBOARD_API_ORIGIN } from '../../../config/dashboardEnvironment';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Icon from '../../../components/AppIcon';
+import DoctorLedgerCompensation from './DoctorLedgerCompensation';
 import { getScheduleYears, formatDateShort, fetchPayrollData } from '../../../services/payrollService';
 import { useCompensationPeriods } from '../../../hooks/gusto/useCompensationPeriods';
 import { ALL_DENTRIX_OFFICES } from '../../../services/dentrixNormalizedService';
@@ -1582,7 +1583,6 @@ export default function ProviderCompensationNew() {
         if (Array.isArray(list) && list?.length > 0) {
           const map = buildProviderLookupMaps(list);
           setProvidersMap(map);
-          console.log('[ProviderComp] providersMap built', { byIdCount: Object.keys(map?.byId)?.length, byNameCount: Object.keys(map?.byNormalizedName)?.length });
         }
       } catch (e) {
         console.warn('[ProviderComp] Could not load /v2/providers for identity map:', e?.message);
@@ -1624,8 +1624,6 @@ export default function ProviderCompensationNew() {
     // It does NOT affect Gusto payroll totals, payroll runs, or any other date filter.
     const { dentrixStart, dentrixEnd } = ascendWindow;
 
-    console.log('[ProviderComp] selectedPayPeriod', { id: selectedPeriod?.id, startDate, endDate, payday: selectedPeriod?.payday });
-    console.log('[ProviderComp] officeFilter', { selectedOffice, locationId });
 
     setLoading(true);
     setError(null);
@@ -1644,14 +1642,11 @@ export default function ProviderCompensationNew() {
         throw new Error(result.error || result.dataSourceWarning);
       }
 
-      console.log('[ProviderComp] fetchPayrollData result', result);
 
       const rawDoctors = result?.doctors || [];
       const rawHygienists = result?.hygienists || [];
       const rawRows = [...rawDoctors, ...rawHygienists];
 
-      console.log('[ProviderComp] rawRowsBeforeFilters', rawRows);
-      console.log('[ProviderComp] rawRowsCount', rawRows?.length);
 
       const allRawRows = [
         ...rawDoctors?.map(r => ({ ...r, _srcType: 'doctor' })),
@@ -1694,7 +1689,6 @@ export default function ProviderCompensationNew() {
         if (backendNormalized) {
           type = backendNormalized;
           if (backendNormalized !== canonicalNormalized && canonicalNormalized) {
-            console.log(`[ProviderComp CLASSIFY] name="${name}" backendType="${rawBackendType}" overrides canonicalType="${canonicalType}" → ${type}`);
           }
         } else if (canonicalNormalized) {
           type = canonicalNormalized;
@@ -1718,7 +1712,6 @@ export default function ProviderCompensationNew() {
           row?.guid ||
           null;
 
-        console.log(`[ProviderComp CLASSIFY] name="${name}" rawBackendType="${rawBackendType}" canonicalType="${canonicalType}" resolvedType="${type}"`);
 
         return {
           name,
@@ -1732,8 +1725,6 @@ export default function ProviderCompensationNew() {
         };
       });
 
-      console.log('[ProviderComp] afterProviderTypeFilter', normalizedProviders?.length);
-      console.log('[ProviderComp] finalProviderCompRows', normalizedProviders);
 
       const compensationProviders = normalizedProviders?.filter(p => !p?._isUnattributed);
       const totalColl = compensationProviders?.reduce((s, p) => s + p?.collections, 0);
@@ -1762,7 +1753,8 @@ export default function ProviderCompensationNew() {
       }
 
       setResultSelection(selectionKey);
-      setProviders(normalizedProviders);
+      // Doctor amounts come exclusively from the protected Ledger snapshot panel.
+      setProviders(normalizedProviders.map(p => p.type === 'Doctor' ? { ...p, type: 'Unknown', _needsLedgerPolicy: true } : p));
     } catch (err) {
       if (generation !== requestGeneration.current) return;
       console.error('[ProviderComp] fetchData error:', err?.message, err);
@@ -1855,7 +1847,7 @@ export default function ProviderCompensationNew() {
 
   // ── CSV Export ────────────────────────────────────────────────────────────
   const handleExportCSV = useCallback(() => {
-    const allRows = [...doctors, ...hygienists];
+    const allRows = [...hygienists];
     if (allRows?.length === 0) return;
 
     const fmtPayPeriodCSV = (start, end) => {
@@ -1979,17 +1971,17 @@ export default function ProviderCompensationNew() {
             Provider Compensation
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Pay-period compensation from Dentrix Ascend provider performance data. The Ascend reporting window is one day earlier than the displayed payroll period.
+            Doctor estimates use signed Ascend Ledger collections and separate monthly tiers. Hygienist policies remain unchanged. The Ascend reporting window is one day earlier than the displayed Gusto period.
           </p>
         </div>
         {/* CSV Export button */}
-        {!loading && (doctors?.length > 0 || hygienists?.length > 0) && (
+        {!loading && hygienists?.length > 0 && (
           <button
             onClick={handleExportCSV}
             className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <Icon name="Download" size={14} />
-            Export CSV
+            Export hygienist CSV
           </button>
         )}
       </div>
@@ -2108,25 +2100,18 @@ export default function ProviderCompensationNew() {
       {!loading && compensationProviders?.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <SummaryCard
-            label="Total Collections"
+            label="Hygienist Collections"
             value={fmtCurrencyShort(totalCollections)}
             icon="TrendingUp"
             color="bg-[#00B5CC]"
             sub={`${compensationProviders?.length} provider${compensationProviders?.length !== 1 ? 's' : ''}`}
           />
           <SummaryCard
-            label="Est. Total Compensation"
+            label="Est. Hygienist Compensation"
             value={fmtCurrencyShort(totalCompensation)}
             icon="DollarSign"
             color="bg-emerald-500"
             sub="Based on selected %"
-          />
-          <SummaryCard
-            label="Doctors"
-            value={totalDoctors}
-            icon="Stethoscope"
-            color="bg-blue-500"
-            sub="32–35% monthly tier"
           />
           <SummaryCard
             label="Hygienists"
@@ -2155,32 +2140,15 @@ export default function ProviderCompensationNew() {
             <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">{debugInfo?.dataSourceWarning}</p>
           )}
           <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
-            Check the Debug Data Check panel above for details. Open browser console for full logs.
+            Check the Debug Data Check panel above for details. Doctor Ledger results are shown separately below.
           </p>
         </div>
       )}
 
-      {/* ── Doctor Table ── */}
-      {!loading && doctors?.length > 0 && (
-        <ProviderTable
-          title="Doctors"
-          icon="Stethoscope"
-          providers={doctors}
-          selectedPcts={selectedPcts}
-          expandedProvider={expandedProvider}
-          onPctChange={handlePctChange}
-          onExpand={setExpandedProvider}
-          pctOptions={doctorPcts}
-          getSuggestedPct={(p) => p?.type === 'Doctor' ? getDoctorTierPct(p?.monthlyCollections ?? p?.collections) : null}
-          selectedPeriod={selectedPeriod}
-          payStart={payStart}
-          payEnd={payEnd}
-          providersMap={providersMap}
-          onPreview={handlePreview}
-          onSend={handleAction}
-          isHygienistTable={false}
-        />
-      )}
+      {/* Doctor collection and tier results never use the legacy KPI path. */}
+      <DoctorLedgerCompensation period={selectedPeriod} window={ascendWindow}
+        revision={revision} periodsLoading={periodsLoading}
+        officeId={resolveLocationId(selectedOffice) || null} additionalProviders={doctors} />
 
       {/* ── Hygienist Table ── */}
       {!loading && hygienists?.length > 0 && (

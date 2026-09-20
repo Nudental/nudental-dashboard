@@ -88,7 +88,8 @@ export function calculateProviderCompensation({
   isUnknown = false,
 }) {
   const ppColl = parseFloat(payPeriodCollection) || 0;
-  const moColl = parseFloat(monthlyTierCollection) || ppColl;
+  const parsedMonthly = monthlyTierCollection == null || monthlyTierCollection === '' ? NaN : Number(monthlyTierCollection);
+  const moColl = Number.isFinite(parsedMonthly) ? parsedMonthly : null;
 
   // ── Unattributed ──────────────────────────────────────────────────────────
   if (isUnattributed || providerType === 'Unattributed') {
@@ -116,6 +117,7 @@ export function calculateProviderCompensation({
 
   // ── Doctor ────────────────────────────────────────────────────────────────
   if (providerType === 'Doctor') {
+    if (moColl == null) return { payPeriodCollection: ppColl, monthlyTierCollection: null, compensationPercent: null, compensationAmount: null, calculationType: 'Unavailable', reason: 'Complete monthly collection evidence is required' };
     const tierPct = getDoctorTierPct(moColl);
     const pct = selectedDoctorOverridePct != null ? selectedDoctorOverridePct : tierPct;
     const amount = ppColl * pct / 100;

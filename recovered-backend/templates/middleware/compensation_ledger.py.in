@@ -1,0 +1,231 @@
+"""Compensation-only Ledger Collection reconstruction and exact-cent arithmetic.
+
+No source writes, ingestion, credentials or payroll submission. The caller supplies
+complete source records and charge/category identities. Collection signs remain
+ledger-signed until the final earned-collection presentation. Historical revisions
+are distinct transactions; cancellation distributions reverse their exact previous
+transaction. A current/active-only snapshot cannot satisfy this contract.
+"""
+from collections import defaultdict
+from datetime import date, datetime, timedelta
+from decimal import Decimal, ROUND_HALF_UP
+from calendar import monthrange
+from zoneinfo import ZoneInfo
+import hashlib, json
+
+VERSION = 'ascend-ledger-monthly-collection-v1'
+
+
+class IncompleteCollectionEvidence(ValueError):
+    """Never substitute zero or old-period compensation for incomplete evidence."""
+
+
+def cents(value):
+    try:
+        number = Decimal(str(value)) * 100
+        if not number.is_finite() or number != number.to_integral_value():
+            raise ValueError()
+        return int(number)
+    except Exception:
+        raise IncompleteCollectionEvidence('Invalid source amount') from None
+
+
+def reference(value):
+    if isinstance(value, dict) and value.get('id') is not None:
+        return str(value['id'])
+    return None
+
+
+def applied_date(record):
+    """Ledger report's Modified/Applied calendar date, not API lastModified.
+
+    Ascend's observed modifiedDate is a local civil timestamp, unlike the UTC
+    lastModified synchronization cursor. The mapping was independently checked at
+    all 275 provider/office/day controls. Explicit offsets, if supplied, are
+    converted to the practice timezone; naive values remain local calendar dates.
+    No Gusto offset is performed here.
+    """
+    value = record.get('modifiedDate')
+    if not isinstance(value, str) or len(value) < 19:
+        raise IncompleteCollectionEvidence('Missing Ledger modification timestamp')
+    try:
+        stamp = datetime.fromisoformat(value.replace('Z', '+00:00'))
+        if stamp.tzinfo:
+            stamp = stamp.astimezone(ZoneInfo('America/New_York'))
+        return stamp.date().isoformat()
+    except ValueError:
+        raise IncompleteCollectionEvidence('Invalid Ledger modification timestamp') from None
+
+
+def reconstruct(records, charges, categories, start, end):
+    """Return source-backed allocation groups, including reversals and zero nets.
+
+    records is keyed by transaction ID; charges by referenced charge ID (procedures
+    AND charge adjustments); categories by organizationLedgerType ID. Completeness
+    is the reader's responsibility. Every unresolved reference fails closed.
+    application_event_id is explicitly a derived transaction/charge grouping key,
+    not an invented vendor-provided application identifier.
+    """
+    date.fromisoformat(start); date.fromisoformat(end)
+    memo = {}
+
+    def allocation(record, visited=frozenset()):
+        tid = str(record['id'])
+        if tid in visited:
+            raise IncompleteCollectionEvidence('Cyclic revision history')
+        if tid in memo:
+            return memo[tid]
+        kind = record.get('ledgerType', '')
+        raw = record.get('distributions')
+        if not isinstance(raw, list):
+            raise IncompleteCollectionEvidence('Distribution coverage is unknown')
+        if raw:
+            grouped = defaultdict(int)
+            for line in raw:
+                cid = str(line['chargeId'])
+                charge = charges.get(cid)
+                if not charge or not reference(charge.get('provider')):
+                    raise IncompleteCollectionEvidence('Unresolved allocation provider')
+                office = str(line.get('chargeLocationId') or '')
+                if not office:
+                    raise IncompleteCollectionEvidence('Unresolved allocation office')
+                key = (cid, reference(charge['provider']), office)
+                # The API can return several allocation fragments for one charge.
+                # It exposes no fragment ID. Preserve every source fragment and
+                # emit one summed transaction/charge group; do not invent a
+                # de-duplication rule from amount equality or isActive state.
+                # Whole transactions are de-duplicated by their source ID upstream.
+                grouped[key] -= cents(line['appliedAmount'])
+            result = [(key, amount, 'source_distribution') for key, amount in grouped.items()]
+        elif 'Cancellation' in kind:
+            previous = records.get(reference(record.get('previousTransaction')))
+            if previous is None:
+                raise IncompleteCollectionEvidence('Missing exact cancellation predecessor')
+            if cents(record['amount']) != -cents(previous['amount']):
+                raise IncompleteCollectionEvidence('Cancellation amount does not reverse predecessor')
+            result = [(key, -amount, 'exact_predecessor_reversal')
+                      for key, amount, _ in allocation(previous, visited | {tid})]
+        elif 'ChargeAdjustment' in kind:
+            provider = reference(record.get('provider'))
+            office = reference(record.get('location'))
+            if not provider or not office:
+                raise IncompleteCollectionEvidence('Unattributed direct charge adjustment')
+            result = [((None, provider, office), cents(record['amount']), 'direct_charge_adjustment')]
+        else:
+            # An explicit empty source distribution list means unapplied money;
+            # it is never silently attributed to the payment's posting office.
+            result = []
+        memo[tid] = result
+        return result
+
+    events = []
+    for tid, record in sorted(records.items()):
+        when = applied_date(record)
+        if not start <= when <= end:
+            continue
+        category_id = reference(record.get('organizationLedgerType'))
+        category = categories.get(category_id)
+        if category is None or category.get('allocation') not in ('COLLECTION', 'PRODUCTION'):
+            raise IncompleteCollectionEvidence('Unknown Collection category membership')
+        if category['allocation'] != 'COLLECTION':
+            continue
+        for (charge, provider, office), amount, basis in allocation(record):
+            events.append({'transaction_id':str(tid), 'charge_id':charge,
+                'application_event_id':str(tid)+':'+(charge or 'direct'),
+                'application_id_basis':'derived transaction/charge group',
+                'provider_id':provider, 'report_location_id':office,
+                'applied_date':when, 'signed_cents':amount,
+                'category_id':category_id, 'subcategory':category.get('description'),
+                'revision_type':record.get('ledgerType'), 'basis':basis,
+                'source_last_modified':record.get('lastModified')})
+    return events
+
+
+def doctor_rate(monthly_cents):
+    if type(monthly_cents) is not int:
+        raise ValueError('Monthly collection must be exact cents')
+    if monthly_cents <= 5_000_000: return 32
+    if monthly_cents <= 6_500_000: return 33
+    if monthly_cents <= 8_000_000: return 34
+    return 35
+
+
+def compensation(collection_cents, percent):
+    if type(collection_cents) is not int or percent not in (32, 33, 34, 35):
+        raise ValueError('Invalid compensation input')
+    return int((Decimal(collection_cents)*percent/100).quantize(Decimal('1'), rounding=ROUND_HALF_UP))
+
+
+def monthly_scopes(start, end, payday):
+    """Fixed run-relative cutoff; refreshing later never advances an open month."""
+    first = date.fromisoformat(start); last = date.fromisoformat(end)
+    pay = date.fromisoformat(payday)
+    if last < first or pay < last:
+        raise ValueError('Invalid payroll calendar')
+    result = {}; current = first.replace(day=1)
+    while current <= last:
+        finish = current.replace(day=monthrange(current.year, current.month)[1])
+        closed = finish < pay
+        cutoff = finish if closed else min(finish, last)
+        result[current.strftime('%Y-%m')] = {'start':current.isoformat(),
+            'cutoff':cutoff.isoformat(), 'closed':closed,
+            'label':('Final month through ' if closed else 'Provisional through ')+cutoff.strftime('%B %d, %Y').replace(' 0',' ')}
+        current = finish + timedelta(days=1)
+    return result
+
+
+def calculate_doctor(policy, events, scopes, start, end, gusto, source_snapshot,
+                     authorized_offices, override=None):
+    """Single source result consumed by table/detail/export; no paid-payroll writes."""
+    ids = set(policy['source_ids']); allowed = set(policy['offices'])
+    relevant = [e for e in events if e['provider_id'] in ids]
+    if not allowed <= set(authorized_offices) or any(e['report_location_id'] not in authorized_offices for e in relevant):
+        raise PermissionError('Incomplete authorized compensation scope')
+    if not policy['effective_start'] <= min(s['start'] for s in scopes.values()) <= end <= policy['effective_end']:
+        raise IncompleteCollectionEvidence('Confirmed office policy does not cover this period')
+    if any(s['cutoff'] > policy['effective_end'] for s in scopes.values()):
+        raise IncompleteCollectionEvidence('Monthly scope exceeds confirmed office policy')
+    if override is not None and (override.get('percent') not in (32,33,34,35) or not override.get('actor_id')):
+        raise ValueError('Explicit authorized override identity is required')
+    eligible = [e for e in relevant if e['report_location_id'] in allowed]
+    monthly_exceptions = defaultdict(int)
+    for e in relevant:
+        scope=scopes.get(e['applied_date'][:7])
+        if scope and scope['start']<=e['applied_date']<=scope['cutoff'] and e['report_location_id'] not in allowed:
+            monthly_exceptions[(e['provider_id'],e['report_location_id'],e['applied_date'])]+=e['signed_cents']
+    daily = defaultdict(int)
+    for e in relevant:
+        if start <= e['applied_date'] <= end:
+            daily[(e['provider_id'],e['report_location_id'],e['applied_date'])] += e['signed_cents']
+    months = []
+    for month, scope in sorted(scopes.items()):
+        portion = -sum(e['signed_cents'] for e in eligible if start <= e['applied_date'] <= end and e['applied_date'].startswith(month))
+        basis = -sum(e['signed_cents'] for e in eligible if scope['start'] <= e['applied_date'] <= scope['cutoff'])
+        rate = doctor_rate(basis); selected = override['percent'] if override else rate
+        offices = []
+        for office in sorted(allowed):
+            office_rows = [e for e in eligible if e['report_location_id']==office]
+            offices.append({'office_id':office,
+                'period_collection_cents':-sum(e['signed_cents'] for e in office_rows if start<=e['applied_date']<=end and e['applied_date'].startswith(month)),
+                'monthly_collection_cents':-sum(e['signed_cents'] for e in office_rows if scope['start']<=e['applied_date']<=scope['cutoff'])})
+        months.append({'month':month,'period_collection_cents':portion,'monthly_basis_cents':basis,
+            'automatic_percent':rate,'applied_percent':selected,'estimate_cents':compensation(portion,selected),
+            'cutoff':scope['cutoff'],'basis_label':scope['label'],'provisional':not scope['closed'],
+            'office_detail':offices})
+    result = {'version':VERSION,'provider_id':policy['id'],'provider_name':policy['name'],
+        'source_provider_ids':sorted(ids),'office_ids':sorted(allowed),'gusto':gusto,
+        'applied_window':[start,end],'source_snapshot':source_snapshot,'months':months,
+        'raw_hr_collection_cents':sum(daily.values()),
+        'eligible_period_cents':sum(m['period_collection_cents'] for m in months),
+        'estimate_cents':sum(m['estimate_cents'] for m in months),'override':override,
+        'exceptions':[{'source_provider_id':k[0],'office_id':k[1],'applied_date':k[2],'signed_cents':v,
+            'reason':'Outside confirmed compensation offices; retained for review'} for k,v in sorted(daily.items()) if k[1] not in allowed],
+        'monthly_exceptions':[{'source_provider_id':k[0],'office_id':k[1],'applied_date':k[2],'signed_cents':v,
+            'reason':'Outside confirmed offices; excluded from monthly tier basis, retained for review'} for k,v in sorted(monthly_exceptions.items())],
+        'daily_collection':[{'source_provider_id':k[0],'office_id':k[1],'applied_date':k[2],'signed_cents':v} for k,v in sorted(daily.items())],
+        'status':'SOURCE_CALCULATED_ESTIMATE','independent_hr_status':'NOT_AUTOMATICALLY_CERTIFIED',
+        'rounding':'half-away-from-zero per calendar month, then sum',
+        'month_end_adjustment':{'status':'MISSING_VERIFIED_PAID_BASELINE','requires_hr_approval':True,'proposed_adjustment_cents':None,'included_in_estimate':False}}
+    result['negative_review_required']=any(m['period_collection_cents']<0 or m['monthly_basis_cents']<0 for m in months)
+    result['calculation_id']=hashlib.sha256(json.dumps(result,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+    return result
