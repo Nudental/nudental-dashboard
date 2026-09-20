@@ -24,9 +24,8 @@ RESOLVED=frozenset({'/v2/payments','/v2/adjustments','/v2/ledger/adjustments','/
 AR_READS=frozenset({'/v2/accounts-receivable','/v2/ar','/v2/ar/trend',RCM+'ar-aging-official'})
 MARKETING='/v2/marketing/amex-spend'
 FINANCIAL_READS=RESOLVED|{RCM+p for p in RCM_TABS}|{MARKETING}
-# Existing Collaboration process caches its report helper. Its scheduler executes
-# on startup, so these two human gates await deliberate caller activation.
-PENDING_REPORT_READS=frozenset({RCM+'ar-aging-official',RCM+'ar-location-health'})
+# The installed Collaboration report caller now uses its two exact GET scopes.
+PENDING_REPORT_READS=frozenset()
 ACTIVE_FINANCIAL_READS=FINANCIAL_READS-PENDING_REPORT_READS
 SNAKE_READS=frozenset(RCM+p for p in ('dentrix-statements','dentrix-statements/summary','patient-balance-outreach-summary'))
 OFFICE_KEYS=frozenset({'officeId','office_id','locationId','location_id','office','locationIds','officeIds'})

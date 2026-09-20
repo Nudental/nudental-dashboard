@@ -844,9 +844,9 @@
   },
   {
     "source_file": "middleware/api_financial_read_policy.py",
-    "sha256": "e9e598bafcee179f4270a0edd05f66e8bf59e43a9346366f6a558b21f5899087",
-    "template_sha256": "e9e598bafcee179f4270a0edd05f66e8bf59e43a9346366f6a558b21f5899087",
-    "bytes": 5684
+    "sha256": "ebebed3b76e1046671bf08f9ed6b25dca2fea28268fac349254aec2642f5def7",
+    "template_sha256": "ebebed3b76e1046671bf08f9ed6b25dca2fea28268fac349254aec2642f5def7",
+    "bytes": 5556
   },
   {
     "source_file": "middleware/api_background_reads.py",

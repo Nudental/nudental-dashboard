@@ -1,5 +1,5 @@
 """Current human/job matrix and actual financial handlers with fake storage."""
-import ast,json,os,sys,unittest,logging
+import ast,json,os,sys,unittest,logging,hashlib
 from pathlib import Path
 from dataclasses import replace
 from types import SimpleNamespace
@@ -29,9 +29,9 @@ def own_query(path):
  return 'locationId=111'
 
 class FinancialPolicyTests(unittest.TestCase):
- def test_two_report_dependencies_are_explicitly_pending_caller_activation(self):
-  self.assertEqual(PENDING_REPORT_READS,{RCM+'ar-aging-official',RCM+'ar-location-health'})
-  for p in FINANCIAL_READS:self.assertEqual(is_active_financial_read(scope(p)),p not in PENDING_REPORT_READS)
+ def test_reviewed_report_gates_are_active_after_caller_activation(self):
+  self.assertEqual(PENDING_REPORT_READS,frozenset())
+  for p in FINANCIAL_READS:self.assertTrue(is_active_financial_read(scope(p)),p)
  def test_all_known_current_human_reads_and_all_office_admin(self):
   for p in FINANCIAL_READS:
    self.assertTrue(financial_read_authorize(ADMIN,scope(p,''),MAP),p)
@@ -104,6 +104,59 @@ class FinancialPolicyTests(unittest.TestCase):
    self.assertEqual(read_open(UrlRequest('http://127.0.0.1:8001'+RCM+'ar-location-health'),timeout=1),'synthetic result')
   self.assertIsNone(handlers[0].redirect_request(None,None,302,'m',{},'https://foreign.invalid'))
   with self.assertRaises(ReadAccessFailure):read_open(UrlRequest('https://foreign.invalid'+RCM+'ar-location-health'),timeout=1)
+
+class ActivatedReportGateTests(unittest.TestCase):
+ paths=(RCM+'ar-aging-official',RCM+'ar-location-health')
+ def setUp(self):
+  self.calls=[]
+  class Users:
+   def resolve(self,token):
+    if token=='admin':return ADMIN
+    if token=='own':return USER
+    if token=='staff':return replace(USER,permissions=frozenset())
+    raise AccessFailure(401)
+  jobs={'version':1,'jobs':[{'id':name,'enabled':True,'token_sha256':hashlib.sha256(token.encode()).hexdigest(),
+    'expires_at':'2099-01-01T00:00:00+00:00','routes':[{'method':'GET','path':path} for path in paths],
+    'office_ids':[],'all_offices':True} for name,token,paths in [
+      ('collab-daily-report',TOKEN,self.paths),('dashboard-validator','ndjob_'+'y'*43,[RCM+'dashboard'])]]}
+  self.job_patch=patch('api_access_runtime.job_configuration',lambda:jobs);self.job_patch.start()
+  app=FastAPI()
+  for path in self.paths:
+   async def read(request:Request):
+    self.calls.append((request.method,request.url.path));return {'ok':True}
+   app.add_api_route(path,read,methods=['GET'])
+  app.add_middleware(FinancialReadBoundary,office_to_location=MAP,users=Users())
+  app.add_middleware(ScopedJobBoundary,load_jobs=lambda:jobs)
+  self.client=TestClient(app)
+ def tearDown(self):self.client.close();self.job_patch.stop()
+ def test_valid_human_and_office_scope(self):
+  for path in self.paths:
+   self.assertEqual(self.client.get(path,headers={'Authorization':'Bearer admin'}).status_code,200)
+  self.assertEqual(self.client.get(self.paths[0]+'?locationId=111',headers={'Authorization':'Bearer own'}).status_code,200)
+  before=len(self.calls)
+  self.assertEqual(self.client.get(self.paths[0]+'?locationId=222',headers={'Authorization':'Bearer own'}).status_code,403)
+  self.assertEqual(self.client.get(self.paths[1],headers={'Authorization':'Bearer own'}).status_code,403)
+  self.assertEqual(len(self.calls),before)
+ def test_missing_invalid_and_ungranted_human_denied_before_handler(self):
+  for path in self.paths:
+   for token,want in [(None,401),('invalid',401),('staff',403)]:
+    headers={'Authorization':'Bearer '+token} if token else {}
+    self.assertEqual(self.client.get(path,headers=headers).status_code,want)
+  self.assertFalse(self.calls)
+ def test_only_the_exact_report_job_reads_are_permitted(self):
+  for path in self.paths:
+   self.assertEqual(self.client.get(path,headers={'Authorization':'Bearer '+TOKEN}).status_code,200)
+  before=len(self.calls)
+  for path in self.paths:
+   self.assertEqual(self.client.get(path,headers={'Authorization':'Bearer ndjob_'+'y'*43}).status_code,403)
+  self.assertEqual(self.client.get(RCM+'dashboard',headers={'Authorization':'Bearer '+TOKEN}).status_code,403)
+  self.assertEqual(len(self.calls),before)
+ def test_writes_never_reach_a_handler(self):
+  for path in self.paths:
+   for method in ['POST','PUT','PATCH','DELETE']:
+    self.assertEqual(self.client.request(method,path,headers={'Authorization':'Bearer '+TOKEN},json={}).status_code,403)
+    self.assertEqual(self.client.request(method,path,headers={'Authorization':'Bearer admin'},json={}).status_code,405)
+  self.assertFalse(self.calls)
 
 class ActualFinancialHandlerTests(unittest.TestCase):
  def setUp(self):
