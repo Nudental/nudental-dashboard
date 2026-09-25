@@ -14,8 +14,9 @@ export default function DoctorLedgerCompensation({ period, window, revision, per
   const [actionBusy, setActionBusy] = useState(false);
   const [policyView, setPolicyView] = useState(null);
   const [history, setHistory] = useState(null);
+  const [retry, setRetry] = useState(0);
   const generation = useRef(0);
-  const key = `${period?.id}:${window?.dentrixStart}:${window?.dentrixEnd}:${revision}:${periodsLoading}`;
+  const key = `${period?.id}:${window?.dentrixStart}:${window?.dentrixEnd}:${revision}:${periodsLoading}:${retry}`;
   const [resultKey, setResultKey] = useState(null);
   const ready = resultKey === key && ledgerSelectionMatches(result, period, window) && !periodsLoading;
 
@@ -26,6 +27,14 @@ export default function DoctorLedgerCompensation({ period, window, revision, per
     setResult(null); setResultKey(null); setError(null); setPreview(null); setOverrides({}); setActionBusy(false); setPolicyView(null); setHistory(null);
     if (!period || periodsLoading) { setBusy(false); return () => controller.abort(); }
     setBusy(true);
+    // A polling count cannot bound a stalled session, fetch or response body.
+    // Settle the UI independently, then ignore any response arriving after abort.
+    const deadline = setTimeout(() => {
+      if (current !== generation.current || controller.signal.aborted) return;
+      setError('The Ascend collection read did not finish within six minutes. No complete estimate is available. Retry the selected period.');
+      setBusy(false);
+      controller.abort();
+    }, 360000);
     const requestId = crypto.randomUUID();
     const load = async () => {
       let snapshot;
@@ -46,8 +55,9 @@ export default function DoctorLedgerCompensation({ period, window, revision, per
       }
       throw new Error('The source read is taking longer than expected. Refresh the selected period; no old result has been shown.');
     };
-    load().catch(e => { if (current === generation.current && !controller.signal.aborted) { setError(e.message); setBusy(false); } });
-    return () => { generation.current += 1; controller.abort(); clearTimeout(timer); };
+    load().catch(e => { if (current === generation.current && !controller.signal.aborted) { setError(e.message); setBusy(false); } })
+      .finally(() => clearTimeout(deadline));
+    return () => { generation.current += 1; controller.abort(); clearTimeout(timer); clearTimeout(deadline); };
   }, [key]);
 
   const changeRate = async (id, value) => {
@@ -114,8 +124,9 @@ export default function DoctorLedgerCompensation({ period, window, revision, per
     {period && !periodsLoading && <div className="flex flex-wrap gap-2"><button className={button} disabled={actionBusy} onClick={() => inspect('ledger-policy')}>Approved office rules</button><button className={button} disabled={actionBusy || busy} onClick={() => inspect('ledger-history')}>Saved calculations</button></div>}
     {policyView && <div className="rounded border p-3 text-sm" aria-label="Approved compensation office rules"><p>Version {policyView.version.slice(0,12)} · Approved by {policyView.document.approved_by} · {policyView.document.approval_reference}</p>{policyView.document.doctors.map(p => <details key={p.id}><summary>{p.name}</summary>{p.office_rules.map(r => <p key={r.effective_start}>{r.effective_start} – {r.effective_end || 'Until superseded'}: {r.offices.map(o => policyView.document.office_names[o]).join(', ')} · {r.approval_reference}</p>)}</details>)}<p>These compensation rules do not change anyone’s login or office access.</p></div>}
     {history && <div className="rounded border p-3 text-sm" aria-label="Saved calculation history"><p>Saved results are immutable. Refresh creates a new source read; it does not replace these results.</p>{history.calculations.map(h => <p key={h.snapshot_id}>{h.created_at} · Policy {h.policy_version?.slice(0,12)} · {h.status === 'NEEDS_REVIEW' ? 'Needs review' : 'Ready for HR review'} <button className={button} disabled={actionBusy || busy} onClick={() => loadSaved(h.snapshot_id)}>View saved calculation</button></p>)}{history.calculations.length === 0 && <p>No saved calculation for this period yet.</p>}{history.older_results_available && <p>Showing the latest 20 results; older snapshots remain preserved.</p>}</div>}
-    {busy && <p role="status">Reading complete Ascend collection history and monthly controls…</p>}
+    {busy && <p role="status">Reading complete Ascend collection history and monthly controls for payday {period.payday}… This can take several minutes. Estimates remain unavailable until the full read passes validation.</p>}
     {error && <p role="alert" className="rounded bg-rose-50 text-rose-800 p-3">{error}</p>}
+    {error && !busy && period && !periodsLoading && <button className={button} disabled={actionBusy} onClick={() => setRetry(value => value + 1)}>Retry doctor calculation</button>}
     {ready && <>
       <p role="status" className="rounded bg-slate-50 text-slate-900 p-3">{result.status === 'NEEDS_REVIEW' ? 'Needs review — see the named exceptions below.' : 'Ready for HR review — automated checks passed.'} No payroll approval, payment or email has been performed.</p>
       {result.exceptions?.length > 0 && <div aria-label="Compensation review exceptions" className="rounded border border-amber-300 p-3 text-sm">{result.exceptions.map((e,i) => <p key={`${e.provider_id}:${i}`}><strong>{e.provider_name}</strong> · {e.period.join(' – ')} · {e.reason}. Required action: {e.action}.</p>)}</div>}
