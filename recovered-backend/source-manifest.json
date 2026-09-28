@@ -890,9 +890,9 @@
   },
   {
     "source_file": "middleware/compensation_views.py",
-    "sha256": "6e1207fa5f4379284713c6b56c6cf1d62c210e40b4fb4af35dee470b6b11ba01",
-    "template_sha256": "6e1207fa5f4379284713c6b56c6cf1d62c210e40b4fb4af35dee470b6b11ba01",
-    "bytes": 13316,
+    "sha256": "53dfa923f10f5b5b6d49b352f7e39b9b8b10963e8cc0e07f069e2c5387d166e7",
+    "template_sha256": "53dfa923f10f5b5b6d49b352f7e39b9b8b10963e8cc0e07f069e2c5387d166e7",
+    "bytes": 13406,
     "round_trip_exact": true
   },
   {
