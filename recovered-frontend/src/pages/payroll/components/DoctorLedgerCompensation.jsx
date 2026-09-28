@@ -1,9 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
+import DoctorReportModal from './DoctorReportModal';
 import { readLedgerReport, visibleLedgerDoctors, ledgerSelectionMatches } from '../../../services/compensationLedgerService';
 
 const cash = cents => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100);
 const button = 'rounded-lg border px-3 py-2 text-sm disabled:opacity-50';
-const cell = 'px-3 py-3 text-left align-top border-b';
+const cell = 'px-3 py-4 text-left align-middle border-b border-gray-200 dark:border-gray-700';
+const fmtDate = value => value ? new Date(value + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
 export default function DoctorLedgerCompensation({ period, window, revision, periodsLoading, officeId, additionalProviders = [] }) {
   const [result, setResult] = useState(null);
@@ -11,6 +13,7 @@ export default function DoctorLedgerCompensation({ period, window, revision, per
   const [busy, setBusy] = useState(false);
   const [overrides, setOverrides] = useState({});
   const [preview, setPreview] = useState(null);
+  const [expanded, setExpanded] = useState(null);
   const [actionBusy, setActionBusy] = useState(false);
   const [policyView, setPolicyView] = useState(null);
   const [history, setHistory] = useState(null);
@@ -81,7 +84,7 @@ export default function DoctorLedgerCompensation({ period, window, revision, per
     try {
       const response = await readLedgerReport({ period, window, snapshot: result.job_id, overrides, providerId, format });
       if (response.status !== 200) throw new Error('The report snapshot is not ready.');
-      if (format === 'ledger-html') {
+      if (format === 'ledger-html' || format === 'ledger-audit-html') {
         const html = await response.text();
         if (current === generation.current) setPreview(html);
       } else {
@@ -118,43 +121,48 @@ export default function DoctorLedgerCompensation({ period, window, revision, per
   const verifiedIds = new Set((ready ? result.doctors : []).flatMap(r => r.source_provider_ids));
   const unverified = ready ? additionalProviders.filter(p => !verifiedIds.has(String(p.providerId))) : [];
   const doctors = ready ? visibleLedgerDoctors(result, officeId) : [];
-  return <section aria-label="Doctor Ledger compensation" className="rounded-xl border bg-white dark:bg-gray-800 p-5 space-y-4">
-    <h3 className="text-lg font-bold">Doctors · Ascend Ledger collections</h3>
-    <p className="text-sm text-gray-600 dark:text-gray-300">Monthly tiers use combined qualifying offices and the approved rules effective on each Applied Date. Separate calendar months are calculated separately. These are estimates; no paid payroll is changed.</p>
-    {period && !periodsLoading && <div className="flex flex-wrap gap-2"><button className={button} disabled={actionBusy} onClick={() => inspect('ledger-policy')}>Approved office rules</button><button className={button} disabled={actionBusy || busy} onClick={() => inspect('ledger-history')}>Saved calculations</button></div>}
-    {policyView && <div className="rounded border p-3 text-sm" aria-label="Approved compensation office rules"><p>Version {policyView.version.slice(0,12)} · Approved by {policyView.document.approved_by} · {policyView.document.approval_reference}</p>{policyView.document.doctors.map(p => <details key={p.id}><summary>{p.name}</summary>{p.office_rules.map(r => <p key={r.effective_start}>{r.effective_start} – {r.effective_end || 'Until superseded'}: {r.offices.map(o => policyView.document.office_names[o]).join(', ')} · {r.approval_reference}</p>)}</details>)}<p>These compensation rules do not change anyone’s login or office access.</p></div>}
-    {history && <div className="rounded border p-3 text-sm" aria-label="Saved calculation history"><p>Saved results are immutable. Refresh creates a new source read; it does not replace these results.</p>{history.calculations.map(h => <p key={h.snapshot_id}>{h.created_at} · Policy {h.policy_version?.slice(0,12)} · {h.status === 'NEEDS_REVIEW' ? 'Needs review' : 'Ready for HR review'} <button className={button} disabled={actionBusy || busy} onClick={() => loadSaved(h.snapshot_id)}>View saved calculation</button></p>)}{history.calculations.length === 0 && <p>No saved calculation for this period yet.</p>}{history.older_results_available && <p>Showing the latest 20 results; older snapshots remain preserved.</p>}</div>}
-    {busy && <p role="status">Reading complete Ascend collection history and monthly controls for payday {period.payday}… This can take several minutes. Estimates remain unavailable until the full read passes validation.</p>}
-    {error && <p role="alert" className="rounded bg-rose-50 text-rose-800 p-3">{error}</p>}
-    {error && !busy && period && !periodsLoading && <button className={button} disabled={actionBusy} onClick={() => setRetry(value => value + 1)}>Retry doctor calculation</button>}
+  const openReport = (doctor, allowSend) => setPreview({ doctor, allowSend });
+  return <section aria-label="Doctor Ledger compensation" className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
+    <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-3 border-b dark:border-gray-700"><h3 className="text-base font-bold">Doctors</h3><div className="flex items-center gap-3"><span className="text-sm text-gray-500">{doctors.length} providers</span>{ready && <><button className={button} disabled={actionBusy} onClick={() => report('ledger-csv')}>Export CSV</button><button className={button} disabled={actionBusy} onClick={() => report('ledger-pdf')}>Download PDF</button></>}</div></div>
+    {busy && <p role="status" className="p-5">Reading complete Ascend collection history and monthly controls for payday {period.payday}… This can take several minutes. Estimates remain unavailable until the full read passes validation.</p>}
+    {error && <p role="alert" className="m-4 rounded bg-rose-50 text-rose-800 p-3">{error}</p>}
+    {error && !busy && period && !periodsLoading && <button className={`${button} m-4`} disabled={actionBusy} onClick={() => setRetry(value => value + 1)}>Retry doctor calculation</button>}
     {ready && <>
-      <p role="status" className="rounded bg-slate-50 text-slate-900 p-3">{result.status === 'NEEDS_REVIEW' ? 'Needs review — see the named exceptions below.' : 'Ready for HR review — automated checks passed.'} No payroll approval, payment or email has been performed.</p>
-      {result.exceptions?.length > 0 && <div aria-label="Compensation review exceptions" className="rounded border border-amber-300 p-3 text-sm">{result.exceptions.map((e,i) => <p key={`${e.provider_id}:${i}`}><strong>{e.provider_name}</strong> · {e.period.join(' – ')} · {e.reason}. Required action: {e.action}.</p>)}</div>}
-      {doctors.length > 0 ? <p className="text-sm">{result.complete_doctor_scope === false ? 'Configured-doctor subtotal — incomplete payroll scope' : 'Eligible doctor collections'}: <strong>{cash(doctors.reduce((s, r) => s + r.eligible_period_cents, 0))}</strong> · Estimated compensation{result.complete_doctor_scope === false ? ' subtotal' : ''}: <strong>{cash(doctors.reduce((s, r) => s + r.estimate_cents, 0))}</strong></p> : <p>No verified doctor estimate is available for this scope. This is not a zero-compensation result.</p>}
-      {result.policy && <p className="text-xs">Policy version {result.policy.version.slice(0,12)} · Saved calculation {result.job_id} · Automated validation; not a new independent HR-report comparison.</p>}
-      {officeId && <p className="text-sm">Showing doctors assigned to {result.office_names[officeId]}. Amounts and tiers retain all their qualifying offices; office subtotals appear in Details.</p>}
-      <div className="flex flex-wrap gap-2">
-        <button className={button} disabled={actionBusy} onClick={() => report('ledger-csv')}>Export doctor CSV · all qualifying offices</button>
-        <button className={button} disabled={actionBusy} onClick={() => report('ledger-html')}>Detailed doctor report</button>
-        <button className={button} disabled={actionBusy} onClick={() => report('ledger-pdf')}>Download doctor PDF</button>
-      </div>
-      <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr>
-        {['Doctor / offices', 'Calendar month / basis', 'Period collections', 'Monthly collections', 'Rate', 'Estimate', 'Details'].map(t => <th className={cell} key={t}>{t}</th>)}
-      </tr></thead><tbody>{doctors.map(r => <React.Fragment key={r.provider_id}>{r.months.map((m, index) => <tr key={`${r.provider_id}:${m.month}`}>
-        <td className={cell}>{index === 0 && <><strong>{r.provider_name}</strong><p>{r.office_ids.map(o => result.office_names[o]).join(', ')}</p><label className="block mt-2">Rate selection <select aria-label={`${r.provider_name} rate selection`} value={overrides[r.provider_id] ?? ''} onChange={e => changeRate(r.provider_id, e.target.value)} disabled={actionBusy} className="border rounded p-1 dark:bg-gray-700"><option value="">Automatic monthly tiers</option>{[32,33,34,35].map(p => <option value={p} key={p}>Manual override {p}%</option>)}</select></label></>}</td>
-        <td className={cell}>{m.month}<p>{m.basis_label}</p></td><td className={cell}>{cash(m.period_collection_cents)}</td><td className={cell}>{cash(m.monthly_basis_cents)}</td>
-        <td className={cell}>{m.applied_percent}%{r.override && <p>Manual override; automatic {m.automatic_percent}%</p>}</td><td className={cell}>{cash(m.estimate_cents)}</td>
-        <td className={cell}>{index === 0 && <button className={button} disabled={actionBusy} onClick={() => report('ledger-html', r.provider_id)}>Details</button>}</td>
-      </tr>)}<tr><td colSpan={7} className="p-3 bg-gray-50 dark:bg-gray-900 text-xs">
-        Raw signed HR Total Collection: {cash(r.raw_hr_collection_cents)} · Eligible period: {cash(r.eligible_period_cents)} · Estimate: {cash(r.estimate_cents)}
-        {r.monthly_exceptions.length > 0 && <details><summary>{r.monthly_exceptions.length} monthly office exceptions retained for review</summary>{r.monthly_exceptions.map((e,i) => <p key={i}>{e.applied_date} · {result.office_names[e.office_id]} · {cash(e.signed_cents)} · {e.reason}</p>)}</details>}
-        {r.negative_review_required && <p>Negative amount requires HR review; no automatic deduction.</p>}
-        <details><summary>Calculation and month-end review</summary><p className="break-all">Calculation: {r.calculation_id}</p><p>Month-end adjustment awaits verified compensation already paid for the same earning month and separate HR approval. No adjustment is included.</p></details>
-      </td></tr></React.Fragment>)}</tbody></table></div>
-      {unverified.length > 0 && <details><summary>Other source identities requiring verified doctor/office evidence ({unverified.length})</summary>{unverified.map((p,i) => <p key={p.providerId || i}>{p.name} · source {p.providerId || 'unresolved'} · no verified doctor compensation shown; not silently assigned a tier.</p>)}</details>}
-      <p className="text-xs text-gray-500">Source retrieved: {result.source_snapshot.retrieved_at}. Applied Date cutoffs are shown per month. The API does not supply the HR report refresh time; a new refresh is not automatically independently certified.</p>
-      {result.unmapped_report_identities?.map(r => <p role="alert" key={r.provider_id}>{r.status} · Source {r.provider_id} · signed collection {cash(r.signed_cents)}</p>)}
+      {result.exceptions?.length > 0 && <details className="px-5 py-3 text-sm border-b dark:border-gray-700" aria-label="Compensation review exceptions"><summary className="cursor-pointer text-amber-700 dark:text-amber-300 font-semibold">{result.exceptions.length} items need review{result.complete_doctor_scope === false ? ' · Provider coverage incomplete' : ''}</summary><div className="pt-3 space-y-2">{result.exceptions.map((e,i) => <p key={`${e.provider_id}:${i}`}><strong>{e.provider_name}</strong> · {e.reason}. {e.action}.</p>)}</div></details>}
+      {officeId && <p className="px-5 py-2 text-xs text-gray-500">Showing doctors assigned to {result.office_names[officeId]}. Totals include all their qualifying offices.</p>}
+      {doctors.length ? <div className="overflow-x-auto"><table className="w-full text-sm"><thead className="bg-gray-50 dark:bg-gray-700"><tr>
+        {['Provider', 'Office', 'Provider type', 'Pay period', 'Pay-period collections', 'Monthly tier basis', 'Comp %', 'Calculation type', 'Est. compensation', 'Status', 'Source', 'Actions'].map(t => <th className={`${cell} text-xs uppercase text-gray-500 dark:text-gray-400 font-semibold`} key={t}>{t}</th>)}
+      </tr></thead><tbody>{doctors.map(r => {
+        const review = r.negative_review_required || r.monthly_exceptions.length > 0;
+        return <React.Fragment key={r.provider_id}><tr>
+          <td className={`${cell} font-semibold`}>{r.provider_name}</td>
+          <td className={`${cell} text-gray-500 dark:text-gray-400`}>{r.office_ids.map(o => result.office_names[o]).join(', ')}</td>
+          <td className={cell}><span className="px-2 py-1 rounded-full text-xs font-semibold bg-cyan-50 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300">Doctor</span></td>
+          <td className={`${cell} text-gray-500 dark:text-gray-400`}>{fmtDate(result.gusto.pay_period_start)} – {fmtDate(result.gusto.pay_period_end)}</td>
+          <td className={`${cell} text-right font-semibold whitespace-nowrap`}>{cash(r.eligible_period_cents)}</td>
+          <td className={`${cell} text-right`}>{r.months.map(m => <div key={m.month} title={m.basis_label}>{r.months.length > 1 && <span className="text-xs text-gray-500">{m.month}: </span>}{cash(m.monthly_basis_cents)}</div>)}</td>
+          <td className={cell}>{r.months.map(m => <div key={m.month} className="mb-1"><span className="rounded-full px-3 py-1 bg-[#00B5CC] text-white font-bold whitespace-nowrap" title={`${m.month} · ${m.basis_label}`}>{m.applied_percent}%</span></div>)}</td>
+          <td className={`${cell} text-teal-600 dark:text-teal-400 font-medium`}>{r.override ? 'Manual rate override' : 'Monthly tiers'}</td>
+          <td className={`${cell} text-right font-bold whitespace-nowrap ${r.estimate_cents < 0 ? 'text-amber-600' : 'text-emerald-500'}`}>{cash(r.estimate_cents)}</td>
+          <td className={cell}><span className={`rounded-full px-2 py-1 text-xs font-semibold whitespace-nowrap ${review ? 'bg-amber-50 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300' : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'}`}>{review ? 'Needs review' : 'Estimated'}</span></td>
+          <td className={`${cell} text-gray-500 dark:text-gray-400`}>Dentrix Ascend collections</td>
+          <td className={cell}><div className="flex items-center gap-2"><button className="rounded-lg border border-indigo-200 bg-indigo-50 text-indigo-700 px-3 py-2 text-xs font-bold disabled:opacity-50" disabled={actionBusy} onClick={() => openReport(r, false)}>👁 Preview</button><button className="rounded-lg border border-emerald-300 bg-emerald-50 text-teal-800 px-3 py-2 text-xs font-bold disabled:opacity-50" disabled={actionBusy} onClick={() => openReport(r, true)}>📋 Report / Send</button><button aria-label={`${expanded === r.provider_id ? 'Hide' : 'Show'} ${r.provider_name} calculation details`} aria-expanded={expanded === r.provider_id} className="p-2 text-gray-500" onClick={() => setExpanded(expanded === r.provider_id ? null : r.provider_id)}>{expanded === r.provider_id ? '⌃' : '⌄'}</button></div></td>
+        </tr>{expanded === r.provider_id && <tr><td colSpan={12} className="p-5 bg-gray-50 dark:bg-gray-900 text-sm space-y-3">
+          <label className="block">Rate selection <select aria-label={`${r.provider_name} rate selection`} value={overrides[r.provider_id] ?? ''} onChange={e => changeRate(r.provider_id, e.target.value)} disabled={actionBusy} className="border rounded p-1 dark:bg-gray-700"><option value="">Automatic monthly tiers</option>{[32,33,34,35].map(p => <option value={p} key={p}>Manual override {p}%</option>)}</select></label>
+          {r.months.map(m => <p key={m.month}>{m.month} · {m.basis_label} · {cash(m.period_collection_cents)} × {m.applied_percent}% = {cash(m.estimate_cents)}</p>)}
+          {review && <p>Review office exceptions or negative collections in the calculation audit. No automatic deduction is applied.</p>}
+          <button className={button} disabled={actionBusy} onClick={() => report('ledger-audit-html', r.provider_id)}>View calculation audit</button>
+        </td></tr>}</React.Fragment>;
+      })}</tbody><tfoot className="bg-gray-50 dark:bg-gray-700 font-bold"><tr><td colSpan={4} className={cell}>{result.complete_doctor_scope === false ? 'Configured providers · subtotal' : 'Total'}</td><td className={`${cell} text-right`}>{cash(doctors.reduce((s,r) => s + r.eligible_period_cents, 0))}</td><td colSpan={3} className={cell}></td><td className={`${cell} text-right text-emerald-500`}>{cash(doctors.reduce((s,r) => s + r.estimate_cents, 0))}</td><td colSpan={3} className={cell}></td></tr></tfoot></table></div> : <p className="p-5">No verified doctor estimate is available for this scope. This is not a zero-compensation result.</p>}
     </>}
-    {preview && ready && <div className="fixed inset-0 z-[70] bg-black/50 p-4 flex flex-col" role="dialog" aria-modal="true" aria-label="Doctor compensation detailed report"><div className="bg-white p-2 flex justify-end"><button className={button} onClick={() => setPreview(null)}>Close report</button></div><iframe title="Doctor compensation detailed report" sandbox="" srcDoc={preview} className="bg-white flex-1 w-full" /></div>}
+    {period && !periodsLoading && <details className="px-5 py-3 text-sm text-gray-500 dark:text-gray-400"><summary className="cursor-pointer">Calculation details & history</summary><div className="pt-3 space-y-3">
+      <p>Monthly tiers combine approved offices. Calendar months are calculated separately. Estimates do not change paid payroll.</p>
+      <div className="flex flex-wrap gap-2"><button className={button} disabled={actionBusy} onClick={() => inspect('ledger-policy')}>Approved office rules</button><button className={button} disabled={actionBusy || busy} onClick={() => inspect('ledger-history')}>Saved calculations</button>{ready && <button className={button} disabled={actionBusy} onClick={() => report('ledger-audit-html')}>Full calculation audit</button>}</div>
+      {policyView && <div aria-label="Approved compensation office rules"><p>Version {policyView.version.slice(0,12)} · Approved by {policyView.document.approved_by}</p>{policyView.document.doctors.map(p => <details key={p.id}><summary>{p.name}</summary>{p.office_rules.map(r => <p key={r.effective_start}>{r.effective_start} – {r.effective_end || 'Until superseded'}: {r.offices.map(o => policyView.document.office_names[o]).join(', ')}</p>)}</details>)}</div>}
+      {history && <div aria-label="Saved calculation history">{history.calculations.map(h => <p key={h.snapshot_id}>{h.created_at} · {h.status === 'NEEDS_REVIEW' ? 'Needs review' : 'Ready for HR review'} <button className={button} disabled={actionBusy || busy} onClick={() => loadSaved(h.snapshot_id)}>View saved calculation</button></p>)}{history.calculations.length === 0 && <p>No saved calculation for this period yet.</p>}{history.older_results_available && <p>Showing the latest 20 results; older snapshots remain preserved.</p>}</div>}
+      {ready && <><p className="break-all">Policy {result.policy?.version} · Saved calculation {result.job_id}</p><p>Source retrieved: {result.source_snapshot.retrieved_at}. Automated checks do not replace an independent HR report comparison.</p>{unverified.length > 0 && <details><summary>Other source identities requiring review ({unverified.length})</summary>{unverified.map((p,i) => <p key={p.providerId || i}>{p.name} · source {p.providerId || 'unresolved'}</p>)}</details>}{result.unmapped_report_identities?.map(r => <p key={r.provider_id}>{r.status} · Source {r.provider_id} · signed collection {cash(r.signed_cents)}</p>)}</>}
+    </div></details>}
+    {typeof preview === 'string' && ready && <div className="fixed inset-0 z-[9100] bg-black/50 p-4 flex flex-col" role="dialog" aria-modal="true" aria-label="Doctor calculation audit"><div className="bg-white p-2 flex justify-end"><button className={button} onClick={() => setPreview(null)}>Close report</button></div><iframe title="Doctor calculation audit" sandbox="" srcDoc={preview} className="bg-white flex-1 w-full" /></div>}
+    {preview?.doctor && ready && <DoctorReportModal key={`${key}:${result.job_id}:${preview.doctor.provider_id}`} doctor={preview.doctor} period={result.gusto} options={{ period, window, snapshot: result.job_id, overrides, providerId: preview.doctor.provider_id }} allowSend={preview.allowSend} onClose={() => setPreview(null)} />}
   </section>;
 }

@@ -890,16 +890,16 @@
   },
   {
     "source_file": "middleware/compensation_views.py",
-    "sha256": "12e6bd720552cbc4990a3045aced16a59b534bb1c69e7e02f54a6eb16c45c993",
-    "template_sha256": "12e6bd720552cbc4990a3045aced16a59b534bb1c69e7e02f54a6eb16c45c993",
-    "bytes": 7763,
+    "sha256": "6e1207fa5f4379284713c6b56c6cf1d62c210e40b4fb4af35dee470b6b11ba01",
+    "template_sha256": "6e1207fa5f4379284713c6b56c6cf1d62c210e40b4fb4af35dee470b6b11ba01",
+    "bytes": 13316,
     "round_trip_exact": true
   },
   {
     "source_file": "middleware/compensation_endpoint.py",
-    "sha256": "c3fe8f3d9299d3b6e50d736b3bcc32d40c0d5eee3431d84b27326e2b43184b20",
-    "template_sha256": "c3fe8f3d9299d3b6e50d736b3bcc32d40c0d5eee3431d84b27326e2b43184b20",
-    "bytes": 4218,
+    "sha256": "6d2d711bb6716c64ef33c58017eb17426376b1f6a92597588cffe4459b9dbeb6",
+    "template_sha256": "6d2d711bb6716c64ef33c58017eb17426376b1f6a92597588cffe4459b9dbeb6",
+    "bytes": 4877,
     "round_trip_exact": true
   },
   {

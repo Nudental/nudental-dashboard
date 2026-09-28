@@ -84,7 +84,7 @@ class ContinuityTests(unittest.TestCase):
         lines=list(csv.DictReader(io.StringIO(views.report_csv(r))));html=views.report_html(r);payload=views.prepared_payload(r)
         self.assertEqual([x['Estimate'] for x in lines],['3,400.00','9,280.00'])
         for line in lines:
-            self.assertIn(line['Calculation ID'],html);self.assertEqual(line['Policy version'],r['policy']['version']);self.assertEqual(line['Snapshot ID'],r['job_id'])
+            self.assertIn(line['Calculation ID'],views.report_audit_html(r));self.assertIn(line['Estimate'],html);self.assertEqual(line['Policy version'],r['policy']['version']);self.assertEqual(line['Snapshot ID'],r['job_id'])
         self.assertEqual(payload['calculations'],r['doctors']);self.assertFalse(payload['delivery_performed'])
     def test_duplicate_derived_groups_are_rejected(self):
         s,g=fixture('2026-10-11','2026-10-24','2026-10-30');events=ledger.reconstruct(s['records'],s['charges'],s['categories'],'2026-10-01','2026-10-24')

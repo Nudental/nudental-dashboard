@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from fastapi.responses import JSONResponse,HTMLResponse,Response
 from compensation_ledger import IncompleteCollectionEvidence
 from compensation_runtime import JOBS,request_calculation,reprice
-from compensation_views import report_html,report_csv,prepared_payload
+from compensation_views import report_html,report_audit_html,report_csv,prepared_payload,provider_result
 from compensation_policy import load as load_policy
 from compensation_checks import check_result
 from compensation_calendar import calendar_for_year,validate_period,snapshot_matches_period
@@ -21,7 +21,7 @@ def respond(actor,read_runs,start,end,run_id,request_id,job_id,provider_id,forma
         if format=='ledger-history':
             if (run_id or '').startswith('compensation-'):validate_period(run_id,start,end)
             return JSONResponse(JOBS.store.history(actor.id,run_id,start,end),headers=headers)
-        if format not in ('ledger-json','ledger-html','ledger-pdf','ledger-csv','ledger-payload'):
+        if format not in ('ledger-json','ledger-html','ledger-pdf','ledger-csv','ledger-payload','ledger-audit-html','ledger-recipient'):
             raise ValueError('Unsupported compensation format')
         job_id=job_id or request_calculation(actor,read_runs,start,end,run_id,request_id)
         result=JOBS.result(job_id,actor.id)
@@ -36,16 +36,25 @@ def respond(actor,read_runs,start,end,run_id,request_id,job_id,provider_id,forma
             result=reprice(result,provider,percent,actor.id)
         result['automated_checks']=check_result(result)
         if provider_id:
-            result['doctors']=[r for r in result['doctors'] if r['provider_id']==provider_id]
-            if not result['doctors']:raise ValueError('Provider calculation is unavailable')
+            result=provider_result(result,provider_id)
         result['job_id']=job_id
         result['requested_period_id']=run_id
         if format=='ledger-json':return JSONResponse(result,headers=headers)
         if format=='ledger-payload':return JSONResponse(prepared_payload(result),headers=headers)
+        if format=='ledger-recipient':
+            if not provider_id:raise ValueError('Select one provider for the report recipient')
+            from payroll_report import get_provider_email
+            row=result['doctors'][0]
+            email=get_provider_email(row['provider_name'])
+            return JSONResponse({'provider_id':provider_id,'provider_name':row['provider_name'],'snapshot_id':job_id,
+                                 'email':email,'found':bool(email)},headers=headers)
         name='provider-compensation-'+result['gusto']['payday']
+        if provider_id:
+            import re
+            name=re.sub(r'[^A-Za-z0-9_-]','_',result['doctors'][0]['provider_name'])+'-'+name
         if format=='ledger-csv':return Response(report_csv(result),media_type='text/csv',headers={**headers,'Content-Disposition':f'attachment; filename="{name}.csv"'})
-        html=report_html(result)
-        if format=='ledger-html':return HTMLResponse(html,headers=headers)
+        html=report_audit_html(result) if format=='ledger-audit-html' else report_html(result)
+        if format in ('ledger-html','ledger-audit-html'):return HTMLResponse(html,headers=headers)
         import tempfile,subprocess
         from pathlib import Path
         with tempfile.TemporaryDirectory(prefix='nudental_compensation_') as folder:

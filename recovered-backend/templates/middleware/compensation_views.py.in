@@ -5,7 +5,7 @@ from html import escape
 
 def money(cents):return format(Decimal(cents)/100,',.2f')
 
-def report_html(result):
+def report_audit_html(result):
     h=lambda value:escape(str(value))
     gusto=result['gusto'];offices=result['office_names'];parts=[]
     parts.append('<!doctype html><html><head><meta charset="utf-8"><title>Provider compensation</title><style>body{font:14px Arial;color:#162536;padding:24px}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{padding:8px;text-align:left;border-bottom:1px solid #ccd5df}small{overflow-wrap:anywhere}article{break-inside:avoid}h1,h2{color:#007f91}.notice{background:#f3f7fa;padding:12px}</style></head><body>')
@@ -40,6 +40,55 @@ def report_html(result):
             parts.append('</ul>')
         if row['negative_review_required']:parts.append('<p>Negative collection/estimate requires HR review; no automatic deduction.</p>')
         parts.append('<p>Month-end adjustment: pending verified compensation already paid for the same earning month and separate HR approval. No adjustment is included.</p><small>Calculation '+h(row['calculation_id'])+'<br>Source snapshot '+h(row['source_snapshot']['sha256'])+'<br>Retrieved '+h(row['source_snapshot']['retrieved_at'])+'; source report freshness not supplied by API.<br>Independent HR comparison is a separate release check; a current refresh is not automatically certified.</small></article>')
+    parts.append('</body></html>')
+    return ''.join(parts)
+
+
+def provider_result(result, provider_id):
+    """A presentation copy: never mutate a saved result or disclose other people."""
+    from copy import deepcopy
+    out=deepcopy(result)
+    out['doctors']=[r for r in out['doctors'] if r['provider_id']==provider_id]
+    if len(out['doctors'])!=1:raise ValueError('Provider calculation is unavailable')
+    out['exceptions']=[e for e in out.get('exceptions',[]) if e['provider_id']==provider_id]
+    out['unmapped_report_identities']=[]
+    out['report_scope']='single_provider'
+    out['status']='NEEDS_REVIEW' if out['exceptions'] else 'READY_FOR_HR_REVIEW'
+    return out
+
+
+def report_html(result):
+    """Provider-facing report, using saved cents and office totals without repricing."""
+    h=lambda value:escape(str(value))
+    period=result['gusto'];offices=result['office_names']
+    parts=['<!doctype html><html><head><meta charset="utf-8"><title>Provider compensation</title><style>']
+    parts.append('@page{size:A4;margin:17mm 15mm;@bottom-right{content:"Page " counter(page) " of " counter(pages);font:9px Arial;color:#64748b}}body{font:12px Arial;color:#203044;margin:0}h1{font-size:23px;color:#007f91;margin:0 0 8px}h2{font-size:19px;margin:20px 0 8px}h3{font-size:14px;margin:22px 0 6px}p{line-height:1.5}table{border-collapse:collapse;width:100%;margin:10px 0}th,td{padding:9px 7px;border-bottom:1px solid #dbe4eb;text-align:left}th{background:#eef5f7;font-size:11px}td.amount,th.amount{text-align:right;white-space:nowrap}tfoot{font-weight:bold;background:#eef5f7}tr{break-inside:avoid}thead{display:table-header-group}.summary{background:#eff9f7;padding:13px;font-size:15px}.note{color:#526477;font-size:10px}.review{background:#fff6df;padding:10px}.provider+ .provider{break-before:page}</style></head><body>')
+    for row in result['doctors']:
+        parts.append('<section class="provider"><h1>NU Dental · Provider compensation</h1><h2>'+h(row['provider_name'])+'</h2>')
+        parts.append('<p>Pay period: '+h(period.get('pay_period_start',''))+' – '+h(period.get('pay_period_end',''))+'<br>Payday: '+h(period['payday'])+'<br>Ascend collection dates: '+h(' – '.join(result['applied_window']))+'</p>')
+        parts.append('<p class="summary">Pay-period collections: <strong>$'+money(row['eligible_period_cents'])+'</strong><br>Estimated compensation: <strong>$'+money(row['estimate_cents'])+'</strong></p>')
+        parts.append('<h3>Collections by office</h3><table><thead><tr><th>Office</th><th class="amount">Pay-period collections</th></tr></thead><tbody>')
+        office_totals={o:0 for o in row['office_ids']}
+        for month in row['months']:
+            for office in month['office_detail']:
+                office_totals[office['office_id']]=office_totals.get(office['office_id'],0)+office['period_collection_cents']
+        for office,total in office_totals.items():
+            parts.append('<tr><td>'+h(offices.get(office,office))+'</td><td class="amount">$'+money(total)+'</td></tr>')
+        parts.append('</tbody><tfoot><tr><td>Combined total</td><td class="amount">$'+money(row['eligible_period_cents'])+'</td></tr></tfoot></table>')
+        parts.append('<p class="note">Collections from qualifying offices are combined for compensation. Each calendar month uses its own combined monthly tier basis.</p>')
+        for month in row['months']:
+            parts.append('<h3>'+h(month['month'])+' · Compensation calculation</h3><p>'+h(month['basis_label'])+'</p><table><thead><tr><th>Office</th><th class="amount">Period collections</th><th class="amount">Monthly tier basis</th></tr></thead><tbody>')
+            for office in month['office_detail']:
+                parts.append('<tr><td>'+h(offices.get(office['office_id'],office['office_id']))+'</td><td class="amount">$'+money(office['period_collection_cents'])+'</td><td class="amount">$'+money(office['monthly_collection_cents'])+'</td></tr>')
+            parts.append('</tbody><tfoot><tr><td>Combined total</td><td class="amount">$'+money(month['period_collection_cents'])+'</td><td class="amount">$'+money(month['monthly_basis_cents'])+'</td></tr></tfoot></table>')
+            parts.append('<p>$'+money(month['period_collection_cents'])+' × '+str(month['applied_percent'])+'% = <strong>$'+money(month['estimate_cents'])+'</strong>'+(' · Manual rate override (automatic tier: '+str(month['automatic_percent'])+'%)' if row['override'] else ' · Automatic monthly tier')+'</p>')
+        if row.get('monthly_exceptions'):
+            parts.append('<h3>Office activity requiring review</h3><p class="note">The following signed Ascend amounts are excluded from qualifying office totals.</p><table><thead><tr><th>Applied date</th><th>Office</th><th class="amount">Signed amount</th><th>Reason</th></tr></thead><tbody>')
+            for e in row['monthly_exceptions']:
+                parts.append('<tr><td>'+h(e['applied_date'])+'</td><td>'+h(offices.get(e['office_id'],e['office_id']))+'</td><td class="amount">$'+money(e['signed_cents'])+'</td><td>'+h(e['reason'])+'</td></tr>')
+            parts.append('</tbody></table>')
+        if row['negative_review_required']:parts.append('<p class="review">Negative collections or compensation require HR review. This report does not authorize a deduction.</p>')
+        parts.append('<p class="note">This is a compensation estimate, not a payment confirmation. Provisional monthly tiers may change after month end. Any adjustment requires review of compensation already paid.</p></section>')
     parts.append('</body></html>')
     return ''.join(parts)
 

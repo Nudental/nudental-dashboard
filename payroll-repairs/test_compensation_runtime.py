@@ -41,7 +41,8 @@ class RuntimeTests(unittest.TestCase):
   for month,line in zip(r['doctors'][0]['months'],csv_rows):
    self.assertEqual(line['Monthly basis'],views.money(month['monthly_basis_cents']))
    self.assertEqual(line['Estimate'],views.money(month['estimate_cents']))
-   self.assertIn(line['Calculation ID'],html)
+   self.assertIn(line['Calculation ID'],views.report_audit_html(r))
+   self.assertIn(line['Estimate'],html)
   self.assertEqual(payload['calculations'],r['doctors']);self.assertFalse(payload['delivery_performed'])
  def test_jobs_are_bound_to_actor_and_request_period(self):
   j=runtime.SnapshotJobs()

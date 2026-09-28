@@ -49,7 +49,7 @@ class CalendarTests(unittest.TestCase):
         self.assertEqual((after['cutoff'],after['closed']),('2026-09-30',True))
     def test_reports_show_ascend_source_and_provisional_cutoff(self):
         r=self.result();html=views.report_html(r);rows=list(csv.DictReader(io.StringIO(views.report_csv(r))))
-        self.assertIn('Gusto imports are not required',html);self.assertIn('Provisional through September 26, 2026',html)
+        self.assertIn('Ascend collection dates:',html);self.assertIn('Provisional through September 26, 2026',html)
         self.assertEqual(len(rows),9);self.assertTrue(all(row['Calendar source']=='ascend_compensation_calendar' for row in rows))
     def test_historical_snapshot_alias_preserves_saved_bytes_and_actor_gate(self):
         r=self.result();r['gusto']['run_id']='historical-import-uuid'

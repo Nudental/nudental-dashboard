@@ -79,6 +79,39 @@ class LedgerEndpointTests(CompensationFrameworkTests):
         with patch.object(JOBS.store,'history',return_value={'calculations':[]}) as read:
             self.assertEqual(self.call(token='verified',params=params).status_code,200)
             self.assertEqual(read.call_args.args[1],p['id'])
+    def test_individual_report_and_csv_do_not_leak_other_review_items(self):
+        import copy
+        original=copy.deepcopy(self.result)
+        target=self.result['doctors'][0]
+        self.result['exceptions'].append({'provider_id':'other','provider_name':'Private Other Person','period':['a','b'],'reason':'private reason','action':'private action','blocks_complete_total':True})
+        original=copy.deepcopy(self.result)
+        with patch.object(JOBS,'result',return_value=self.result):
+            for format in ['ledger-html','ledger-csv','ledger-payload','ledger-audit-html']:
+                response=self.call(token='verified',params={**self.params,'format':format,'providerId':target['provider_id']})
+                self.assertEqual(response.status_code,200,response.text)
+                self.assertNotIn('Private Other Person',response.text)
+                self.assertIn(target['provider_name'],response.text)
+        self.assertEqual(self.result,original)
+    def test_recipient_lookup_is_protected_and_uses_saved_canonical_name(self):
+        target=self.result['doctors'][0]
+        params={**self.params,'format':'ledger-recipient','providerId':target['provider_id']}
+        with patch.object(JOBS,'result',return_value=self.result),patch('payroll_report.get_provider_email',return_value='qa@example.invalid',create=True) as contact:
+            for token in [None,'invalid','office','staff']:
+                self.assertIn(self.call(token=token,params=params).status_code,(401,403))
+            contact.assert_not_called()
+            response=self.call(token='verified',params=params)
+            self.assertEqual(response.status_code,200,response.text)
+            self.assertEqual(response.json()['provider_id'],target['provider_id'])
+            contact.assert_called_once_with(target['provider_name'])
+    def test_recipient_rejects_missing_or_unknown_provider_and_other_actor_snapshot(self):
+        with patch.object(JOBS,'result',return_value=self.result),patch('payroll_report.get_provider_email',create=True) as contact:
+            for provider in [None,'unverified']:
+                response=self.call(token='verified',params={**self.params,'format':'ledger-recipient',**({'providerId':provider} if provider else {})})
+                self.assertEqual(response.status_code,422)
+            contact.assert_not_called()
+        with patch.object(JOBS,'result',side_effect=KeyError()),patch('payroll_report.get_provider_email',create=True) as contact:
+            self.assertEqual(self.call(token='verified',params={**self.params,'format':'ledger-recipient','providerId':'x'}).status_code,410)
+            contact.assert_not_called()
 
 # Inherited tests have different setup requirements and run in their original
 # retained suite. Remove them only from this derived fixture's discovery.
