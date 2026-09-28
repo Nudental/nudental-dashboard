@@ -9,7 +9,9 @@ def report_html(result):
     h=lambda value:escape(str(value))
     gusto=result['gusto'];offices=result['office_names'];parts=[]
     parts.append('<!doctype html><html><head><meta charset="utf-8"><title>Provider compensation</title><style>body{font:14px Arial;color:#162536;padding:24px}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{padding:8px;text-align:left;border-bottom:1px solid #ccd5df}small{overflow-wrap:anywhere}article{break-inside:avoid}h1,h2{color:#007f91}.notice{background:#f3f7fa;padding:12px}</style></head><body>')
-    parts.append('<h1>Provider compensation estimate</h1><p>Payday '+h(gusto['payday'])+' · Gusto period '+h(gusto.get('pay_period_start',''))+' – '+h(gusto.get('pay_period_end',''))+'</p>')
+    parts.append('<h1>Provider compensation estimate</h1><p>Payday '+h(gusto['payday'])+' · Pay period '+h(gusto.get('pay_period_start',''))+' – '+h(gusto.get('pay_period_end',''))+'</p>')
+    if gusto.get('source')=='ascend_compensation_calendar':
+        parts.append('<p class="notice">Compensation calendar '+h(gusto['calendar_version'])+'. Estimates use Ascend collections and approved office rules. Gusto imports are not required; no payroll is processed or paid.</p>')
     parts.append('<p>Ascend Applied Date window: '+h(' – '.join(result['applied_window']))+'</p>')
     parts.append('<p class="notice">Signed HR Ledger Total Collection is preserved. Eligible earned collections reverse that ledger sign once. Monthly tiers combine only approved offices. Estimates do not change paid payroll.</p>')
     if result.get('policy'):
@@ -44,11 +46,12 @@ def report_html(result):
 
 def report_csv(result):
     stream=io.StringIO(newline='');writer=csv.writer(stream)
-    writer.writerow(['Provider','Provider ID','Payday','Gusto start','Gusto end','Ascend start','Ascend end','Month','Cutoff','Basis status','Period collections','Monthly basis','Automatic percent','Applied percent','Manual override','Estimate','Calculation ID','Source snapshot','Office detail','Raw HR signed period','Office exceptions','Month-end adjustment','Policy version','Snapshot ID','Source as of','Automated status','Complete doctor scope','Review exceptions'])
+    writer.writerow(['Provider','Provider ID','Payday','Pay period start','Pay period end','Ascend start','Ascend end','Month','Cutoff','Basis status','Period collections','Monthly basis','Automatic percent','Applied percent','Manual override','Estimate','Calculation ID','Source snapshot','Office detail','Raw HR signed period','Office exceptions','Month-end adjustment','Policy version','Snapshot ID','Source as of','Automated status','Complete doctor scope','Review exceptions','Calendar source','Calendar version'])
     for r in result['doctors']:
         for m in r['months']:
             values=[r['provider_name'],r['provider_id'],result['gusto']['payday'],result['gusto'].get('pay_period_start',''),result['gusto'].get('pay_period_end',''),*result['applied_window'],m['month'],m['cutoff'],m['basis_label'],money(m['period_collection_cents']),money(m['monthly_basis_cents']),m['automatic_percent'],m['applied_percent'],bool(r['override']),money(m['estimate_cents']),r['calculation_id'],r['source_snapshot']['sha256'],json.dumps(m['office_detail']),money(r['raw_hr_collection_cents']),json.dumps(r.get('monthly_exceptions',r['exceptions'])),'Pending verified paid baseline; separate HR approval']
             values.extend([result.get('policy',{}).get('version',''),result.get('job_id',''),result['source_snapshot'].get('read_as_of',''),result.get('status',''),result.get('complete_doctor_scope',True),json.dumps(result.get('exceptions',[]))])
+            values.extend([result['gusto'].get('source','historical_saved_run'),result['gusto'].get('calendar_version','')])
             writer.writerow(["'"+v if isinstance(v,str) and v[:1] in ('=','+','@') else v for v in values])
     return stream.getvalue()
 

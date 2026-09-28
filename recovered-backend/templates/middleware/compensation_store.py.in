@@ -38,7 +38,12 @@ class SnapshotStore:
         return json.loads(row[0])
     def history(self,actor,run_id,start,end):
         with closing(self._connect()) as db:
-            rows=db.execute('SELECT id,created_at,result FROM calculations WHERE actor=? AND run_id=? AND start_date=? AND end_date=? ORDER BY created_at DESC LIMIT 21',(actor,run_id,start,end)).fetchall()
+            if (run_id or '').startswith('compensation-'):
+                from compensation_calendar import validate_period
+                expected=validate_period(run_id,start,end)
+                rows=db.execute("SELECT id,created_at,result FROM calculations WHERE actor=? AND start_date=? AND end_date=? AND json_extract(result,'$.gusto.payday')=? ORDER BY created_at DESC LIMIT 21",(actor,start,end,expected['payday'])).fetchall()
+            else:
+                rows=db.execute('SELECT id,created_at,result FROM calculations WHERE actor=? AND run_id=? AND start_date=? AND end_date=? ORDER BY created_at DESC LIMIT 21',(actor,run_id,start,end)).fetchall()
         out=[]
         for key,stamp,raw in rows[:20]:
             result=json.loads(raw);out.append({'snapshot_id':key,'created_at':stamp,'source_as_of':result['source_snapshot'].get('read_as_of'),'policy_version':result.get('policy',{}).get('version'),'status':result['status'],'cutoffs':{k:v['cutoff'] for k,v in result['scopes'].items()}})

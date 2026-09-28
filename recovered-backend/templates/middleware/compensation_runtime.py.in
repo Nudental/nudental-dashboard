@@ -14,6 +14,7 @@ from compensation_source import LedgerReader
 from compensation_policy import load as load_policy, policy_for_period
 from compensation_store import SnapshotStore
 from compensation_checks import check_result
+from compensation_calendar import validate_period
 from zoneinfo import ZoneInfo
 
 OFFICES = {'14000000000432':'Staten Island','14000000000433':'Eatontown',
@@ -176,9 +177,13 @@ class _NoResponseLog:
 
 
 def request_calculation(actor, read_runs, start, end, run_id, request_id):
-    if not re.fullmatch(r'[a-zA-Z0-9_-]{1,100}',run_id or ''):raise ValueError('Select an imported regular payroll run')
+    if not re.fullmatch(r'[a-zA-Z0-9_-]{1,100}',run_id or ''):raise ValueError('Select a valid compensation period')
     fields='id,check_date,pay_period_start,pay_period_end,off_cycle,off_cycle_reason,processed,reversed,needs_reprocessing'
-    gusto=validate_run(read_runs('gusto_payroll_runs?select='+fields+'&id=eq.'+run_id,strict=True),run_id,start,end)
+    if run_id.startswith('compensation-'):
+        gusto=validate_period(run_id,start,end)
+    else:
+        # Compatibility for existing clients and historical saved run identities.
+        gusto=validate_run(read_runs('gusto_payroll_runs?select='+fields+'&id=eq.'+run_id,strict=True),run_id,start,end)
     configuration=load_policy()
     as_of=datetime.now(timezone.utc).isoformat().replace('+00:00','Z')
     as_of_day=source_day(as_of)

@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { getPayrollScheduleForYear } from '../../services/payrollService';
 import { fetchCompensationPeriods, selectCompensationPeriod } from '../../services/providerCompensationPeriods';
 
 export function useCompensationPeriods(year) {
@@ -22,7 +21,7 @@ export function useCompensationPeriods(year) {
     const controller = new AbortController();
     setState(previous => ({ year, periods: previous.year === year ? previous.periods : [],
       selectedId: previous.year === year ? previous.selectedId : '', loading: true, error: null }));
-    fetchCompensationPeriods(year, getPayrollScheduleForYear(year), { signal: controller.signal })
+    fetchCompensationPeriods(year, { signal: controller.signal })
       .then(periods => {
         if (request !== generation.current) return;
         const now = new Date();

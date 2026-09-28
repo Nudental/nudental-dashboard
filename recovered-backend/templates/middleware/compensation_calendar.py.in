@@ -1,0 +1,49 @@
+"""Independent Ascend compensation calendar; no Gusto client or import reads.
+
+The owner-confirmed Sep 4, 2026 payday has pay period Aug 17–30 and
+Ascend Applied Dates Aug 16–29. The established cycle is every 14 days.
+This schedules estimates only, never payroll processing or payment.
+"""
+from datetime import date, timedelta
+import re
+
+ANCHOR_PAYDAY=date(2026,9,4)
+VERSION='ascend-biweekly-2026-09-04-v1'
+
+def period_for_payday(payday):
+    pay=date.fromisoformat(payday)
+    if pay.isoformat()!=payday or not 2000<=pay.year<=2100 or (pay-ANCHOR_PAYDAY).days%14:
+        raise ValueError('Payday is not on the approved compensation calendar')
+    first=pay-timedelta(days=18);last=pay-timedelta(days=5)
+    identity='compensation-'+payday
+    return {'id':identity,'compensation_period_id':identity,'source':'ascend_compensation_calendar',
+        'calendar_version':VERSION,'payday':payday,'year':pay.year,
+        'pay_period_start':first.isoformat(),'pay_period_end':last.isoformat(),
+        'ascend_start':(first-timedelta(days=1)).isoformat(),'ascend_end':(last-timedelta(days=1)).isoformat(),
+        'payroll_type':'regular','is_regular':True,'payroll_name':'Pay Period '+first.isoformat()+' – '+last.isoformat()}
+
+def calendar_for_year(start,end):
+    first=date.fromisoformat(start);last=date.fromisoformat(end)
+    if not 2000<=first.year<=2100 or start!=f'{first.year}-01-01' or end!=f'{first.year}-12-31':
+        raise ValueError('Select one compensation calendar year')
+    day=first+timedelta(days=(ANCHOR_PAYDAY-first).days%14)
+    periods=[]
+    while day<=last:
+        periods.append(period_for_payday(day.isoformat()));day+=timedelta(days=14)
+    return {'year':first.year,'calendar_version':VERSION,'complete':True,'periods':list(reversed(periods))}
+
+def validate_period(identity,start,end):
+    if not re.fullmatch(r'compensation-\d{4}-\d{2}-\d{2}',identity or ''):
+        raise ValueError('Select a compensation calendar period')
+    p=period_for_payday(identity.removeprefix('compensation-'))
+    if [start,end]!=[p['ascend_start'],p['ascend_end']]:
+        raise ValueError('Ascend dates do not match the selected compensation period')
+    # Keep the existing snapshot schema while explicitly identifying its source.
+    return {'run_id':identity,'source':p['source'],'calendar_version':VERSION,
+        'payday':p['payday'],'pay_period_start':p['pay_period_start'],
+        'pay_period_end':p['pay_period_end'],'status':'Ascend compensation estimate'}
+
+def snapshot_matches_period(result,identity,start,end):
+    expected=validate_period(identity,start,end)
+    return result.get('applied_window')==[start,end] and all(
+        result.get('gusto',{}).get(k)==expected[k] for k in ('payday','pay_period_start','pay_period_end'))

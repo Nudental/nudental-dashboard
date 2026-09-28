@@ -7,22 +7,27 @@ from compensation_runtime import JOBS,request_calculation,reprice
 from compensation_views import report_html,report_csv,prepared_payload
 from compensation_policy import load as load_policy
 from compensation_checks import check_result
+from compensation_calendar import calendar_for_year,validate_period,snapshot_matches_period
 
 
 def respond(actor,read_runs,start,end,run_id,request_id,job_id,provider_id,format,overrides):
     headers={'Cache-Control':'private, no-store'}
     try:
+        if format=='ledger-calendar':
+            return JSONResponse(calendar_for_year(start,end),headers=headers)
         if format=='ledger-policy':
             approved=load_policy()
             return JSONResponse(approved,headers=headers)
         if format=='ledger-history':
+            if (run_id or '').startswith('compensation-'):validate_period(run_id,start,end)
             return JSONResponse(JOBS.store.history(actor.id,run_id,start,end),headers=headers)
         if format not in ('ledger-json','ledger-html','ledger-pdf','ledger-csv','ledger-payload'):
             raise ValueError('Unsupported compensation format')
         job_id=job_id or request_calculation(actor,read_runs,start,end,run_id,request_id)
         result=JOBS.result(job_id,actor.id)
         if result is None:return JSONResponse({'status':'reading','job_id':job_id},status_code=202,headers=headers)
-        if result['applied_window']!=[start,end] or result['gusto']['run_id']!=run_id:
+        matches=snapshot_matches_period(result,run_id,start,end) if (run_id or '').startswith('compensation-') else result['applied_window']==[start,end] and result['gusto']['run_id']==run_id
+        if not matches:
             raise ValueError('Calculation identity does not match the selected period')
         selected=json.loads(overrides or '{}')
         if not isinstance(selected,dict) or len(selected)>20:raise ValueError('Invalid rate overrides')
@@ -34,6 +39,7 @@ def respond(actor,read_runs,start,end,run_id,request_id,job_id,provider_id,forma
             result['doctors']=[r for r in result['doctors'] if r['provider_id']==provider_id]
             if not result['doctors']:raise ValueError('Provider calculation is unavailable')
         result['job_id']=job_id
+        result['requested_period_id']=run_id
         if format=='ledger-json':return JSONResponse(result,headers=headers)
         if format=='ledger-payload':return JSONResponse(prepared_payload(result),headers=headers)
         name='provider-compensation-'+result['gusto']['payday']

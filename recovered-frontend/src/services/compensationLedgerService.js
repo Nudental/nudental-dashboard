@@ -2,9 +2,10 @@ import { dashboardFetch } from '../lib/dashboardFetch';
 import { DASHBOARD_API_ORIGIN } from '../config/dashboardEnvironment';
 
 export function ledgerReportUrl({ period, window, requestId, snapshot, overrides = {}, providerId, format = 'ledger-json' }) {
-  if (!period?.gusto_run_id) throw new Error('This historical period has no eligible imported Gusto run. Its collection estimate is unavailable until the run identity is confirmed.');
+  const runId = period?.compensation_period_id || period?.gusto_run_id;
+  if (!runId) throw new Error('Select a valid compensation calendar period.');
   const url = new URL(`${DASHBOARD_API_ORIGIN}/v2/reports/provider-compensation`);
-  Object.entries({ startDate: window.dentrixStart, endDate: window.dentrixEnd, runId: period.gusto_run_id,
+  Object.entries({ startDate: window.dentrixStart, endDate: window.dentrixEnd, runId,
     userEmail: 'verified-current-account', format, calculationRequest: requestId,
     calculationSnapshot: snapshot, rateOverrides: JSON.stringify(overrides), providerId })
     .forEach(([k, v]) => { if (v != null) url.searchParams.set(k, v); });
@@ -26,5 +27,6 @@ export function visibleLedgerDoctors(result, officeId) {
 }
 
 export function ledgerSelectionMatches(result, period, window) {
-  return result?.gusto?.run_id === period?.gusto_run_id && result?.applied_window?.[0] === window?.dentrixStart && result?.applied_window?.[1] === window?.dentrixEnd;
+  const identity = period?.compensation_period_id || period?.gusto_run_id;
+  return Boolean(identity) && (result?.requested_period_id || result?.gusto?.run_id) === identity && result?.applied_window?.[0] === window?.dentrixStart && result?.applied_window?.[1] === window?.dentrixEnd;
 }

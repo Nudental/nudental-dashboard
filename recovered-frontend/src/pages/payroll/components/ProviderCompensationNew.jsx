@@ -1616,14 +1616,20 @@ export default function ProviderCompensationNew() {
     const locationId = resolveLocationId(selectedOffice) || null;
 
     // ── Provider-compensation date-offset (approved by Dr. G, Sep 2026) ──────
-    // Gusto pay period dates are displayed as-is for payroll/audit purposes.
+    // Compensation calendar dates are independent of imported paid payroll.
     // The Dentrix Ascend provider-compensation collection query uses start − 1 day
     // and end − 1 day (timezone-safe calendar arithmetic, no UTC conversion).
     // Canonical example: Gusto Aug 17–Aug 30 → Dentrix Aug 16–Aug 29.
     // This offset applies ONLY to this provider-compensation Dentrix query.
     // It does NOT affect Gusto payroll totals, payroll runs, or any other date filter.
     const { dentrixStart, dentrixEnd } = ascendWindow;
-
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    if (dentrixEnd >= today) {
+      setLoading(false);
+      setError(`The collection window has not finished. Refresh after ${dentrixEnd} ends; no incomplete estimate is shown.`);
+      return;
+    }
 
     setLoading(true);
     setError(null);
@@ -1971,7 +1977,7 @@ export default function ProviderCompensationNew() {
             Provider Compensation
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Doctor estimates use signed Ascend Ledger collections and separate monthly tiers. Hygienist policies remain unchanged. The Ascend reporting window is one day earlier than the displayed Gusto period.
+            Estimates use Ascend collections and approved office rules. Doctor tiers are calculated separately for each month. The Ascend reporting window is one day earlier than the displayed pay period. Gusto imports are not required.
           </p>
         </div>
         {/* CSV Export button */}
@@ -2010,9 +2016,9 @@ export default function ProviderCompensationNew() {
             aria-label="Compensation pay period"
             className="border border-gray-200 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#00B5CC]"
           >
-            {(!selectedPeriodId || payPeriods.length === 0) && <option value="">{periodsLoading ? 'Loading imported periods…' : 'Select a period'}</option>}
+            {(!selectedPeriodId || payPeriods.length === 0) && <option value="">{periodsLoading ? 'Loading compensation calendar…' : 'Select a period'}</option>}
             {payPeriods?.map(p => (
-              <option key={p?.id} value={p?.id}>Payday {formatDateShort(p.payday)} · {formatDateShort(p.pay_period_start)} – {formatDateShort(p.pay_period_end)}{p.source === 'historical_schedule' ? ' · Historical schedule' : ''}</option>
+              <option key={p?.id} value={p?.id}>Payday {formatDateShort(p.payday)} · {formatDateShort(p.pay_period_start)} – {formatDateShort(p.pay_period_end)}</option>
             ))}
           </select>
         </div>
@@ -2056,7 +2062,7 @@ export default function ProviderCompensationNew() {
             {selectedPeriod?.payroll_name}
           </div>
           <span className="text-gray-500 dark:text-gray-400">
-            Gusto payroll period: {formatDateShort(selectedPeriod?.pay_period_start)} – {formatDateShort(selectedPeriod?.pay_period_end)}
+            Pay period: {formatDateShort(selectedPeriod?.pay_period_start)} – {formatDateShort(selectedPeriod?.pay_period_end)}
           </span>
           <span className="text-gray-400 dark:text-gray-500">
             Payday: {formatDateShort(selectedPeriod?.payday)}

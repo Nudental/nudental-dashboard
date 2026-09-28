@@ -7,7 +7,7 @@ T=Path(__file__).resolve().parents[1]/'recovered-backend/templates/middleware'
 def load(name):
  loader=importlib.machinery.SourceFileLoader(name,str(T/(name+'.py.in')))
  spec=importlib.util.spec_from_loader(name,loader);mod=importlib.util.module_from_spec(spec);sys.modules[name]=mod;loader.exec_module(mod);return mod
-ledger=load('compensation_ledger');source=load('compensation_source')
+calendar=load('compensation_calendar');ledger=load('compensation_ledger');source=load('compensation_source')
 policy=load('compensation_policy');store=load('compensation_store')
 checks=load('compensation_checks')
 

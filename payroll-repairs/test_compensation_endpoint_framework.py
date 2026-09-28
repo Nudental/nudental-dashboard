@@ -63,6 +63,22 @@ class LedgerEndpointTests(CompensationFrameworkTests):
     def test_inconsistent_saved_calculation_is_withheld(self):
         self.result['doctors'][0]['estimate_cents']=1
         with patch.object(JOBS,'result',return_value=self.result):self.assertEqual(self.call(token='verified').status_code,422)
+    def test_independent_calendar_keeps_existing_payroll_authorization(self):
+        params={**self.params,'format':'ledger-calendar','startDate':'2026-01-01','endDate':'2026-12-31'}
+        for token,status in [(None,401),('invalid',401),('staff',403),('office',403)]:
+            self.assertEqual(self.call(token=token,params=params).status_code,status)
+        response=self.call(token='verified',params=params)
+        self.assertEqual(response.status_code,200,response.text)
+        self.assertEqual(response.headers['cache-control'],'private, no-store')
+        october=next(p for p in response.json()['periods'] if p['payday']=='2026-10-02')
+        self.assertEqual(october['ascend_end'],'2026-09-26');self.assertNotIn('gusto_run_id',october)
+    def test_calendar_history_and_legacy_snapshot_readback_do_not_query_gusto(self):
+        from compensation_calendar import period_for_payday
+        p=period_for_payday('2026-10-02')
+        params={**self.params,'runId':p['id'],'startDate':p['ascend_start'],'endDate':p['ascend_end'],'format':'ledger-history'}
+        with patch.object(JOBS.store,'history',return_value={'calculations':[]}) as read:
+            self.assertEqual(self.call(token='verified',params=params).status_code,200)
+            self.assertEqual(read.call_args.args[1],p['id'])
 
 # Inherited tests have different setup requirements and run in their original
 # retained suite. Remove them only from this derived fixture's discovery.

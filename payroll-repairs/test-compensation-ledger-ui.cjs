@@ -7,7 +7,7 @@ const api=vm.runInNewContext(clean(read('services/compensationLedgerService.js')
 const period={id:'gusto-qa',gusto_run_id:'qa-run',payday:'2026-09-18'},window={dentrixStart:'2026-08-30',dentrixEnd:'2026-09-12'};
 const result=()=>({gusto:{run_id:'qa-run'},applied_window:['2026-08-30','2026-09-12'],doctors:[{provider_id:'qa-doctor',office_ids:['office-a','office-b'],estimate_cents:321}],source_snapshot:{complete:true},job_id:'qa-snapshot'});
 test('protected report request uses already shifted dates, imported identity, no Gusto amounts',()=>{const u=new URL(api.ledgerReportUrl({period,window,requestId:'synthetic-request'}));assert.equal(u.pathname,'/v2/reports/provider-compensation');assert.equal(u.searchParams.get('startDate'),'2026-08-30');assert.equal(u.searchParams.get('endDate'),'2026-09-12');assert.equal(u.searchParams.get('runId'),'qa-run');assert.equal(u.searchParams.get('format'),'ledger-json');assert.equal([...u.searchParams.keys()].some(k=>/gross|net|tax/.test(k)),false);});
-test('historical run without imported identity is explicit, not substituted',()=>assert.throws(()=>api.ledgerReportUrl({period:{id:'legacy'},window}),/historical period/));
+test('historical run without imported identity is explicit, not substituted',()=>assert.throws(()=>api.ledgerReportUrl({period:{id:'legacy'},window}),/calendar period/));
 test('office filter keeps canonical global tier result intact',()=>{const r=result();const out=api.visibleLedgerDoctors(r,'office-b');assert.equal(out.length,1);assert.equal(out[0],r.doctors[0]);assert.equal(api.visibleLedgerDoctors(r,'denied-office').length,0);});
 test('same-period identity is checked before displaying a response',()=>{assert.equal(api.ledgerSelectionMatches(result(),period,window),true);assert.equal(api.ledgerSelectionMatches(result(),{gusto_run_id:'older'},window),false);assert.equal(api.ledgerSelectionMatches(result(),period,{...window,dentrixEnd:'2026-08-29'}),false);});
 test('failed authorization remains an error and preserves abort signal',async()=>{const signal=new AbortController().signal;let seen;await assert.rejects(api.readLedgerReport({period,window},{signal,read:async(u,i)=>{seen=i;return {ok:false,json:async()=>({detail:'Payroll access denied'})};}}),/access denied/);assert.equal(seen.signal,signal);assert.equal(seen.method,undefined);});
@@ -40,3 +40,10 @@ test('retry after timeout can load a fresh validated result and ignores the old 
 const calc=vm.runInNewContext(clean(read('utils/calculateProviderCompensation.js'))+';calculateProviderCompensation;');
 test('real zero monthly input remains zero; missing input does not use two-week collections',()=>{const args={providerName:'QA Doctor',providerType:'Doctor',payPeriodCollection:60000};assert.equal(calc({...args,monthlyTierCollection:0}).compensationPercent,32);for(const value of [undefined,null,'',NaN]){const r=calc({...args,monthlyTierCollection:value});assert.equal(r.compensationAmount,null);assert.equal(r.calculationType,'Unavailable');}});
 test('hygienist policy stays separate and unchanged',()=>{assert.equal(calc({providerName:'QA Hygienist',providerType:'Hygienist',payPeriodCollection:1000}).compensationAmount,400);});
+
+ test('independent calendar request and historical readback preserve their identities',()=>{
+ const p={id:'compensation-2026-09-18',compensation_period_id:'compensation-2026-09-18'};
+ assert.equal(new URL(api.ledgerReportUrl({period:p,window})).searchParams.get('runId'),p.id);
+ assert.equal(api.ledgerSelectionMatches({...result(),requested_period_id:p.id},p,window),true);
+ assert.equal(api.ledgerSelectionMatches(result(),p,window),false);
+ });
