@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -10,8 +10,12 @@ const useRolePermissions = () => {
   const { userProfile } = useAuth();
   const [permissionsMap, setPermissionsMap] = useState({});
   const [loading, setLoading] = useState(true);
+  const request = useRef(0);
 
   const loadPermissions = useCallback(async () => {
+    const sequence = ++request.current;
+    setLoading(true);
+    setPermissionsMap({});
     const role = userProfile?.role;
     if (!role) {
       setPermissionsMap({});
@@ -34,14 +38,19 @@ const useRolePermissions = () => {
       data?.forEach((row) => {
         map[row?.permission] = row?.enabled;
       });
+      if (role === 'staff') {
+        const grants = await supabase.from('staff_workflow_grants').select('permission').eq('user_id', userProfile.id);
+        if (!grants.error) grants.data.forEach(({permission}) => {map[permission] = true;});
+      }
+      if (sequence !== request.current) return;
       setPermissionsMap(map);
     } catch (err) {
       console.error('Failed to load role permissions:', err);
-      setPermissionsMap({});
+      if (sequence === request.current) setPermissionsMap({});
     } finally {
-      setLoading(false);
+      if (sequence === request.current) setLoading(false);
     }
-  }, [userProfile?.role]);
+  }, [userProfile?.id, userProfile?.role]);
 
   useEffect(() => {
     loadPermissions();
