@@ -2,6 +2,19 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
+// The sidebar and open page can request the same capability during a single render.
+const pendingReviews = new Map();
+function canReviewInsurance(userId) {
+  if (!pendingReviews.has(userId)) {
+    const request = Promise.resolve(supabase.from('insurance_daily_reviewers')
+      .select('user_id').eq('user_id', userId).maybeSingle())
+      .then(({ data }) => Boolean(data), () => false)
+      .finally(() => pendingReviews.delete(userId));
+    pendingReviews.set(userId, request);
+  }
+  return pendingReviews.get(userId);
+}
+
 /**
  * Hook to load and check role permissions for the current user.
  * Fetches from role_permissions table based on userProfile.role.
@@ -22,9 +35,11 @@ const useRolePermissions = () => {
       setLoading(false);
       return;
     }
+    const dailyReview = await canReviewInsurance(userProfile.id);
+    if (sequence !== request.current) return;
     // Super admin and admin always have all permissions — skip DB query entirely
     if (role === 'super_admin') {
-      setPermissionsMap({ __all: true });
+      setPermissionsMap({ __all: true, 'insurance.daily.review': dailyReview });
       setLoading(false);
       return;
     }
@@ -34,7 +49,7 @@ const useRolePermissions = () => {
         ?.select('permission, enabled')
         ?.eq('role', role);
       if (error) throw error;
-      const map = {};
+      const map = { 'insurance.daily.review': dailyReview };
       data?.forEach((row) => {
         map[row?.permission] = row?.enabled;
       });
@@ -68,6 +83,7 @@ const useRolePermissions = () => {
    */
   const hasPermission = useCallback(
     (permissionKey) => {
+      if (permissionKey === 'insurance.daily.review') return !!permissionsMap[permissionKey];
       if (permissionsMap?.__all) return true;
 
       // dashboard:executive_overview is strictly DB-controlled — no fallback for any role

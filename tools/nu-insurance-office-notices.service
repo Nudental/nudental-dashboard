@@ -1,0 +1,7 @@
+[Unit]
+Description=Deliver NU Dental insurance office notices
+[Service]
+Type=oneshot
+ExecStart=%h/.openclaw/workspace/ascend_api/middleware/.venv/bin/python %h/.local/lib/nu-insurance-office/insurance_office_notices.py
+UMask=0077
+TimeoutStartSec=20min

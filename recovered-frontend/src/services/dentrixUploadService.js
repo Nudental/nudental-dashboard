@@ -314,9 +314,14 @@ export async function runDentrixRealUpload(verification, request, confirmedPatie
 
   // Real success — backend returned success with Dentrix document ID
   // Do NOT fake metadata client-side. Caller must refresh from Supabase.
+  if (data?.awaiting_confirmation) {
+    return { uploaded: false, awaitingConfirmation: true };
+  }
+  const documentId = data?.dentrix?.document_id || data?.dentrix_document_id || data?.document_id;
+  if (!documentId || data?.ok !== true) throw new Error('Ascend has not confirmed this filing.');
   return {
-    uploaded: data?.ok !== false,
-    dentrixDocumentId: data?.dentrix_document_id || data?.document_id || null,
+    uploaded: true,
+    dentrixDocumentId: documentId,
     patientName: `${confirmedPatientSnapshot?.firstName || ''} ${confirmedPatientSnapshot?.lastName || ''}`?.trim(),
     chartNumber: confirmedPatientSnapshot?.chartNumber,
     dentrixPatientId: confirmedPatientSnapshot?.dentrix_patient_id,
@@ -354,7 +359,9 @@ export function getDentrixUploadStatus(verification, request) {
       icon: 'Upload',
     };
   }
-  if (uploadStatus === 'uploaded') {
+  const pendingLabels = { pending: 'Queued for Ascend', sending: 'Filing in Ascend', confirming: 'Checking Ascend receipt', review: 'Needs chart review' };
+  if (pendingLabels[uploadStatus]) return { label: pendingLabels[uploadStatus], color: 'text-amber-600', icon: 'Clock' };
+  if (uploadStatus === 'success' || uploadStatus === 'uploaded') {
     return {
       label: 'Uploaded to Dentrix',
       color: 'text-emerald-700',

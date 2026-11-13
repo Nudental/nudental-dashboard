@@ -94,7 +94,7 @@ const UploadResultPanel = ({ result, error }) => {
         <div>
           <p className="font-semibold">{title}</p>
           <p className="mt-0.5 text-xs">{detail}</p>
-          <p className="mt-1 text-xs text-red-600 italic">No Dentrix document was created.</p>
+          <p className="mt-1 text-xs text-red-600 italic">Check the filing status in the request queue before retrying.</p>
         </div>
       </div>
     );
@@ -239,6 +239,7 @@ export default function DentrixUploadConfirmModal({
             </div>
           )}
 
+          {result?.awaitingConfirmation && <p role="status" className="text-sm">The PDF was submitted. The queue will show Filed in Ascend after the document is confirmed.</p>}
           {/* Patient details */}
           <div className="space-y-1">
             <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Patient</p>

@@ -1,20 +1,3 @@
-/**
- * Insurance Verification Service — Phase 2A / 3A
- * Handles all Supabase operations for insurance_verification_requests,
- * insurance_verifications, insurance_verification_audit_log, offices, and user_profiles.
- *
- * Phase 3A additions:
- * - fetchVerificationByRequestId
- * - createVerification (start)
- * - updateVerification (save draft)
- * - completeVerification (mark completed)
- *
- * Constraints:
- * - No emails sent
- * - No Dentrix upload
- * - No PDF generation
- * - No POST /v1/documents
- */
 import { supabase } from '../lib/supabase';
 
 // ─── Request Queue ─────────────────────────────────────────────────────────────
@@ -110,12 +93,9 @@ export const insertAuditLog = async ({
 /**
  * Create a new insurance verification request.
  * Sets status = 'requested'.
- * Does NOT send emails.
- * Does NOT set request_email_sent_at.
+ * The database timestamps intake and queues the office notice.
  */
 export const createVerificationRequest = async (formData, userProfile) => {
-  const now = new Date()?.toISOString();
-
   // submission_date is a legacy NOT NULL date column — use today's local date in YYYY-MM-DD format
   const todayDate = new Date()?.toLocaleDateString('en-CA'); // 'en-CA' locale produces YYYY-MM-DD
 
@@ -145,15 +125,12 @@ export const createVerificationRequest = async (formData, userProfile) => {
     requesting_staff_role: formData?.requestingStaffRole || userProfile?.role || '',
     requested_by_user_id: userProfile?.id || null,
     requested_by_name: userProfile?.full_name || formData?.requestingStaffName || '',
-    // Assignment
-    assigned_to_user_id: formData?.assignedToUserId || null,
-    assigned_to_email: formData?.assignedToEmail || null,
     // Notes
     additional_notes: formData?.additionalNotes || null,
     // Workflow
     status: 'requested',
-    requested_at: now,
-    // Phase 2A: leave these null — no email, no PDF, no Dentrix
+
+    // Delivery tracking is updated by the corresponding action.
     request_email_sent_at: null,
     pdf_generated_at: null,
     chart_uploaded_at: null,
@@ -226,37 +203,10 @@ export const cancelVerificationRequest = async (requestId, cancelReason, userPro
  * Fetch active offices for the office dropdown.
  */
 export const fetchOffices = async () => {
-  const { data, error } = await supabase
-    ?.from('offices')
-    ?.select('id, name, email')
-    ?.order('name', { ascending: true });
+  const { data, error } = await supabase.rpc('insurance_workflow_offices');
   if (error) throw error;
   return data || [];
 };
-
-// ─── Active Users (verifier dropdown) ─────────────────────────────────────────
-
-/**
- * Fetch active user profiles for the assigned verifier dropdown.
- * Returns id, full_name, email, role.
- * If RLS blocks this query, returns empty array (caller falls back to manual email entry).
- */
-export const fetchActiveUsers = async () => {
-  try {
-    const { data, error } = await supabase
-      ?.from('user_profiles')
-      ?.select('id, full_name, email, role')
-      ?.eq('is_active', true)
-      ?.order('full_name', { ascending: true });
-    if (error) throw error;
-    return data || [];
-  } catch (err) {
-    console.warn('[insuranceVerifyService] Could not load user list (RLS may restrict):', err?.message);
-    return [];
-  }
-};
-
-// ─── Phase 3A: Verification CRUD ──────────────────────────────────────────────
 
 /**
  * Fetch a verification record by request_id.
@@ -293,27 +243,6 @@ export const createVerification = async (requestId, formData, userProfile) => {
 
   if (error) throw error;
 
-  // Update request: link verification_id, set started_at, set status = in_progress
-  const reqUpdate = {
-    verification_id: data?.id,
-    started_at: now,
-    updated_at: now,
-  };
-  // Only update status if it's still 'requested' or 'assigned'
-  const { data: reqData } = await supabase
-    ?.from('insurance_verification_requests')
-    ?.select('status')
-    ?.eq('id', requestId)
-    ?.single();
-  if (['requested', 'assigned']?.includes(reqData?.status)) {
-    reqUpdate.status = 'in_progress';
-  }
-
-  await supabase
-    ?.from('insurance_verification_requests')
-    ?.update(reqUpdate)
-    ?.eq('id', requestId);
-
   // Audit log — non-fatal
   await insertAuditLog({
     requestId,
@@ -322,7 +251,7 @@ export const createVerification = async (requestId, formData, userProfile) => {
     performedByUserId: userProfile?.id,
     performedByEmail: userProfile?.email,
     performedByName: userProfile?.full_name,
-    oldStatus: reqData?.status || null,
+    oldStatus: null,
     newStatus: 'in_progress',
     metadata: {},
   });
@@ -397,11 +326,6 @@ export const completeVerification = async (verificationId, requestId, formData, 
 
   const row = buildVerificationRow(formData, requestId, userProfile, now);
   row.status = 'completed';
-  row.completed_at = now;
-  row.completed_by_user_id = userProfile?.id || null;
-  row.completed_by_email = userProfile?.email || null;
-  row.completed_by_name = userProfile?.full_name || null;
-
   const { data, error } = await supabase
     ?.from('insurance_verifications')
     ?.update({ ...row, updated_at: now })
@@ -410,19 +334,6 @@ export const completeVerification = async (verificationId, requestId, formData, 
     ?.single();
 
   if (error) throw error;
-
-  // Update request to completed
-  await supabase
-    ?.from('insurance_verification_requests')
-    ?.update({
-      status: 'completed',
-      completed_at: now,
-      completed_by_user_id: userProfile?.id || null,
-      completed_by_name: userProfile?.full_name || null,
-      verification_id: verificationId,
-      updated_at: now,
-    })
-    ?.eq('id', requestId);
 
   // Audit log — non-fatal
   await insertAuditLog({

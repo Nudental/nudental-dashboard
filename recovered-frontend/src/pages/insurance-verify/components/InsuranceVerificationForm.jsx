@@ -263,11 +263,11 @@ const CompleteModal = ({ isOpen, onConfirm, onCancel, loading }) => {
           </div>
           <div>
             <h3 className="text-base font-semibold text-text-primary">Mark as Completed</h3>
-            <p className="text-xs text-text-secondary">This will mark the verification form as completed and update the request status.</p>
+            <p className="text-xs text-text-secondary">Completing saves the breakdown and queues its PDF for the patient’s Ascend Document Manager.</p>
           </div>
         </div>
         <p className="text-sm text-text-secondary mb-5">
-          Confirm that you have completed the insurance verification breakdown. No PDF will be generated and no email will be sent at this time.
+          Confirm the patient, office and benefits before completing. The office receives a dashboard link. If Ascend needs a chart match, the queue will show Needs review.
         </p>
         <div className="flex gap-3 justify-end">
           <button
@@ -400,9 +400,10 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
         await completeVerification(verification?.id, request?.id, formData, userProfile);
       } else {
         const created = await createVerification(request?.id, formData, userProfile);
+        setVerification(created);
         await completeVerification(created?.id, request?.id, formData, userProfile);
       }
-      success('Completed', 'Verification form marked as completed.');
+      success('Completed', 'Breakdown completed. Ascend chart filing is queued.');
       setShowCompleteModal(false);
       onSaved?.();
       onBack?.();
@@ -563,7 +564,7 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
     verification?.dentrix_document_upload_status === 'success' ||
     request?.dentrix_document_upload_status === 'uploaded' ||
     request?.dentrix_document_upload_status === 'success';
-  const showDentrixUpload = canUploadToDentrix && isCompleted && !isAlreadyUploaded;
+  const showDentrixUpload = canUploadToDentrix && isCompleted && !isAlreadyUploaded && !['pending','sending','confirming','uploading'].includes(verification?.dentrix_document_upload_status);
 
   if (loading) {
     return (
@@ -741,7 +742,7 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
       {!isCompleted && (
         <div className="flex items-start gap-3 p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-xs">
           <Icon name="Info" size={14} className="mt-0.5 flex-shrink-0" />
-          <span>Phase 3A: No PDF generation, no office email, no Dentrix upload. Save Draft or Mark Completed only.</span>
+          <span>Save a draft to continue later. Mark Completed locks the breakdown, queues the PDF for Ascend Document Manager, and notifies the requesting office.</span>
         </div>
       )}
 

@@ -262,8 +262,8 @@ export const NAV_GROUPS = [
         icon: 'ShieldCheck',
         route: '/insurance-verify',
         permission: 'workflow.insurance.view',
-        permissionAny: ['workflow.insurance.view'],
-        description: 'Native insurance verification workflow — request queue, new request form, and legacy fallback',
+        permissionAny: ['workflow.insurance.view', 'insurance.daily.review'],
+        description: 'Office requests, completed breakdowns and daily counts',
       },
       {
         id: 'eod-report',

@@ -1,0 +1,8 @@
+[Unit]
+Description=File completed NU Dental insurance breakdowns in Ascend
+[Service]
+Type=oneshot
+Environment=TZ=America/New_York
+ExecStart=%h/.openclaw/workspace/ascend_api/middleware/.venv/bin/python %h/.local/lib/nu-insurance-office/insurance_chart_filing.py
+UMask=0077
+TimeoutStartSec=20min

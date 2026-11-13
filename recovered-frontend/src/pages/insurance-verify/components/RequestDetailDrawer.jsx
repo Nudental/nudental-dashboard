@@ -29,10 +29,10 @@ const fmtDate = (val) => {
   if (!val) return '—';
   try { return format(parseISO(val), 'MM/dd/yyyy'); } catch { return val; }
 };
-const fmtDateTime = (val) => {
-  if (!val) return '—';
-  try { return format(parseISO(val), 'MM/dd/yyyy h:mm a'); } catch { return val; }
-};
+const fmtDateTime = val => val ? new Date(val).toLocaleString('en-US', {
+  timeZone: 'America/New_York', year: 'numeric', month: 'short', day: 'numeric',
+  hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
+}) : '—';
 
 const STATUS_LABELS = {
   requested:         'Requested',
@@ -375,7 +375,7 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canCa
     verification?.dentrix_document_upload_status === 'success' ||
     request?.dentrix_document_upload_status === 'uploaded' ||
     request?.dentrix_document_upload_status === 'success';
-  const showDentrixUpload = canUploadToDentrix && showPDFActions && !isAlreadyUploaded;
+  const showDentrixUpload = canUploadToDentrix && showPDFActions && !isAlreadyUploaded && !['pending','sending','confirming','uploading'].includes(verification?.dentrix_document_upload_status);
 
   // Office email status display
   const officeEmailedAt = verification?.office_emailed_at;
@@ -634,7 +634,7 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canCa
               <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Assignment</h4>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <InfoRow label="Assigned To (Email)" value={request?.assigned_to_email} />
+              <InfoRow label="Office inbox" value={request?.assigned_to_email} />
               <InfoRow label="Assigned At" value={fmtDateTime(request?.assigned_at)} />
               <InfoRow label="Requested By" value={request?.requested_by_name} />
               <InfoRow label="Requested At" value={fmtDateTime(request?.requested_at)} />
@@ -650,6 +650,7 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canCa
             <div className="grid grid-cols-2 gap-3">
               <InfoRow label="Status" value={statusLabel} />
               <InfoRow label="Started At" value={fmtDateTime(request?.started_at)} />
+              <InfoRow label="Completed By" value={request?.completed_by_name} />
               <InfoRow label="Completed At" value={fmtDateTime(request?.completed_at)} />
               <InfoRow label="Cancelled At" value={fmtDateTime(request?.cancelled_at)} />
               {request?.cancel_reason && (
@@ -672,7 +673,8 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canCa
               <InfoRow label="Chart Upload Status" value={fmt(request?.chart_upload_status)} />
               <InfoRow label="Chart Upload Method" value={fmt(request?.chart_upload_method)} />
               <InfoRow label="Chart Uploaded At" value={fmtDateTime(request?.chart_uploaded_at)} />
-              <InfoRow label="Dentrix Upload Status" value={dentrixStatus?.label} />
+              <InfoRow label="Ascend Document Manager" value={dentrixStatus?.label} />
+              {request?.dentrix_document_upload_error && <InfoRow label="Filing details" value={request.dentrix_document_upload_error} />}
               <InfoRow label="Office Emailed At" value={fmtDateTime(request?.office_emailed_at)} />
             </div>
           </div>
@@ -727,7 +729,7 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canCa
         {/* Footer Actions */}
         {isCancellable && (
           <div className="px-5 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 flex items-center justify-between">
-            <p className="text-xs text-gray-500 dark:text-gray-400">Phase 3A: Start/Continue/Complete verification above</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">Times are shown in Eastern time.</p>
             <button
               onClick={() => setShowCancelModal(true)}
               className="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors"

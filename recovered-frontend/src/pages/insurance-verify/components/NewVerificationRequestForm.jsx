@@ -3,7 +3,6 @@ import Icon from '../../../components/AppIcon';
 import {
   createVerificationRequest,
   fetchOffices,
-  fetchActiveUsers,
   insertAuditLog,
 } from '../../../services/insuranceVerifyService';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -30,8 +29,6 @@ export default function NewVerificationRequestForm({ onSuccess }) {
   const { success, error: toastError } = useToast();
 
   const [offices, setOffices] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [usersAvailable, setUsersAvailable] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -51,8 +48,6 @@ export default function NewVerificationRequestForm({ onSuccess }) {
     insurancePhone: '',
     requestingStaffName: userProfile?.full_name || '',
     requestingStaffRole: userProfile?.role || '',
-    assignedToUserId: '',
-    assignedToEmail: '',
     additionalNotes: '',
   });
 
@@ -60,15 +55,14 @@ export default function NewVerificationRequestForm({ onSuccess }) {
 
   const loadData = useCallback(async () => {
     try {
-      const [officeData, userData] = await Promise.all([fetchOffices(), fetchActiveUsers()]);
+      const officeData = (await fetchOffices()).filter(o => o.can_submit);
       setOffices(officeData);
-      if (userData?.length === 0) {
-        setUsersAvailable(false);
-      } else {
-        setUsers(userData);
+      if (officeData.length === 1) {
+        const [office] = officeData;
+        setForm(prev => ({ ...prev, officeId: office.id, officeName: office.name, officeEmail: office.email }));
       }
     } catch (err) {
-      console.warn('Could not load form data:', err?.message);
+      setErrors(prev => ({ ...prev, officeId: 'Could not load your offices. Reopen New Request to retry.' }));
     }
   }, []);
 
@@ -82,16 +76,6 @@ export default function NewVerificationRequestForm({ onSuccess }) {
       officeId,
       officeName: office?.name || '',
       officeEmail: office?.email || '',
-    }));
-  };
-
-  // Auto-fill assigned email when user is selected from dropdown
-  const handleAssignedUserChange = (userId) => {
-    const user = users?.find((u) => u?.id === userId);
-    setForm((prev) => ({
-      ...prev,
-      assignedToUserId: userId,
-      assignedToEmail: user?.email || prev?.assignedToEmail,
     }));
   };
 
@@ -140,7 +124,7 @@ export default function NewVerificationRequestForm({ onSuccess }) {
         },
       });
 
-      success('Request Submitted', 'Verification request saved. No email has been sent.');
+      success('Request Submitted', 'Your request is in the queue. An office notice is scheduled.');
       setSubmitted(true);
       onSuccess?.();
     } catch (err) {
@@ -152,9 +136,9 @@ export default function NewVerificationRequestForm({ onSuccess }) {
 
   const handleReset = () => {
     setForm({
-      officeId: '',
-      officeName: '',
-      officeEmail: '',
+      officeId: offices.length === 1 ? offices[0].id : '',
+      officeName: offices.length === 1 ? offices[0].name : '',
+      officeEmail: offices.length === 1 ? offices[0].email : '',
       patientFirstName: '',
       patientLastName: '',
       patientDob: '',
@@ -167,8 +151,6 @@ export default function NewVerificationRequestForm({ onSuccess }) {
       insurancePhone: '',
       requestingStaffName: userProfile?.full_name || '',
       requestingStaffRole: userProfile?.role || '',
-      assignedToUserId: '',
-      assignedToEmail: '',
       additionalNotes: '',
     });
     setErrors({});
@@ -185,7 +167,7 @@ export default function NewVerificationRequestForm({ onSuccess }) {
           <h3 className="text-lg font-semibold text-text-primary mb-1">Request Submitted</h3>
           <p className="text-sm text-text-secondary max-w-sm">
             The verification request has been saved to Nu Dashboard with status <strong>Requested</strong>.
-            No assignment email has been sent (Phase 2A).
+            Your office inbox will receive a notice.
           </p>
         </div>
         <div className="flex gap-3 mt-2">
@@ -206,8 +188,7 @@ export default function NewVerificationRequestForm({ onSuccess }) {
       <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-xs">
         <Icon name="Info" size={15} className="mt-0.5 flex-shrink-0" />
         <span>
-          <strong>Phase 2A:</strong> Submitting saves the request to Nu Dashboard. No assignment email is sent.
-          Assignment emails, PDF generation, office email, and Dentrix upload are later phases.
+          Submit the request to the verification queue. The requesting office receives a dashboard link when the request is received and when the breakdown is completed.
         </span>
       </div>
       {/* Office */}
@@ -225,11 +206,11 @@ export default function NewVerificationRequestForm({ onSuccess }) {
           </select>
           {errors?.officeId && <p className="text-xs text-red-500">{errors?.officeId}</p>}
         </Field>
-        <Field label="Office Email (for completed breakdown)" hint="Auto-filled from office record">
+        <Field label="Office notification email" hint="From the office directory">
           <input
             type="email"
             value={form?.officeEmail}
-            onChange={(e) => set('officeEmail', e?.target?.value)}
+            readOnly
             placeholder="office@example.com"
             className={inputCls}
           />
@@ -354,7 +335,7 @@ export default function NewVerificationRequestForm({ onSuccess }) {
       <div>
         <h4 className="text-sm font-semibold text-text-primary mb-3 flex items-center gap-2">
           <Icon name="UserCheck" size={15} className="text-primary" />
-          Requester &amp; Assignment
+          Requesting staff
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <Field label="Requesting Staff Name">
@@ -366,43 +347,6 @@ export default function NewVerificationRequestForm({ onSuccess }) {
             />
           </Field>
 
-          {/* Assigned Verifier — dropdown if users available, manual email fallback */}
-          {usersAvailable && users?.length > 0 ? (
-            <Field label="Assigned Verifier" hint="Select from active users">
-              <select
-                value={form?.assignedToUserId}
-                onChange={(e) => handleAssignedUserChange(e?.target?.value)}
-                className={inputCls}
-              >
-                <option value="">— Unassigned —</option>
-                {users?.map((u) => (
-                  <option key={u?.id} value={u?.id}>{u?.full_name} ({u?.email})</option>
-                ))}
-              </select>
-            </Field>
-          ) : (
-            <Field label="Assigned Verifier Email" hint="User list unavailable — enter email manually">
-              <input
-                type="email"
-                value={form?.assignedToEmail}
-                onChange={(e) => set('assignedToEmail', e?.target?.value)}
-                placeholder="verifier@example.com"
-                className={inputCls}
-              />
-            </Field>
-          )}
-
-          {/* If user selected from dropdown, also allow overriding email */}
-          {usersAvailable && users?.length > 0 && form?.assignedToUserId && (
-            <Field label="Assigned Verifier Email" hint="Auto-filled from user profile">
-              <input
-                type="email"
-                value={form?.assignedToEmail}
-                onChange={(e) => set('assignedToEmail', e?.target?.value)}
-                className={inputCls}
-              />
-            </Field>
-          )}
         </div>
       </div>
       {/* Notes */}
@@ -433,7 +377,6 @@ export default function NewVerificationRequestForm({ onSuccess }) {
         >
           Reset
         </button>
-        <p className="text-xs text-text-secondary ml-2">No email will be sent on submit.</p>
       </div>
     </form>
   );

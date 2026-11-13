@@ -140,7 +140,7 @@
       {
         "name": "Insurance Verify",
         "route": "/insurance-verify",
-        "text": "Open Request Queue to check existing work. Use New Request to submit a verification for the assigned patient and office. The Legacy Form is a separate fallback. Nebraska handles payer and credentialing exceptions."
+        "text": "Choose New Request and the requesting office. The office inbox receives a dashboard link at submission and completion. The verifier opens Request Queue, saves the breakdown, and selects Mark Completed. Completion automatically queues the PDF for the patient’s Ascend Document Manager. Check the filing status in Request Queue. Needs review means an authorized user must confirm the chart. Each request shows who submitted and completed it and when, in Eastern time. Designated management reviewers can open Daily Counts for seven days of completions by office."
       },
       {
         "name": "EOD Report",
