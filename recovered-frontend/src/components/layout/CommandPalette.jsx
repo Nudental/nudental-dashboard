@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
-import { NAV_GROUPS } from '../../config/navConfig';
+import { NAV_GROUPS, isNavItemVisible } from '../../config/navConfig';
 import { useAuth } from '../../contexts/AuthContext';
 import useRolePermissions from '../../hooks/useRolePermissions';
 
@@ -10,6 +10,7 @@ function buildSearchIndex(navGroups, userProfile, hasPermission) {
   const items = [];
   navGroups?.forEach(group => {
     group?.children?.forEach(child => {
+      if (child?.assistantScans && !isNavItemVisible(child, userProfile, hasPermission)) return;
       // Basic role/permission check
       const role = userProfile?.role;
       if (child?.roles && !child?.roles?.includes(role)) return;

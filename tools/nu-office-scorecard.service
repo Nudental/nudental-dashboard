@@ -1,0 +1,7 @@
+[Unit]
+Description=Refresh NU Dental assigned office scorecards
+[Service]
+Type=oneshot
+WorkingDirectory=%h/.openclaw/workspace/ascend_api/middleware
+ExecStart=%h/.openclaw/workspace/ascend_api/middleware/.venv/bin/python %h/.local/lib/nu-office-scorecard/staff_office_scorecard.py
+

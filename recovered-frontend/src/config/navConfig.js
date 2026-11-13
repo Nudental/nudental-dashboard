@@ -11,6 +11,14 @@ export const NAV_GROUPS = [
     icon: 'Home',
     children: [
       {
+        id: 'staff-office-scorecard',
+        label: 'My Office Scorecard',
+        shortLabel: 'Office Scorecard',
+        icon: 'Target',
+        route: '/my-office-scorecard',
+        description: 'Read-only performance for your assigned offices',
+      },
+      {
         id: 'overview',
         label: 'Executive Overview',
         shortLabel: 'Overview',
@@ -328,6 +336,15 @@ export const NAV_GROUPS = [
         description: 'Monthly P&L reports and financial exports',
       },
       {
+        id: 'assistant-inventory-scans',
+        label: 'My Inventory Scans',
+        shortLabel: 'My Scans',
+        icon: 'ScanLine',
+        route: '/my-inventory-scans',
+        assistantScans: true,
+        description: 'Receive and use stock in your assigned office',
+      },
+      {
         id: 'inventory',
         label: 'Inventory Dashboard',
         shortLabel: 'Inventory',
@@ -479,6 +496,7 @@ export const ROUTE_TO_NAV = NAV_GROUPS?.reduce((acc, group) => {
  * Check if a nav item is visible for a given user profile + permissions
  */
 export function isNavItemVisible(item, userProfile, hasPermission) {
+  if (item?.assistantScans) return /\b(rda|da|dental assist(?:ant)?|dental asst)\b/i.test(userProfile?.job_title || '');
   const role = userProfile?.role;
   const isSuperAdmin = role === 'super_admin';
 

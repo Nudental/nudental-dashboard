@@ -8,6 +8,8 @@ import ExecutiveOverview from './pages/executive-overview';
 import FrontDeskApprovals from './pages/front-desk-approvals';
 import FinancialAnalytics from './pages/financial-analytics';
 import OfficePerformance from './pages/office-performance';
+import StaffOfficeScorecard from './pages/staff-office-scorecard';
+import AssignedInventory from './pages/assigned-inventory';
 import ManagementSettings from './pages/management';
 import DailyEntryForm from './pages/daily-entry-form';
 import Reports from './pages/reports';
@@ -103,6 +105,8 @@ const Routes = () => {
             <Route path="/financial-analytics" element={<FinancialAnalytics />} />
             <Route path="/financial-analytics/expense-report" element={<ExpenseReport />} />
             <Route path="/office-performance" element={<OfficePerformance />} />
+            <Route path="/my-office-scorecard" element={<StaffOfficeScorecard />} />
+            <Route path="/my-inventory-scans" element={<AssignedInventory />} />
             <Route path="/management" element={<ManagementSettings />} />
             <Route path="/users-management" element={<UsersManagement />} />
             <Route path="/service-categories-management" element={<ServiceCategoriesManagement />} />

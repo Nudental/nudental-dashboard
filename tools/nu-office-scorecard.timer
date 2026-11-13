@@ -1,0 +1,8 @@
+[Unit]
+Description=Refresh NU Dental scorecards after overnight data sync
+[Timer]
+OnCalendar=*-*-* 06:30:00 America/New_York
+Persistent=true
+[Install]
+WantedBy=timers.target
+

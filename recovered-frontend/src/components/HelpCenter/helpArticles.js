@@ -1,4 +1,5 @@
 const HELP_ARTICLES = [
+  {id: 101, tab: "Home", title: "My Office Scorecard", keywords: ["scorecard","office","progress","goals","visits"], content: "Choose Home → My Office Scorecard. View one assigned office at a time. Compare month-to-date production and collections goal progress, completed visits, new patients, no-shows and treatment acceptance with the same point last month. Check the through-date. “Not reported” means a source or denominator is unavailable. There are no individual records, exports or editing controls."},
   // ─── EXECUTIVE OVERVIEW ───────────────────────────────────────────────────
   {
     id: 1,
@@ -132,7 +133,7 @@ const HELP_ARTICLES = [
     tab: "General",
     title: "How OTP and trusted browser work",
     keywords: ["otp","trusted","browser","device","sms","email","verification","login","two factor","2fa","code","expire","6 digit","twilio","phone"],
-    content: "When you log in from an unrecognized device, you are prompted for a 6-digit OTP code sent to your email or SMS (if phone is verified in Profile Settings).\n\n• Enter the 6-digit code and click Verify. Paste support is available.\n• Check 'Trust this browser' to skip OTP on future logins from the same device.\n• OTP codes expire quickly — if expired, click Resend (60-second cooldown).\n• Trusted browser is browser/device specific — stored in browser cookies/storage.\n• Clearing browser data, using incognito/private mode, or switching browsers removes trusted status and requires OTP again.\n• SMS OTP requires a verified phone number in Profile Settings."
+    content: "Enter the six-digit code sent to your registered email address. Check the masked inbox on screen. Use Resend Code when offered. Codes expire in ten minutes. Only trust an individually controlled browser."
   },
   // ─── REPORTS WORKBOOK EXPORT ──────────────────────────────────────────────
   {
@@ -228,7 +229,7 @@ const HELP_ARTICLES = [
     tab: "Resources",
     title: "How to use Inventory Dashboard",
     keywords: ["inventory","supply","supplies","bone","tissue","implant","stock","low","reorder","scanner","barcode","qr","urgent","order","scan in","scan out"],
-    content: "Inventory Dashboard tracks bone/tissue/membrane, implants, and supply requests. Two-step workflow: Scan In when items arrive (Step 1 — Receiving), Scan Out when used by doctor (Step 2 — Consumption + Patient Linkage). Items must be received before they can be consumed. Supply requests route to the Regional Manager for approval. Front desk requests route separately from clinical/back staff requests. Offline queue support — actions queued when offline and synced when connection restored. Expiration alerts appear for near-expiry items."
+    content: "Use Implant & Grafting, Front Desk or Clinical Supply. Under Implant & Grafting, choose Bone / Tissue / Membrane / PRF or Implant Inventory. Receive the item into the correct office with its lot, expiry and quantity. At use, scan out the package against the patient visit and provider. Check the usage log and flag errors, unused returns or waste to Maia. Staff access depends on the assigned office and enabled workflow."
   },
   // ─── TEAM ASSIGNMENTS ─────────────────────────────────────────────────────
   {
@@ -244,7 +245,7 @@ const HELP_ARTICLES = [
     tab: "Profile",
     title: "How to update Profile Settings",
     keywords: ["profile","photo","phone","password","settings","account","directory","notification","crop","upload","theme","directory-first"],
-    content: "Profile Settings lets you update your display name, phone number, profile photo, and theme. Directory-first rule: if your email matches a Staff Directory record, the Directory photo and name take precedence over Profile Settings data. To change your displayed photo, update the Directory record — not just Profile Settings. Verify your phone number to enable SMS-based login verification. Theme selection changes the dashboard color scheme. Role and office assignments are managed by your administrator — they are read-only in Profile Settings."
+    content: "Profile Settings lets you update your display name, phone number, profile photo, and theme. Directory-first rule: if your email matches a Staff Directory record, the Directory photo and name take precedence over Profile Settings data. To change your displayed photo, update the Directory record — not just Profile Settings. Phone verification is separate from the email code used at sign-in. Theme selection changes the dashboard color scheme. Role and office assignments are managed by your administrator — they are read-only in Profile Settings."
   },
   // ─── HELP CENTER ──────────────────────────────────────────────────────────
   {

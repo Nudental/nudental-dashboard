@@ -1,0 +1,248 @@
+[
+  {
+    "name": "Getting started",
+    "items": [
+      {
+        "name": "Sign in and verify",
+        "route": "/login",
+        "text": "Use your assigned lowercase username and dashboard password. Some accounts use a preferred name. When prompted, enter the six-digit code sent to your registered email. A code expires in ten minutes. Use Resend Code when offered. Trust the browser only on an individually controlled device."
+      },
+      {
+        "name": "Reset your password",
+        "route": "/forgot-password",
+        "text": "Select Forgot Password? on the sign-in page. Enter the email registered to the dashboard account and select Send Reset Email. Follow the one-use link within one hour, set the password, then return and sign in with your username."
+      },
+      {
+        "name": "Profile and support",
+        "route": "/profile",
+        "text": "Use Profile Settings for permitted personal profile changes. Phone verification is a separate profile feature. For a missing office, missing tab or incorrect registered email, contact Ny or Yabezy with the office and task. Do not share a password or one-time code."
+      }
+    ]
+  },
+  {
+    "name": "Home",
+    "items": [
+      {
+        "name": "My Office Scorecard",
+        "route": "/my-office-scorecard",
+        "text": "Choose Home → My Office Scorecard. View one assigned office at a time. Compare month-to-date production and collections goal progress, completed visits, new patients, no-shows and treatment acceptance with the same point last month. Check the through-date. “Not reported” means a source or denominator is unavailable. There are no individual records, exports or editing controls."
+      },
+      {
+        "name": "Executive Overview",
+        "route": "/executive-overview",
+        "text": "Choose an office and period before reading the executive totals. Review production, collections and outstanding approvals. Select a detail link only if your role includes that area."
+      }
+    ]
+  },
+  {
+    "name": "Performance",
+    "items": [
+      {
+        "name": "KPIs",
+        "route": "/kpis",
+        "text": "Set the date range and office. Review actuals against targets, then use the available main, specialty or provider views. Check the metric definition before comparing periods."
+      },
+      {
+        "name": "Operations",
+        "route": "/operations",
+        "text": "Choose Offices, Production, Performance, Providers, Services, Payors, Trends, Cancellations, Claims / AR, Marketing or Scorecards. Keep the office and period consistent when moving between tabs. This management view includes detail beyond the staff scorecard."
+      },
+      {
+        "name": "Office Performance",
+        "route": "/office-performance",
+        "text": "Choose a permitted office and reporting period. Review local performance, revenue and available productivity detail. Staff looking for a read-only team summary should use Home → My Office Scorecard."
+      },
+      {
+        "name": "Provider Performance",
+        "route": "/provider-performance",
+        "text": "Choose the provider, service or reporting period available to your role. Use performance measures to review activity. Refer compensation questions to the payroll workflow."
+      },
+      {
+        "name": "Monthly Analytics",
+        "route": "/executive-monthly-analytics",
+        "text": "Select the reporting month and office. Review the executive summary or comparison. Data entry and imports are separate actions for authorized staff."
+      },
+      {
+        "name": "Regional Manager",
+        "route": "/rcm-dashboard",
+        "text": "Review clinical supply requests by office. Inspect the requested items, quantities and supporting notes before using an available approval action. Escalate spend outside your delegation."
+      }
+    ]
+  },
+  {
+    "name": "Finance",
+    "items": [
+      {
+        "name": "Payroll",
+        "route": "/payroll",
+        "text": "Select the pay period and the authorized Dentrix Ascend, Gusto, Comparison or Provider Compensation tab. Review source figures, adjustments and gross pay. Dr. G authorizes compensation changes and release. Ny and Kathy are designated to share payroll responsibilities once their individual access is verified."
+      },
+      {
+        "name": "Financial Analytics",
+        "route": "/financial-analytics",
+        "text": "Use the office and date filters to review production, collections, adjustments or reconciliation. Check the data source and dates when comparing figures to another report."
+      },
+      {
+        "name": "Expense Report",
+        "route": "/financial-analytics/expense-report",
+        "text": "Review expenses by office and period. Open the available AmEx, manual expense, KPI or chart view. An expense entry or review does not itself authorize payment."
+      },
+      {
+        "name": "RCM",
+        "route": "/rcm",
+        "text": "Use the appropriate revenue-cycle queue for claims, patient statements, payment arrangements, adjustments, refunds or AR aging. Work only the assigned cases and record the disposition."
+      },
+      {
+        "name": "Transaction Audit",
+        "route": "/transaction-audit",
+        "text": "Filter transactions by period and office. Compare the displayed transaction details with the underlying supporting record and flag discrepancies through the responsible workflow."
+      },
+      {
+        "name": "Audit Dashboard",
+        "route": "/audit-dashboard",
+        "text": "Filter logged events by actor, action or date. Inspect the recorded change and timestamp to answer who did what. Keep audit details within authorized management."
+      },
+      {
+        "name": "Audit Reports",
+        "route": "/audit-reports",
+        "text": "Select an audit report and reporting period. Confirm its filters before reviewing or exporting the available results."
+      },
+      {
+        "name": "Compliance & Retention",
+        "route": "/compliance-retention",
+        "text": "Review retention settings and compliance indicators. Policy and purge controls are administrative actions and require separate authorization."
+      },
+      {
+        "name": "Access Heatmap",
+        "route": "/access-heatmap",
+        "text": "Filter the access activity display by period. Use it to identify times or accounts that need review, then inspect supporting audit events."
+      },
+      {
+        "name": "Alert Rules",
+        "route": "/alert-rules",
+        "text": "Review rule conditions and recipients. Authorized administrators may change or enable a rule. Confirm the intended scope before saving."
+      },
+      {
+        "name": "Error Logs",
+        "route": "/error-logs",
+        "text": "Filter by date, component or status. Open an error, record the relevant time and workflow, and mark it resolved only after the issue is addressed."
+      }
+    ]
+  },
+  {
+    "name": "Workflow",
+    "items": [
+      {
+        "name": "Morning Huddle",
+        "route": "/daily-morning-huddle",
+        "text": "Choose the office and date, complete the huddle, assign follow-ups and submit. Use the history view to review a prior huddle and its status."
+      },
+      {
+        "name": "Insurance Verify",
+        "route": "/insurance-verify",
+        "text": "Open Request Queue to check existing work. Use New Request to submit a verification for the assigned patient and office. The Legacy Form is a separate fallback. Nebraska handles payer and credentialing exceptions."
+      },
+      {
+        "name": "EOD Report",
+        "route": "/daily-entry-form",
+        "text": "Select the correct office and date, enter the day’s figures and submit for review. If a report is returned, correct the specified entry and resubmit with a reason."
+      },
+      {
+        "name": "Team Assignments",
+        "route": "/team-assignments",
+        "text": "Find the task by assignee, office or status. Update progress on your assigned work. Managers can use the available controls to assign or review team tasks."
+      },
+      {
+        "name": "Front Desk Approvals",
+        "route": "/front-desk-approvals",
+        "text": "Review front-office supply requests in permitted offices. Check the requester, items and quantities before approving or returning the request. Another authorized reviewer must handle your own submission."
+      },
+      {
+        "name": "EOD Approval Queue",
+        "route": "/pending-approvals",
+        "text": "Check office, submitter, date and source before approving or returning an end-of-day report. Ny covers Brick and Staten Island until their managers take over. Viv reviews Eatontown. Ny confirms the Barnegat handoff to Karin."
+      },
+      {
+        "name": "Workflow Approvals Queue",
+        "route": "/huddle-approvals",
+        "text": "Use this queue for submitted huddles. Check office and status, review the entry, then record a decision. Use the EOD Approval Queue for end-of-day reports."
+      }
+    ]
+  },
+  {
+    "name": "Resources",
+    "items": [
+      {"name":"My Inventory Scans","route":"/my-inventory-scans","text":"Assigned dental assistants can receive bone and tissue into their office and record patient use. Select the office, choose Scan In or Scan Out and check the package identifier, lot, quantity and expiration. For use, enter the patient and procedure date and select the provider. Confirm the saved movement. Raise a mismatch with Maia."},
+      {
+        "name": "Reports",
+        "route": "/reports",
+        "text": "Select the report, period and office. Review the output within your reporting scope. Exports, when available, follow the same access limits."
+      },
+      {
+        "name": "Inventory Dashboard",
+        "route": "/inventory-dashboard",
+        "text": "Use Implant & Grafting, Front Desk or Clinical Supply. Under Implant & Grafting, choose Bone / Tissue / Membrane / PRF or Implant Inventory. Receive the item into the correct office with its lot, expiry and quantity. At use, scan out the package against the patient visit and provider. Check the usage log and flag errors, unused returns or waste to Maia. Staff access depends on the assigned office and enabled workflow."
+      },
+      {
+        "name": "Staff Directory",
+        "route": "/staff-directory",
+        "text": "Find a colleague by name or office. Use the directory for work contact and staffing information. A directory entry is separate from a login account or permission grant."
+      }
+    ]
+  },
+  {
+    "name": "Admin",
+    "items": [
+      {
+        "name": "Users",
+        "route": "/users-management",
+        "text": "Look up a named account and check username, active and approved status, role and assigned offices. The username can be a nickname. Verify the registered recovery email separately from the address used for staff correspondence."
+      },
+      {
+        "name": "Manage Providers",
+        "route": "/staff-management",
+        "text": "Locate the provider by office. Authorized users may maintain provider details and status. Check the provider identity before editing or importing records."
+      },
+      {
+        "name": "Management & Settings",
+        "route": "/management",
+        "text": "Choose the specific settings area for offices, providers, users and staff, goals, service categories or other configuration. Confirm the office and effective period before saving."
+      },
+      {
+        "name": "Sync Dashboard",
+        "route": "/sync-dashboard",
+        "text": "Review the source, office, last sync and any conflicts. Use authorized recovery actions only after checking which records they affect."
+      },
+      {
+        "name": "Data Health",
+        "route": "/data-health",
+        "text": "Review data freshness and failed reconciliation or endpoint checks. Identify the affected source and period before requesting a backfill."
+      },
+      {
+        "name": "Import Audit",
+        "route": "/import-audit",
+        "text": "Filter by office, date and endpoint. Inspect the failed or incomplete run before using an authorized retry to avoid duplicate work."
+      },
+      {
+        "name": "Manual Production Entry",
+        "route": "/manual-production-entry",
+        "text": "Enter supported UCR or adjustment figures only for the correct period and office and retain the source. Review how the entry is labeled before applying it to analytics."
+      },
+      {
+        "name": "System Dashboard",
+        "route": "/admin-system-dashboard",
+        "text": "Review integration health, import failures and delivery indicators. Use diagnostic pages to identify the affected workflow and time."
+      },
+      {
+        "name": "Dentrix Ascend Reconciliation",
+        "route": "/dentrix-diagnostics",
+        "text": "Select office and period. Check source-to-dashboard reconciliation status and endpoint coverage. Escalate missing-source or variance findings with the matching period."
+      },
+      {
+        "name": "Metric Alert Thresholds",
+        "route": "/metric-alert-thresholds",
+        "text": "Review thresholds for collection ratio, AR aging and claim submission metrics. Authorized administrators can change thresholds for the intended office and alert scope."
+      }
+    ]
+  }
+]

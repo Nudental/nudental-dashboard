@@ -277,9 +277,13 @@ export const fetchAdminEmails = async () => {
 };
 
 // ── Lookup stock by identification number or lot number ────────────────────
-export const lookupStockByLotOrId = async (identificationNumber, lotNumber) => {
+export const lookupStockByLotOrId = async (identificationNumber, lotNumber, officeId) => {
   if (!identificationNumber && !lotNumber) return null;
   let query = supabase?.from('bone_tissue_stock')?.select('*');
+  if (officeId) {
+    query = query.eq('office_id', officeId);
+    if (lotNumber?.trim()) query = query.eq('lot_number', lotNumber.trim());
+  }
   if (identificationNumber?.trim()) {
     query = query?.eq('identification_number', identificationNumber?.trim());
   } else if (lotNumber?.trim()) {

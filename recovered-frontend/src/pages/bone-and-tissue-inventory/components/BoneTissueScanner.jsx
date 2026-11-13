@@ -45,7 +45,7 @@ const parseScannedData = (raw) => {
   return result;
 };
 
-const BoneTissueScanner = ({ mode, offices, providers, staff, userId, userName, onClose, onSaved }) => {
+const BoneTissueScanner = ({ mode, offices, providers, staff, userId, userName, onClose, onSaved, assignedOffice, saveMovement }) => {
   // mode: 'receive' | 'consume'
   const [step, setStep] = useState('scan'); // 'scan' | 'manual' | 'form'
   const [scannerError, setScannerError] = useState('');
@@ -63,12 +63,12 @@ const BoneTissueScanner = ({ mode, offices, providers, staff, userId, userName, 
 
   // Form state
   const [form, setForm] = useState({
-    office_id: '',
-    office_name: '',
+    office_id: assignedOffice?.id || '',
+    office_name: assignedOffice?.name || '',
     provider_id: '',
     provider_name: '',
-    staff_id: '',
-    staff_name: '',
+    staff_id: assignedOffice ? userId : '',
+    staff_name: assignedOffice ? userName : '',
     patient_name: '',
     patient_chart_number: '',
     procedure_date: new Date()?.toISOString()?.split('T')?.[0],
@@ -143,7 +143,7 @@ const BoneTissueScanner = ({ mode, offices, providers, staff, userId, userName, 
   const handleScannedResult = async (parsed) => {
     setLookingUp(true);
     try {
-      const match = await lookupStockByLotOrId(parsed?.identificationNumber, parsed?.lotNumber);
+      const match = await lookupStockByLotOrId(parsed?.identificationNumber, parsed?.lotNumber, assignedOffice?.id);
       setStockMatch(match);
       setForm(f => ({
         ...f,
@@ -198,7 +198,10 @@ const BoneTissueScanner = ({ mode, offices, providers, staff, userId, userName, 
     if (!validate()) return;
     setSaving(true);
     try {
-      if (mode === 'receive') {
+      if (saveMovement) {
+        await saveMovement(form);
+        setToast(mode === 'receive' ? 'Stock receipt recorded.' : 'Patient use and stock deduction recorded.');
+      } else if (mode === 'receive') {
         await receiveStockByScan({
           identificationNumber: form?.identification_number,
           lotNumber: form?.lot_number,

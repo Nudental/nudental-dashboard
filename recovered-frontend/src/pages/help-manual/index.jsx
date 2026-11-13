@@ -1,3 +1,4 @@
+import officeGuide from "./office-guide.json";
 import React, { useState, useRef } from "react";
 import { BookOpen, ChevronRight, ChevronDown, Search, LogIn, LayoutDashboard, DollarSign, Workflow, Package, Shield, User, HelpCircle, Monitor, Bell, Filter, TrendingUp, Users, Settings, Upload, Info, Database } from "lucide-react";
 
@@ -13,76 +14,28 @@ export default function HelpManualPage() {
           id: "login",
           title: "Login",
           content: (
-            <div>
-              <p><strong>Route:</strong> <code>/login</code> &nbsp;|&nbsp; <strong>Type:</strong> Action-based &nbsp;|&nbsp; <strong>Data source:</strong> Supabase Auth</p>
-              <p>Navigate to <strong>nudashboard.com</strong> and enter your email and password. Nu Dashboard uses invite-only access — accounts are created by an admin. You cannot self-register.</p>
-              <ul>
-                <li>Enter your email and password, then click <strong>Sign In</strong>.</li>
-                <li>If your password is incorrect, use <strong>Forgot Password</strong> to receive a reset link by email.</li>
-                <li>After login you are directed to the Executive Overview (Home).</li>
-                <li>If you see an OTP challenge screen, see <strong>OTP / Trusted Browser</strong> below.</li>
-              </ul>
-              <p><strong>Check first:</strong> Use the email address associated with your Nu Dental account. Accounts are invite-only — contact Dr. G or Ny to request access.</p>
-            </div>
+            <div><p>Open <a href="/login">Sign In</a>. Enter your assigned username and dashboard password. A username may be a preferred first name. Ask Ny or Yabezy if you are unsure.</p><p>Use your registered email for password recovery and email verification. When the verification screen appears, enter the code from that inbox.</p></div>
           )
         },
         {
           id: "otp",
           title: "OTP / Trusted Browser",
           content: (
-            <div>
-              <p><strong>Route:</strong> <code>/otp-challenge</code> &nbsp;|&nbsp; <strong>Type:</strong> Security / Action-based &nbsp;|&nbsp; <strong>Data source:</strong> Supabase (OTP), Twilio (SMS)</p>
-              <p>When you log in from an unrecognized device or browser, you will be prompted to enter a <strong>6-digit verification code</strong>.</p>
-              <ul>
-                <li><strong>Email OTP:</strong> Code sent to your registered email. Check spam if not received.</li>
-                <li><strong>SMS OTP:</strong> Code sent by text message if you have a verified phone number in Profile Settings.</li>
-                <li><strong>Trust this browser:</strong> After successful OTP, check this box to skip OTP on future logins from the same device. This writes a trusted-device record tied to your browser.</li>
-                <li>OTP codes expire quickly — if expired, click <strong>Resend</strong> (60-second cooldown between resends).</li>
-                <li>Paste support is available — you can paste the 6-digit code directly into the input boxes.</li>
-              </ul>
-              <div style={{ backgroundColor: "#fef3c7", border: "1px solid #f59e0b", borderRadius: 6, padding: "10px 14px", margin: "10px 0" }}>
-                <strong>⚠️ Important:</strong> Trusted browser status is <strong>browser-specific and cookie-dependent</strong>. Clearing browser data, using incognito/private mode, or switching to a different browser will remove trusted status and require OTP again.
-              </div>
-              <p><strong>Common mistake:</strong> Expecting trusted browser to work after clearing cookies — it will not. The trust record is stored in browser storage.</p>
-            </div>
+            <div><p>When the dashboard prompts for verification, enter the six-digit code sent to the registered email shown on screen. Codes expire in ten minutes. Use Resend Code when available. Trust this browser for 90 days only on an individually controlled device.</p></div>
           )
         },
         {
           id: "phone-verification",
           title: "Phone Verification",
           content: (
-            <div>
-              <p><strong>Route:</strong> <code>/profile</code> (Phone section) &nbsp;|&nbsp; <strong>Type:</strong> Action-based &nbsp;|&nbsp; <strong>Data source:</strong> Supabase, Twilio</p>
-              <p>Adding a verified phone number enables SMS-based OTP and improves account security.</p>
-              <ul>
-                <li>Go to <strong>Profile Settings</strong> → Phone Verification section.</li>
-                <li>Enter your mobile number (with area code) and click <strong>Send Code</strong>.</li>
-                <li>Enter the 6-digit SMS code to verify. This writes <code>phone_verified: true</code> to your user profile.</li>
-                <li>Once verified, your number is used for SMS OTP during login.</li>
-              </ul>
-              <p><strong>Check first:</strong> SMS delivery uses Twilio. If you do not receive the code within 60 seconds, try again. Make sure you enter the full mobile number including area code.</p>
-            </div>
+            <div><p>Phone verification in Profile Settings confirms the contact number on the profile. The dashboard login challenge sends its code to the registered email.</p></div>
           )
         },
         {
           id: "password-reset",
           title: "Password Reset / Change Password",
           content: (
-            <div>
-              <p><strong>Routes:</strong> <code>/forgot-password</code>, <code>/reset-password</code>, <code>/change-password</code> &nbsp;|&nbsp; <strong>Type:</strong> Action-based</p>
-              <p><strong>Forgot your password:</strong></p>
-              <ul>
-                <li>On the login screen, click <strong>Forgot Password</strong>.</li>
-                <li>Enter your email and click <strong>Send Reset Link</strong>.</li>
-                <li>Check your email for a reset link. The link expires after a short period.</li>
-                <li>Click the link, enter your new password, and confirm it.</li>
-              </ul>
-              <p><strong>Change password while logged in:</strong></p>
-              <ul>
-                <li>Go to <strong>Profile Settings → Account Settings → Change Password</strong>.</li>
-              </ul>
-              <p><strong>Check first:</strong> Password reset links expire quickly. If the link has expired, return to the login screen and request a new one.</p>
-            </div>
+            <div><p>From Sign In select Forgot Password? Enter the email registered to the account and select Send Reset Email. Open the one-use link within one hour, save your new password, then sign in with your username.</p><p>If the registered address has changed, contact Yabezy or Ny to verify it. Never forward a code or reset link.</p></div>
           )
         }
       ]
@@ -821,22 +774,7 @@ export default function HelpManualPage() {
           id: "inventory",
           title: "Inventory Dashboard",
           content: (
-            <div>
-              <p><strong>Route:</strong> <code>/inventory-dashboard</code> &nbsp;|&nbsp; <strong>Type:</strong> Action/Workflow-based — Write-capable</p>
-              <p><strong>Data source:</strong> Supabase (<code>bone_tissue_stock</code>, <code>implant_inventory</code>, <code>supply_request_batches</code>, <code>urgent_supply_requests</code>, <code>front_desk_inventory</code> tables). Offline queue support.</p>
-              <p><strong>Role access:</strong> Permission: <code>inventory:view</code>.</p>
-              <p>Central inventory hub — bone/tissue/membrane tracking, implant inventory, front desk supply requests, monthly supply module.</p>
-              <ul>
-                <li><strong>Tabs:</strong> Implant &amp; Grafting (bone/tissue + implants), Front Desk, Monthly Supply.</li>
-                <li><strong>Scan In:</strong> Writes receive record to Supabase (Step 1 — Receiving).</li>
-                <li><strong>Scan Out:</strong> Writes consumption record + patient linkage (Step 2 — Consumption).</li>
-                <li><strong>Submit Supply Request:</strong> Writes to <code>supply_request_batches</code> — routes to Regional Manager for approval.</li>
-                <li><strong>Submit Urgent Request:</strong> Writes to <code>urgent_supply_requests</code>.</li>
-                <li>Offline queue support — actions queued when offline and synced when connection restored.</li>
-              </ul>
-              <p><strong>Common mistake:</strong> Scanning out without scanning in first — items must be received before they can be consumed. Not linking patient on scan-out.</p>
-              <p><strong>What expiration alert means:</strong> Item within expiration window — review and use or reorder.</p>
-            </div>
+            <div><p>Use Implant & Grafting, Front Desk or Clinical Supply. Under Implant & Grafting, choose Bone / Tissue / Membrane / PRF or Implant Inventory. Receive the item into the correct office with its lot, expiry and quantity. At use, scan out the package against the patient visit and provider. Check the usage log and flag errors, unused returns or waste to Maia. Staff access depends on the assigned office and enabled workflow.</p></div>
           )
         },
         {
@@ -1138,21 +1076,7 @@ export default function HelpManualPage() {
           keywords: ["otp","trusted browser","trusted device","6 digit","sms","email verification","two factor","2fa","phone verification","twilio","login verification","browser trust","incognito","clear cookies","resend","expire"],
           searchableText: "OTP trusted browser trusted device 6 digit SMS email verification two factor 2FA phone verification Twilio login verification browser trust incognito clear cookies resend expire",
           content: (
-            <div>
-              <p><strong>Route:</strong> <code>/otp-challenge</code> &nbsp;|&nbsp; <strong>Type:</strong> Security / Action-based — Write-capable (trusted device write on verify)</p>
-              <p><strong>Data source:</strong> Supabase (OTP verification via otpAuthService), Twilio (SMS delivery via edge function)</p>
-              <p>Two-step login verification — 6-digit OTP entry with trusted browser option.</p>
-              <ul>
-                <li><strong>Verify Code:</strong> Calls verifyLoginOtp — writes trusted device record if "Trust this browser" is checked.</li>
-                <li><strong>Resend Code:</strong> Calls sendLoginOtp — 60-second cooldown between resends.</li>
-                <li>Code length = 6 digits. Paste support available.</li>
-                <li>SMS OTP requires a verified phone number in Profile Settings.</li>
-              </ul>
-              <div style={{ backgroundColor: "#fef3c7", border: "1px solid #f59e0b", borderRadius: 6, padding: "10px 14px", margin: "10px 0" }}>
-                <strong>⚠️ Trusted browser is browser/device specific:</strong> Clearing browser data, using incognito/private mode, or switching browsers removes trusted status and requires OTP again.
-              </div>
-              <p><strong>What "Code expired" means:</strong> OTP window passed — request new code via Resend button.</p>
-            </div>
+            <div><p>When the dashboard prompts for verification, enter the six-digit code sent to the registered email shown on screen. Codes expire in ten minutes. Use Resend Code when available. Trust this browser for 90 days only on an individually controlled device.</p></div>
           )
         },
         {
@@ -1485,6 +1409,16 @@ export default function HelpManualPage() {
     }
   ];
 
+
+  const tabGuide = {
+    id: "current-tab-guide", icon: BookOpen, title: "Current tab guide", color: "#0d9488",
+    subsections: officeGuide.flatMap(group => group.items.map(item => ({
+      id: "guide-" + item.route, title: item.name, keywords: [group.name],
+      searchableText: item.text,
+      content: <div><p><strong>{group.name}</strong></p><p>{item.text}</p><p><a href={item.route}>Open {item.name}</a></p></div>,
+    }))),
+  };
+  SECTIONS.unshift(tabGuide);
   const [activeSection, setActiveSection] = useState(SECTIONS?.[0]?.id);
   const [activeSubsection, setActiveSubsection] = useState(SECTIONS?.[0]?.subsections?.[0]?.id);
   const [expandedSections, setExpandedSections] = useState(() => {
@@ -1547,7 +1481,7 @@ export default function HelpManualPage() {
             </div>
             <div>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#0f172a", lineHeight: 1.2 }}>User Manual</div>
-              <div style={{ fontSize: 10, color: "#94a3b8" }}>NU Dental Dashboard — V747</div>
+              <div style={{ fontSize: 10, color: "#94a3b8" }}>NU Dental Dashboard — November 13, 2026</div>
             </div>
           </div>
           {/* Search */}
@@ -1722,7 +1656,7 @@ export default function HelpManualPage() {
         <div style={{ marginTop: 40, maxWidth: 820, padding: "14px 18px", borderRadius: 8, backgroundColor: "#f0fdfa", border: "1px solid #99f6e4", display: "flex", gap: 10, alignItems: "flex-start" }}>
           <Info size={14} color="#0d9488" style={{ marginTop: 2, flexShrink: 0 }} />
           <p style={{ margin: 0, fontSize: 12, color: "#0f766e", lineHeight: 1.6 }}>
-            This is the internal Nu Dental Dashboard user manual (V747 — based on V746 functional usage audit). For technical issues or data pipeline questions, contact Yabezy. For access, role, or goal changes, contact Dr. G or Ny.
+            This is the internal Nu Dental Dashboard user manual (updated November 13, 2026). For technical issues or data pipeline questions, contact Yabezy. For access, role, or goal changes, contact Dr. G or Ny.
           </p>
         </div>
       </div>
