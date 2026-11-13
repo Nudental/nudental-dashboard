@@ -4,24 +4,9 @@ import useRolePermissions from '../../hooks/useRolePermissions';
 import PayrollSourceSwitcher from '../../components/payroll/PayrollSourceSwitcher';
 import GustoPayrollRoot from '../../components/payroll/gusto/GustoPayrollRoot';
 import ComparisonRoot from '../../components/payroll/comparison/ComparisonRoot';
-import ExistingPayrollPage from './index';
+import DentrixPayrollPage from './index';
 import ProviderCompensationNew from './components/ProviderCompensationNew';
 
-/**
- * PayrollRoot — RBAC Phase 2A
- *
- * SAFETY GUARANTEE:
- * - When source === 'dentrix', renders <ExistingPayrollPage /> with ZERO changes.
- * - Gusto and Comparison tabs are completely isolated sub-trees.
- * - A failed Gusto import or render NEVER affects the Dentrix tab.
- *
- * RBAC (Phase 2A):
- * - super_admin: sees all tabs (via __all)
- * - admin: sees all tabs (DB keys all true from Phase 1C)
- * - other roles: sees only tabs their role_permissions allow
- * - No tabs allowed → Access Denied message
- * - Default tab = first allowed tab (never defaults unauthorized user into Dentrix)
- */
 export default function PayrollRoot() {
   const { userProfile } = useAuth();
   const role = userProfile?.role;
@@ -153,10 +138,10 @@ export default function PayrollRoot() {
         allowedTabs={allowedTabs}
       />
 
-      {/* ── Dentrix Ascend: renders existing page EXACTLY as-is ── */}
+      {/* The selected source must be in the current account’s allowed tabs. */}
       {effectiveSource === 'dentrix' && (
         <div className="-mx-6 -mt-5">
-          <ExistingPayrollPage />
+          <DentrixPayrollPage isSuperAdmin={isSuperAdmin} />
         </div>
       )}
 

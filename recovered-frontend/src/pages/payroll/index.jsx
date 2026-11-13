@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
 import Icon from '../../components/AppIcon';
 import Breadcrumb from '../../components/layout/Breadcrumb';
 import { fetchPayrollData, fetchPayrollOffices, fetchPayrollProviders, getPayrollScheduleForYear, getScheduleYears, getCurrentPayrollRun, formatPayrollRunLabel, formatDateShort, formatDateRange, PAYROLL_TYPE_LABELS, PAYROLL_TYPE_COLORS, exportPayrollCSV, buildMonthlyTierDataSeparate, splitPayPeriodByMonth } from '../../services/payrollService';
@@ -124,7 +122,7 @@ function TierStatusBadge({ status }) {
 }
 
 // ─── Monthly Collection Tier Review Section ───────────────────────────────────
-function MonthlyCollectionTierReview({ doctors, hygienists, activeDateRange, selectedRun, scheduleForYear, selectedOffice }) {
+function MonthlyCollectionTierReview({ isSuperAdmin, doctors, hygienists, activeDateRange, selectedRun, scheduleForYear, selectedOffice }) {
   const [open, setOpen] = useState(false);
   const [tierLoading, setTierLoading] = useState(false);
   const [tierData, setTierData] = useState(null);
@@ -174,7 +172,7 @@ function MonthlyCollectionTierReview({ doctors, hygienists, activeDateRange, sel
       const result = await buildMonthlyTierDataSeparate(
         entriesToProcess,
         selectedOffice || null,
-        enrichPayrollRows,
+        rows => enrichPayrollRows(rows, { persistMappings: isSuperAdmin }),
         classifyEnrichedRows
       );
       setTierData(result);
@@ -183,7 +181,7 @@ function MonthlyCollectionTierReview({ doctors, hygienists, activeDateRange, sel
     } finally {
       setTierLoading(false);
     }
-  }, [open, selectedRun, scheduleForYear, selectedOffice]);
+  }, [open, selectedRun, scheduleForYear, selectedOffice, isSuperAdmin]);
 
   useEffect(() => {
     loadTierData();
@@ -387,7 +385,7 @@ function MonthlyCollectionTierReview({ doctors, hygienists, activeDateRange, sel
                         <table className="min-w-full text-sm">
                           <thead>
                             <tr className="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-                              {['Payroll Date', 'Pay Period', 'Provider', 'Month Segment', 'Segment Date Range', 'Segment Collections', 'Applied Tier Rate', 'Segment Compensation', 'Status', 'Mapping', 'Report']?.map(h => (
+                              {['Payroll Date', 'Pay Period', 'Provider', 'Month Segment', 'Segment Date Range', 'Segment Collections', 'Applied Tier Rate', 'Segment Compensation', 'Status', 'Mapping', ...(isSuperAdmin ? ['Report'] : [])]?.map(h => (
                                 <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 whitespace-nowrap">{h}</th>
                               ))}
                             </tr>
@@ -407,7 +405,7 @@ function MonthlyCollectionTierReview({ doctors, hygienists, activeDateRange, sel
                                 <td className="px-4 py-3 font-mono font-semibold text-blue-700 dark:text-blue-400 whitespace-nowrap">{fmtCurrency(row?.segmentCompensation)}</td>
                                 <td className="px-4 py-3 whitespace-nowrap"><TierStatusBadge status={row?.status} /></td>
                                 <td className="px-4 py-3 whitespace-nowrap"><MappingBadge status={row?.mappingStatus} /></td>
-                                <td className="px-4 py-3 whitespace-nowrap">
+                                {isSuperAdmin && <td className="px-4 py-3 whitespace-nowrap">
                                   <button
                                     onClick={() => setSendReportRow(row)}
                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#00B5CC]/10 hover:bg-[#00B5CC]/20 text-[#00B5CC] text-xs font-semibold transition-colors border border-[#00B5CC]/20 hover:border-[#00B5CC]/40"
@@ -416,7 +414,7 @@ function MonthlyCollectionTierReview({ doctors, hygienists, activeDateRange, sel
                                     <Icon name="Send" size={11} />
                                     Send Report
                                   </button>
-                                </td>
+                                </td>}
                               </tr>
                             ))}
                           </tbody>
@@ -426,7 +424,7 @@ function MonthlyCollectionTierReview({ doctors, hygienists, activeDateRange, sel
                   </div>
                 )}
                 {/* Send Collection Report Modal */}
-                {sendReportRow && (
+                {isSuperAdmin && sendReportRow && (
                   <SendCollectionReportModal
                     row={sendReportRow}
                     onClose={() => setSendReportRow(null)}
@@ -788,36 +786,8 @@ function EmptyState({ label }) {
   );
 }
 
-// ─── Access Denied ────────────────────────────────────────────────────────────
-function AccessDenied() {
-  const navigate = useNavigate();
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-10 text-center">
-        <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
-          <Icon name="ShieldX" size={32} className="text-red-600 dark:text-red-400" />
-        </div>
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Access Restricted</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-          The Payroll module is restricted to <strong>Super Administrator</strong> accounts only.
-          Your current role does not have permission to access this page.
-        </p>
-        <button
-          onClick={() => navigate('/executive-overview')}
-          className="px-5 py-2.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity"
-        >
-          Return to Dashboard
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ─── Main Payroll Page ────────────────────────────────────────────────────────
-export default function PayrollPage() {
-  const { userProfile } = useAuth();
-  const isSuperAdmin = userProfile?.role === 'super_admin';
-
+// PayrollRoot mounts this view only for an authorized Dentrix payroll reader.
+export default function PayrollPage({ isSuperAdmin = false }) {
   // ── State ──────────────────────────────────────────────────────────────────
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [scheduleForYear, setScheduleForYear] = useState([]);
@@ -869,15 +839,13 @@ export default function PayrollPage() {
 
   // ── Load Offices + Providers ───────────────────────────────────────────────
   useEffect(() => {
-    if (!isSuperAdmin) return;
     fetchPayrollOffices()?.then(setOffices);
-    getMappingStats()?.then(setMappingStats)?.catch(() => {});
+    if (isSuperAdmin) getMappingStats()?.then(setMappingStats)?.catch(() => {});
   }, [isSuperAdmin]);
 
   useEffect(() => {
-    if (!isSuperAdmin) return;
     fetchPayrollProviders(selectedOffice || null)?.then(setProviders);
-  }, [isSuperAdmin, selectedOffice]);
+  }, [selectedOffice]);
 
   // ── Derived selected run ───────────────────────────────────────────────────
   const selectedRun = useMemo(() => {
@@ -912,9 +880,9 @@ export default function PayrollPage() {
     setSummary({});
     setDataSource(null);
     setDataSourceWarning(null);
-    if (!isSuperAdmin || !activeDateRange?.startDate || !activeDateRange?.endDate) {
+    if (!activeDateRange?.startDate || !activeDateRange?.endDate) {
       setLoading(false);
-      setError(isSuperAdmin ? 'Choose a payroll run or enter both custom dates.' : null);
+      setError('Choose a payroll run or enter both custom dates.');
       return;
     }
     setLoading(true);
@@ -968,8 +936,7 @@ export default function PayrollPage() {
       if (result?.error) setError(result?.error);
       setDataSource(result?.dataSource || null);
       setDataSourceWarning(result?.dataSourceWarning || null);
-      // Refresh mapping stats after load
-      getMappingStats()?.then(setMappingStats)?.catch(() => {});
+      if (isSuperAdmin) getMappingStats()?.then(setMappingStats)?.catch(() => {});
     } catch (err) {
       if (requestId === payrollRequestId.current) setError(err?.message);
     } finally {
@@ -992,7 +959,7 @@ export default function PayrollPage() {
       console.log('[Dentrix Payroll] Real-time change detected — refreshing payroll data');
       loadPayroll();
     },
-    isSuperAdmin // only subscribe when the user can actually see this data
+    true
   );
 
   // ── Navigation ─────────────────────────────────────────────────────────────
@@ -1035,9 +1002,6 @@ export default function PayrollPage() {
     exportPayrollCSV(doctors, hygienists, selectedRun, useCustomRange ? `${customStart}_${customEnd}` : null);
   };
 
-  // ── RBAC Gate ──────────────────────────────────────────────────────────────
-  if (!isSuperAdmin) return <AccessDenied />;
-
   // ── Derived display labels ─────────────────────────────────────────────────
   const payPeriodLabel = selectedRun
     ? formatDateRange(selectedRun?.pay_period_start, selectedRun?.pay_period_end)
@@ -1056,7 +1020,7 @@ export default function PayrollPage() {
 
   // ── Handler: Mark a placeholder row as non-provider permanently ────────────
   const handleMarkAsNonProvider = async (rawName) => {
-    if (!rawName) return;
+    if (!isSuperAdmin || !rawName) return;
     setMarkingNonProvider(rawName);
     try {
       await markAsNonProvider(rawName, 'Marked as non-provider placeholder by Super Admin');
@@ -1079,6 +1043,7 @@ export default function PayrollPage() {
 
   // ── Handler: Resolve all active placeholders at once ──────────────────────
   const handleResolveAllPlaceholders = async () => {
+    if (!isSuperAdmin) return;
     const activeRawNames = placeholders?.map(p => p?.rawName || p?.providerName)?.filter(Boolean);
     if (!activeRawNames?.length) return;
     for (const rawName of activeRawNames) {
@@ -1109,13 +1074,13 @@ export default function PayrollPage() {
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Payroll</h1>
               <p className="text-xs text-violet-600 dark:text-violet-400 font-semibold uppercase tracking-widest">
-                Super Administrator Only
+                {isSuperAdmin ? 'Super Administrator' : 'Payroll review'}
               </p>
             </div>
           </div>
         </div>
         {/* Mapping Review Button */}
-        <button
+        {isSuperAdmin && <button
           onClick={() => setShowMappingTool(true)}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border ${
             badgeCount > 0
@@ -1129,10 +1094,10 @@ export default function PayrollPage() {
               {badgeCount}
             </span>
           )}
-        </button>
+        </button>}
       </div>
       {/* Unmapped Providers Alert — only shows for REAL unresolved providers, never for placeholders */}
-      {unmappedCount > 0 && (
+      {isSuperAdmin && unmappedCount > 0 && (
         <div className="flex items-center gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl px-4 py-3 text-sm">
           <Icon name="AlertTriangle" size={16} className="text-amber-600 dark:text-amber-400 flex-shrink-0" />
           <div className="flex-1">
@@ -1152,7 +1117,7 @@ export default function PayrollPage() {
         </div>
       )}
       {/* Active Placeholder Rows Banner — only shown when there are UNRESOLVED placeholders */}
-      {placeholders?.length > 0 && (
+      {isSuperAdmin && placeholders?.length > 0 && (
         <div className="flex items-start gap-3 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-xl px-4 py-3 text-sm">
           <Icon name="Ghost" size={16} className="text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
@@ -1558,6 +1523,7 @@ export default function PayrollPage() {
       )}
       {/* Monthly Collection Tier Review */}
       <MonthlyCollectionTierReview
+        isSuperAdmin={isSuperAdmin}
         doctors={doctors}
         hygienists={hygienists}
         activeDateRange={activeDateRange}
@@ -1572,12 +1538,12 @@ export default function PayrollPage() {
           <strong className="text-gray-600 dark:text-gray-300">Data Source:</strong>{' '}
           Provider identity (Name, Office, Type) is resolved through the Staff Management mapping layer.
           Dentrix Ascend data is filtered by <strong>pay period dates</strong> (not payday). Rows with <span className="text-amber-600 dark:text-amber-400 font-semibold">Needs Mapping</span> badges
-          use raw imported names — use <strong>Provider Mapping</strong> to resolve them.
+          use raw imported names — a payroll administrator can review their mapping.
           Raw imported values are preserved for audit traceability.
         </div>
       </div>
       {/* Mapping Review Tool Modal */}
-      {showMappingTool && (
+      {isSuperAdmin && showMappingTool && (
         <MappingReviewTool onClose={() => { setShowMappingTool(false); loadPayroll(); }} />
       )}
     </div>
