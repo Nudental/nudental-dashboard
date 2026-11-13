@@ -8,7 +8,7 @@ import { supabase } from '../lib/supabase';
  */
 export const fetchVerificationRequests = async (filters = {}) => {
   let query = supabase
-    ?.from('insurance_verification_requests')
+    ?.from('insurance_work_requests')
     ?.select('*')
     ?.order('requested_at', { ascending: false });
 
@@ -140,7 +140,7 @@ export const createVerificationRequest = async (formData, userProfile) => {
   const { data, error } = await supabase
     ?.from('insurance_verification_requests')
     ?.insert(row)
-    ?.select()
+    ?.select('id,status')
     ?.single();
 
   if (error) throw error;
@@ -176,7 +176,7 @@ export const cancelVerificationRequest = async (requestId, cancelReason, userPro
     })
     ?.eq('id', requestId)
     ?.eq('status', current.status)
-    ?.select()
+    ?.select('id,status')
     ?.maybeSingle();
 
   if (error) throw error;
@@ -215,10 +215,9 @@ export const fetchOffices = async () => {
 export const fetchVerificationByRequestId = async (requestId) => {
   if (!requestId) return null;
   const { data, error } = await supabase
-    ?.from('insurance_verifications')
+    ?.from('insurance_work_breakdowns')
     ?.select('*')
     ?.eq('request_id', requestId)
-    ?.order('created_at', { ascending: false })
     ?.limit(1)
     ?.maybeSingle();
   if (error) throw error;
@@ -238,7 +237,7 @@ export const createVerification = async (requestId, formData, userProfile) => {
   const { data, error } = await supabase
     ?.from('insurance_verifications')
     ?.insert(row)
-    ?.select()
+    ?.select('id,status')
     ?.single();
 
   if (error) throw error;
@@ -285,7 +284,7 @@ export const updateVerification = async (verificationId, requestId, formData, us
     ?.from('insurance_verifications')
     ?.update({ ...row, updated_at: now })
     ?.eq('id', verificationId)
-    ?.select()
+    ?.select('id,status')
     ?.single();
 
   if (error) throw error;
@@ -330,7 +329,7 @@ export const completeVerification = async (verificationId, requestId, formData, 
     ?.from('insurance_verifications')
     ?.update({ ...row, updated_at: now })
     ?.eq('id', verificationId)
-    ?.select()
+    ?.select('id,status')
     ?.single();
 
   if (error) throw error;

@@ -68,7 +68,6 @@ export default function EmailPDFToOfficeModal({
     [request?.patient_first_name, request?.patient_last_name]?.filter(Boolean)?.join(' ') || '—';
   const officeName = verification?.office || request?.office_name || '—';
   const insuranceCompany = verification?.insurance_name || request?.insurance_company_name || '—';
-  const completedAt = fmtDateTime(verification?.completed_at);
   const patientDob = fmtDate(verification?.patient_dob || request?.patient_dob);
   const filename = buildInsurancePDFFilename(verification, request);
   const subjectPreview = `Completed Insurance Verification Form — ${patientName} — ${officeName}`;
@@ -140,7 +139,6 @@ export default function EmailPDFToOfficeModal({
                 <DetailRow label="Patient Name" value={patientName} />
                 <DetailRow label="Date of Birth" value={patientDob} />
                 <DetailRow label="Insurance Company" value={insuranceCompany} />
-                <DetailRow label="Completed At" value={completedAt} />
                 <DetailRow label="Completed By" value={verification?.completed_by_name || verification?.completed_by_email || '—'} />
                 <DetailRow label="PDF Filename" value={filename} mono />
               </tbody>

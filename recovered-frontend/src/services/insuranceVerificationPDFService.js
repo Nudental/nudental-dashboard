@@ -368,7 +368,7 @@ export function generateInsuranceVerificationPDF(verification, request, logoResu
     ['Verification ID', verification?.id?.slice(0, 8) || '—'],
     ['Request ID', request?.id?.slice(0, 8) || '—'],
     ['Completed By', verification?.completed_by_name || verification?.completed_by_email || '—'],
-    ['Completed At', fmtDateTime(verification?.completed_at)],
+    ['Requested By', request?.requested_by_name || request?.requesting_staff_name || '—'],
     ['Status', 'Completed'],
     ['Office', verification?.office || request?.office_name || '—'],
   ];
@@ -945,10 +945,6 @@ export async function emailInsurancePDFToOffice(verification, request, recipient
   }
 
   // Step 4: Build email data
-  const completedAtFormatted = verification?.completed_at
-    ? (() => { try { return format(parseISO(verification?.completed_at), 'MM/dd/yyyy h:mm a'); } catch { return verification?.completed_at; } })()
-    : '—';
-
   const patientDobFormatted = (verification?.patient_dob || request?.patient_dob)
     ? (() => {
         const dob = verification?.patient_dob || request?.patient_dob;
@@ -968,7 +964,6 @@ export async function emailInsurancePDFToOffice(verification, request, recipient
     insurance_company: insuranceCompany,
     office_name: officeName,
     completed_by: verification?.completed_by_name || verification?.completed_by_email || '—',
-    completed_at: completedAtFormatted,
     pdf_filename: filename,
   };
 

@@ -273,7 +273,7 @@ export default function RequestQueue({ onSelectRequest }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-surface-secondary border-b border-border">
-                {['Status', 'Verification', 'Patient', 'DOB', 'Appt Date', 'Insurance', 'Member ID', 'Office', 'Assigned To', 'Requested By', 'Requested At', 'Completed At', 'Completed By', 'Ascend Document Manager', 'Last Updated']?.map((h) => (
+                {['Status', 'Verification', 'Patient', 'DOB', 'Appt Date', 'Insurance', 'Member ID', 'Office', 'Assigned To', 'Requested By', 'Requested At', 'Completed By', 'Ascend Document Manager']?.map((h) => (
                   <th key={h} className="px-3 py-2.5 text-left text-xs font-semibold text-text-secondary whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -281,7 +281,7 @@ export default function RequestQueue({ onSelectRequest }) {
             <tbody>
               {loading && (
                 <tr>
-                  <td colSpan={15} className="px-4 py-10 text-center text-text-secondary text-sm">
+                  <td colSpan={13} className="px-4 py-10 text-center text-text-secondary text-sm">
                     <div className="flex items-center justify-center gap-2">
                       <Icon name="Loader2" size={16} className="animate-spin" />
                       Loading requests…
@@ -291,7 +291,7 @@ export default function RequestQueue({ onSelectRequest }) {
               )}
               {!loading && requests?.length === 0 && (
                 <tr>
-                  <td colSpan={15} className="px-4 py-12 text-center">
+                  <td colSpan={13} className="px-4 py-12 text-center">
                     <div className="flex flex-col items-center gap-2 text-text-secondary">
                       <Icon name="ShieldCheck" size={32} className="opacity-30" />
                       <p className="font-medium">No requests found</p>
@@ -321,10 +321,8 @@ export default function RequestQueue({ onSelectRequest }) {
                     <td className="px-3 py-2.5 whitespace-nowrap text-text-secondary">{fmt(row?.assigned_to_email)}</td>
                     <td className="px-3 py-2.5 whitespace-nowrap text-text-secondary">{fmt(row?.requested_by_name)}</td>
                     <td className="px-3 py-2.5 whitespace-nowrap text-text-secondary">{fmtDateTime(row?.requested_at)}</td>
-                    <td className="px-3 py-2.5 whitespace-nowrap text-text-secondary">{fmtDateTime(row?.completed_at)}</td>
                     <td className="px-3 py-2.5">{fmt(row?.completed_by_name)}</td>
                     <td className="px-3 py-2.5 whitespace-nowrap">{chartUploadDisplay(row)}</td>
-                    <td className="px-3 py-2.5 whitespace-nowrap text-text-secondary">{fmtDateTime(row?.updated_at)}</td>
                   </tr>
                 );
               })}

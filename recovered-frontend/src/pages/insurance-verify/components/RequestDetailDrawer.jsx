@@ -129,7 +129,7 @@ const CancelModal = ({ isOpen, onConfirm, onCancel, loading }) => {
 
 // ─── Request Detail Drawer ────────────────────────────────────────────────────
 
-export default function RequestDetailDrawer({ request, onClose, onRefresh, canCancel, canComplete, onStartVerification }) {
+export default function RequestDetailDrawer({ request, onClose, onRefresh, canReview, canCancel, canComplete, onStartVerification }) {
   const { userProfile } = useAuth();
   const { success, error: toastError } = useToast();
   const { canAccess, isSuperAdmin } = useRbacGuard();
@@ -194,9 +194,9 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canCa
   }, [request?.id]);
 
   useEffect(() => {
-    loadAuditLog();
+    if (canReview) loadAuditLog();
     loadVerification();
-  }, [loadAuditLog, loadVerification]);
+  }, [canReview, loadAuditLog, loadVerification]);
 
   const handleCancel = async (reason) => {
     setCancelling(true);
@@ -429,13 +429,6 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canCa
               )}
             </div>
 
-            {!verifLoading && verification?.completed_at && (
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                Completed {fmtDateTime(verification?.completed_at)}
-                {verification?.completed_by_name ? ` by ${verification?.completed_by_name}` : ''}
-              </p>
-            )}
-
             {/* PDF status indicator */}
             {!verifLoading && hasVerif && verifStatus === 'completed' && (
               <div className="text-xs text-gray-500 dark:text-gray-400">
@@ -634,7 +627,7 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canCa
               <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Assignment</h4>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <InfoRow label="Office inbox" value={request?.assigned_to_email} />
+              <InfoRow label="Assigned verifier" value={request?.assigned_to_email || (request?.completed_at || verification?.status === 'completed' ? '—' : 'Awaiting assignment')} />
               <InfoRow label="Assigned At" value={fmtDateTime(request?.assigned_at)} />
               <InfoRow label="Requested By" value={request?.requested_by_name} />
               <InfoRow label="Requested At" value={fmtDateTime(request?.requested_at)} />
@@ -649,16 +642,13 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canCa
             </div>
             <div className="grid grid-cols-2 gap-3">
               <InfoRow label="Status" value={statusLabel} />
-              <InfoRow label="Started At" value={fmtDateTime(request?.started_at)} />
               <InfoRow label="Completed By" value={request?.completed_by_name} />
-              <InfoRow label="Completed At" value={fmtDateTime(request?.completed_at)} />
               <InfoRow label="Cancelled At" value={fmtDateTime(request?.cancelled_at)} />
               {request?.cancel_reason && (
                 <div className="col-span-2">
                   <InfoRow label="Cancel Reason" value={request?.cancel_reason} />
                 </div>
               )}
-              <InfoRow label="Last Updated" value={fmtDateTime(request?.updated_at)} />
             </div>
           </div>
 
@@ -693,7 +683,7 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canCa
           )}
 
           {/* Audit Trail */}
-          <div className="space-y-3">
+          {canReview && <div className="space-y-3">
             <div className="flex items-center gap-2 pb-1 border-b border-gray-200 dark:border-gray-700">
               <Icon name="History" size={15} className="text-primary" />
               <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Audit Trail</h4>
@@ -723,7 +713,7 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canCa
                 </div>
               </div>
             ))}
-          </div>
+          </div>}
         </div>
 
         {/* Footer Actions */}

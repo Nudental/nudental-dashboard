@@ -140,7 +140,7 @@
       {
         "name": "Insurance Verify",
         "route": "/insurance-verify",
-        "text": "Choose New Request and the requesting office. The office inbox receives a dashboard link at submission and completion. The verifier opens Request Queue, saves the breakdown, and selects Mark Completed. Completion automatically queues the PDF for the patient’s Ascend Document Manager. Check the filing status in Request Queue. Needs review means an authorized user must confirm the chart. Each request shows who submitted and completed it and when, in Eastern time. Designated management reviewers can open Daily Counts for seven days of completions by office."
+        "text": "Choose New Request and the requesting office. Enter your full name when submitting from an office login. The designated verifier receives the new request and the office receives a link at completion. The verifier opens Request Queue, saves the breakdown, and selects Mark Completed. Completion automatically queues the PDF for the patient’s Ascend Document Manager. Check the filing status in Request Queue. Needs review means an authorized user must confirm the chart. The queue shows the submitting staff member and office."
       },
       {
         "name": "EOD Report",

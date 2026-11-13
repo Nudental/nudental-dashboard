@@ -2,7 +2,8 @@ import React, { useRef, useState, useCallback } from 'react';
 import Icon from '../../components/AppIcon';
 import { useRbacGuard, AccessDenied } from '../../hooks/useRbacGuard';
 import useRolePermissions from '../../hooks/useRolePermissions';
-import DailyCounts from './components/DailyCounts';
+import VerifierActivity from './components/VerifierActivity';
+import { supabase } from '../../lib/supabase';
 import RequestQueue from './components/RequestQueue';
 import NewVerificationRequestForm from './components/NewVerificationRequestForm';
 import RequestDetailDrawer from './components/RequestDetailDrawer';
@@ -15,7 +16,7 @@ const LEGACY_IFRAME_URL = 'https://insurance-verification-request-mxb2g01.public
 const TABS = [
   { id: 'queue',   label: 'Request Queue',  icon: 'List' },
   { id: 'new',     label: 'New Request',    icon: 'PlusCircle' },
-  { id: 'counts', label: 'Daily Counts', icon: 'BarChart3' },
+  { id: 'counts', label: 'Verifier Activity', icon: 'BarChart3' },
   { id: 'legacy',  label: 'Legacy Form',    icon: 'ExternalLink' },
 ];
 
@@ -40,6 +41,20 @@ export default function InsuranceVerify() {
   const canSubmit   = hasPermission('workflow.insurance.submit');
   const canCancel   = hasPermission('workflow.insurance.cancel');
   const canComplete = hasPermission('workflow.insurance.complete');
+
+  const openRequest = useCallback(async request => {
+    if (canComplete) {
+      // This operation is a no-op for supervisors and records only the assigned verifier's first open.
+      const { error } = await supabase.rpc('insurance_open_request', { target: request.id });
+      if (error) {
+        setOpenError('Could not open this request. Please try again.');
+        return;
+      }
+    }
+    setOpenError('');
+    setSelectedRequest(request);
+  }, [canComplete]);
+  const [openError, setOpenError] = useState('');
 
   const handleNewRequestSuccess = useCallback(() => {
     setQueueKey((k) => k + 1);
@@ -133,12 +148,13 @@ export default function InsuranceVerify() {
 
         {/* Tab Content */}
         <div>
-          {visibleTab === 'counts' && canReview && <DailyCounts />}
+          {visibleTab === 'counts' && canReview && <VerifierActivity />}
+          {openError && <p role="alert">{openError}</p>}
           {/* Request Queue */}
           {visibleTab === 'queue' && (
             <RequestQueue
               key={queueKey}
-              onSelectRequest={setSelectedRequest}
+              onSelectRequest={openRequest}
             />
           )}
 
@@ -184,6 +200,7 @@ export default function InsuranceVerify() {
           request={selectedRequest}
           onClose={() => setSelectedRequest(null)}
           onRefresh={handleQueueRefresh}
+          canReview={canReview}
           canCancel={canCancel}
           canComplete={canComplete}
           onStartVerification={handleStartVerification}

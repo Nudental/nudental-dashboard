@@ -1,4 +1,4 @@
-"""Deliver office-only dashboard links for committed insurance workflow events."""
+"""Deliver each new request to its verifier and completion notices to the requesting office."""
 import json
 import re
 import subprocess
@@ -20,16 +20,24 @@ def gmail(*args):
     return json.loads(result.stdout)
 
 
-def deliver(row, canonical_email, save, mail=gmail):
+def deliver(row, destination, save, mail=gmail):
     recipient = row['recipient']
-    if recipient != canonical_email or not OFFICE_MAIL.fullmatch(recipient):
+    kind = row['kind']
+    if not destination or not recipient or recipient != destination['email']:
+        raise ValueError('Assigned recipient mismatch')
+    if kind == 'requested' and (OFFICE_MAIL.fullmatch(recipient) or not row.get('assignee_id')):
+        raise ValueError('New requests require an individual verifier')
+    if kind == 'completed' and not OFFICE_MAIL.fullmatch(recipient):
         raise ValueError('Office directory mismatch')
     marker = 'NUV-' + row['id']
-    kind = row['kind']
     wording = {'requested': 'An insurance breakdown was requested.',
                'completed': 'An insurance breakdown was completed.'}[kind]
     subject = 'NU Dental | Insurance breakdown ' + kind
     body = f'{wording}\n\nOpen Insurance Verify and select Request Queue to review it.\n{DASHBOARD}\n\nNU Dental Dashboard\nOffice notice {marker}'
+    if kind == 'requested':
+        body = (f"{destination['submitted_by']} submitted an insurance breakdown request for {destination['office_name']}.\n\n"
+                f"Sign in to see the submitted form in Insurance Verify. Select Assigned to me in Request Queue.\n{DASHBOARD}\n\n"
+                f"NU Dental Dashboard\nRequest notice {marker}")
     draft = row['draft_id']
     if draft:
         # A prior send could have succeeded before its response was recorded.
@@ -65,12 +73,11 @@ def run():
 
     table = 'insurance_office_notices'
     now = datetime.now(timezone.utc)
-    due = read(table, select='id,kind,office_id,recipient,draft_id,attempts', sent_at='is.null',
+    due = read(table, select='id,kind,assignee_id,recipient,draft_id,attempts', sent_at='is.null', recipient='not.is.null',
                retry_at='lte.' + now.isoformat(), order='created_at.asc', limit='25')
     if not due:
         print('Office notices due: 0')
         return 0
-    offices = {o['id']: str(o['email']).lower().strip() for o in read('offices', select='id,email', is_active='eq.true')}
     errors = 0
     for row in due:
         def save(values):
@@ -81,7 +88,14 @@ def run():
             if len(resp.json()) != 1:
                 raise RuntimeError('Notice changed during delivery')
         try:
-            deliver(row, offices.get(row['office_id']), save)
+            response = session.post(base + '/rest/v1/rpc/insurance_notice_destination', json={'notice':row['id']}, timeout=20)
+            response.raise_for_status()
+            destinations = response.json()
+            if destinations:
+                deliver(row, destinations[0], save)
+            else:
+                # A closed or reassigned request must never be mailed to its previous recipient.
+                save({'retry_at': (now + timedelta(days=1)).isoformat()})
         except Exception as error:
             errors += 1
             attempts = row['attempts'] + 1

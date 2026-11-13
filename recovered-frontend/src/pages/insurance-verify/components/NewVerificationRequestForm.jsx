@@ -32,6 +32,7 @@ export default function NewVerificationRequestForm({ onSuccess }) {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
+  const sharedLogin = offices.some(o => o.email?.toLowerCase() === userProfile?.email?.toLowerCase());
   const [form, setForm] = useState({
     officeId: '',
     officeName: '',
@@ -59,12 +60,12 @@ export default function NewVerificationRequestForm({ onSuccess }) {
       setOffices(officeData);
       if (officeData.length === 1) {
         const [office] = officeData;
-        setForm(prev => ({ ...prev, officeId: office.id, officeName: office.name, officeEmail: office.email }));
+        setForm(prev => ({ ...prev, requestingStaffName: office.email?.toLowerCase() === userProfile?.email?.toLowerCase() ? '' : prev.requestingStaffName, officeId: office.id, officeName: office.name, officeEmail: office.email }));
       }
     } catch (err) {
       setErrors(prev => ({ ...prev, officeId: 'Could not load your offices. Reopen New Request to retry.' }));
     }
-  }, []);
+  }, [userProfile?.email]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -124,7 +125,7 @@ export default function NewVerificationRequestForm({ onSuccess }) {
         },
       });
 
-      success('Request Submitted', 'Your request is in the queue. An office notice is scheduled.');
+      success('Request Submitted', 'Your request is in the verification queue.');
       setSubmitted(true);
       onSuccess?.();
     } catch (err) {
@@ -149,7 +150,7 @@ export default function NewVerificationRequestForm({ onSuccess }) {
       memberId: '',
       groupNumber: '',
       insurancePhone: '',
-      requestingStaffName: userProfile?.full_name || '',
+      requestingStaffName: sharedLogin ? '' : userProfile?.full_name || '',
       requestingStaffRole: userProfile?.role || '',
       additionalNotes: '',
     });
@@ -167,7 +168,7 @@ export default function NewVerificationRequestForm({ onSuccess }) {
           <h3 className="text-lg font-semibold text-text-primary mb-1">Request Submitted</h3>
           <p className="text-sm text-text-secondary max-w-sm">
             The verification request has been saved to Nu Dashboard with status <strong>Requested</strong>.
-            Your office inbox will receive a notice.
+            Your office will be notified when the breakdown is complete.
           </p>
         </div>
         <div className="flex gap-3 mt-2">
@@ -188,7 +189,7 @@ export default function NewVerificationRequestForm({ onSuccess }) {
       <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-xs">
         <Icon name="Info" size={15} className="mt-0.5 flex-shrink-0" />
         <span>
-          Submit the request to the verification queue. The requesting office receives a dashboard link when the request is received and when the breakdown is completed.
+          Submit the request to the verification queue. The designated verifier receives the request. The office receives a link when the breakdown is complete.
         </span>
       </div>
       {/* Office */}
@@ -206,7 +207,7 @@ export default function NewVerificationRequestForm({ onSuccess }) {
           </select>
           {errors?.officeId && <p className="text-xs text-red-500">{errors?.officeId}</p>}
         </Field>
-        <Field label="Office notification email" hint="From the office directory">
+        <Field label="Office completion email" hint="From the office directory">
           <input
             type="email"
             value={form?.officeEmail}
@@ -338,9 +339,12 @@ export default function NewVerificationRequestForm({ onSuccess }) {
           Requesting staff
         </h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Field label="Requesting Staff Name">
+          <Field label="Requesting Staff Name" required>
             <input
               type="text"
+              required
+              readOnly={!sharedLogin}
+              placeholder="Your full name"
               value={form?.requestingStaffName}
               onChange={(e) => set('requestingStaffName', e?.target?.value)}
               className={inputCls}
