@@ -54,6 +54,8 @@ const useRolePermissions = () => {
         map[row?.permission] = row?.enabled;
       });
       if (role === 'staff') {
+        const purchasing = await supabase.from('purchasing_record_admins').select('user_id').eq('user_id', userProfile.id).maybeSingle();
+        if (purchasing.data) map['purchasing.records.manage'] = true;
         const grants = await supabase.from('staff_workflow_grants').select('permission').eq('user_id', userProfile.id);
         if (!grants.error) grants.data.forEach(({permission}) => {map[permission] = true;});
       }

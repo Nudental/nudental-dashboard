@@ -336,6 +336,15 @@ export const NAV_GROUPS = [
         description: 'Monthly P&L reports and financial exports',
       },
       {
+        id: 'purchasing-records',
+        label: 'Invoices & Inventory',
+        shortLabel: 'Purchasing',
+        icon: 'Receipt',
+        route: '/purchasing-records',
+        permission: 'purchasing.records.manage',
+        description: 'Vendor invoices, purchase history and inventory records',
+      },
+      {
         id: 'assistant-inventory-scans',
         label: 'My Inventory Scans',
         shortLabel: 'My Scans',
