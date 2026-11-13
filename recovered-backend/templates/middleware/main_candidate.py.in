@@ -104,6 +104,7 @@ _PB_CACHE_TTL = 900  # 15 minutes
 # Payroll report access — restricted to these emails only
 # Add Kathy's email here once confirmed
 PAYROLL_ALLOWED_EMAILS: set = {
+    'ny@thenudental.com',
     __NUDASHBOARD_CONFIG_LITERAL_011__,       # Dr. G
     __NUDASHBOARD_CONFIG_LITERAL_012__,       # Yabezy
     __NUDASHBOARD_CONFIG_LITERAL_013__,       # Yabezy (case variant in DB)

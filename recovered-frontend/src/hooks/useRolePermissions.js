@@ -42,6 +42,10 @@ const useRolePermissions = () => {
         const grants = await supabase.from('staff_workflow_grants').select('permission').eq('user_id', userProfile.id);
         if (!grants.error) grants.data.forEach(({permission}) => {map[permission] = true;});
       }
+      if (role === 'regional_manager' || role === 'staff') {
+        const payroll = await supabase.from('named_payroll_permissions').select('permission').eq('user_id', userProfile.id);
+        if (!payroll.error) payroll.data.forEach(({permission}) => {map[permission] = true;});
+      }
       if (sequence !== request.current) return;
       setPermissionsMap(map);
     } catch (err) {

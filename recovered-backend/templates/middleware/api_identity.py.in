@@ -86,6 +86,10 @@ class UserResolver:
                 'user_id': 'eq.' + user_id, 'select': 'office_id,all_offices'})
             permissions = self._get(session, '/rest/v1/role_permissions', params={
                 'role': 'eq.' + profile['role'], 'select': 'permission,enabled'})
+            named_payroll = []
+            if user_id in {'2954e9e7-9b8a-4ed3-a624-71f91c36d2c3', '300385cb-de78-4bb5-9670-d8245f87aecf'}:
+                named_payroll = self._get(session, '/rest/v1/named_payroll_permissions', params={
+                    'user_id': 'eq.' + user_id, 'select': 'permission'})
         if not isinstance(assignments, list) or not isinstance(permissions, list):
             raise AccessFailure(503)
         offices = {primary} if primary else set()
@@ -110,6 +114,11 @@ class UserResolver:
                 enabled.add(key)
             elif row.get('enabled') is False:
                 disabled.add(key)
+        for row in named_payroll:
+            key = row.get('permission', '')
+            if key.startswith('finance.payroll.'):
+                enabled.add(key)
+                disabled.discard(key)
         email = user.get('email')
         display_name = profile.get('full_name') or profile.get('username') or email or user_id
         return UserIdentity(user_id, profile['role'], primary, frozenset(offices), bool(all_offices), frozenset(enabled), email if isinstance(email, str) else '', display_name if isinstance(display_name,str) else user_id, frozenset(disabled))
