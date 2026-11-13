@@ -17,7 +17,7 @@ function find(n,p){if(!n||typeof n!=='object')return null;if(p(n))return n;for(c
 const effect=find(ast,n=>n.type==='CallExpression'&&n.callee?.name==='useEffect').arguments[0];
 function harness(){
  const state={},pending=[],timers=[];
- const env={generation:{current:0},AbortController,DOMException,crypto:{randomUUID:()=> 'synthetic-request-identity'},period,window,key:'sep18:revision0',periodsLoading:false,ledgerSelectionMatches:api.ledgerSelectionMatches,
+ const env={generation:{current:0},manualKey:{current:null},previousRevision:{current:0},revision:0,result:null,resultKey:null,AbortController,DOMException,crypto:{randomUUID:()=> 'synthetic-request-identity'},period,window,key:'sep18:revision0',periodsLoading:false,ledgerSelectionMatches:api.ledgerSelectionMatches,
   readLedgerReport:(o,i)=>new Promise((resolve,reject)=>pending.push({options:o,init:i,resolve,reject})),setTimeout:(fn,delay)=>{const t={fn,delay,cancelled:false};timers.push(t);return t;},clearTimeout:t=>{if(t)t.cancelled=true;}};
  for(const name of ['Result','ResultKey','Error','Preview','Overrides','ActionBusy','Busy','PolicyView','History'])env['set'+name]=value=>state[name]=value;
  const run=vm.runInNewContext('('+component.slice(effect.start,effect.end)+')',env);
@@ -25,6 +25,15 @@ function harness(){
 }
 const settle=()=>new Promise(r=>setImmediate(r));
 const ready=()=>({status:200,json:async()=>result()});
+test('opening a period requests the saved report and makes no additional Ascend request on a hit',async()=>{
+ const h=harness();h.run();assert.equal(h.pending[0].options.format,'ledger-open');
+ h.pending[0].resolve(ready());await settle();assert.equal(h.pending.length,1);assert.equal(h.state.Result.job_id,'qa-snapshot');
+});
+test('manual refresh retains the same-period numbers on failure',async()=>{
+ const h=harness();h.env.result=h.state.Result=result();h.env.resultKey=h.env.key;h.env.manualKey.current=h.env.key;
+ h.run();assert.equal(h.pending[0].options.format,'ledger-json');assert.equal(h.state.Result.job_id,'qa-snapshot');
+ h.pending[0].reject(new Error('Ascend unavailable'));await settle();assert.equal(h.state.Result.job_id,'qa-snapshot');assert.equal(h.state.Busy,false);
+});
 test('canonical calculation loads the selected result and excludes previous screen rows while reading',async()=>{const h=harness();h.state.Result={old:true};h.run();assert.equal(h.state.Result,null);assert.equal(h.state.Busy,true);h.pending[0].resolve(ready());await settle();assert.equal(h.state.Result.job_id,'qa-snapshot');assert.equal(h.state.Busy,false);});
 test('polling reuses the bounded read identity instead of launching duplicate jobs',async()=>{const h=harness();h.run();h.pending[0].resolve({status:202,json:async()=>({job_id:'qa-job'})});await settle();h.fire(2000);await settle();assert.equal(h.pending[1].options.snapshot,'qa-job');h.pending[1].resolve(ready());await settle();assert.equal(h.state.Result.job_id,'qa-snapshot');});
 test('period switching ignores the older response',async()=>{const h=harness(),cleanup=h.run();cleanup();h.env.key='sep18:revision1';h.run();h.pending[1].resolve(ready());await settle();h.pending[0].resolve({status:200,json:async()=>({...result(),job_id:'old'})});await settle();assert.equal(h.state.Result.job_id,'qa-snapshot');assert.equal(h.state.ResultKey,'sep18:revision1');assert.equal(h.pending[0].init.signal.aborted,true);});

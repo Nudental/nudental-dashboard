@@ -21,10 +21,18 @@ def respond(actor,read_runs,start,end,run_id,request_id,job_id,provider_id,forma
         if format=='ledger-history':
             if (run_id or '').startswith('compensation-'):validate_period(run_id,start,end)
             return JSONResponse(JOBS.store.history(actor.id,run_id,start,end),headers=headers)
-        if format not in ('ledger-json','ledger-html','ledger-pdf','ledger-csv','ledger-payload','ledger-audit-html','ledger-recipient'):
+        if format not in ('ledger-open','ledger-json','ledger-html','ledger-pdf','ledger-csv','ledger-payload','ledger-audit-html','ledger-recipient'):
             raise ValueError('Unsupported compensation format')
-        job_id=job_id or request_calculation(actor,read_runs,start,end,run_id,request_id)
-        result=JOBS.result(job_id,actor.id)
+        result=None
+        if job_id and job_id.startswith('saved-'):
+            result=JOBS.store.saved_report(run_id,start,end,job_id[6:])
+            if result is None:raise KeyError('Saved calculation unavailable for selected period')
+        elif format=='ledger-open' and not job_id:
+            result=JOBS.store.saved_report(run_id,start,end)
+            if result is not None:job_id=result['job_id']
+        if result is None:
+            job_id=job_id or request_calculation(actor,read_runs,start,end,run_id,request_id)
+            result=JOBS.result(job_id,actor.id)
         if result is None:return JSONResponse({'status':'reading','job_id':job_id},status_code=202,headers=headers)
         matches=snapshot_matches_period(result,run_id,start,end) if (run_id or '').startswith('compensation-') else result['applied_window']==[start,end] and result['gusto']['run_id']==run_id
         if not matches:
@@ -37,9 +45,11 @@ def respond(actor,read_runs,start,end,run_id,request_id,job_id,provider_id,forma
         result['automated_checks']=check_result(result)
         if provider_id:
             result=provider_result(result,provider_id)
-        result['job_id']=job_id
+        result['job_id']=result.get('job_id') or job_id
+        if format in ('ledger-open','ledger-json') and result.get('saved_at') and not result['job_id'].startswith('saved-'):
+            result['job_id']='saved-'+job_id
         result['requested_period_id']=run_id
-        if format=='ledger-json':return JSONResponse(result,headers=headers)
+        if format in ('ledger-json','ledger-open'):return JSONResponse(result,headers=headers)
         if format=='ledger-payload':return JSONResponse(prepared_payload(result),headers=headers)
         if format=='ledger-recipient':
             if not provider_id:raise ValueError('Select one provider for the report recipient')

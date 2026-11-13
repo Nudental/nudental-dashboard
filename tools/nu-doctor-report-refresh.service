@@ -1,0 +1,10 @@
+[Unit]
+Description=Refresh saved NU Dental doctor reports due for a three-day update
+[Service]
+Type=oneshot
+WorkingDirectory=%h/.openclaw/workspace/ascend_api/middleware
+ExecStart=%h/.openclaw/workspace/ascend_api/middleware/.venv/bin/python %h/.local/lib/nu-doctor-report-refresh/refresh_doctor_reports.py
+TimeoutStartSec=2h
+Nice=8
+UMask=0077
+

@@ -1,0 +1,8 @@
+[Unit]
+Description=Check for saved doctor reports older than 72 hours
+[Timer]
+OnCalendar=*-*-* *:00/15:00
+Persistent=true
+[Install]
+WantedBy=timers.target
+

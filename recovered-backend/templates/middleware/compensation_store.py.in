@@ -1,7 +1,7 @@
 """Private immutable derived snapshots, separate from source/paid-payroll data."""
 from pathlib import Path
 from datetime import datetime,timezone
-from contextlib import closing
+from contextlib import closing, contextmanager
 import hashlib,json,os,re,sqlite3,stat
 ROOT=Path.home()/'.local/share/nudashboard/compensation-snapshots'
 
@@ -22,6 +22,7 @@ class SnapshotStore:
           id TEXT PRIMARY KEY,actor TEXT NOT NULL,run_id TEXT NOT NULL,start_date TEXT NOT NULL,end_date TEXT NOT NULL,
           created_at TEXT NOT NULL,result TEXT NOT NULL,sha256 TEXT NOT NULL);
           CREATE INDEX IF NOT EXISTS calculation_history ON calculations(actor,run_id,created_at DESC);
+          CREATE INDEX IF NOT EXISTS calculation_period_history ON calculations(start_date,end_date,created_at DESC);
           CREATE TRIGGER IF NOT EXISTS immutable_calculation_update BEFORE UPDATE ON calculations BEGIN SELECT RAISE(ABORT,'Immutable calculation');END;
           CREATE TRIGGER IF NOT EXISTS immutable_calculation_delete BEFORE DELETE ON calculations BEGIN SELECT RAISE(ABORT,'Immutable calculation');END;''')
         return db
@@ -30,12 +31,67 @@ class SnapshotStore:
         payload=json.dumps(result,sort_keys=True,separators=(',',':'));stamp=datetime.now(timezone.utc).isoformat()
         with closing(self._connect()) as db,db:
             db.execute('INSERT INTO calculations VALUES(?,?,?,?,?,?,?,?)',(key,actor,result['gusto']['run_id'],*result['applied_window'],stamp,payload,hashlib.sha256(payload.encode()).hexdigest()))
+        return stamp
     def get(self,key,actor):
         if not re.fullmatch('[0-9a-f]{32}',key):raise KeyError('Invalid snapshot')
         with closing(self._connect()) as db:
             row=db.execute('SELECT result,sha256 FROM calculations WHERE id=? AND actor=?',(key,actor)).fetchone()
         if not row or hashlib.sha256(row[0].encode()).hexdigest()!=row[1]:raise KeyError('Snapshot unavailable or inaccessible')
         return json.loads(row[0])
+
+    def saved_report(self, run_id, start, end, key=None):
+        """Read a completed base calculation only through the all-office payroll report gate."""
+        from compensation_calendar import validate_period, snapshot_matches_period
+        from compensation_checks import check_result
+        calendar = run_id.startswith('compensation-')
+        query = 'SELECT id,created_at,result,sha256 FROM calculations WHERE start_date=? AND end_date=?'
+        params = [start, end]
+        if calendar:
+            expected = validate_period(run_id, start, end)
+            query += " AND json_extract(result,'$.gusto.payday')=?"
+            params.append(expected['payday'])
+        else:
+            query += ' AND run_id=?'
+            params.append(run_id)
+        if key is not None:
+            if not re.fullmatch('[0-9a-f]{32}', key):
+                raise KeyError('Invalid saved report')
+            query += ' AND id=?'
+            params.append(key)
+        query += ' ORDER BY created_at DESC, rowid DESC'
+        with closing(self._connect()) as db:
+            for snapshot_id, saved_at, raw, digest in db.execute(query, params):
+                if hashlib.sha256(raw.encode()).hexdigest() != digest:
+                    raise ValueError('Saved report integrity check failed. Refresh from Ascend.')
+                result = json.loads(raw)
+                if calendar and not snapshot_matches_period(result, run_id, start, end):
+                    continue
+                if result.get('applied_window') != [start, end] or not result.get('source_snapshot', {}).get('complete'):
+                    continue
+                if any(doctor.get('override') for doctor in result['doctors']):
+                    continue
+                check_result(result)
+                result['saved_at'] = saved_at
+                result['job_id'] = 'saved-' + snapshot_id
+                return result
+        return None
+
+    def saved_periods(self):
+        with closing(self._connect()) as db:
+            return db.execute("""SELECT json_extract(result,'$.gusto.payday'),start_date,end_date
+                FROM calculations WHERE json_extract(result,'$.source_snapshot.complete')=1
+                GROUP BY 1,2,3 ORDER BY 1 DESC""").fetchall()
+
+    @contextmanager
+    def refresh_lock(self, start, end):
+        # The middleware and the scheduled worker share this private Unix directory.
+        import fcntl
+        with closing(self._connect()):
+            pass
+        name = hashlib.sha256((start + '/' + end).encode()).hexdigest()
+        with open(self.root / ('refresh-' + name + '.lock'), 'a') as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX)
+            yield
     def history(self,actor,run_id,start,end):
         with closing(self._connect()) as db:
             if (run_id or '').startswith('compensation-'):

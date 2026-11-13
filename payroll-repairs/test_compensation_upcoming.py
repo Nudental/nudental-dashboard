@@ -13,8 +13,26 @@ class Clock(datetime):
     def now(cls,tz=None):return datetime(2026,9,28,12,tzinfo=timezone.utc)
 
 class CalendarTests(unittest.TestCase):
-    def result(self):
+    def test_shared_saved_period_reads_legacy_runs_and_keeps_private_history(self):
+        with tempfile.TemporaryDirectory() as folder:
+            st=store.SnapshotStore(Path(folder)/'snapshots')
+            report=self.result('legacy-imported-run')
+            st.put('a'*32,'original-payroll-reviewer',report)
+            period='compensation-2026-10-02'
+            saved=st.saved_report(period,'2026-09-13','2026-09-26')
+            self.assertEqual(saved['job_id'],'saved-'+'a'*32)
+            self.assertEqual(saved['doctors'],report['doctors'])
+            self.assertTrue(saved['saved_at'])
+            self.assertIsNone(st.saved_report('compensation-2026-10-16','2026-09-27','2026-10-10','a'*32))
+            self.assertEqual(st.history('another-user',period,'2026-09-13','2026-09-26')['calculations'],[])
+            self.assertEqual(st.saved_periods(),[('2026-10-02','2026-09-13','2026-09-26')])
+            newer=self.result()
+            st.put('b'*32,'second-reviewer',newer)
+            self.assertEqual(st.saved_report(period,*report['applied_window'])['job_id'],'saved-'+'b'*32)
+            self.assertEqual(st.saved_report(period,*report['applied_window'],'a'*32)['doctors'],report['doctors'])
+    def result(self, run_id=None):
         gusto=calendar.validate_period('compensation-2026-10-02','2026-09-13','2026-09-26')
+        if run_id: gusto['run_id']=run_id
         source={'records':{},'charges':{},'categories':{},'snapshot':{'complete':True,'applied_scope':['2026-09-01','2026-09-26'],'sha256':'synthetic','read_as_of':'2026-09-28T12:00:00Z','retrieved_at':'2026-09-28T12:00:01Z'}}
         return runtime.calculate_snapshot(source,'2026-09-13','2026-09-26',gusto)
     def test_calendar_is_complete_and_independent_of_imported_runs(self):

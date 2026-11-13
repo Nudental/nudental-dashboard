@@ -19,22 +19,29 @@ export default function DoctorLedgerCompensation({ period, window, revision, per
   const [history, setHistory] = useState(null);
   const [retry, setRetry] = useState(0);
   const generation = useRef(0);
-  const key = `${period?.id}:${window?.dentrixStart}:${window?.dentrixEnd}:${revision}:${periodsLoading}:${retry}`;
+  const manualKey = useRef(null);
+  const previousRevision = useRef(revision);
+  const key = `${period?.id}:${window?.dentrixStart}:${window?.dentrixEnd}:${period?.payday}`;
   const [resultKey, setResultKey] = useState(null);
-  const ready = resultKey === key && ledgerSelectionMatches(result, period, window) && !periodsLoading;
+  const ready = resultKey === key && ledgerSelectionMatches(result, period, window);
 
   useEffect(() => {
     const current = ++generation.current;
     const controller = new AbortController();
     let timer;
-    setResult(null); setResultKey(null); setError(null); setPreview(null); setOverrides({}); setActionBusy(false); setPolicyView(null); setHistory(null);
+    const samePeriod = resultKey === key && ledgerSelectionMatches(result, period, window);
+    if (!samePeriod) { setResult(null); setResultKey(null); }
+    setError(null); setPreview(null); if (!samePeriod) setOverrides({}); setActionBusy(false); setPolicyView(null); setHistory(null);
     if (!period || periodsLoading) { setBusy(false); return () => controller.abort(); }
+    const fromAscend = manualKey.current === key || (samePeriod && previousRevision.current !== revision);
+    previousRevision.current = revision;
+    manualKey.current = null;
     setBusy(true);
     // A polling count cannot bound a stalled session, fetch or response body.
     // Settle the UI independently, then ignore any response arriving after abort.
     const deadline = setTimeout(() => {
       if (current !== generation.current || controller.signal.aborted) return;
-      setError('The Ascend collection read did not finish within six minutes. No complete estimate is available. Retry the selected period.');
+      setError('The Ascend collection read did not finish within six minutes. Retry when ready.');
       setBusy(false);
       controller.abort();
     }, 360000);
@@ -42,12 +49,12 @@ export default function DoctorLedgerCompensation({ period, window, revision, per
     const load = async () => {
       let snapshot;
       for (let attempt = 0; attempt < 180; attempt += 1) {
-        const response = await readLedgerReport({ period, window, requestId, snapshot }, { signal: controller.signal });
+        const response = await readLedgerReport({ period, window, requestId, snapshot, format: fromAscend ? 'ledger-json' : 'ledger-open' }, { signal: controller.signal });
         const data = await response.json();
         if (current !== generation.current || controller.signal.aborted) return;
         if (response.status !== 202) {
           if (!ledgerSelectionMatches(data, period, window) || !Array.isArray(data.doctors) || !data.source_snapshot?.complete) throw new Error('The returned calculation does not cover the selected payroll period. Refresh to retry.');
-          setResult(data); setResultKey(key); setBusy(false); return;
+          setResult(data); setResultKey(key); setOverrides({}); setBusy(false); return;
         }
         snapshot = data.job_id;
         await new Promise((resolve, reject) => {
@@ -61,7 +68,12 @@ export default function DoctorLedgerCompensation({ period, window, revision, per
     load().catch(e => { if (current === generation.current && !controller.signal.aborted) { setError(e.message); setBusy(false); } })
       .finally(() => clearTimeout(deadline));
     return () => { generation.current += 1; controller.abort(); clearTimeout(timer); clearTimeout(deadline); };
-  }, [key]);
+  }, [key, retry, revision, periodsLoading]);
+
+  const refreshDoctors = () => {
+    manualKey.current = key;
+    setRetry(value => value + 1);
+  };
 
   const changeRate = async (id, value) => {
     const current = generation.current;
@@ -123,10 +135,15 @@ export default function DoctorLedgerCompensation({ period, window, revision, per
   const doctors = ready ? visibleLedgerDoctors(result, officeId) : [];
   const openReport = (doctor, allowSend) => setPreview({ doctor, allowSend });
   return <section aria-label="Doctor Ledger compensation" className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 overflow-hidden">
-    <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-3 border-b dark:border-gray-700"><h3 className="text-base font-bold">Doctors</h3><div className="flex items-center gap-3"><span className="text-sm text-gray-500">{doctors.length} providers</span>{ready && <><button className={button} disabled={actionBusy} onClick={() => report('ledger-csv')}>Export CSV</button><button className={button} disabled={actionBusy} onClick={() => report('ledger-pdf')}>Download PDF</button></>}</div></div>
-    {busy && <p role="status" className="p-5">Reading complete Ascend collection history and monthly controls for payday {period.payday}… This can take several minutes. Estimates remain unavailable until the full read passes validation.</p>}
+    <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-3 border-b dark:border-gray-700"><h3 className="text-base font-bold">Doctors</h3><div className="flex items-center gap-3">{ready && <span className="text-sm text-gray-500">{doctors.length} providers</span>}{period && <button className={button} disabled={busy || actionBusy || periodsLoading} onClick={refreshDoctors}>Refresh from Ascend</button>}{ready && <><button className={button} disabled={actionBusy || busy} onClick={() => report('ledger-csv')}>Export CSV</button><button className={button} disabled={actionBusy} onClick={() => report('ledger-pdf')}>Download PDF</button></>}</div></div>
+    {ready && <div className="mx-5 my-3 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950 dark:bg-amber-950 dark:text-amber-100">
+      <strong>Saved report</strong> · Ascend data as of {new Date(result.source_snapshot.read_as_of || result.source_snapshot.retrieved_at).toLocaleString('en-US', {timeZone:'America/New_York',timeZoneName:'short'})}.
+      <p>Updates automatically every 3 days. New collections or adjustments may have posted since this report. Use <strong>Refresh from Ascend</strong> for the latest figures before payroll review.</p>
+      {result.saved_at && Date.now() - Date.parse(result.saved_at) >= 72 * 60 * 60 * 1000 && <p><strong>Refresh due.</strong> This saved report is at least 3 days old.</p>}
+    </div>}
+    {busy && <p role="status" className="p-5">{ready ? 'Refreshing the doctor calculation. The saved figures stay visible until the new report is validated.' : 'Opening the doctor report. The first calculation for a pay period can take several minutes.'}</p>}
     {error && <p role="alert" className="m-4 rounded bg-rose-50 text-rose-800 p-3">{error}</p>}
-    {error && !busy && period && !periodsLoading && <button className={`${button} m-4`} disabled={actionBusy} onClick={() => setRetry(value => value + 1)}>Retry doctor calculation</button>}
+    {error && !busy && period && !periodsLoading && <button className={`${button} m-4`} disabled={actionBusy} onClick={refreshDoctors}>Retry doctor calculation</button>}
     {ready && <>
       {result.exceptions?.length > 0 && <details className="px-5 py-3 text-sm border-b dark:border-gray-700" aria-label="Compensation review exceptions"><summary className="cursor-pointer text-amber-700 dark:text-amber-300 font-semibold">{result.exceptions.length} items need review{result.complete_doctor_scope === false ? ' · Provider coverage incomplete' : ''}</summary><div className="pt-3 space-y-2">{result.exceptions.map((e,i) => <p key={`${e.provider_id}:${i}`}><strong>{e.provider_name}</strong> · {e.reason}. {e.action}.</p>)}</div></details>}
       {officeId && <p className="px-5 py-2 text-xs text-gray-500">Showing doctors assigned to {result.office_names[officeId]}. Totals include all their qualifying offices.</p>}

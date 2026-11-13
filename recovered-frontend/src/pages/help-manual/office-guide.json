@@ -75,7 +75,7 @@
       {
         "name": "Payroll",
         "route": "/payroll",
-        "text": "Select the pay period and the authorized Dentrix Ascend, Gusto, Comparison or Provider Compensation tab. Review source figures, adjustments and gross pay. Dr. G authorizes compensation changes and release. Ny and Kathy are designated to share payroll responsibilities once their individual access is verified."
+        "text": "Ny and Kathy can review payroll across all four offices. Under Provider Compensation, select the payday. Doctors opens the latest saved calculation for that period and shows the Ascend source time. Saved periods update automatically every three days. Select Refresh from Ascend for newer collections or adjustments. The previous figures stay visible until the new calculation passes validation. If there is no saved report, the first calculation can take several minutes. For comparison, run Ascend with both payroll dates shifted back one day. Dr. G authorizes compensation changes and payroll release."
       },
       {
         "name": "Financial Analytics",
