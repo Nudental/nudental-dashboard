@@ -29,23 +29,13 @@ const WorkflowGuidePanel = ({ onTabChange }) => {
       items: [
         {
           icon: 'ClipboardList',
-          title: 'Front Office Supply Request',
-          desc: 'Submit front-office supply needs via Front Desk or Monthly Supply.',
-          routing: '→ Routes to Regional Manager',
+          title: 'Submit and track supply requests',
+          desc: 'Request Amazon items, dental supplies, endo files or toothbrushes for an office.',
+          routing: 'Caitlin · Ny · Maia',
           routingColor: 'text-blue-700 bg-blue-100',
-          tab: 'front-desk',
-          btnLabel: 'Front Desk',
+          tab: 'request-supplies',
+          btnLabel: 'Request Supplies',
           btnColor: 'bg-blue-600 hover:bg-blue-700',
-        },
-        {
-          icon: 'ShoppingCart',
-          title: 'Back / Clinical Supply Request',
-          desc: 'Submit clinical or back-office supply needs via Clinical Supply or Urgent Request.',
-          routing: '→ Routes to Clinical Manager',
-          routingColor: 'text-emerald-700 bg-emerald-100',
-          tab: 'monthly-supply',
-          btnLabel: 'Clinical Supply',
-          btnColor: 'bg-emerald-600 hover:bg-emerald-700',
         },
       ],
     },
@@ -226,6 +216,7 @@ const InventoryDashboard = () => {
   const [showWorkflowGuide, setShowWorkflowGuide] = useState(false);
 
   const handleTabChange = (tabId) => {
+    if (tabId === 'request-supplies') { navigate('/request-supplies'); return; }
     // Map legacy tab IDs to new structure
     const resolved = TAB_PARAM_MAP?.[tabId] || tabId;
     setActiveTab(resolved);

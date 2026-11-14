@@ -5,6 +5,7 @@ import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
 import MainLayout from "./components/layout/MainLayout";
 import ExecutiveOverview from './pages/executive-overview';
+import RequestSupplies from './pages/request-supplies';
 import FrontDeskApprovals from './pages/front-desk-approvals';
 import FinancialAnalytics from './pages/financial-analytics';
 import OfficePerformance from './pages/office-performance';
@@ -137,6 +138,7 @@ const Routes = () => {
             <Route path="/settings" element={<AccountSettings />} />
             <Route path="/transaction-audit" element={<TransactionAudit />} />
             <Route path="/pending-approvals" element={<PendingApprovals />} />
+            <Route path="/request-supplies" element={<RequestSupplies />} />
             <Route path="/front-desk-approvals" element={<FrontDeskApprovals />} />
             <Route path="/audit-dashboard" element={<AuditDashboard />} />
             <Route path="/audit-reports" element={<AuditReports />} />

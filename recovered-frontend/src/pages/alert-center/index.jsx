@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import Breadcrumb from '../../components/layout/Breadcrumb';
 import Icon from '../../components/AppIcon';
 import { notificationsService } from '../../services/notificationsService';
@@ -6,6 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useRealtimeSubscription } from '../../hooks/useRealtimeSubscription';
 
 const TYPE_CONFIG = {
+  supply_request: { label: 'Supply request', icon: 'ClipboardList', color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20' },
   pace_alert: { label: 'Pace Alert', icon: 'TrendingDown', color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/20' },
   entry_approved: { label: 'Entry Approved', icon: 'CheckCircle', color: 'text-success', bg: 'bg-success/10', border: 'border-success/20' },
   entry_rejected: { label: 'Entry Rejected', icon: 'XCircle', color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/20' },
@@ -18,6 +20,7 @@ const TYPE_CONFIG = {
 
 const TYPE_FILTER_OPTIONS = [
   { value: 'all', label: 'All Types' },
+  { value: 'supply_request', label: 'Supply requests' },
   { value: 'pace_alert', label: 'Pace Alerts' },
   { value: 'entry_approved', label: 'Approvals' },
   { value: 'entry_rejected', label: 'Rejections' },
@@ -101,6 +104,7 @@ const NotificationItem = ({ notification, onMarkRead, onArchive }) => {
           <p className="text-xs text-muted-foreground leading-relaxed">{notification?.message}</p>
         )}
         <div className="flex items-center gap-3 mt-2 flex-wrap">
+          {notification.notification_type === 'supply_request' && <Link className="text-xs text-primary underline" to={'/request-supplies?request=' + encodeURIComponent(notification.metadata?.request_id || '')}>Open request</Link>}
           {isUnread && (
             <button
               onClick={() => onMarkRead(notification?.id)}

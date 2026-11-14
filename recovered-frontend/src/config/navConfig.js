@@ -247,6 +247,14 @@ export const NAV_GROUPS = [
     badge: 'pendingApprovals', // dynamic badge key
     children: [
       {
+        id: 'request-supplies',
+        label: 'Request Supplies',
+        shortLabel: 'Supplies',
+        icon: 'ClipboardList',
+        route: '/request-supplies',
+        description: 'Submit, review and track supply orders',
+      },
+      {
         id: 'morning-huddle',
         label: 'Morning Huddle',
         shortLabel: 'Huddle',
