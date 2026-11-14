@@ -13,6 +13,7 @@ import ImplantGraftingTab from './components/ImplantGraftingTab';
 // Supply / Front Desk tabs
 import MonthlySupplyModule from './components/MonthlySupplyModule';
 import FrontDeskInventoryTab from './components/FrontDeskInventoryTab';
+import PurchasingRecords from '../purchasing-records';
 
 
 // ── Workflow Guide (collapsible panel content) ───────────────────────────────
@@ -203,6 +204,7 @@ const InventoryDashboard = () => {
   const isSuperAdmin = userProfile?.role === 'super_admin';
   const isAdmin = userProfile?.role === 'admin' || isSuperAdmin;
   const canEditInventory = hasPermission('inventory:edit');
+  const canManageStock = canEditInventory && hasPermission('purchasing.records.manage');
 
   // ── Inventory tab permission map ──────────────────────────────────────────
   const INV_TAB_PERMISSION_MAP = {
@@ -218,7 +220,7 @@ const InventoryDashboard = () => {
   }, [isSuperAdmin, hasPermission, permLoading]);
 
   const tabParam = searchParams?.get('tab');
-  const initialTab = TAB_PARAM_MAP?.[tabParam] || 'implant-grafting';
+  const initialTab = tabParam==='stock-records'?'stock-records':TAB_PARAM_MAP?.[tabParam] || 'implant-grafting';
   const [activeTab, setActiveTab] = useState(initialTab);
   const [supplyOfflinePending, setSupplyOfflinePending] = useState(0);
   const [showWorkflowGuide, setShowWorkflowGuide] = useState(false);
@@ -241,11 +243,11 @@ const InventoryDashboard = () => {
 
   // Switch to first allowed tab if current is restricted
   useEffect(() => {
-    if (permLoading || isSuperAdmin) return;
+    if (permLoading || isSuperAdmin || (canManageStock && activeTab==='stock-records')) return;
     if (allowedInvTabs?.length > 0 && !allowedInvTabs?.find(t => t?.id === activeTab)) {
       setActiveTab(allowedInvTabs?.[0]?.id);
     }
-  }, [allowedInvTabs, activeTab, permLoading, isSuperAdmin]);
+  }, [allowedInvTabs, activeTab, permLoading, isSuperAdmin, canManageStock]);
 
   useEffect(() => {
     const countSupplyPending = async () => {
@@ -304,6 +306,7 @@ const InventoryDashboard = () => {
 
         {/* ── Top-Level Tab Row ── */}
         <div className="flex flex-wrap gap-1.5 mb-5 border-b border-border pb-3">
+          {canManageStock && <button className={activeTab==='stock-records'?'rounded-xl bg-primary text-primary-foreground px-3 py-2':'rounded-xl border px-3 py-2'} onClick={()=>handleTabChange('stock-records')}>Stock records</button>}
           {visibleTabs?.map(tab => {
             const isActive = activeTab === tab?.id;
             const badge = tab?.id === 'monthly-supply' && supplyOfflinePending > 0 ? supplyOfflinePending : null;
@@ -338,6 +341,7 @@ const InventoryDashboard = () => {
           })}
         </div>
 
+        {canManageStock && activeTab==='stock-records' && <PurchasingRecords inventoryOnly/>}
         {/* ── TAB: IMPLANT & GRAFTING ── */}
         {activeTab === 'implant-grafting' && (
           <ImplantGraftingTab />

@@ -1,5 +1,6 @@
 import VendorInvoices from './VendorInvoices';
 import PurchaseEditor from './PurchaseEditor';
+import SupplySpending from './SupplySpending';
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -60,11 +61,14 @@ function StockEditor({ original, offices, officeFilter, onClose, onSaved }) {
   </form>;
 }
 
-export default function PurchasingRecords() {
+export default function PurchasingRecords({inventoryOnly=false}) {
   const { userProfile } = useAuth();
   const [offices,setOffices] = useState(null);
   const [office,setOffice] = useState('');
-  const [section,setSection] = useState('Invoices');
+  const directSpending = new URLSearchParams(window.location.search).get('view') === 'supply-spending';
+  const [section,setSection] = useState(inventoryOnly?'Inventory':directSpending?'Purchases':'Invoices');
+  const [purchaseView,setPurchaseView] = useState(directSpending?'Supply Spending':'Purchase records');
+  const spending = section==='Purchases' && purchaseView==='Supply Spending';
   const [term,setTerm] = useState('');
   const [page,setPage] = useState(0);
   const [result,setResult] = useState(null);
@@ -84,7 +88,7 @@ export default function PurchasingRecords() {
   },[userProfile?.id,version]);
   useEffect(()=>{
     let active=true; setResult(null);
-    if(offices?.length && section !== 'Invoices') {
+    if(offices?.length && section !== 'Invoices' && !spending) {
       supabase.rpc('purchasing_records',{section,at_office:office || null,term,page_no:page}).then(({data,error})=>{
         if(!active)return;
         setError(error ? 'Could not load records. Use Refresh to try again.' : '');
@@ -92,21 +96,22 @@ export default function PurchasingRecords() {
       });
     }
     return ()=>{active=false;};
-  },[offices,section,office,term,page]);
+  },[offices,section,office,term,page,spending]);
   const stock=section==='Inventory';
   if(offices && !offices.length)return <p className="p-6">Your account does not have access to purchasing records.</p>;
   return <main className="mx-auto max-w-screen-2xl p-6 space-y-5 text-foreground">
-    <header className="flex items-center justify-between gap-3 flex-wrap"><h1 className="text-2xl font-semibold">Invoices &amp; inventory</h1>
-      {!!offices?.length && <a className={button} href={tracker} target="_blank" rel="noreferrer">Open paid invoice register <Icon name="ExternalLink" size={15}/></a>}</header>
+    <header className="flex items-center justify-between gap-3 flex-wrap"><h1 className="text-2xl font-semibold">{inventoryOnly?'Stock records':'Invoices & inventory'}</h1>
+      {!inventoryOnly && !!offices?.length && <a className={button} href={tracker} target="_blank" rel="noreferrer">Open paid invoice register <Icon name="ExternalLink" size={15}/></a>}</header>
     {offices?.length > 0 && <>
-      <div className="flex gap-2 border-b border-border pb-3">{['Invoices','Purchases','Inventory'].map(v=><button className={v===section?primary:button} key={v} onClick={()=>{setSection(v);setPage(0);setTerm('');setEditor(null);setMessage('');}}>{v}</button>)}</div>
-      {section!=='Invoices' && <div className="flex flex-wrap items-end gap-3">
+      {!inventoryOnly && <div className="flex gap-2 border-b border-border pb-3">{['Invoices','Purchases','Inventory'].map(v=><button className={v===section?primary:button} key={v} onClick={()=>{setSection(v);setPage(0);setTerm('');setEditor(null);setMessage('');}}>{v}</button>)}</div>}
+      {section==='Purchases' && <nav aria-label="Purchase views" className="flex gap-2">{['Purchase records','Supply Spending'].map(v=><button className={v===purchaseView?primary:button} aria-pressed={v===purchaseView} key={v} onClick={()=>{setPurchaseView(v);setEditor(null);}}>{v}</button>)}</nav>}
+      {section!=='Invoices' && !spending && <div className="flex flex-wrap items-end gap-3">
         <label className="text-sm">Office<select className={control} value={office} onChange={e=>{setOffice(e.target.value);setPage(0);setEditor(null);}}><option value="">All offices</option>{offices.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
         <label className="text-sm">Search<input className={control} type="search" value={term} onChange={e=>{setTerm(e.target.value);setPage(0);}} placeholder={stock?'Item, SKU or lot':'Item, vendor or order'}/></label>
         {!editor && <button className={primary} onClick={()=>{setEditor({record:null});setMessage('');}}>{stock?'Add inventory record':'Add purchase record'}</button>}
       </div>}
     </>}
-    {section==='Invoices' && offices?.length > 0 ? <VendorInvoices offices={offices.map(o=>o.name)}/> : <>
+    {spending && offices?.length>0 ? <SupplySpending offices={offices}/> : section==='Invoices' && offices?.length > 0 ? <VendorInvoices offices={offices.map(o=>o.name)}/> : <>
     <button className={button} onClick={()=>setVersion(v=>v+1)}><Icon name="RefreshCw" size={14}/>Refresh</button>
     {editor && stock && <StockEditor key={editor.record?.id || 'new'} original={editor.record} offices={offices||[]} officeFilter={office} onClose={()=>setEditor(null)} onSaved={()=>{setEditor(null);setMessage('Inventory record saved.');setVersion(v=>v+1);}}/>}
     {editor && !stock && <PurchaseEditor key={editor.record?.id || 'new'} record={editor.record} offices={offices||[]} officeFilter={office} onClose={()=>setEditor(null)} onSaved={()=>{setEditor(null);setMessage('Purchase record saved.');setVersion(v=>v+1);}}/>}

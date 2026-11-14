@@ -10,6 +10,7 @@ export default function PurchaseEditor({ record, officeFilter, offices, onClose,
     purchased: record?.purchased || '', reference: record?.reference || '',
     quantity: record?.quantity ?? '', amount: record?.amount ?? '',
     currency: record?.currency || 'USD', received: record?.received ?? '',
+    category: record?.category || '',
     evidence: record?.evidence || '', reason: '',
   }));
   const [busy, setBusy] = useState(false);
@@ -45,6 +46,8 @@ export default function PurchaseEditor({ record, officeFilter, offices, onClose,
         <option value="">Select office</option>{offices.map(o => <option key={o.id} value={o.id}>{o.name}</option>)}
       </select></label>
       {input('item','Item',{required:true})}{input('vendor','Vendor',{required:true})}
+      {input('category','Supply category',{list:'supply-purchase-categories',maxLength:100})}
+      <datalist id="supply-purchase-categories">{['Front desk supplies','Clinical supplies','Bone and tissue','Implants'].map(category=><option key={category} value={category}/>)}</datalist>
       {input('purchased','Purchase date',{type:'date'})}{input('reference','Order or invoice reference')}
       {input('quantity','Quantity purchased',{type:'number',min:0,step:'any'})}
       {input('amount','Recorded amount',{type:'number',min:0,step:'0.01'})}
