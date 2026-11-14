@@ -268,7 +268,10 @@ const InventoryDashboard = () => {
 
   // Page-level guard
   if (!permLoading && userProfile && !isSuperAdmin && !hasPermission('inventory:view') && !hasPermission('resources.inventory.view') && allowedInvTabs?.length === 0) {
-    return <section className="p-5 space-y-3"><h1 className="text-xl font-semibold">Inventory</h1><Link className="text-primary underline" to="/request-supplies?tab=inventory">Open assigned office inventory</Link></section>;
+    return <section className="p-5 space-y-3"><h1 className="text-xl font-semibold">Inventory</h1><Link className="text-primary underline" to="/request-supplies?tab=inventory">Open assigned office inventory</Link>
+      {canViewAllocation(userProfile) && <div><Link className="text-primary underline" to="/inventory-dashboard?tab=usage-allocation">Usage allocation</Link>{activeTab==='usage-allocation' && <UsageAllocation/>}</div>}
+      {canReadMaterialReview && <div><Link className="text-primary underline" to="/inventory-dashboard?tab=historical-usage">Historical usage</Link>{activeTab==='historical-usage' && <HistoricalUsageReview/>}</div>}
+    </section>;
   }
 
   return (
