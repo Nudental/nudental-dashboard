@@ -1,3 +1,5 @@
+import HistoricalUsageReview from './HistoricalUsageReview';
+import UsageAllocation,{canViewAllocation} from './UsageAllocation';
 import React, { useState, useEffect, useCallback } from 'react';
 import Icon from '../../../components/AppIcon';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -1006,6 +1008,7 @@ const BoneTissueEmbedded = () => {
           />
         </>
       )}
+      {activeTab === 'usage' && <HistoricalUsageReview/>}
       {activeTab === 'usage' && (
         <BoneTissueUsageLogTable
           records={usageRecords}
@@ -1402,6 +1405,7 @@ const ImplantEmbedded = () => {
           onRefresh={() => { loadInventory(); loadUsageLogs(); }}
         />
       )}
+      {activeTab === 'usage' && <HistoricalUsageReview/>}
       {activeTab === 'usage' && (
         <ImplantUsageLogTab
           records={usageRecords} loading={usageLoading} offices={offices}
@@ -1586,7 +1590,7 @@ const ImplantGraftingTab = () => {
   const LEGACY_SUBTABS = ['usage-log', 'bulk-import', 'reports', 'settings'];
   const safeSubTab = LEGACY_SUBTABS?.includes(activeSubTab) ? 'overview' : activeSubTab;
 
-  const visibleSubTabs = IG_SUB_TABS;
+  const visibleSubTabs = canViewAllocation(userProfile) ? [...IG_SUB_TABS, {id:'usage-allocation',label:'Usage allocation',icon:'BarChart3'}] : IG_SUB_TABS;
 
   return (
     <div>
@@ -1626,6 +1630,7 @@ const ImplantGraftingTab = () => {
       </div>
 
       {/* Sub-tab content */}
+      {safeSubTab === 'usage-allocation' && canViewAllocation(userProfile) && <UsageAllocation/>}
       {safeSubTab === 'overview' && <OverviewSubTab isAdmin={isAdmin} />}
       {safeSubTab === 'bone-tissue' && <BoneTissueEmbedded />}
       {safeSubTab === 'implant' && <ImplantEmbedded />}

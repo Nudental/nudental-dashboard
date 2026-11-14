@@ -1,3 +1,4 @@
+import HistoricalUsageReview from '../inventory-dashboard/components/HistoricalUsageReview';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Icon from '../../components/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
@@ -291,6 +292,7 @@ const BoneAndTissueInventory = () => {
         </div>
 
         {/* Usage Log Tab */}
+        {activeTab === 'log' && <HistoricalUsageReview/>}
         {activeTab === 'log' && (
           <>
             <InventoryFilters

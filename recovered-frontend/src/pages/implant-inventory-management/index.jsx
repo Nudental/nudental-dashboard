@@ -1,3 +1,4 @@
+import HistoricalUsageReview from '../inventory-dashboard/components/HistoricalUsageReview';
 import React, { useState, useEffect, useCallback } from 'react';
 import Icon from '../../components/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
@@ -256,6 +257,7 @@ const ImplantInventoryManagement = () => {
           />
         )}
 
+        {activeTab === 'usage' && <HistoricalUsageReview/>}
         {activeTab === 'usage' && (
           <ImplantUsageLogTab
             records={usageRecords}
