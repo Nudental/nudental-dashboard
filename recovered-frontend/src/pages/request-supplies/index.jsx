@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
 import Icon from '../../components/AppIcon';
+import OfficeInventory from './OfficeInventory';
 
 const routes = {
   edgeendo: { label: 'EdgeEndo files', owner: 'Caitlin', shop: 'EdgeEndo', url: 'https://store.edgeendo.com/storefront.aspx' },
@@ -170,7 +171,7 @@ function Supplies({ submitter }) {
   const [requests,setRequests] = useState([]);
   const [error,setError] = useState('');
   const [notice,setNotice] = useState('');
-  const [tab,setTab] = useState(null);
+  const [tab,setTab] = useState(() => new URLSearchParams(window.location.search).get('tab') === 'inventory' ? 'inventory' : null);
   const version = useRef(0);
   const refresh = useCallback(async () => {
     const call = ++version.current;
@@ -198,10 +199,10 @@ function Supplies({ submitter }) {
     {error && <div className={panel} role="alert">{error} <button className={button} onClick={refresh}>Try again</button></div>}
     {!context ? !error && <p role="status">Loading your requests…</p> : <>
       <nav aria-label="Supply requests" className="flex flex-wrap gap-2">
-        {[[context.options.length,'new','New request'],[true,'mine','My requests'],[context.review.length,'queue','Assigned to me ('+assigned.filter(needsAction).length+')']].filter(([show])=>show).map(([,key,label])=><button key={key} aria-pressed={active===key} className={active===key?primary:button} onClick={()=>{setTab(key);setNotice('');}}>{label}</button>)}
+        {[[context.options.length,'new','New request'],[true,'mine','My requests'],[context.options.length || context.review.length,'inventory','Office inventory'],[context.review.length,'queue','Assigned to me ('+assigned.filter(needsAction).length+')']].filter(([show])=>show).map(([,key,label])=><button key={key} aria-pressed={active===key} className={active===key?primary:button} onClick={()=>{setTab(key);setNotice('');}}>{label}</button>)}
       </nav>
       {notice && <p role="status" className="rounded-lg bg-primary/10 p-3 text-sm">{notice}</p>}
-      {active==='new' && context.options.length>0 ? <RequestForm submitter={submitter} options={context.options} onSaved={message=>{setTab('mine');updated(message);}}/> : <section className="space-y-3">
+      {active==='inventory' && (context.options.length>0 || context.review.length>0) ? <OfficeInventory/> : active==='new' && context.options.length>0 ? <RequestForm submitter={submitter} options={context.options} onSaved={message=>{setTab('mine');updated(message);}}/> : <section className="space-y-3">
         <div className="flex justify-between items-center"><h2 className="text-lg font-semibold">{active==='queue'?'Assigned requests':'My requests'}</h2><button className={button} onClick={refresh}>Refresh</button></div>
         {records.map(r=><RequestCard key={r.id} request={r} focused={r.id === focusId} onUpdate={updated}/>)}
         {!records.length && <p className={panel}>{active==='queue'?'No requests are assigned to you yet.':context.options.length?'Your submitted requests will appear here.':'No requests to track. Your account has no supply submission assignment.'}</p>}

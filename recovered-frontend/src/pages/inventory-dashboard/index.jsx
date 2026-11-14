@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import Icon from '../../components/AppIcon';
 import { useAuth } from '../../contexts/AuthContext';
 import { offlineQueueService } from '../../services/offlineQueueService';
@@ -264,7 +264,7 @@ const InventoryDashboard = () => {
 
   // Page-level guard
   if (!permLoading && userProfile && !isSuperAdmin && !hasPermission('inventory:view') && !hasPermission('resources.inventory.view') && allowedInvTabs?.length === 0) {
-    return <AccessDenied message="Inventory Dashboard is restricted. Contact your administrator to request access." />;
+    return <section className="p-5 space-y-3"><h1 className="text-xl font-semibold">Inventory</h1><Link className="text-primary underline" to="/request-supplies?tab=inventory">Open assigned office inventory</Link></section>;
   }
 
   return (
@@ -290,6 +290,7 @@ const InventoryDashboard = () => {
           </button>
         </div>
 
+        <Link className="inline-block mb-4 text-primary underline" to="/request-supplies?tab=inventory">Office supply inventory</Link>
         {/* ── Workflow Guide (collapsible) ── */}
         {showWorkflowGuide && (
           <WorkflowGuidePanel onTabChange={handleTabChange} />
