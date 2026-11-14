@@ -1,4 +1,5 @@
 import VendorInvoices from './VendorInvoices';
+import PurchaseEditor from './PurchaseEditor';
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -9,9 +10,8 @@ const types = ['Front desk', 'Clinical supply', 'Bone and tissue', 'Implants'];
 const control = 'block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground';
 const button = 'inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50';
 const primary = 'inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50';
-const money = new Intl.NumberFormat('en-US', {style:'currency',currency:'USD'});
 const stockHeaders = ['Office','Type','Item','Category / brand','Identifier','Lot','Expires','On hand','Minimum'];
-const purchaseHeaders = ['Office','Source','Date','Vendor','Item','Order reference','Quantity','Recorded amount','Source status'];
+const purchaseHeaders = ['Office','Source','Date','Vendor','Item','Order reference','Purchased quantity','Verified received','Recorded amount','Source status','Evidence','Change reason'];
 
 function StockEditor({ original, offices, officeFilter, onClose, onSaved }) {
   const [key] = useState(() => original?.id || crypto.randomUUID());
@@ -103,22 +103,23 @@ export default function PurchasingRecords() {
       {section!=='Invoices' && <div className="flex flex-wrap items-end gap-3">
         <label className="text-sm">Office<select className={control} value={office} onChange={e=>{setOffice(e.target.value);setPage(0);setEditor(null);}}><option value="">All offices</option>{offices.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
         <label className="text-sm">Search<input className={control} type="search" value={term} onChange={e=>{setTerm(e.target.value);setPage(0);}} placeholder={stock?'Item, SKU or lot':'Item, vendor or order'}/></label>
-        {stock && !editor && <button className={primary} onClick={()=>{setEditor({record:null});setMessage('');}}>Add inventory record</button>}
+        {!editor && <button className={primary} onClick={()=>{setEditor({record:null});setMessage('');}}>{stock?'Add inventory record':'Add purchase record'}</button>}
       </div>}
     </>}
     {section==='Invoices' && offices?.length > 0 ? <VendorInvoices offices={offices.map(o=>o.name)}/> : <>
     <button className={button} onClick={()=>setVersion(v=>v+1)}><Icon name="RefreshCw" size={14}/>Refresh</button>
-    {editor && <StockEditor key={editor.record?.id || 'new'} original={editor.record} offices={offices||[]} officeFilter={office} onClose={()=>setEditor(null)} onSaved={()=>{setEditor(null);setMessage('Inventory record saved.');setVersion(v=>v+1);}}/>}
+    {editor && stock && <StockEditor key={editor.record?.id || 'new'} original={editor.record} offices={offices||[]} officeFilter={office} onClose={()=>setEditor(null)} onSaved={()=>{setEditor(null);setMessage('Inventory record saved.');setVersion(v=>v+1);}}/>}
+    {editor && !stock && <PurchaseEditor key={editor.record?.id || 'new'} record={editor.record} offices={offices||[]} officeFilter={office} onClose={()=>setEditor(null)} onSaved={()=>{setEditor(null);setMessage('Purchase record saved.');setVersion(v=>v+1);}}/>}
     {message && <p role="status">{message}</p>}
     {error ? <p role="alert">{error}</p> : !result ? <p>Loading records…</p> :
       <section className="rounded-xl border border-border bg-card p-4 space-y-3">
         <p className="text-sm">{result.count} {stock?'inventory':'purchase'} records</p>
         {!stock && <p className="text-sm text-muted-foreground">Purchase records show orders, allocations and fulfillment. Use the paid invoice register for recorded payment evidence.</p>}
-        <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr>{(stock?[...stockHeaders,'']:purchaseHeaders).map((h,i)=><th key={i} className="px-3 py-2">{h}</th>)}</tr></thead>
+        <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr>{[...(stock?stockHeaders:purchaseHeaders),''].map((h,i)=><th key={i} className="px-3 py-2">{h}</th>)}</tr></thead>
         <tbody>{result.rows.map(r=><tr key={(r.kind||r.source)+r.id} className="border-t border-border">
           {(stock?[r.office_name,r.kind,r.item_name,r.category,r.reference,r.lot,r.expiry,r.quantity,r.minimum]:
-            [r.office_name,r.source,r.purchased,r.vendor,r.item,r.reference,r.quantity,r.amount==null?null:money.format(r.amount),r.status]).map((x,i)=><td key={i} className="px-3 py-2">{x??'—'}</td>)}
-          {stock && <td><button className={button} onClick={()=>{setEditor({record:r});setMessage('');}}>Edit</button></td>}</tr>)}</tbody></table></div>
+            [r.office_name,r.source,r.purchased,r.vendor,r.item,r.reference,r.quantity,r.received,r.amount==null?null:(r.currency || 'USD')+' '+r.amount,r.status,r.evidence,r.reason]).map((x,i)=><td key={i} className="px-3 py-2">{x??'—'}</td>)}
+          <td><button className={button} onClick={()=>{setEditor({record:r});setMessage('');}}>Edit</button></td></tr>)}</tbody></table></div>
         {result.count>50 && <div className="flex items-center gap-3"><button className={button} disabled={!page} onClick={()=>setPage(p=>p-1)}>Previous</button>
           <span>Page {page+1} of {Math.ceil(result.count/50)}</span><button className={button} disabled={(page+1)*50>=result.count} onClick={()=>setPage(p=>p+1)}>Next</button></div>}
       </section>}</>}
