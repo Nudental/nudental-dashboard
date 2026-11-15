@@ -140,6 +140,7 @@ const Routes = () => {
             <Route path="/transaction-audit" element={<TransactionAudit />} />
             <Route path="/pending-approvals" element={<PendingApprovals />} />
             <Route path="/patient-follow-up" element={<PatientFollowup />} />
+            <Route path="/office-calls" element={<PatientFollowup officeCalls />} />
             <Route path="/request-supplies" element={<RequestSupplies />} />
             <Route path="/front-desk-approvals" element={<FrontDeskApprovals />} />
             <Route path="/audit-dashboard" element={<AuditDashboard />} />

@@ -254,6 +254,14 @@ export const NAV_GROUPS = [
         description: 'Record patient calls and follow up on online bookings and inquiries',
       },
       {
+        id: 'office-calls',
+        label: 'Office Calls',
+        icon: 'PhoneCall',
+        route: '/office-calls',
+        roles: ['super_admin'],
+        description: 'Review incoming and outgoing phone activity and missed-call callbacks by office',
+      },
+      {
         id: 'request-supplies',
         label: 'Request Supplies',
         shortLabel: 'Supplies',

@@ -6,7 +6,7 @@ import { followupDestination } from './destination';
 
 const practiceApi = 'https://api.nudashboard.com';
 
-export default function PatientFollowup() {
+export default function PatientFollowup({ officeCalls = false }) {
   const { user } = useAuth();
   const location = useLocation();
   const frame = useRef(null);
@@ -15,6 +15,7 @@ export default function PatientFollowup() {
   const { searchParams, hash } = new URL(destination, window.location.origin);
   frameUrl.searchParams.set('office', searchParams.get('office') || 'all');
   frameUrl.searchParams.set('parent', window.location.origin);
+  if (officeCalls) frameUrl.searchParams.set('view', 'office-calls');
   if (hash) frameUrl.searchParams.set('ref', hash.slice('#request='.length));
 
   useEffect(() => {
@@ -39,7 +40,7 @@ export default function PatientFollowup() {
     };
   }, [user?.id]);
 
-  return <iframe ref={frame} key={destination} title="Patient Follow-up"
-    src={frameUrl.href} referrerPolicy="no-referrer" sandbox="allow-scripts allow-same-origin"
+  return <iframe ref={frame} key={frameUrl.href} title={officeCalls ? 'Office Calls' : 'Patient Follow-up'}
+    src={frameUrl.href} referrerPolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
     className="block w-full border-0" style={{ minHeight: 'calc(100vh - var(--header-height, 64px))' }} />;
 }
