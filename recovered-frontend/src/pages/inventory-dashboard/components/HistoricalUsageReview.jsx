@@ -1,3 +1,4 @@
+import {SourceControls,SourceDemo,getEventInfo} from './HistoricalSourceEvents';
 import React, {useEffect, useState} from 'react';
 import {useAuth} from '../../../contexts/AuthContext';
 import {supabase} from '../../../lib/supabase';
@@ -36,10 +37,10 @@ function NewVisit({onOpen,initial}) {
   {error&&<p role="alert">{error}</p>}</fieldset>
 }
 function Editor({visit,entry,onSaved}) {
- const fresh=!entry;const options=entry?.key==='visit'?['chart','patient_name','provider','placement','review_note']:['product','ref','lot','quantity','expiry','site','kind','placement','review_note'];
+ const options=entry?.key==='visit'?['chart','patient_name','provider','placement','review_note']:['product','ref','lot','quantity','expiry','site','kind','placement','review_note'];
  const [field,setField]=useState(options[0]),[value,setValue]=useState(entry?.current?.[options[0]]?.value||''),[status,setStatus]=useState(entry?.current?.[options[0]]?.status||'Reported');
- const [source,setSource]=useState(''),[reason,setReason]=useState(''),[token,setToken]=useState(''),[restore,setRestore]=useState(''),[preview,setPreview]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
- const key=entry?.key||'new:'+token.trim();
+ const [source,setSource]=useState(''),[reason,setReason]=useState(''),[restore,setRestore]=useState(''),[preview,setPreview]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const key=entry.key;
  function selectField(f){setField(f);setValue(entry?.current?.[f]?.value||'');setStatus(entry?.current?.[f]?.status||'Reported')}
  const args={target:visit.id,event_key:key,expected:entry?.version||0,edits:restore===''?{[field]:{value,status}}:{},citation:source,reason,restore_to:restore===''?null:Number(restore)};
  async function act(save){setBusy(true);setError('');
@@ -47,18 +48,17 @@ function Editor({visit,entry,onSaved}) {
   catch(e){setError(e.message);setPreview(null)}finally{setBusy(false)}
  }
  return <fieldset className="space-y-3" disabled={busy} onChange={()=>setPreview(null)}>
- {fresh && <Label name="Unique event reference from the source (lowercase letters, digits, dots, dashes or slashes)"><input className={input} value={token} onChange={e=>setToken(e.target.value)} placeholder="document-id/page-2/event-1"/></Label>}
  {entry&&<><p className="break-all text-xs text-muted-foreground">{entry.original.type||'Historical review'} · {visit.reference} / {entry.key} · Revision {entry.version}</p>
  <List items={entry.original.sources?.map(s=>'Ascend document '+s.id+', page '+s.page+' · Filed '+s.filed)}/>
  {entry.original.worksheet&&<dl className="grid gap-1">{Object.entries(entry.original.worksheet).map(([k,v])=><div key={k}><dt className="inline font-semibold">{k} </dt><dd className="inline">{v}</dd></div>)}</dl>}
  <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr><th align="left">Field</th><th align="left">Original source</th><th align="left">Current review</th></tr></thead><tbody>{options.filter(k=>entry.original.fields?.[k]||entry.current?.[k]).map(k=><tr key={k} className="border-t"><td>{labels[k]}</td><td>{show(entry.original.fields?.[k])}</td><td>{show(entry.current?.[k])}</td></tr>)}</tbody></table></div></>}
- {entry?.version>0&&<Label name="Correction action"><select className={input} value={restore} onChange={e=>setRestore(e.target.value)}><option value="">Edit a field</option>{Array.from({length:entry.version},(_,i)=><option key={i} value={i}>Restore revision {i}{i===0?' (original source)':''}</option>)}</select></Label>}
+ {entry?.version>0&&<Label name="Correction action"><select className={input} value={restore} onChange={e=>setRestore(e.target.value)}><option value="">Edit a field</option>{Array.from({length:entry.version},(_,i)=>i).filter(i=>i>0||!entry.key.startsWith('new:')).map(i=><option key={i} value={i}>Restore revision {i}{i===0?' (original source)':''}</option>)}</select></Label>}
  {restore===''&&<div className="grid gap-3 md:grid-cols-3"><Label name="Field"><select className={input} value={field} onChange={e=>selectField(e.target.value)}>{options.map(k=><option value={k} key={k}>{labels[k]}</option>)}</select></Label>
  <Label name="Proposed value"><input className={input} type={field==='expiry'?'date':'text'} value={value} onChange={e=>setValue(e.target.value)}/></Label>
  <Label name="Evidence status"><select className={input} value={status} onChange={e=>setStatus(e.target.value)}>{['Reported','Verified','On hold'].map(x=><option key={x}>{x}</option>)}</select></Label></div>}
  <Label name="Source date, document and page or operative note ID"><input className={input} value={source} onChange={e=>setSource(e.target.value)}/></Label>
  <Label name="Reason or remaining uncertainty"><input className={input} value={reason} onChange={e=>setReason(e.target.value)}/></Label>
- <button className={button} disabled={!source.trim()||!reason.trim()||(!entry&&!token.trim())} onClick={()=>act(false)}>Preview correction</button>
+ <button className={button} disabled={!source.trim()||!reason.trim()} onClick={()=>act(false)}>Preview correction</button>
  {preview&&<div className="space-y-2 rounded border bg-muted/30 p-3" role="status"><strong>Before and after · {visit.reference} / {key}</strong>
  <List items={Object.entries(preview.result.changes).map(([k,v])=>labels[k]+' · '+show(v.before)+' → '+show(v.after))}/>
  <p>Stock effect {preview.result.stock} · Movements {preview.result.movements} · Cost effect ${preview.result.cost}</p>
@@ -111,16 +111,18 @@ function Evidence(){
 
 
 function Workspace(){
- const [rows,setRows]=useState([]),[id,setId]=useState(''),[detail,setDetail]=useState(null),[event,setEvent]=useState('visit'),[search,setSearch]=useState(''),[error,setError]=useState(''),[count,setCount]=useState(0),[message,setMessage]=useState(''),[mode,setMode]=useState(new URLSearchParams(window.location.search).get('view')==='discovery'?'discovery':'review'),[candidate,setCandidate]=useState(null);
- useEffect(()=>{let live=true;rpc('visits').then(x=>{if(live){setRows(x);setId(old=>old||x.find(v=>v.reference==='V001')?.id||x[0]?.id||'')}}).catch(e=>live&&setError(e.message));return()=>{live=false}},[count]);
- useEffect(()=>{let live=true;setDetail(null);if(id)rpc('detail',{target:id}).then(x=>live&&setDetail(x)).catch(e=>live&&setError(e.message));return()=>{live=false}},[id,count]);
- function open(i){setId(i);setEvent('visit');setError('');setSearch('');setMode('review');setCount(c=>c+1)}
+ const [events,setEvents]=useState({}),[showVoided,setShowVoided]=useState(false);
+ const [rows,setRows]=useState([]),[id,setId]=useState(''),[detail,setDetail]=useState(null),[event,setEvent]=useState('visit'),[search,setSearch]=useState(''),[error,setError]=useState(''),[count,setCount]=useState(0),[message,setMessage]=useState(''),[mode,setMode]=useState(()=>{const view=new URLSearchParams(window.location.search).get('view');return ['demo','discovery'].includes(view)?view:'review'}),[candidate,setCandidate]=useState(null);
+ useEffect(()=>{let live=true;rpc('visits').then(x=>{if(live){setRows(x);setId(old=>old||x.find(v=>v.reference===(new URLSearchParams(window.location.search).get('visit')||'V001'))?.id||x[0]?.id||'')}}).catch(e=>live&&setError(e.message));return()=>{live=false}},[count]);
+ useEffect(()=>{let live=true;setDetail(null);setEvents({});if(id)Promise.all([rpc('detail',{target:id}),getEventInfo(id)]).then(([x,info])=>{if(live){setEvents(info||{});setDetail(x)}}).catch(e=>live&&setError(e.message));return()=>{live=false}},[id,count]);
+ function open(i,key='visit'){setId(i);setEvent(key);setShowVoided(true);setError('');setSearch('');setMode('review');setCount(c=>c+1)}
  const list=rows.filter(r=>[r.reference,r.patient,r.chart,r.patient_name,r.day,r.office].join(' ').toLowerCase().includes(search.trim().toLowerCase()));
  const d=detail?.id===id?detail:null,entry=d?.entries?.find(x=>x.key===event);
  return <section className={panel}><h2 className="text-lg font-semibold">Historical usage review</h2>
  <p>Save each field with its source and evidence status. Your portal login identifies the reviewer. Use Source files for the reconciled worksheet or a separate replacement reference.</p>
- <div className="flex flex-wrap gap-2">{[['review','Review visits'],['discovery','YTD discovery'],['new','Match / add visit'],['archive','Source files']].map(([k,v])=><button key={k} aria-pressed={mode===k} className={button+(mode===k?' bg-muted':'')} onClick={()=>{setMode(k);setMessage('')}}>{v}</button>)}</div>
+ <div className="flex flex-wrap gap-2">{[['review','Review visits'],['discovery','YTD discovery'],['new','Match / add visit'],['archive','Source files'],['demo','Event demonstration']].map(([k,v])=><button key={k} aria-pressed={mode===k} className={button+(mode===k?' bg-muted':'')} onClick={()=>{setMode(k);setMessage('')}}>{v}</button>)}</div>
  {message&&<p role="status">{message}</p>}{error&&<p role="alert">{error} <button className={button} onClick={()=>{setError('');setCount(c=>c+1)}}>Reload</button></p>}
+ {mode==='demo'&&<SourceDemo/>}
  {mode==='archive'&&<Evidence/>}
  {mode==='new'&&<NewVisit key={candidate?.reference||'empty'} initial={candidate} onOpen={open}/>}
  {mode==='discovery'&&<Discovery onVisit={open} onSelect={r=>{setCandidate({reference:r.reference,patient:r.patient,office:offices.includes(r.office)?r.office:'',day:r.day,source:r.sources[0]||''});setMode('new')}}/>}
@@ -130,8 +132,11 @@ function Workspace(){
  <p className="text-sm">{d.source} {d.original.supplemental}</p><List items={d.original.priority}/>
  <details><summary>Original sources and review questions</summary><List items={d.original.flags}/><List items={d.original.questions}/><List items={d.original.docs?.map(s=>'Ascend document '+s.id+' · '+s.type+' · Filed '+s.filed)}/>
  <p>Procedure references {(d.original.records||[]).join(', ')||'None linked'}</p></details>
- <Label name="Visit, linked material or original worksheet question"><select className={input} value={event} onChange={e=>{setEvent(e.target.value);setMessage('')}}>{d.entries.map(a=><option key={a.key} value={a.key}>{a.original.title||a.original.source_ref||a.key} · {a.key}</option>)}<option value="+">Add a separate source event</option></select></Label>
- <Editor key={d.id+event+(entry?.version||0)} visit={d} entry={entry} onSaved={key=>{setEvent(key);setMessage('Historical correction saved.');setCount(c=>c+1)}}/></>}</>}
+ {Object.values(events).some(x=>x.state==='Voided')&&<label className="flex gap-2"><input type="checkbox" checked={showVoided} onChange={e=>{setShowVoided(e.target.checked);if(!e.target.checked&&events[event]?.state==='Voided')setEvent('visit')}}/>Show voided events and audit history</label>}
+ <Label name="Visit, linked material or original worksheet question"><select className={input} value={event} onChange={e=>{setEvent(e.target.value);setMessage('')}}>{d.entries.filter(a=>showVoided||events[a.key]?.state!=='Voided').map(a=><option key={a.key} value={a.key}>{events[a.key]?.state?events[a.key].state+' · ':''}{a.original.title||a.original.source_ref||a.key} · {a.key}</option>)}<option value="+">Add a separate source event</option></select></Label>
+ {(event==='+'||entry?.key?.startsWith('new:')||entry?.key?.startsWith('unit:'))&&<SourceControls key={'source-'+d.id+event+(events[event]?.actions?.length||0)} visit={d} entry={entry} info={events[event]} onOpen={open} onSaved={(key,state)=>{setEvent(state==='Voided'?'visit':key);setMessage('Historical event saved · '+state);setCount(c=>c+1)}}/>}
+ {entry&&events[event]?.state==='Voided'&&<details><summary>Retained field evidence ({entry.history.length} revisions)</summary>{entry.history.map(h=><div key={h.version} className="my-2 border-t"><p>{h.by} · {new Date(h.at).toLocaleString()} · {h.source} · {h.reason}</p><List items={Object.entries(h.after).map(([k,v])=>labels[k]+' · '+show(v))}/></div>)}</details>}
+ {entry&&events[event]?.state!=='Voided'&&<Editor key={'fields-'+d.id+event+(entry?.version||0)} visit={d} entry={entry} onSaved={key=>{setEvent(key);setMessage('Historical correction saved.');setCount(c=>c+1)}}/>}</>}</>}
  </section>
 }
 export default function HistoricalUsageReview(){const {userProfile}=useAuth();return reviewers.includes(userProfile?.id)?<Workspace key={userProfile.id}/>:null}
