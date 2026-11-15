@@ -1,3 +1,4 @@
+import VisitHistory,{shellInfo,voidedShells} from './HistoricalVisitHistory';
 import {SourceControls,SourceDemo,getEventInfo} from './HistoricalSourceEvents';
 import React, {useEffect, useState} from 'react';
 import {useAuth} from '../../../contexts/AuthContext';
@@ -33,7 +34,7 @@ function NewVisit({onOpen,initial}) {
   <Label name="Actual service date"><input className={input} type="date" value={day} onChange={e=>setDay(e.target.value)}/></Label></div>
   <Label name="Dated source and document/page or note ID"><input className={input} value={source} onChange={e=>setSource(e.target.value)}/></Label>
   <button className={button} disabled={!patient||!office||!day||!source.trim()} onClick={()=>act(false)}>Check for matching visit</button>
-  {preview && <div role="status">No existing visit matched this patient, office and date. Stock effect 0 · Movements 0 · Cost effect $0. <button className={button} onClick={()=>act(true)}>Create historical review visit</button></div>}
+  {preview && <div role="status">No existing visit matched this patient, office and date. Stock {preview.stock} · Movements {preview.movements} · Receipts {preview.receipts} · Cost {preview.cost}. <button className={button} onClick={()=>act(true)}>Create historical review visit</button></div>}
   {error&&<p role="alert">{error}</p>}</fieldset>
 }
 function Editor({visit,entry,onSaved}) {
@@ -127,12 +128,13 @@ function Evidence(){
 
 
 function Workspace(){
+ const [life,setLife]=useState(null),[hidden,setHidden]=useState([]),[includeHidden,setIncludeHidden]=useState(false);
  const [events,setEvents]=useState({}),[showVoided,setShowVoided]=useState(false);
- const [rows,setRows]=useState([]),[id,setId]=useState(''),[detail,setDetail]=useState(null),[event,setEvent]=useState('visit'),[search,setSearch]=useState(''),[error,setError]=useState(''),[count,setCount]=useState(0),[message,setMessage]=useState(''),[mode,setMode]=useState(()=>{const view=new URLSearchParams(window.location.search).get('view');return ['demo','discovery'].includes(view)?view:'review'}),[candidate,setCandidate]=useState(null);
- useEffect(()=>{let live=true;rpc('visits').then(x=>{if(live){setRows(x);setId(old=>old||x.find(v=>v.reference===(new URLSearchParams(window.location.search).get('visit')||'V001'))?.id||x[0]?.id||'')}}).catch(e=>live&&setError(e.message));return()=>{live=false}},[count]);
- useEffect(()=>{let live=true;setDetail(null);setEvents({});if(id)Promise.all([rpc('detail',{target:id}),getEventInfo(id)]).then(([x,info])=>{if(live){setEvents(info||{});setDetail(x)}}).catch(e=>live&&setError(e.message));return()=>{live=false}},[id,count]);
- function open(i,key='visit'){setId(i);setEvent(key);setShowVoided(true);setError('');setSearch('');setMode('review');setCount(c=>c+1)}
- const list=rows.filter(r=>[r.reference,r.patient,r.chart,r.patient_name,r.day,r.office].join(' ').toLowerCase().includes(search.trim().toLowerCase()));
+ const [rows,setRows]=useState([]),[id,setId]=useState(''),[detail,setDetail]=useState(null),[event,setEvent]=useState('visit'),[search,setSearch]=useState(''),[error,setError]=useState(''),[count,setCount]=useState(0),[message,setMessage]=useState(''),[mode,setMode]=useState(()=>{const view=new URLSearchParams(window.location.search).get('view');return ['demo','discovery','archive'].includes(view)?view:'review'}),[candidate,setCandidate]=useState(null);
+ useEffect(()=>{let live=true;Promise.all([rpc('visits'),voidedShells()]).then(([x,h])=>{if(live){setHidden(h||[]);setRows(x);setId(old=>old||x.find(v=>v.reference===(new URLSearchParams(window.location.search).get('visit')||'V001'))?.id||x[0]?.id||'')}}).catch(e=>live&&setError(e.message));return()=>{live=false}},[count]);
+ useEffect(()=>{let live=true;setDetail(null);setEvents({});setLife(null);if(id)Promise.all([rpc('detail',{target:id}),getEventInfo(id),shellInfo(id)]).then(([x,info,lifecycle])=>{if(live){setEvents(info||{});setLife(lifecycle);setDetail(x)}}).catch(e=>live&&setError(e.message));return()=>{live=false}},[id,count]);
+ function open(i,key='visit'){if(hidden.includes(i))setIncludeHidden(true);setId(i);setEvent(key);setShowVoided(true);setError('');setSearch('');setMode('review');setCount(c=>c+1)}
+ const list=rows.filter(r=>(includeHidden||!hidden.includes(r.id))&&[r.reference,r.patient,r.chart,r.patient_name,r.day,r.office].join(' ').toLowerCase().includes(search.trim().toLowerCase()));
  const d=detail?.id===id?detail:null,entry=d?.entries?.find(x=>x.key===event);
  return <section className={panel}><h2 className="text-lg font-semibold">Historical usage review</h2>
  <p>Save each field with its source and evidence status. Your portal login identifies the reviewer. Use Source files for the reconciled worksheet or a separate replacement reference.</p>
@@ -141,18 +143,19 @@ function Workspace(){
  {mode==='demo'&&<SourceDemo/>}
  {mode==='archive'&&<Evidence/>}
  {mode==='new'&&<NewVisit key={candidate?.reference||'empty'} initial={candidate} onOpen={open}/>}
- {mode==='discovery'&&<Discovery onVisit={open} onSelect={r=>{setCandidate({reference:r.reference,patient:r.patient,office:offices.includes(r.office)?r.office:'',day:r.day,source:r.sources[0]||''});setMode('new')}}/>}
- {mode==='review'&&<><div className="grid gap-3 md:grid-cols-2"><Label name="Find a visit"><input className={input} value={search} onChange={e=>setSearch(e.target.value)} placeholder="Visit reference, patient, office or date"/></Label>
- <Label name={'Secure visits ('+list.length+')'}><select className={input} value={list.some(r=>r.id===id)?id:''} onChange={e=>{setId(e.target.value);setEvent('visit');setMessage('')}}><option value="">Choose a visit</option>{list.map(r=><option key={r.id} value={r.id}>{r.reference} · {r.day} · {r.office} · {r.patient_name||r.patient}</option>)}</select></Label></div>
+ {mode==='discovery'&&<Discovery onVisit={open} onSelect={r=>{setCandidate({reference:r.reference,patient:r.patient,office:offices.includes(r.office)?r.office:'',day:r.day,source:[r.reference,r.sources[0]].filter(Boolean).join(' · ')});setMode('new')}}/>}
+ {mode==='review'&&<>{hidden.length>0&&<label><input type="checkbox" checked={includeHidden} onChange={e=>setIncludeHidden(e.target.checked)}/> Show voided historical visits</label>}<div className="grid gap-3 md:grid-cols-2"><Label name="Find a visit"><input className={input} value={search} onChange={e=>setSearch(e.target.value)} placeholder="Visit reference, patient, office or date"/></Label>
+ <Label name={'Secure visits ('+list.length+')'}><select className={input} value={list.some(r=>r.id===id)?id:''} onChange={e=>{setId(e.target.value);setEvent('visit');setMessage('')}}><option value="">Choose a visit</option>{list.map(r=><option key={r.id} value={r.id}>{hidden.includes(r.id)?'Voided · ':''}{r.reference} · {r.day} · {r.office} · {r.patient_name||r.patient}</option>)}</select></Label></div>
  {d&&list.some(r=>r.id===id)&&<><h3 className="font-semibold">{d.reference} · {d.day} · {d.office}</h3><p>Ascend patient {d.patient} · {d.original.review_coverage||'Additional historical review visit'}</p>
+ {life&&<VisitHistory key={d.id+'/'+life.version} visit={d} info={life} onSaved={state=>{setIncludeHidden(true);setEvent('visit');setMessage('Historical visit saved · '+state);setCount(c=>c+1)}}/>}
  <p className="text-sm">{d.source} {d.original.supplemental}</p><List items={d.original.priority}/>
  <details><summary>Original sources and review questions</summary><List items={d.original.flags}/><List items={d.original.questions}/><List items={d.original.docs?.map(s=>'Ascend document '+s.id+' · '+s.type+' · Filed '+s.filed)}/>
  <p>Procedure references {(d.original.records||[]).join(', ')||'None linked'}</p></details>
  {Object.values(events).some(x=>x.state==='Voided')&&<label className="flex gap-2"><input type="checkbox" checked={showVoided} onChange={e=>{setShowVoided(e.target.checked);if(!e.target.checked&&events[event]?.state==='Voided')setEvent('visit')}}/>Show voided events and audit history</label>}
- <Label name="Visit, linked material or original worksheet question"><select className={input} value={event} onChange={e=>{setEvent(e.target.value);setMessage('')}}>{d.entries.filter(a=>showVoided||events[a.key]?.state!=='Voided').map(a=><option key={a.key} value={a.key}>{events[a.key]?.state?events[a.key].state+' · ':''}{a.original.title||a.original.source_ref||a.key} · {a.key}</option>)}<option value="+">Add a separate source event</option></select></Label>
- {(event==='+'||entry?.key?.startsWith('new:')||entry?.key?.startsWith('unit:'))&&<SourceControls key={'source-'+d.id+event+(events[event]?.actions?.length||0)} visit={d} entry={entry} info={events[event]} onOpen={open} onSaved={(key,state)=>{setEvent(state==='Voided'?'visit':key);setMessage('Historical event saved · '+state);setCount(c=>c+1)}}/>}
+ <Label name="Visit, linked material or original worksheet question"><select className={input} value={event} onChange={e=>{setEvent(e.target.value);setMessage('')}}>{d.entries.filter(a=>showVoided||events[a.key]?.state!=='Voided').map(a=><option key={a.key} value={a.key}>{events[a.key]?.state?events[a.key].state+' · ':''}{a.original.title||a.original.source_ref||a.key} · {a.key}</option>)}{life?.state!=='Voided'&&<option value="+">Add a separate source event</option>}</select></Label>
+ {life?.state!=='Voided'&&(event==='+'||entry?.key?.startsWith('new:')||entry?.key?.startsWith('unit:'))&&<SourceControls key={'source-'+d.id+event+(events[event]?.actions?.length||0)} visit={d} entry={entry} info={events[event]} onOpen={open} onSaved={(key,state)=>{setEvent(state==='Voided'?'visit':key);setMessage('Historical event saved · '+state);setCount(c=>c+1)}}/>}
  {entry&&events[event]?.state==='Voided'&&<details><summary>Retained field evidence ({entry.history.length} revisions)</summary>{entry.history.map(h=><div key={h.version} className="my-2 border-t"><p>{h.by} · {new Date(h.at).toLocaleString()} · {h.source} · {h.reason}</p><List items={Object.entries(h.after).map(([k,v])=>labels[k]+' · '+show(v))}/></div>)}</details>}
- {entry&&events[event]?.state!=='Voided'&&<Editor key={'fields-'+d.id+event+(entry?.version||0)} visit={d} entry={entry} onSaved={key=>{setEvent(key);setMessage('Historical correction saved.');setCount(c=>c+1)}}/>}</>}</>}
+ {life?.state!=='Voided'&&entry&&events[event]?.state!=='Voided'&&<Editor key={'fields-'+d.id+event+(entry?.version||0)} visit={d} entry={entry} onSaved={key=>{setEvent(key);setMessage('Historical correction saved.');setCount(c=>c+1)}}/>}</>}</>}
  </section>
 }
 export default function HistoricalUsageReview(){const {userProfile}=useAuth();return reviewers.includes(userProfile?.id)?<Workspace key={userProfile.id}/>:null}
