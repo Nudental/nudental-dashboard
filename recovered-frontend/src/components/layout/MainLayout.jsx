@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { followupAfterSignIn } from '../../pages/patient-follow-up/destination';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import OfflineBanner from '../ui/OfflineBanner';
@@ -68,6 +69,11 @@ const MainLayout = () => {
   const { info } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const saved = followupAfterSignIn(location, profileGateStatus);
+    if (saved) navigate(saved, { replace: true });
+  }, [location, profileGateStatus, navigate]);
 
   // Sidebar state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {

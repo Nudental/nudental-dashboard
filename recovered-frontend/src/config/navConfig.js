@@ -247,6 +247,13 @@ export const NAV_GROUPS = [
     badge: 'pendingApprovals', // dynamic badge key
     children: [
       {
+        id: 'patient-follow-up',
+        label: 'Patient Follow-up',
+        icon: 'PhoneCall',
+        route: '/patient-follow-up',
+        description: 'Record patient calls and follow up on online bookings and inquiries',
+      },
+      {
         id: 'request-supplies',
         label: 'Request Supplies',
         shortLabel: 'Supplies',
@@ -513,6 +520,10 @@ export const ROUTE_TO_NAV = NAV_GROUPS?.reduce((acc, group) => {
  * Check if a nav item is visible for a given user profile + permissions
  */
 export function isNavItemVisible(item, userProfile, hasPermission) {
+  if (item?.id === 'patient-follow-up') {
+    return ['super_admin', 'office_manager'].includes(userProfile?.role) ||
+      ['Front Desk', 'Office Manager', 'Patient Care Coordinator', 'Patient Care Coordinator (Front Desk)'].includes(userProfile?.job_title);
+  }
   if (item?.assistantScans) return /\b(rda|da|dental assist(?:ant)?|dental asst)\b/i.test(userProfile?.job_title || '');
   const role = userProfile?.role;
   const isSuperAdmin = role === 'super_admin';
