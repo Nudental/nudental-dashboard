@@ -1,4 +1,5 @@
 import React from 'react';
+import UsageAllocation,{canViewAllocation} from '../inventory-dashboard/components/UsageAllocation';
 import { useAuth } from '../../contexts/AuthContext';
 import useRolePermissions from '../../hooks/useRolePermissions';
 import { AccessDenied } from '../../hooks/useRbacGuard';
@@ -17,7 +18,8 @@ export default function FrontDeskApprovals() {
         <h1 className="text-2xl font-bold">Front Desk Approvals</h1>
         <p className="text-sm text-muted-foreground mt-1">Review supply requests from your permitted offices. You cannot approve your own request.</p>
       </header>
-      <FrontDeskRequestReview />
+      {canViewAllocation(userProfile) && <><a className="inline-block text-sm font-medium text-primary underline" href="#supply-approval-queue">Jump to requests awaiting review</a><UsageAllocation compact/></>}
+      <section id="supply-approval-queue" tabIndex={-1}><FrontDeskRequestReview /></section>
     </main>
   );
 }

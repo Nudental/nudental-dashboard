@@ -1,3 +1,4 @@
+import OnHandStock from './OnHandStock';
 import VendorInvoices from './VendorInvoices';
 import PurchaseEditor from './PurchaseEditor';
 import SupplySpending from './SupplySpending';
@@ -11,8 +12,7 @@ const types = ['Front desk', 'Clinical supply', 'Bone and tissue', 'Implants'];
 const control = 'block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground';
 const button = 'inline-flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm font-medium hover:bg-muted disabled:opacity-50';
 const primary = 'inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50';
-const stockHeaders = ['Office','Type','Item','Category / brand','Identifier','Lot','Expires','On hand','Minimum'];
-const purchaseHeaders = ['Office','Source','Date','Vendor','Item','Order reference','Purchased quantity','Verified received','Recorded amount','Source status','Evidence','Change reason'];
+const purchaseHeaders = ['Item / date','Office','Vendor','Ordered / received','Recorded amount','Details'];
 
 function StockEditor({ original, offices, officeFilter, onClose, onSaved }) {
   const [key] = useState(() => original?.id || crypto.randomUUID());
@@ -63,7 +63,9 @@ function StockEditor({ original, offices, officeFilter, onClose, onSaved }) {
 
 export default function PurchasingRecords({inventoryOnly=false}) {
   const { userProfile } = useAuth();
-  const [offices,setOffices] = useState(null);
+  const [access,setAccess] = useState(null);
+  const offices=access?.user===userProfile?.id ? access?.offices : null;
+  const [accessRetry,setAccessRetry]=useState(0);
   const [office,setOffice] = useState('');
   const directSpending = new URLSearchParams(window.location.search).get('view') === 'supply-spending';
   const [section,setSection] = useState(inventoryOnly?'Inventory':directSpending?'Purchases':'Invoices');
@@ -78,17 +80,17 @@ export default function PurchasingRecords({inventoryOnly=false}) {
   const [message,setMessage] = useState('');
   useEffect(() => {
     let active=true;
-    setOffices(null);setError('');
+    setAccess(null);setError('');
     supabase.rpc('purchasing_record_offices').then(({data,error})=>{
       if(!active)return;
       if(error) setError('Could not load office access.');
-      else setOffices(data || []);
+      else setAccess({user:userProfile?.id,offices:data || []});
     });
     return ()=>{active=false;};
-  },[userProfile?.id,version]);
+  },[userProfile?.id,accessRetry]);
   useEffect(()=>{
     let active=true; setResult(null);
-    if(offices?.length && section !== 'Invoices' && !spending) {
+    if(offices?.length && section === 'Purchases' && !spending) {
       supabase.rpc('purchasing_records',{section,at_office:office || null,term,page_no:page}).then(({data,error})=>{
         if(!active)return;
         setError(error ? 'Could not load records. Use Refresh to try again.' : '');
@@ -96,7 +98,7 @@ export default function PurchasingRecords({inventoryOnly=false}) {
       });
     }
     return ()=>{active=false;};
-  },[offices,section,office,term,page,spending]);
+  },[offices,section,office,term,page,spending,version]);
   const stock=section==='Inventory';
   if(offices && !offices.length)return <p className="p-6">Your account does not have access to purchasing records.</p>;
   return <main className="mx-auto max-w-screen-2xl p-6 space-y-5 text-foreground">
@@ -105,25 +107,29 @@ export default function PurchasingRecords({inventoryOnly=false}) {
     {offices?.length > 0 && <>
       {!inventoryOnly && <div className="flex gap-2 border-b border-border pb-3">{['Invoices','Purchases','Inventory'].map(v=><button className={v===section?primary:button} key={v} onClick={()=>{setSection(v);setPage(0);setTerm('');setEditor(null);setMessage('');}}>{v}</button>)}</div>}
       {section==='Purchases' && <nav aria-label="Purchase views" className="flex gap-2">{['Purchase records','Supply Spending'].map(v=><button className={v===purchaseView?primary:button} aria-pressed={v===purchaseView} key={v} onClick={()=>{setPurchaseView(v);setEditor(null);}}>{v}</button>)}</nav>}
-      {section!=='Invoices' && !spending && <div className="flex flex-wrap items-end gap-3">
+      {section==='Purchases' && !spending && <div className="flex flex-wrap items-end gap-3">
         <label className="text-sm">Office<select className={control} value={office} onChange={e=>{setOffice(e.target.value);setPage(0);setEditor(null);}}><option value="">All offices</option>{offices.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
-        <label className="text-sm">Search<input className={control} type="search" value={term} onChange={e=>{setTerm(e.target.value);setPage(0);}} placeholder={stock?'Item, SKU or lot':'Item, vendor or order'}/></label>
-        {!editor && <button className={primary} onClick={()=>{setEditor({record:null});setMessage('');}}>{stock?'Add inventory record':'Add purchase record'}</button>}
+        <label className="text-sm">Search<input className={control} type="search" value={term} onChange={e=>{setTerm(e.target.value);setPage(0);}} placeholder="Item, vendor or order"/></label>
+        {!editor && <button className={primary} onClick={()=>{setEditor({record:null});setMessage('');}}>Add purchase record</button>}
       </div>}
     </>}
-    {spending && offices?.length>0 ? <SupplySpending offices={offices}/> : section==='Invoices' && offices?.length > 0 ? <VendorInvoices offices={offices.map(o=>o.name)}/> : <>
-    <button className={button} onClick={()=>setVersion(v=>v+1)}><Icon name="RefreshCw" size={14}/>Refresh</button>
-    {editor && stock && <StockEditor key={editor.record?.id || 'new'} original={editor.record} offices={offices||[]} officeFilter={office} onClose={()=>setEditor(null)} onSaved={()=>{setEditor(null);setMessage('Inventory record saved.');setVersion(v=>v+1);}}/>}
+    {stock && offices?.length>0 ? <OnHandStock key={userProfile?.id} offices={offices} office={office} setOffice={id=>{setOffice(id);setEditor(null)}} version={version} onRefresh={()=>setVersion(v=>v+1)} onEdit={record=>{setEditor({record});setMessage('')}} editing={!!editor}>
+      {editor && <StockEditor key={editor.record?.id || 'new'} original={editor.record} offices={offices} officeFilter={office} onClose={()=>setEditor(null)} onSaved={()=>{setEditor(null);setMessage('Inventory record saved.');setVersion(v=>v+1)}}/>}
+      {message && <p role="status">{message}</p>}
+    </OnHandStock> : spending && offices?.length>0 ? <SupplySpending offices={offices}/> : section==='Invoices' && offices?.length > 0 ? <VendorInvoices offices={offices.map(o=>o.name)}/> : <>
+    <button className={button} onClick={()=>offices?setVersion(v=>v+1):setAccessRetry(v=>v+1)}><Icon name="RefreshCw" size={14}/>Refresh</button>
     {editor && !stock && <PurchaseEditor key={editor.record?.id || 'new'} record={editor.record} offices={offices||[]} officeFilter={office} onClose={()=>setEditor(null)} onSaved={()=>{setEditor(null);setMessage('Purchase record saved.');setVersion(v=>v+1);}}/>}
     {message && <p role="status">{message}</p>}
     {error ? <p role="alert">{error}</p> : !result ? <p>Loading records…</p> :
       <section className="rounded-xl border border-border bg-card p-4 space-y-3">
-        <p className="text-sm">{result.count} {stock?'inventory':'purchase'} records</p>
+        <p className="text-sm">{result.count} purchase records</p>
         {!stock && <p className="text-sm text-muted-foreground">Purchase records show orders, allocations and fulfillment. Use the paid invoice register for recorded payment evidence.</p>}
-        <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr>{[...(stock?stockHeaders:purchaseHeaders),''].map((h,i)=><th key={i} className="px-3 py-2">{h}</th>)}</tr></thead>
+        <div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr>{[...purchaseHeaders,''].map((h,i)=><th key={i} className="px-3 py-2">{h}</th>)}</tr></thead>
         <tbody>{result.rows.map(r=><tr key={(r.kind||r.source)+r.id} className="border-t border-border">
-          {(stock?[r.office_name,r.kind,r.item_name,r.category,r.reference,r.lot,r.expiry,r.quantity,r.minimum]:
-            [r.office_name,r.source,r.purchased,r.vendor,r.item,r.reference,r.quantity,r.received,r.amount==null?null:(r.currency || 'USD')+' '+r.amount,r.status,r.evidence,r.reason]).map((x,i)=><td key={i} className="px-3 py-2">{x??'—'}</td>)}
+          <td className="px-3 py-2"><strong>{r.item||'Unspecified item'}</strong><p className="text-xs text-muted-foreground">{r.purchased||'Date unavailable'}</p></td>
+          <td className="px-3 py-2">{r.office_name}</td><td className="px-3 py-2">{r.vendor||'—'}</td>
+          <td className="px-3 py-2">{r.quantity??'—'} / {r.received??'—'}</td><td className="px-3 py-2">{r.amount==null?'—':(r.currency||'USD')+' '+r.amount}</td>
+          <td className="px-3 py-2"><details><summary className="cursor-pointer">Source details</summary><dl className="mt-2 space-y-1">{[['Source',r.source],['Order reference',r.reference],['Status',r.status],['Evidence',r.evidence],['Change reason',r.reason]].map(([label,value])=><div key={label}><dt className="text-xs text-muted-foreground">{label}</dt><dd>{value||'—'}</dd></div>)}</dl></details></td>
           <td><button className={button} onClick={()=>{setEditor({record:r});setMessage('');}}>Edit</button></td></tr>)}</tbody></table></div>
         {result.count>50 && <div className="flex items-center gap-3"><button className={button} disabled={!page} onClick={()=>setPage(p=>p-1)}>Previous</button>
           <span>Page {page+1} of {Math.ceil(result.count/50)}</span><button className={button} disabled={(page+1)*50>=result.count} onClick={()=>setPage(p=>p+1)}>Next</button></div>}
