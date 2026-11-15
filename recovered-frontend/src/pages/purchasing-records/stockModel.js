@@ -1,7 +1,7 @@
 const clean = value => String(value ?? '').trim().replace(/\s+/g, ' ');
 export const searchable = value => clean(value).toLowerCase().replace(/×/g, 'x').replace(/(\d)\s+mm\b/g, '$1mm');
 export const alertCategories = ['Implants', 'Bone & tissue', 'Endo files'];
-const endoTerms = /\b(?:endodontic|endo[\s-]*files?|rotary files?|reciprocating files?|k[- ]?files?|h[- ]?files?|hedstrom|protaper|proglider|vortex blue|waveone|reciproc|edgetaper|edgefile|edgeone|edgeendo|edgex7|brasseler endosequence)\b/i;
+const endoTerms = /\b(?:endodontic|endo[\s-]*files?|rotary files?|reciprocating files?|k[- ]?files?|h[- ]?files?|hedstrom|protaper|proglider|vortex blue|waveone|reciproc|edgetaper|edgefile|edgeone|edgex7|brasseler endosequence)\b/i;
 const mm = value => {
   const label=clean(value).replace(/\s*mm$/i, '').trim();
   return /^\d+(?:\.\d+)?$/.test(label)?String(Number(label)):label;
@@ -24,7 +24,8 @@ function clinicalGroup(row, detail) {
   if (row.kind === 'Bone and tissue' || (row.kind === 'Clinical supply' && /\b(?:bone graft|allograft|xenograft|collagen membrane|barrier membrane|graft membrane)\b/i.test(description))) {
     return {category:'Bone & tissue', title:item || 'Bone or tissue', identity:[row.category, item, item && !/^(?:bone|graft|bone graft|membrane|tissue)$/i.test(item) ? '' : identified || row.id], threshold:3};
   }
-  if (endoTerms.test(description) || (/\bendo(?:dontics)?\b/i.test(description) && /\bfiles?\b/i.test(description))) {
+  const accessory=/\b(?:paper points?|gutta[- ]percha|file holders?|organizers?|file stands?|file boxes)\b/i.test(description);
+  if (!accessory && (endoTerms.test(description) || (/\b(?:endo(?:dontics)?|edgeendo)\b/i.test(description) && /\bfiles?\b/i.test(description)))) {
     const withBrand=detail.brand&&!searchable(item).includes(searchable(detail.brand))?join(detail.brand,item):item;
     const raw=join(withBrand,detail.description);
     const formatSize=/\b(\d{1,3})\s*\/\s*(\.?\d{2})\b/i;
@@ -33,7 +34,10 @@ function clinicalGroup(row, detail) {
       (pair?'#'+pair[1]:raw.match(/(?:\b(?:size|ISO)\s*#?|#)\s*(\d{1,3})\b/i)?.[1]?.replace(/^/,'#'));
     const taper=pair?'.'+pair[2].replace('.',''):raw.match(/(?:^|[\s/])(\.\d{2})\b/i)?.[1] || (raw.match(/\b([2-9])\s*%/i)?.[1]||'').replace(/^(\d)$/,'.0$1');
     const length=raw.match(/\b(\d+(?:\.\d+)?)\s*mm\b/i)?.[1];
-    const stem=withBrand.replace(formatSize,' ').replace(/(?:\b(?:size|ISO)\s*#?|#)\s*\d{1,3}\b/gi,' ')
+    // Pack counts and trailing catalog references describe ordering, not clinical size.
+    const name=withBrand.replace(/\s+(?:—|–)\s+(?:(?:SKU|REF)\s*[:#]?\s*)?[A-Z0-9-]*\d[A-Z0-9-]*\s*$/i,'')
+      .replace(/\s*[,;(]?\s*\b(?:\d+\s*[- ]\s*(?:packs?|counts?|pcs?)|(?:box|pack)\s+of\s+\d+|\d+\s*\/\s*(?:box|pack))\b\)?/gi,' ');
+    const stem=name.replace(formatSize,' ').replace(/(?:\b(?:size|ISO)\s*#?|#)\s*\d{1,3}\b/gi,' ')
       .replace(/\b(?:F[1-5]|S[12X]|X[1-5])\b/gi,' ').replace(/\b\d+(?:\.\d+)?\s*mm\b/gi,' ')
       .replace(/(?:^|[\s/])\.\d{2}(?:\s*taper)?\b/gi,' ').replace(/\b\d+(?:\.\d+)?\s*%\s*(?:taper)?/gi,' ')
       .replace(/\b(?:pack|box)\s+of\s+\d+\b/gi,' ').replace(/[\s,;/–-]+$/,'').trim();
