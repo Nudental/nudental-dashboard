@@ -70,14 +70,30 @@ function Editor({visit,entry,onSaved}) {
  <List items={Object.keys({...h.before,...h.after}).filter(k=>show(h.before[k])!==show(h.after[k])).map(k=>labels[k]+' · '+show(h.before[k])+' → '+show(h.after[k]))}/></div>)}</details>}
  </fieldset>
 }
+function VerificationRegister({register}) {
+ if(!register) return null;
+ const headings=['Visit','Supported uses reported','Current events','Single creations verified','Inventory comparison','Disposition and evidence'];
+ return <section className={panel}><h3 className="font-semibold">Coordinated visit verification</h3>
+ <p>Caitlin records supported uses. Yabezy checks the original sources, creation audits and inventory records. The V023 pilot is complete.</p>
+ <p className="text-sm">Last checked {new Date(register.updated).toLocaleString()} · {register.stock_tables} inventory, usage and cost tables</p>
+ <div className="overflow-x-auto"><table className="w-full text-sm"><thead><tr>{headings.map(k=><th key={k} className="p-2 text-left">{k}</th>)}</tr></thead><tbody>
+ {register.rows.map(r=><tr key={r.ref} className="border-t align-top"><td className="p-2">{r.visit?<a className="text-primary underline" href={reviewLink+'&visit='+encodeURIComponent(r.visit)}>{r.ref}</a>:r.ref}</td>
+ <td className="p-2">{r.expected??'Pending'}</td><td className="p-2">{r.recorded}</td><td className="p-2">{r.verified}</td><td className="p-2">{r.stock}</td>
+ <td className="p-2"><p>{r.disposition}</p><p>{r.source}</p>{r.notes?.length>0&&<details><summary>Same-date Ascend note references</summary><List items={r.notes.map(n=>'Note '+n.id+(n.signed?' · Signed':' · Signature date unavailable'))}/></details>}</td></tr>)}
+ </tbody></table></div></section>
+}
+
 function Discovery({onSelect,onVisit}) {
+ const [scope,setScope]=useState('all'),[refresh,setRefresh]=useState(0);
  const [data,setData]=useState(null),[error,setError]=useState(''),[office,setOffice]=useState(''),[search,setSearch]=useState(''),[limit,setLimit]=useState(25);
- useEffect(()=>{let live=true;rpc('discovery').then(x=>live&&setData(x)).catch(e=>live&&setError(e.message));return()=>{live=false}},[]);
+ useEffect(()=>{let live=true;rpc('discovery').then(x=>live&&setData(x)).catch(e=>live&&setError(e.message));return()=>{live=false}},[refresh]);
  if(!data)return <p role="status">{error||'Loading the secure discovery register…'}</p>;
- const rows=data.candidates.filter(r=>(!office||r.office===office)&&[r.reference,r.patient,r.day,r.office,r.reason].join(' ').toLowerCase().includes(search.trim().toLowerCase()));
- return <div className="space-y-3"><p>{data.summary}</p><List items={data.gaps}/><details><summary>Source and date coverage by office</summary>
+ const rows=data.candidates.filter(r=>(scope==='all'||(scope==='outside'?!r.match:!!r.match))&&(!office||r.office===office)&&[r.reference,r.patient,r.day,r.office,r.reason].join(' ').toLowerCase().includes(search.trim().toLowerCase()));
+ return <div className="space-y-3"><p>{data.summary}</p><VerificationRegister register={data.verification_register}/>
+ <button className={button} onClick={()=>{setError('');setData(null);setRefresh(v=>v+1)}}>Refresh verification</button>
+ <List items={data.gaps.filter(x=>!data.verification_register||!x.startsWith('Same-patient, same-service-date Ascend note crosswalk'))}/><details><summary>Source and date coverage by office</summary>
  <List items={Object.entries(data.coverage).map(([k,v])=>k+' · latest returned service '+v)}/><p>{data.exclusions}</p></details>
- <div className="flex flex-wrap gap-2"><select aria-label="Discovery office" className="rounded border p-2" value={office} onChange={e=>{setOffice(e.target.value);setLimit(25)}}><option value="">All offices</option>{[...offices,'Office unresolved'].map(x=><option key={x}>{x}</option>)}</select>
+ <div className="flex flex-wrap gap-2"><select aria-label="Cohort" className="rounded border p-2" value={scope} onChange={e=>{setScope(e.target.value);setLimit(25)}}><option value="all">All discovery candidates</option><option value="outside">Outside cohort or office unresolved</option><option value="matched">Matched to original cohort</option></select><select aria-label="Discovery office" className="rounded border p-2" value={office} onChange={e=>{setOffice(e.target.value);setLimit(25)}}><option value="">All offices</option>{[...offices,'Office unresolved'].map(x=><option key={x}>{x}</option>)}</select>
  <input aria-label="Find discovery candidate" className="rounded border p-2" placeholder="Reference, patient ID or date" value={search} onChange={e=>{setSearch(e.target.value);setLimit(25)}}/></div>
  <p>{rows.length} candidate visits · Review source evidence before recording material.</p>
  {rows.slice(0,limit).map(r=><details key={r.reference} className="rounded border p-2"><summary>{r.reference} · {r.day} · {r.office} · {r.reason}</summary>
