@@ -81,7 +81,7 @@ const BoneAndTissueInventory = () => {
       const stockData = await fetchStock();
       const map = {};
       stockData?.forEach(item => {
-        const key = `${item?.identification_number}__${item?.office_id || ''}`;
+        const key = `${item?.identification_number}__${item?.office_id || ''}__${item?.lot_number || ''}`;
         map[key] = item;
       });
       setStockMap(map);
@@ -119,7 +119,7 @@ const BoneAndTissueInventory = () => {
       if (filters?.lowStockOnly) {
         data = data?.filter(record => {
           if (!record?.identification_number) return false;
-          const key = `${record?.identification_number}__${record?.office_id || ''}`;
+          const key = `${record?.identification_number}__${record?.office_id || ''}__${record?.lot_number || ''}`;
           const stockItem = stockMap?.[key];
           return stockItem && stockItem?.current_stock <= 2;
         });

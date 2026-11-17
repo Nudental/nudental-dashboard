@@ -299,7 +299,7 @@ const EntryModal = ({
     const isNowUsed = form?.item_status === 'Used';
     if (isNowUsed && !wasUsedBefore && form?.identification_number?.trim()) {
       try {
-        const stockItem = await fetchStockByItem(form?.identification_number?.trim(), form?.office_id);
+        const stockItem = await fetchStockByItem(form?.identification_number?.trim(), form?.office_id, form?.lot_number);
         if (stockItem && stockItem?.current_stock <= 0) {
           setStockWarning('Stock count is at 0 — entry will still be saved.');
         } else {

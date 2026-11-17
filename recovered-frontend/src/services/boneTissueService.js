@@ -158,13 +158,14 @@ export const fetchStock = async (officeId = null) => {
 };
 
 // ── Fetch stock for a specific identification_number + office ──────────────
-export const fetchStockByItem = async (identificationNumber, officeId) => {
+export const fetchStockByItem = async (identificationNumber, officeId, lotNumber) => {
   if (!identificationNumber) return null;
   let query = supabase?.from('bone_tissue_stock')?.select('*')?.eq('identification_number', identificationNumber);
   if (officeId) query = query?.eq('office_id', officeId);
-  const { data, error } = await query?.limit(1);
+  if (lotNumber) query = query?.eq('lot_number', lotNumber);
+  const { data, error } = await query?.limit(2);
   if (error) throw error;
-  return data?.[0] || null;
+  return data?.length === 1 ? data[0] : null;
 };
 
 // ── Restock an item (Admin/Super Admin only) ───────────────────────────────

@@ -37,7 +37,7 @@ const InventoryTable = ({ records, loading, onEdit, onDelete, canDelete, isAdmin
 
   const getStockForRecord = (record) => {
     if (!stockMap || !record?.identification_number) return null;
-    const key = `${record?.identification_number}__${record?.office_id || ''}`;
+    const key = `${record?.identification_number}__${record?.office_id || ''}__${record?.lot_number || ''}`;
     return stockMap?.[key] || null;
   };
 

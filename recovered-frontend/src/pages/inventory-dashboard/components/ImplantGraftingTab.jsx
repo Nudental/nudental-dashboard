@@ -36,6 +36,7 @@ import EntryModal from '../../bone-and-tissue-inventory/components/EntryModal';
 import DeleteConfirmModal from '../../bone-and-tissue-inventory/components/DeleteConfirmModal';
 import CSVImportModal from '../../bone-and-tissue-inventory/components/CSVImportModal';
 import BulkImportWizard from '../../bone-and-tissue-inventory/components/BulkImportWizard';
+import ClinicalGraftScans from '../../../components/inventory/ClinicalGraftScans';
 import BoneTissueScanner from '../../bone-and-tissue-inventory/components/BoneTissueScanner';
 import ImplantSummaryCards from '../../implant-inventory-management/components/ImplantSummaryCards';
 import ImplantExpirationAlerts from '../../implant-inventory-management/components/ImplantExpirationAlerts';
@@ -214,7 +215,7 @@ const BoneTissueInventoryTable = ({ records, loading, onEdit, onDelete, canDelet
 
   const getStock = (record) => {
     if (!stockMap || !record?.identification_number) return null;
-    const key = `${record?.identification_number}__${record?.office_id || ''}`;
+    const key = `${record?.identification_number}__${record?.office_id || ''}__${record?.lot_number || ''}`;
     return stockMap?.[key] || null;
   };
 
@@ -820,7 +821,7 @@ const BoneTissueEmbedded = () => {
       const stockData = await BoneServices?.fetchStock();
       const map = {};
       stockData?.forEach(item => {
-        const key = `${item?.identification_number}__${item?.office_id || ''}`;
+        const key = `${item?.identification_number}__${item?.office_id || ''}__${item?.lot_number || ''}`;
         map[key] = item;
       });
       setStockMap(map);
@@ -837,7 +838,7 @@ const BoneTissueEmbedded = () => {
       if (filters?.lowStockOnly) {
         data = data?.filter(record => {
           if (!record?.identification_number) return false;
-          const key = `${record?.identification_number}__${record?.office_id || ''}`;
+          const key = `${record?.identification_number}__${record?.office_id || ''}__${record?.lot_number || ''}`;
           return stockMap?.[key] && stockMap?.[key]?.current_stock <= 2;
         });
       }
@@ -911,7 +912,7 @@ const BoneTissueEmbedded = () => {
     if (filters?.expirationTo && (r?.expiration_date || '') > filters?.expirationTo) return false;
     if (filters?.lowStockOnly) {
       if (!r?.identification_number) return false;
-      const key = `${r?.identification_number}__${r?.office_id || ''}`;
+      const key = `${r?.identification_number}__${r?.office_id || ''}__${r?.lot_number || ''}`;
       if (!stockMap?.[key] || stockMap?.[key]?.current_stock > 2) return false;
     }
     if (filters?.search) {
@@ -1000,6 +1001,7 @@ const BoneTissueEmbedded = () => {
 
       {activeTab === 'inventory' && (
         <>
+          <ClinicalGraftScans officeId={filters?.officeId} refresh={stockMap}/>
           <BoneTissueInventoryFilters filters={filters} setFilters={setFilters} offices={offices} staff={staff} />
           <BoneTissueInventoryTable
             records={inventoryRecords} loading={loading} onEdit={(r) => { setEditRecord(r); setShowEntryModal(true); }}
@@ -1008,7 +1010,7 @@ const BoneTissueEmbedded = () => {
           />
         </>
       )}
-      {activeTab === 'usage' && <HistoricalUsageReview/>}
+      {activeTab === 'usage' && <><HistoricalUsageReview/><ClinicalGraftScans usage refresh={stockMap}/></>}
       {activeTab === 'usage' && (
         <BoneTissueUsageLogTable
           records={usageRecords}
