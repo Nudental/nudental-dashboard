@@ -1,0 +1,18 @@
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; padding: 12vh 1rem 2rem; background: #eff4f9; color: #1c2c3d; font: 1rem/1.55 system-ui, sans-serif; }
+main { max-width: 29rem; margin: auto; padding: clamp(1.3rem, 5vw, 2.4rem); background: white; border: 1px solid #d4dee8; border-radius: 14px; box-shadow: 0 8px 28px #193d6510; }
+.brand { margin: 0 0 1.7rem; color: #154575; font-weight: 750; }
+.brand span { display: block; font-size: .85rem; font-weight: 450; }
+h1 { margin: 0; font-size: 1.75rem; line-height: 1.2; }
+label { display: block; font-weight: 600; margin: 1rem 0 .3rem; }
+input, button { width: 100%; border-radius: 6px; font: inherit; padding: .65rem .8rem; }
+input { border: 1px solid #8292a3; color: inherit; background: white; }
+button { margin-top: 1.2rem; border: 0; background: #165ba7; color: white; font-weight: 650; cursor: pointer; }
+button:disabled { opacity: .62; cursor: wait; }
+button.text { background: transparent; margin-top: .35rem; }
+a, button.text { color: #15559b; text-decoration: underline; text-underline-offset: .18em; }
+:focus-visible { outline: 3px solid #1976ce; outline-offset: 2px; }
+.hint { margin-top: .35rem; font-size: .9rem; }
+.return { margin-bottom: 0; }
+#status:empty { display: none; }
+#status[data-error="true"] { color: #982c26; }

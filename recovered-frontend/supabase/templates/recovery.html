@@ -1,0 +1,12 @@
+{{ if eq .RedirectTo "https://nudashboard.com/recover-account" }}
+<h2>Reset your NU Dashboard password</h2>
+<p>Open the <a href="https://nudashboard.com/recover-account">NU Dashboard password reset page</a> and enter your work email and this code:</p>
+<p style="font-size:24px;letter-spacing:3px"><strong>{{ .Token }}</strong></p>
+<p>The code expires in one hour. If it has expired, open the same page and choose <strong>Send me a new code</strong>.</p>
+<p>After the portal verifies your code, choose a new password and sign in. Keep your code private.</p>
+{{ else }}
+<h2>Reset Password</h2>
+
+<p>Follow this link to reset the password for your user:</p>
+<p><a href="{{ .ConfirmationURL }}">Reset Password</a></p>
+{{ end }}

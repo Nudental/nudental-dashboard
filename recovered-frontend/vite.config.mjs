@@ -20,6 +20,7 @@ export default defineConfig(({ mode }) => {
   // comment this out if that isn't relevant for your project
   build: {
     outDir: "build",
+    rollupOptions: { input: { index: 'index.html', recovery: 'recover-account.html' } },
     chunkSizeWarningLimit: 2000,
   },
   plugins: [tsconfigPaths(), react(), ...(qaHeaders ? [qaHeaders] : [])],
