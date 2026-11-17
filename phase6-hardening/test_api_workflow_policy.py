@@ -23,6 +23,21 @@ USER=UserIdentity('11111111-1111-4111-8111-111111111111','office_manager',OFFICE
 
 
 class WorkflowPolicyTests(unittest.TestCase):
+    def test_named_staff_closeout_is_read_only_and_office_scoped(self):
+        actor = replace(USER, role='staff', permissions=frozenset(),
+                        disabled_permissions=frozenset({'workflow.eod.view'}))
+        path = EOD + 'daily-report'
+        with patch('api_workflow_policy.has_named_closeout_grant', return_value=True) as grant:
+            self.assertTrue(self.allowed(path, 'officeId=' + OFFICE, actor))
+            self.assertFalse(self.allowed(path, 'officeId=' + OTHER, actor))
+            self.assertFalse(self.allowed(path, '', actor))
+            self.assertFalse(self.allowed(path, 'allOffices=true', actor))
+            self.assertFalse(self.allowed(path, 'officeId=' + OFFICE, actor, 'POST'))
+            self.assertFalse(self.allowed(EOD + 'unscheduled-treatment', 'officeId=' + OFFICE, actor))
+            self.assertEqual(grant.call_count, 1)
+        with patch('api_workflow_policy.has_named_closeout_grant', return_value=False):
+            self.assertFalse(self.allowed(path, 'officeId=' + OFFICE, actor))
+
     def allowed(self,path,query='',actor=USER,method='GET'):
         return workflow_authorize(actor,{'path':path,'method':method,'query_string':query.encode()},MAP)
 

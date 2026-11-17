@@ -37,6 +37,30 @@ def has_page(actor,key):
     return key in {'huddle:view','reports:financial_view'} and actor.role in {'admin','regional_manager','regional_clinical_manager'}
 
 
+def has_named_closeout_grant(actor, scope):
+    """Read the caller's existing dashboard grant under its normal row policy."""
+    from starlette.datastructures import Headers
+
+    authorization = Headers(raw=scope.get('headers', [])).get('authorization', '')
+    scheme, _, token = authorization.partition(' ')
+    if scheme.lower() != 'bearer' or not token:
+        return False
+
+    import requests
+    from api_identity import UserResolver
+    from otp_auth import _load_sb
+
+    config = _load_sb()
+    resolver = UserResolver(config['project_url'].rstrip('/'), config['secret_key'], requests.Session)
+    with requests.Session() as session:
+        session.trust_env = False
+        rows = resolver._get(session, '/rest/v1/staff_workflow_grants', token=token, params={
+            'select': 'permission', 'user_id': 'eq.' + actor.id,
+            'permission': 'eq.workflow.eod.view', 'limit': '1',
+        })
+    return rows == [{'permission': 'workflow.eod.view'}]
+
+
 def workflow_authorize(actor,scope,office_to_location):
     if not isinstance(actor,UserIdentity) or scope['method']!='GET':return False
     path=scope['path'];contact=CONTACT_RE.fullmatch(path)
@@ -48,7 +72,8 @@ def workflow_authorize(actor,scope,office_to_location):
         allowed=(actor.role=='admin' and actor.all_offices) or any(has_page(actor,k) for k in COMPLETION_GRANTS)
     else:
         allowed=has_page(actor,'workflow.eod.view')
-    if not allowed:return False
+    named_closeout = not allowed and actor.role == 'staff' and path == EOD + 'daily-report'
+    if not allowed and not named_closeout:return False
     if contact:
         # The actual queue record is checked before contact data is fetched.
         try:uuid_value(contact[1])
@@ -75,6 +100,9 @@ def workflow_authorize(actor,scope,office_to_location):
         if location not in reverse:return False
         targets.append(reverse[location])
     if len(set(targets))>1:return False
+    if named_closeout:
+        return (len(set(targets)) == 1 and targets[0] in actor.assigned_offices
+                and has_named_closeout_grant(actor, scope))
     if actor.all_offices:return True
     return bool(targets) and all(office in actor.assigned_offices for office in targets)
 
