@@ -532,7 +532,7 @@ export function isNavItemVisible(item, userProfile, hasPermission) {
     return ['super_admin', 'office_manager'].includes(userProfile?.role) ||
       ['Front Desk', 'Office Manager', 'Patient Care Coordinator', 'Patient Care Coordinator (Front Desk)'].includes(userProfile?.job_title);
   }
-  if (item?.assistantScans) return /\b(rda|da|dental assist(?:ant)?|dental asst)\b/i.test(userProfile?.job_title || '');
+  if (item?.assistantScans) return hasPermission('resources.inventory.assigned_scans') || /\b(rda|da|dental assist(?:ant)?|dental asst)\b/i.test(userProfile?.job_title || '');
   const role = userProfile?.role;
   const isSuperAdmin = role === 'super_admin';
 

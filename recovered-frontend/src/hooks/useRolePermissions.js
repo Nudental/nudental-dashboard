@@ -2,6 +2,32 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 
+const personalResourcePermissions = new Set([
+  'inventory:edit',
+  'resources.inventory.bulk_import.view',
+  'resources.inventory.settings.view',
+  'resources.reports.full_workbook.export',
+  'resources.reports.individual_export',
+  'reports:financial_view',
+  'resources.reports.view',
+  'resources.reports.pl_summary.view',
+  'resources.reports.office_breakdown.view',
+  'resources.reports.goal_leaderboard.view',
+  'resources.reports.period_comparison.view',
+  'resources.reports.revenue_by_provider.view',
+  'purchasing.records.manage',
+  'inventory:view',
+  'resources.inventory.view',
+  'resources.inventory.overview.view',
+  'resources.inventory.front_desk.view',
+  'resources.inventory.monthly_supply.view',
+  'resources.inventory.bone_tissue.view',
+  'resources.inventory.implant.view',
+  'resources.inventory.reports.view',
+  'resources.inventory.usage_log.view',
+  'resources.directory.view',
+]);
+
 // The sidebar and open page can request the same capability during a single render.
 const pendingReviews = new Map();
 function canReviewInsurance(userId) {
@@ -20,7 +46,11 @@ function canReviewInsurance(userId) {
  * Fetches from role_permissions table based on userProfile.role.
  */
 const useRolePermissions = () => {
-  const { userProfile } = useAuth();
+  const { user, userProfile } = useAuth();
+  const hasPersonalResources = user?.app_metadata?.nu_dashboard_resources === true
+    && user.id === userProfile?.id
+    && userProfile?.is_active === true
+    && userProfile?.is_approved === true;
   const [permissionsMap, setPermissionsMap] = useState({});
   const [loading, setLoading] = useState(true);
   const request = useRef(0);
@@ -85,6 +115,8 @@ const useRolePermissions = () => {
    */
   const hasPermission = useCallback(
     (permissionKey) => {
+      if (permissionKey === 'resources.inventory.assigned_scans') return hasPersonalResources;
+      if (hasPersonalResources && personalResourcePermissions.has(permissionKey)) return true;
       if (permissionKey === 'insurance.daily.review') return !!permissionsMap[permissionKey];
       if (permissionsMap?.__all) return true;
 
@@ -136,7 +168,7 @@ const useRolePermissions = () => {
 
       return !!permissionsMap?.[permissionKey];
     },
-    [permissionsMap, userProfile?.role]
+    [permissionsMap, userProfile?.role, hasPersonalResources]
   );
 
   return { hasPermission, permissionsMap, loading };
