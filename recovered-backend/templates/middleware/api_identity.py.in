@@ -37,6 +37,7 @@ class UserIdentity:
     email: str = ''
     display_name: str = ''
     disabled_permissions: frozenset = frozenset()
+    has_personal_resources: bool = False
 
 
 @dataclass(frozen=True)
@@ -121,7 +122,9 @@ class UserResolver:
                 disabled.discard(key)
         email = user.get('email')
         display_name = profile.get('full_name') or profile.get('username') or email or user_id
-        return UserIdentity(user_id, profile['role'], primary, frozenset(offices), bool(all_offices), frozenset(enabled), email if isinstance(email, str) else '', display_name if isinstance(display_name,str) else user_id, frozenset(disabled))
+        metadata = user.get('app_metadata')
+        has_resources = isinstance(metadata, dict) and metadata.get('nu_dashboard_resources') is True
+        return UserIdentity(user_id, profile['role'], primary, frozenset(offices), bool(all_offices), frozenset(enabled), email if isinstance(email, str) else '', display_name if isinstance(display_name,str) else user_id, frozenset(disabled), has_personal_resources=has_resources)
 
     def _get(self, session, path, *, token=None, params=None):
         headers = {'apikey': self.service_key, 'Authorization': 'Bearer ' + (token or self.service_key)}

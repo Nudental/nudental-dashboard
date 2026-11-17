@@ -742,11 +742,11 @@
   },
   {
     "source_file": "middleware/api_identity.py",
-    "sha256": "d9a508321942cf9182a5388025b8e859556343b541d39e83f9832a946941fdc1",
-    "template_sha256": "d9a508321942cf9182a5388025b8e859556343b541d39e83f9832a946941fdc1",
+    "sha256": "0ce8a3e85ba835224054cead3328aa805b199fa1aba6ca7e35aac5664101bf1c",
+    "template_sha256": "0ce8a3e85ba835224054cead3328aa805b199fa1aba6ca7e35aac5664101bf1c",
     "round_trip_exact": true,
     "introduced": "phase6-api-identity",
-    "bytes": 11574
+    "bytes": 11799
   },
   {
     "source_file": "middleware/api_payroll_policy.py",
@@ -833,9 +833,9 @@
   },
   {
     "source_file": "middleware/api_expense_read_policy.py",
-    "sha256": "208e16c7ad853d969a69c5a5c1077d0c2fdb0efe82a653b831911c7e70077bae",
-    "template_sha256": "208e16c7ad853d969a69c5a5c1077d0c2fdb0efe82a653b831911c7e70077bae",
-    "bytes": 1928
+    "sha256": "0b9af4b06963b20433475f236daba55150f41f087786d06bb6a51c8a77ce3658",
+    "template_sha256": "0b9af4b06963b20433475f236daba55150f41f087786d06bb6a51c8a77ce3658",
+    "bytes": 2029
   },
   {
     "source_file": "middleware/api_rcm_snapshot_policy.py",

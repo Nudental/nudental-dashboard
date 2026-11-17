@@ -42,6 +42,13 @@ class ExpensePolicyTests(unittest.TestCase):
   for path in EXPENSE_READS:
    for query in ['', 'office=QAOfficeA','officeId='+OWN,'locationId=111']:
     self.assertFalse(expense_read_authorize(replace(USER,all_offices=False),{'path':path,'method':'GET','query_string':query.encode()}))
+ def test_personal_resources_reads_only_the_all_office_report_summary(self):
+  actor = replace(USER, role='admin', permissions=frozenset(), has_personal_resources=True)
+  for path in EXPENSE_READS:
+   self.assertEqual(expense_read_authorize(actor, {'path':path,'method':'GET'}), path == scope()['path'])
+  self.assertFalse(expense_read_authorize(replace(actor, all_offices=False), scope()))
+  self.assertFalse(expense_read_authorize(replace(actor, has_personal_resources=False), scope()))
+  self.assertFalse(expense_read_authorize(actor, scope(method='POST')))
  def test_transactions_only_does_not_grant_payroll_or_summary(self):
   u=replace(USER,permissions=frozenset({'finance.expenses.view','finance.expenses.transactions.view'}))
   for name in ['lines','wf','filters']:self.assertTrue(expense_read_authorize(u,scope(name)))
