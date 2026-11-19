@@ -35,6 +35,7 @@ const getGreetingInfo = () => {
 
 // Notification type grouping config
 const NOTIF_TYPE_CONFIG = {
+  insurance_needs_review: { label: 'Insurance needs review', icon: 'ShieldAlert', color: 'text-amber-600' },
   pending_approval: { label: 'Pending Approvals', icon: 'Clock', color: 'text-yellow-600' },
   birthday: { label: 'Birthdays', icon: 'Cake', color: 'text-pink-500' },
   profile_update: { label: 'Profile Updates', icon: 'User', color: 'text-blue-500' },

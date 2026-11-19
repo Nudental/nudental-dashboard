@@ -1,4 +1,6 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { loadInsuranceReviewRequest } from '../../services/insuranceReviewLinks';
 import Icon from '../../components/AppIcon';
 import { useRbacGuard, AccessDenied } from '../../hooks/useRbacGuard';
 import useRolePermissions from '../../hooks/useRolePermissions';
@@ -55,6 +57,23 @@ export default function InsuranceVerify() {
     setSelectedRequest(request);
   }, [canComplete]);
   const [openError, setOpenError] = useState('');
+  const [searchParams] = useSearchParams();
+  const linkedRequestId = searchParams.get('request');
+  useEffect(() => {
+    if (!linkedRequestId || rbacLoading || permissionsLoading || !canView) return;
+    let active = true;
+    setOpenError('');
+    setSelectedRequest(null);
+    loadInsuranceReviewRequest(supabase, linkedRequestId).then(request => {
+      if (active) {
+        setActiveTab('queue');
+        setVerifView(null);
+        // Viewing a review alert does not change the breakdown or filing status.
+        setSelectedRequest(request);
+      }
+    }).catch(error => { if (active) setOpenError(error.message); });
+    return () => { active = false; };
+  }, [linkedRequestId, rbacLoading, permissionsLoading, canView]);
 
   const handleNewRequestSuccess = useCallback(() => {
     setQueueKey((k) => k + 1);

@@ -400,13 +400,19 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canRe
               </span>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-400">
+          <button aria-label="Close request" onClick={onClose} className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-gray-500 dark:text-gray-400">
             <Icon name="X" size={18} />
           </button>
         </div>
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-6">
+          {request?.dentrix_document_upload_status === 'review' && (
+            <div role="status" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+              <p className="font-semibold">Needs review before filing in Ascend</p>
+              <p className="mt-1">{request.dentrix_document_upload_error || 'Coordinate with the verifier to review the chart filing issue.'}</p>
+            </div>
+          )}
 
           {/* ── Verification Form Actions ── */}
           <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 space-y-3">

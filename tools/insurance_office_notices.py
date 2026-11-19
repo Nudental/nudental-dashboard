@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import requests
+from insurance_review_notices import run_reviews
 
 SENDER = 'yabezy@thenudental.com'
 DASHBOARD = 'https://nudashboard.com/insurance-verify'
@@ -75,9 +76,6 @@ def run():
     now = datetime.now(timezone.utc)
     due = read(table, select='id,kind,assignee_id,recipient,draft_id,attempts', sent_at='is.null', recipient='not.is.null',
                retry_at='lte.' + now.isoformat(), order='created_at.asc', limit='25')
-    if not due:
-        print('Office notices due: 0')
-        return 0
     errors = 0
     for row in due:
         def save(values):
@@ -103,8 +101,16 @@ def run():
             save({'attempts': attempts, 'retry_at': (now + wait).isoformat()})
             print('Office notice retry:', row['id'], type(error).__name__, file=sys.stderr)
     print(f'Office notices processed: {len(due) - errors}, retries: {errors}')
+    errors += run_reviews(session, base, gmail)
     return int(bool(errors))
 
 
 if __name__ == '__main__':
-    sys.exit(run())
+    # Serializes timer and manual runs, including draft persistence and uncertain-send recovery.
+    import fcntl
+    with (Path.home() / '.cache/nu-insurance-office-notices.lock').open('w') as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            sys.exit(0)
+        sys.exit(run())

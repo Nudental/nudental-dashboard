@@ -5,8 +5,10 @@ import Icon from '../../components/AppIcon';
 import { notificationsService } from '../../services/notificationsService';
 import { useAuth } from '../../contexts/AuthContext';
 import { useRealtimeSubscription } from '../../hooks/useRealtimeSubscription';
+import { insuranceReviewLink } from '../../services/insuranceReviewLinks';
 
 const TYPE_CONFIG = {
+  insurance_needs_review: { label: 'Insurance needs review', icon: 'ShieldAlert', color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
   supply_request: { label: 'Supply request', icon: 'ClipboardList', color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20' },
   pace_alert: { label: 'Pace Alert', icon: 'TrendingDown', color: 'text-destructive', bg: 'bg-destructive/10', border: 'border-destructive/20' },
   entry_approved: { label: 'Entry Approved', icon: 'CheckCircle', color: 'text-success', bg: 'bg-success/10', border: 'border-success/20' },
@@ -20,6 +22,7 @@ const TYPE_CONFIG = {
 
 const TYPE_FILTER_OPTIONS = [
   { value: 'all', label: 'All Types' },
+  { value: 'insurance_needs_review', label: 'Insurance needs review' },
   { value: 'supply_request', label: 'Supply requests' },
   { value: 'pace_alert', label: 'Pace Alerts' },
   { value: 'entry_approved', label: 'Approvals' },
@@ -105,6 +108,7 @@ const NotificationItem = ({ notification, onMarkRead, onArchive }) => {
         )}
         <div className="flex items-center gap-3 mt-2 flex-wrap">
           {notification.notification_type === 'supply_request' && <Link className="text-xs text-primary underline" to={'/request-supplies?request=' + encodeURIComponent(notification.metadata?.request_id || '')}>Open request</Link>}
+          {notification.notification_type === 'insurance_needs_review' && insuranceReviewLink(notification.metadata?.request_id) && <Link className="text-xs text-primary underline" to={insuranceReviewLink(notification.metadata.request_id)}>Review insurance request</Link>}
           {isUnread && (
             <button
               onClick={() => onMarkRead(notification?.id)}
@@ -200,11 +204,12 @@ const AlertCenter = () => {
   };
 
   const filtered = filterByDate(
-    typeFilter !== 'all' ? notifications?.filter(n => n?.notification_type === typeFilter) : notifications,
+    notifications?.filter(n => Boolean(n.is_archived) === showArchived &&
+      (typeFilter === 'all' || n.notification_type === typeFilter)),
     dateFilter
   );
 
-  const unreadCount = notifications?.filter(n => !n?.is_read)?.length;
+  const unreadCount = notifications?.filter(n => !n?.is_read && !n?.is_archived)?.length;
 
   return (
     <div className="min-h-screen bg-background">
