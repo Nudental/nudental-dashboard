@@ -21,6 +21,7 @@ import { useRbacGuard } from '../../../hooks/useRbacGuard';
 import EmailPDFToOfficeModal from './EmailPDFToOfficeModal';
 import DentrixPatientLookupModal from './DentrixPatientLookupModal';
 import DentrixUploadConfirmModal from './DentrixUploadConfirmModal';
+import InsuranceRequestActions from './InsuranceRequestActions';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -413,6 +414,10 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canRe
               <p className="mt-1">{request.dentrix_document_upload_error || 'Coordinate with the verifier to review the chart filing issue.'}</p>
             </div>
           )}
+
+          <InsuranceRequestActions key={request.id} request={request}
+            canManage={canComplete || canAccess('workflow.insurance.submit')} canComplete={canComplete}
+            onChanged={updated => { onRefresh?.(updated); loadVerification(); if (canReview) loadAuditLog(); }} />
 
           {/* ── Verification Form Actions ── */}
           <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 space-y-3">

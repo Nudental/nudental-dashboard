@@ -33,19 +33,25 @@ def lookup(client, verification, request):
             and norm(verification.get('patient_name')) == norm(first + ' ' + last)
             and verification.get('patient_dob') == dob):
         raise NeedsReview('Check the patient name, birth date and requesting office.')
-    status, body, _ = client.get('/v1/patients', params={
-        'filter': f'firstName=={first},lastName=={last},dateOfBirth=={dob}', 'pageSize': 50})
+    chart = str(request.get('ascend_chart_number') or '').strip().upper()
+    if chart and not re.fullmatch(r'[A-Z0-9-]{1,40}', chart):
+        raise NeedsReview('Check the Ascend chart number. Enter the chart number only, or leave it blank if unknown.')
+    patient_filter = (f'chartNumber=={chart}' if chart else
+                      f'firstName=={first},lastName=={last},dateOfBirth=={dob}')
+    status, body, _ = client.get('/v1/patients', params={'filter': patient_filter, 'pageSize': 50})
     if status != 200 or not isinstance(body.get('data') if isinstance(body, dict) else None, list):
         raise RuntimeError('Ascend patient lookup unavailable')
     rows = body['data']
     matches = [p for p in rows if norm(p.get('firstName')) == norm(first)
-               and norm(p.get('lastName')) == norm(last) and p.get('dateOfBirth') == dob]
+               and norm(p.get('lastName')) == norm(last) and p.get('dateOfBirth') == dob
+               and (not chart or str(p.get('chartNumber') or '').strip().upper() == chart)]
     if len(rows) >= 50 or len(matches) != 1:
-        raise NeedsReview('Verify the patient chart. Ascend did not return one exact match.')
+        raise NeedsReview('Check the chart number, patient name and birth date. Ascend did not return one exact match; no document was uploaded.')
     patient = matches[0]
-    if (patient.get('patientStatus') != 'ACTIVE' or not patient.get('id')
-            or str((patient.get('preferredLocation') or {}).get('id')) != location):
-        raise NeedsReview('Verify the active patient chart and office in Ascend.')
+    if patient.get('patientStatus') not in ('ACTIVE', 'NEW') or not patient.get('id'):
+        raise NeedsReview('The Ascend chart must have Active or New patient status. Ask the office to check the chart; no document was uploaded.')
+    if str((patient.get('preferredLocation') or {}).get('id')) != location:
+        raise NeedsReview('The Ascend preferred office does not match the requesting office. Ask the office to confirm the correct chart and office; no document was uploaded.')
     return str(patient['id'])
 
 
@@ -110,7 +116,8 @@ def process(job, client, load, change, render=render_pdf):
     local_day = datetime.fromisoformat(v['completed_at'].replace('Z','+00:00')).astimezone(ZoneInfo('America/New_York')).date()
     filename = f"Insurance Breakdown {local_day.isoformat()} {v['id']}"
     attrs = {'patient_id': patient, 'filename': filename, 'byte_count': len(pdf),
-             'checksum': hashlib.sha256(pdf).hexdigest()}
+             'checksum': hashlib.sha256(pdf).hexdigest(),
+             'matched_chart_number': str(r.get('ascend_chart_number') or '').strip().upper()}
     if not change('pending', 'sending', attrs):
         return
     # Once sending is recorded, a timeout or worker restart may only reconcile this document.

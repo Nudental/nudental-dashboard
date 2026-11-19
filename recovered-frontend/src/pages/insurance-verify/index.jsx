@@ -80,7 +80,8 @@ export default function InsuranceVerify() {
     setActiveTab('queue');
   }, []);
 
-  const handleQueueRefresh = useCallback(() => {
+  const handleQueueRefresh = useCallback((updated) => {
+    if (updated?.id) setSelectedRequest(updated);
     setQueueKey((k) => k + 1);
   }, []);
 

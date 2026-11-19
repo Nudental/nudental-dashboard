@@ -33,6 +33,24 @@ class ChartFiling(unittest.TestCase):
         self.client.post.return_value=(201,{'data':self.doc},0)
         self.run_job()
         self.assertEqual(self.change.call_args.args[1],'confirming')
+    def test_new_patient_can_file(self):
+        self.p['patientStatus']='NEW'
+        self.test_matching_chart_and_receipt()
+    def test_chart_number_lookup_and_identity_checks(self):
+        self.r['ascend_chart_number']=' ab123r '
+        self.p['chartNumber']='AB123R'
+        self.client.get.return_value=(200,{'data':[self.p]},0)
+        self.assertEqual(lookup(self.client,self.v,self.r),'123')
+        self.assertEqual(self.client.get.call_args.kwargs['params']['filter'],'chartNumber==AB123R')
+        for wrong in [dict(self.p,firstName='Other'),dict(self.p,dateOfBirth='2001-01-01'),
+                      dict(self.p,chartNumber='DIFFERENT'),dict(self.p,preferredLocation={'id':'wrong'})]:
+            self.client.get.return_value=(200,{'data':[wrong]},0)
+            with self.assertRaises(NeedsReview):lookup(self.client,self.v,self.r)
+        self.client.post.assert_not_called()
+    def test_chart_number_is_not_a_filter_expression(self):
+        self.r['ascend_chart_number']='AB123,firstName==Other'
+        with self.assertRaises(NeedsReview):lookup(self.client,self.v,self.r)
+        self.client.get.assert_not_called()
     def test_holds_uncertain_matches(self):
         for candidates in ([],[self.p,self.p],[dict(self.p,patientStatus='INACTIVE')],
                            [dict(self.p,preferredLocation={'id':'other'})],[dict(self.p,dateOfBirth='1990-01-02')]):

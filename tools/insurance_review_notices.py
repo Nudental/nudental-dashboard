@@ -35,12 +35,19 @@ def deliver_review(row, destination, save, mail, clock=lambda: datetime.now(time
             save({'sent_at': now.isoformat()})
             return 'sent'
     else:
-        body = (f"An insurance breakdown for {target['office_name']} needs review before it can be filed in Ascend.\n\n"
+        needs_info = target.get('issue_kind') == 'needs_info'
+        introduction = (f"An insurance request for {target['office_name']} needs corrected or missing insurance information before verification can continue."
+                        if needs_info else f"An insurance breakdown for {target['office_name']} needs review before it can be filed in Ascend.")
+        action = ("Open the request, read the issue, and contact the patient or insurer for the correct information. "
+                  "Add the response in the request and select Return to verification. Do not cancel a request just because information is unavailable."
+                  if needs_info else "Open the request, review the filing issue, and coordinate the correction.")
+        body = (f"{introduction}\n\n"
                 f"Patricia and the requesting office's manager/front-desk team are being notified. "
-                f"Open the request, review the filing issue, and coordinate the correction.\n"
+                f"{action}\n"
                 f"{DASHBOARD}?request={target['request_id']}\n\n"
                 f"NU Dental Dashboard\nReview notice {marker}")
-        item = mail('drafts', 'create', '--to', recipient, '--subject', 'NU Dental | Insurance breakdown needs review', '--body', body)
+        subject = 'NU Dental | Insurance information needs attention' if needs_info else 'NU Dental | Insurance breakdown needs review'
+        item = mail('drafts', 'create', '--to', recipient, '--subject', subject, '--body', body)
         draft = item.get('draftId') or item.get('id') or item.get('draft', {}).get('id')
         if not isinstance(draft, str) or not re.fullmatch(r'[\w-]+', draft):
             raise ValueError('Missing Gmail draft reference')

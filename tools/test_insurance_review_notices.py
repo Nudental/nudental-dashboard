@@ -39,6 +39,13 @@ class ReviewNotices(unittest.TestCase):
         self.assertEqual(self.deliver(),'held')
         self.mail.assert_not_called()
         self.assertIn('retry_at',self.save.call_args.args[0])
+    def test_missing_information_uses_office_action_instructions(self):
+        self.target['issue_kind']='needs_info'
+        self.assertEqual(self.deliver(),'sent')
+        args=self.mail.call_args_list[0].args
+        self.assertIn('Insurance information needs attention',args[5])
+        self.assertIn('Return to verification',args[-1])
+        self.assertIn('Do not cancel',args[-1])
 
     def test_save_before_send_and_safe_content(self):
         def mail(*args):

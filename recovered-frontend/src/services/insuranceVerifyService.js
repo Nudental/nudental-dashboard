@@ -33,7 +33,7 @@ export const fetchVerificationRequests = async (filters = {}) => {
   if (filters?.search?.trim()) {
     const s = filters?.search?.trim()?.replace(/\\/g, '\\\\')?.replace(/"/g, '\\"');
     query = query?.or(
-      `patient_first_name.ilike."%${s}%",patient_last_name.ilike."%${s}%",patient_name.ilike."%${s}%",insurance_company_name.ilike."%${s}%",member_id.ilike."%${s}%"`
+      `patient_first_name.ilike."%${s}%",patient_last_name.ilike."%${s}%",patient_name.ilike."%${s}%",insurance_company_name.ilike."%${s}%",member_id.ilike."%${s}%",ascend_chart_number.ilike."%${s}%"`
     );
   }
 
@@ -108,6 +108,7 @@ export const createVerificationRequest = async (formData, userProfile) => {
     patient_last_name: formData?.patientLastName || '',
     patient_name: `${formData?.patientFirstName || ''} ${formData?.patientLastName || ''}`?.trim(),
     patient_dob: formData?.patientDob || null,
+    ascend_chart_number: formData?.ascendChartNumber?.trim()?.toUpperCase() || null,
     patient_phone: formData?.patientPhone || '',
     // Appointment
     appointment_date: formData?.appointmentDate || null,

@@ -84,7 +84,7 @@ const FilterBar = ({ filters, onChange, offices, userId }) => {
             type="text"
             value={filters?.search || ''}
             onChange={(e) => handleChange('search', e?.target?.value)}
-            placeholder="Patient, insurance, member ID…"
+            placeholder="Patient, chart number, insurance, member ID…"
             className="w-full pl-8 pr-3 py-1.5 text-sm rounded-lg border border-border bg-surface-primary text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </div>

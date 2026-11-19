@@ -40,6 +40,7 @@ export default function NewVerificationRequestForm({ onSuccess }) {
     patientFirstName: '',
     patientLastName: '',
     patientDob: '',
+    ascendChartNumber: '',
     patientPhone: '',
     appointmentDate: '',
     appointmentTime: '',
@@ -91,6 +92,7 @@ export default function NewVerificationRequestForm({ onSuccess }) {
     if (!form?.patientFirstName?.trim()) errs.patientFirstName = 'Required';
     if (!form?.patientLastName?.trim()) errs.patientLastName = 'Required';
     if (!form?.patientDob) errs.patientDob = 'Required';
+    if (form.ascendChartNumber?.trim() && !/^[A-Z0-9-]{1,40}$/i.test(form.ascendChartNumber.trim())) errs.ascendChartNumber = 'Enter the chart number only, or leave blank if unknown';
     if (!form?.appointmentDate) errs.appointmentDate = 'Required';
     if (!form?.appointmentTime) errs.appointmentTime = 'Required';
     if (!form?.insuranceCompanyName?.trim()) errs.insuranceCompanyName = 'Required';
@@ -143,6 +145,7 @@ export default function NewVerificationRequestForm({ onSuccess }) {
       patientFirstName: '',
       patientLastName: '',
       patientDob: '',
+      ascendChartNumber: '',
       patientPhone: '',
       appointmentDate: '',
       appointmentTime: '',
@@ -250,6 +253,11 @@ export default function NewVerificationRequestForm({ onSuccess }) {
               className={`${inputCls} ${errors?.patientDob ? 'border-red-400' : ''}`}
             />
             {errors?.patientDob && <p className="text-xs text-red-500">{errors?.patientDob}</p>}
+          </Field>
+          <Field label="Ascend chart number (optional)" hint="Copy it from the correct Ascend chart. Leave blank if unknown; name, DOB and office must still match.">
+            <input type="text" aria-label="Ascend chart number" maxLength={40} value={form.ascendChartNumber}
+              onChange={e => set('ascendChartNumber', e.target.value)} className={inputCls} />
+            {errors.ascendChartNumber && <p role="alert" className="text-xs text-red-500">{errors.ascendChartNumber}</p>}
           </Field>
           <Field label="Patient Phone">
             <input
