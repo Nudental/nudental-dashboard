@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase';
+import { assertInsuranceComplete, completionRules } from './insuranceCompletionValidation';
 
 // ─── Request Queue ─────────────────────────────────────────────────────────────
 
@@ -310,6 +311,7 @@ export const updateVerification = async (verificationId, requestId, formData, us
  * Updates the linked request: status = completed, completed_at, completed_by_*.
  */
 export const completeVerification = async (verificationId, requestId, formData, userProfile) => {
+  assertInsuranceComplete(formData);
   const now = new Date()?.toISOString();
 
   // Service-level guard: fetch current status before writing
@@ -418,6 +420,13 @@ function buildVerificationRow(formData, requestId, userProfile, now) {
     employee_initials: f?.employee_initials || null,
     notes: f?.notes || null,
     office: f?.office || null,
+    form_data: { ...(f.form_data || {}), not_applicable: Object.fromEntries(
+      completionRules.filter(rule => {
+        const value = rule.path.split('.').reduce((object, key) => object?.[key], f);
+        return value == null || String(value).trim() === '';
+      }).filter(rule => typeof f.form_data?.not_applicable?.[rule.path] === 'string')
+        .map(rule => [rule.path, f.form_data.not_applicable[rule.path].trim()])
+    ) },
     // Timestamps
     updated_at: now,
   };

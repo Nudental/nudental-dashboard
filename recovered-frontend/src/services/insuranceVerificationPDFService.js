@@ -303,11 +303,11 @@ const fieldRow = (doc, label, value, x, y, colW, rowH = 7) => {
 
 // ─── autoTable section helper ─────────────────────────────────────────────────
 
-const renderTable = (doc, startY, margin, pageW, rows) => {
+const renderTable = (doc, startY, margin, pageW, rows, pageMargins = {}) => {
   if (!rows || rows?.length === 0) return startY;
   autoTable(doc, {
     startY,
-    margin: { left: margin, right: margin },
+    margin: { left: margin, right: margin, ...pageMargins },
     head: [['Field', 'Value']],
     body: rows,
     styles: { fontSize: 7.5, cellPadding: [2, 3, 2, 3], overflow: 'linebreak' },
@@ -581,6 +581,14 @@ export function generateInsuranceVerificationPDF(verification, request, logoResu
     ['Employee Initials', dash(verification?.employee_initials)],
     ['Notes', dash(verification?.notes)],
   ]);
+
+  const exceptions = Object.entries(verification?.form_data?.not_applicable || {});
+  if (exceptions.length) {
+    doc.addPage();
+    y = 36;
+    y = drawSectionBand(doc, 'Unavailable information / other answers', y, margin, pageW);
+    y = renderTable(doc, y, margin, pageW, exceptions.map(([field, reason]) => [field.replaceAll('_', ' ').replaceAll('.', ' / '), String(reason)]), { top: 36, bottom: 20 });
+  }
 
   // ── Paginate footers ─────────────────────────────────────────────────────────
   const totalPages = doc?.internal?.getNumberOfPages();

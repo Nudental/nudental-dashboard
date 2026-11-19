@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { completionRules, completionRuleApplies, validateInsuranceCompletion } from '../../../services/insuranceCompletionValidation';
 import { format } from 'date-fns';
 import Icon from '../../../components/AppIcon';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -228,6 +229,7 @@ const CheckboxGroup = ({ label, value = {}, keys, onChange, readOnly = false }) 
 
 const SectionHeader = ({ title, icon, isOpen, onToggle, badge = null }) => (
   <button
+    id={'insurance-section-' + title.charAt(0)}
     type="button"
     onClick={onToggle}
     className="w-full flex items-center justify-between px-4 py-3 bg-surface-secondary rounded-xl border border-border hover:bg-surface-tertiary transition-colors"
@@ -361,14 +363,26 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
   const isCompleted = verification?.status === 'completed';
   // When completed, all onChange handlers become no-ops to prevent accidental local state edits
   const isReadOnly = isCompleted;
+  const completionErrors = validateInsuranceCompletion(formData);
+  const setException = (path, value) => setFormData(previous => {
+    const [field, nested] = path.split('.');
+    return { ...previous,
+      [field]: nested ? { ...(previous[field] || {}), [nested]: null } : null,
+      form_data: { ...(previous.form_data || {}), not_applicable: { ...(previous.form_data?.not_applicable || {}), [path]: value } },
+    };
+  });
+  const reviewSection = (section) => {
+    setOpenSections(previous => ({ ...previous, [section]: true }));
+    requestAnimationFrame(() => document.getElementById('insurance-section-' + section)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  };
 
   const set = (key) => (val) => {
     if (isReadOnly) return;
-    setFormData((f) => ({ ...f, [key]: val }));
+    setFormData((f) => ({ ...f, [key]: val, form_data: { ...(f.form_data || {}), not_applicable: { ...(f.form_data?.not_applicable || {}), [key]: undefined } } }));
   };
   const setNested = (section, key) => (val) => {
     if (isReadOnly) return;
-    setFormData((f) => ({ ...f, [section]: { ...f?.[section], [key]: val } }));
+    setFormData((f) => ({ ...f, [section]: { ...f?.[section], [key]: val }, form_data: { ...(f.form_data || {}), not_applicable: { ...(f.form_data?.not_applicable || {}), [section + '.' + key]: undefined } } }));
   };
 
   const handleSaveDraft = async () => {
@@ -394,6 +408,13 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
 
   const handleComplete = async () => {
     if (isReadOnly) return; // service-level guard: completed forms cannot be re-completed
+    const errors = validateInsuranceCompletion(formData);
+    if (errors.length) {
+      setShowCompleteModal(false);
+      reviewSection(errors[0].section);
+      toastError('Required information missing', errors.map(error => error.message).join(' '));
+      return;
+    }
     setCompleting(true);
     try {
       if (verification?.id) {
@@ -609,7 +630,7 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
             <>
               <button
                 onClick={handleSaveDraft}
-                disabled={saving}
+                disabled={saving || completing}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg border border-border text-sm font-medium text-text-primary hover:bg-surface-secondary transition-colors disabled:opacity-50"
               >
                 {saving ? <Icon name="Loader2" size={14} className="animate-spin" /> : <Icon name="Save" size={14} />}
@@ -617,7 +638,8 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
               </button>
               <button
                 onClick={() => setShowCompleteModal(true)}
-                disabled={completing}
+                disabled={completing || saving || completionErrors.length > 0}
+                title={completionErrors.length ? 'Fill in the required information listed below before completing.' : undefined}
                 className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
               >
                 <Icon name="CheckCircle" size={14} />
@@ -744,6 +766,48 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
           <Icon name="Info" size={14} className="mt-0.5 flex-shrink-0" />
           <span>Save a draft to continue later. Mark Completed locks the breakdown, queues the PDF for Ascend Document Manager, and notifies the requesting office.</span>
         </div>
+      )}
+
+      {!isCompleted && (
+        <section aria-label="Completion requirements" className="p-4 rounded-xl border border-border bg-surface-primary space-y-3">
+          <p className="font-semibold text-text-primary" role="status">
+            {completionErrors.length ? `${completionErrors.length} required answers remaining` : 'Required insurance information is complete'}
+          </p>
+          <p className="text-sm text-text-secondary">Answer each required item. If information is unavailable, enter “NA,” “Unavailable,” “Not provided,” or another explanation below. Use 0% only for confirmed no coverage. Drafts can still be saved with blank answers.</p>
+          {completionErrors.length > 0 && (
+            <details>
+              <summary className="cursor-pointer text-primary">Review missing or invalid information</summary>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+                {Object.entries(completionErrors.reduce((groups, error) => ({ ...groups, [error.section]: [...(groups[error.section] || []), error] }), {})).map(([section, errors]) => (
+                  <div key={section}>
+                    <button type="button" onClick={() => reviewSection(section)} className="font-semibold text-primary underline">Open section {section}</button>
+                    <ul className="list-disc pl-5 text-sm text-text-secondary">{errors.map(error => <li key={error.path}>{error.message}</li>)}</ul>
+                  </div>
+                ))}
+              </div>
+            </details>
+          )}
+          <details>
+            <summary className="cursor-pointer text-primary">Information unavailable? Record NA or another answer</summary>
+            <p className="text-sm text-text-secondary mt-2">Use this for any missing item, including dates, amounts, percentages, or Yes/No answers. This replaces that field’s value and is saved with the breakdown and included in its PDF.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+              {completionRules.filter(rule => completionRuleApplies(rule, formData) && (completionErrors.some(error => error.path === rule.path) || typeof formData.form_data?.not_applicable?.[rule.path] === 'string')).map(rule => (
+                <label key={rule.path} className="text-sm text-text-secondary">{rule.section}. {rule.label} — unavailable answer
+                  <input type="text" value={formData.form_data?.not_applicable?.[rule.path] || ''} onChange={event => setException(rule.path, event.target.value)} className="w-full px-3 py-2 rounded-lg border border-border bg-surface-primary text-text-primary" />
+                </label>
+              ))}
+            </div>
+          </details>
+        </section>
+      )}
+
+      {isCompleted && Object.keys(formData.form_data?.not_applicable || {}).length > 0 && (
+        <section aria-label="Recorded unavailable answers" className="p-4 rounded-xl border border-border bg-surface-primary">
+          <p className="font-semibold text-text-primary mb-2">Recorded unavailable information / other answers</p>
+          <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            {Object.entries(formData.form_data.not_applicable).map(([path, answer]) => <div key={path}><dt className="text-text-secondary">{completionRules.find(rule => rule.path === path)?.label || path}</dt><dd className="text-text-primary">{answer}</dd></div>)}
+          </dl>
+        </section>
       )}
 
       {/* ── Section A: Patient Information ── */}
@@ -1117,7 +1181,7 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
         <div className="flex items-center justify-end gap-3 pt-2 pb-6">
           <button
             onClick={handleSaveDraft}
-            disabled={saving}
+            disabled={saving || completing}
             className="flex items-center gap-2 px-5 py-2.5 rounded-lg border border-border text-sm font-medium text-text-primary hover:bg-surface-secondary transition-colors disabled:opacity-50"
           >
             {saving ? <Icon name="Loader2" size={14} className="animate-spin" /> : <Icon name="Save" size={14} />}
@@ -1125,7 +1189,8 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
           </button>
           <button
             onClick={() => setShowCompleteModal(true)}
-            disabled={completing}
+            disabled={completing || saving || completionErrors.length > 0}
+            title={completionErrors.length ? 'Fill in the required information listed above before completing.' : undefined}
             className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
           >
             <Icon name="CheckCircle" size={14} />
@@ -1226,7 +1291,7 @@ function prefillFromRequest(request) {
 
 function mapVerificationToForm(v, request) {
   return {
-    date: v?.date || today(),
+    date: v?.date || (v?.form_data?.not_applicable?.date ? '' : today()),
     patient_name: v?.patient_name || '',
     patient_dob: v?.patient_dob || '',
     subscriber_name: v?.subscriber_name || '',
@@ -1282,5 +1347,6 @@ function mapVerificationToForm(v, request) {
     employee_initials: v?.employee_initials || '',
     notes: v?.notes || '',
     office: v?.office || request?.office_name || '',
+    form_data: v?.form_data || {},
   };
 }
