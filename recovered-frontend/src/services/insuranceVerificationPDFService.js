@@ -18,6 +18,7 @@ import autoTable from 'jspdf-autotable';
 import { format, parseISO } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { insertAuditLog } from './insuranceVerifyService';
+import planEntryFields from '../config/insurancePlanEntryFields.json';
 
 // ─── Nu Dental Brand / Color Palette ─────────────────────────────────────────
 // 2905C ≈ #8DC8E8  (light sky blue)
@@ -392,7 +393,7 @@ export function generateInsuranceVerificationPDF(verification, request, logoResu
   // ── SECTION A: Patient Information ──────────────────────────────────────────
   y = drawSectionBand(doc, 'A. Patient Information', y, margin, pageW);
   y = renderTable(doc, y, margin, pageW, [
-    ['Date', fmtDate(verification?.date)],
+    ['Verification date', fmtDate(verification?.date)],
     ['Patient Name', dash(verification?.patient_name)],
     ['Patient DOB', fmtDate(verification?.patient_dob)],
     ['Subscriber Name', dash(verification?.subscriber_name)],
@@ -582,12 +583,21 @@ export function generateInsuranceVerificationPDF(verification, request, logoResu
     ['Notes', dash(verification?.notes)],
   ]);
 
-  const exceptions = Object.entries(verification?.form_data?.not_applicable || {});
+  const planRows = planEntryFields.map(field => [field.label, verification?.form_data?.[field.key]
+    ?? verification?.form_data?.not_applicable?.['form_data.' + field.key]])
+    .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== '');
+  if (planRows.length) {
+    doc.addPage();
+    y = drawSectionBand(doc, 'Additional details for insurance plan entry', 36, margin, pageW);
+    y = renderTable(doc, y, margin, pageW, planRows.map(([label, value]) => [label, String(value)]), { top: 36, bottom: 20 });
+  }
+  const exceptions = Object.entries(verification?.form_data?.not_applicable || {})
+    .filter(([, reason]) => typeof reason === 'string' && reason.trim());
   if (exceptions.length) {
     doc.addPage();
     y = 36;
     y = drawSectionBand(doc, 'Unavailable information / other answers', y, margin, pageW);
-    y = renderTable(doc, y, margin, pageW, exceptions.map(([field, reason]) => [field.replaceAll('_', ' ').replaceAll('.', ' / '), String(reason)]), { top: 36, bottom: 20 });
+    y = renderTable(doc, y, margin, pageW, exceptions.map(([field, reason]) => [planEntryFields.find(item => 'form_data.' + item.key === field)?.label || field.replaceAll('_', ' ').replaceAll('.', ' / '), String(reason)]), { top: 36, bottom: 20 });
   }
 
   // ── Paginate footers ─────────────────────────────────────────────────────────

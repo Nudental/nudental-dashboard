@@ -1,7 +1,8 @@
 // Keep the database and browser completion requirements in one reviewed registry.
 const fs = require('node:fs');
 const path = require('node:path');
-const rules = require('../recovered-frontend/src/config/insuranceCompletionRules.json');
+const rules = [...require('../recovered-frontend/src/config/insuranceCompletionRules.json'),
+  ...require('../recovered-frontend/src/config/insurancePlanEntryFields.json').map(({key, ...field}) => ({...field, path:'form_data.' + key}))];
 const sql = `-- Generated from insuranceCompletionRules.json. Drafts and legacy completed records remain valid.
 create or replace function insurance_internal.completion_errors(data jsonb)
 returns jsonb language plpgsql immutable security invoker set search_path = '' as $fn$
@@ -56,6 +57,9 @@ begin
   if coalesce(data->>'term_date','')<>'' and coalesce(data->>'eff_date','')<>'' and data->>'term_date'<data->>'eff_date' then
     errors:=errors||jsonb_build_array(jsonb_build_object('path','term_date','label','Term date cannot precede effective date','section','B'));
   end if;
+  if coalesce(data->'form_data'->>'family_deductible_remaining','') ~ '^[0-9]+(\\.[0-9]+)?$' and coalesce(data->>'family_deductible','') ~ '^[0-9]+(\\.[0-9]+)?$' then
+    if (data->'form_data'->>'family_deductible_remaining')::numeric>(data->>'family_deductible')::numeric then errors:=errors||jsonb_build_array(jsonb_build_object('path','form_data.family_deductible_remaining','label','Remaining family deductible cannot exceed the family deductible','section','C')); end if;
+  end if;
   return errors;
 end; $fn$;
 revoke all on function insurance_internal.completion_errors(jsonb) from public, anon;
@@ -81,4 +85,4 @@ create trigger insurance_completion_required before insert or update on public.i
 for each row execute function insurance_internal.require_complete_breakdown();
 `;
 if (!process.argv[2]) throw Error('Pass the migration path created by supabase migration new.');
-fs.writeFileSync(path.resolve(process.argv[2]),sql);
+fs.writeFileSync(path.resolve(process.argv[2]),process.argv.includes('--validation-only') ? sql.slice(0,sql.indexOf('create or replace function insurance_internal.require_complete_breakdown')) : sql);

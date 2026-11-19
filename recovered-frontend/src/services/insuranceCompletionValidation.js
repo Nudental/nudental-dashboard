@@ -1,6 +1,7 @@
 import rules from '../config/insuranceCompletionRules.json';
+import planEntryFields from '../config/insurancePlanEntryFields.json';
 
-export const completionRules = rules;
+export const completionRules = [...rules, ...planEntryFields.map(({key, ...field}) => ({...field, path: 'form_data.' + key}))];
 const valueAt = (data, path) => path.split('.').reduce((value, key) => value?.[key], data);
 const blank = value => value == null || (typeof value === 'string' && value.trim() === '');
 
@@ -14,7 +15,7 @@ export function completionRuleApplies(rule, data) {
 
 export function validateInsuranceCompletion(data = {}) {
   const errors = [];
-  for (const rule of rules) {
+  for (const rule of completionRules) {
     if (!completionRuleApplies(rule, data)) continue;
     const value = valueAt(data, rule.path);
     const exception = data.form_data?.not_applicable?.[rule.path];
@@ -33,6 +34,8 @@ export function validateInsuranceCompletion(data = {}) {
     if (![data[left],data[right]].some(blank) && Number.isFinite(Number(data[left])) && Number.isFinite(Number(data[right])) && Number(data[left]) > Number(data[right])) errors.push({path:left,label,section,message:label+'.'});
   }
   if (data.term_date && data.eff_date && data.term_date < data.eff_date) errors.push({path:'term_date',label:'Term date',section:'B',message:'Term date cannot precede effective date.'});
+  const familyRemaining = data.form_data?.family_deductible_remaining;
+  if (![familyRemaining, data.family_deductible].some(blank) && Number.isFinite(Number(familyRemaining)) && Number.isFinite(Number(data.family_deductible)) && Number(familyRemaining) > Number(data.family_deductible)) errors.push({path:'form_data.family_deductible_remaining',label:'Family deductible remaining',section:'C',message:'Remaining family deductible cannot exceed the family deductible.'});
   return errors;
 }
 

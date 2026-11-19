@@ -1,0 +1,10 @@
+[
+  {"section":"A","key":"subscriber_relationship","label":"Patient relationship to subscriber","type":"enum","options":["Self","Spouse","Child","Other"]},
+  {"section":"B","key":"coverage_order","label":"Insurance order","type":"enum","options":["Primary","Secondary","Tertiary"]},
+  {"section":"B","key":"coverage_status","label":"Carrier-confirmed coverage status","type":"enum","options":["Active","Terminated","Not yet effective"]},
+  {"section":"B","key":"renewal_month","label":"Benefit renewal month","type":"enum","options":["January","February","March","April","May","June","July","August","September","October","November","December"]},
+  {"section":"C","key":"family_deductible_remaining","label":"Family deductible remaining ($)","type":"number"},
+  {"section":"C","key":"deductible_structure","label":"How the deductible is applied","type":"enum","options":["Combined across covered categories","Separate by category","No deductible"]},
+  {"section":"C","key":"deductible_details","label":"Separate deductible amounts and balances","type":"text","multiline":true,"placeholder":"For each category, record individual and family deductible amounts and the amounts remaining. Record unavailable details as NA.","when":[{"path":"form_data.deductible_structure","eq":"Separate by category"}]},
+  {"section":"D","key":"frequency_limit_details","label":"Frequency and age-limit details","type":"text","multiline":true,"placeholder":"Confirm whether limits reset by calendar/benefit year or roll over months; whether they apply per tooth, quadrant, arch or patient; which codes share a limit; and whether the stated age is included. Specify the procedure codes. Enter NA for details the carrier cannot provide."}
+]

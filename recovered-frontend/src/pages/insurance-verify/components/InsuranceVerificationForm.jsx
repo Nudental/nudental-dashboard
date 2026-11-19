@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { completionRules, completionRuleApplies, validateInsuranceCompletion } from '../../../services/insuranceCompletionValidation';
+import planEntryFields from '../../../config/insurancePlanEntryFields.json';
 import { format } from 'date-fns';
 import Icon from '../../../components/AppIcon';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -368,7 +369,7 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
     const [field, nested] = path.split('.');
     return { ...previous,
       [field]: nested ? { ...(previous[field] || {}), [nested]: null } : null,
-      form_data: { ...(previous.form_data || {}), not_applicable: { ...(previous.form_data?.not_applicable || {}), [path]: value } },
+      form_data: { ...(previous.form_data || {}), ...(field === 'form_data' ? { [nested]: null } : {}), not_applicable: { ...(previous.form_data?.not_applicable || {}), [path]: value } },
     };
   });
   const reviewSection = (section) => {
@@ -384,6 +385,29 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
     if (isReadOnly) return;
     setFormData((f) => ({ ...f, [section]: { ...f?.[section], [key]: val }, form_data: { ...(f.form_data || {}), not_applicable: { ...(f.form_data?.not_applicable || {}), [section + '.' + key]: undefined } } }));
   };
+
+  const planFields = (section) => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {planEntryFields.filter(field => field.section === section && completionRuleApplies(field, formData)).map(field => {
+        const id = 'insurance-plan-' + field.key;
+        const update = event => {
+          if (isReadOnly) return;
+          const value = event.target.value;
+          setFormData(previous => ({ ...previous, form_data: { ...(previous.form_data || {}), [field.key]: value,
+            not_applicable: { ...(previous.form_data?.not_applicable || {}), ['form_data.' + field.key]: undefined } } }));
+        };
+        const props = { id, value: formData.form_data?.[field.key] ?? '', onChange: update,
+          className: 'w-full px-3 py-2 text-sm rounded-lg border border-border bg-surface-primary text-text-primary',
+          'aria-describedby': field.multiline ? id + '-help' : undefined };
+        return <div key={field.key} className={field.multiline ? 'sm:col-span-2' : ''}>
+          <label htmlFor={id} className="block text-xs font-medium text-text-secondary mb-1">{field.label}</label>
+          {field.type === 'enum' ? <select {...props} disabled={isReadOnly}><option value="">Select an answer</option>{field.options.map(option => <option key={option} value={option}>{option}</option>)}</select>
+            : field.multiline ? <><textarea {...props} rows={3} readOnly={isReadOnly} /><p id={id + '-help'} className="text-xs text-text-secondary mt-1">{field.placeholder}</p></>
+              : <input {...props} type="number" min="0" step="0.01" readOnly={isReadOnly} />}
+        </div>;
+      })}
+    </div>
+  );
 
   const handleSaveDraft = async () => {
     if (isReadOnly) return; // service-level guard: completed forms cannot be saved
@@ -816,7 +840,7 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
         {openSections?.A && (
           <div className="p-4 border border-border rounded-xl space-y-3">
             <Grid3>
-              <DateInput label="Date" value={formData?.date} onChange={set('date')} readOnly={isReadOnly} />
+              <DateInput label="Verification date (when benefits were checked)" value={formData?.date} onChange={set('date')} readOnly={isReadOnly} />
               <TextInput label="Patient Name" value={formData?.patient_name} onChange={set('patient_name')} required readOnly={isReadOnly} />
               <DateInput label="Patient DOB" value={formData?.patient_dob} onChange={set('patient_dob')} required readOnly={isReadOnly} />
             </Grid3>
@@ -824,6 +848,8 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
               <TextInput label="Subscriber Name" value={formData?.subscriber_name} onChange={set('subscriber_name')} readOnly={isReadOnly} />
               <DateInput label="Subscriber DOB" value={formData?.subscriber_dob} onChange={set('subscriber_dob')} readOnly={isReadOnly} />
             </Grid2>
+            {planFields('A')}
+            <p className="text-xs text-text-secondary">Confirm the relationship from the carrier's information. Do not infer it from names. Chart #: {request?.ascend_chart_number || 'Not supplied'} · Appointment date: {request?.appointment_date || 'Not supplied'}.</p>
           </div>
         )}
       </div>
@@ -879,6 +905,7 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
             <Grid2>
               <DateInput label="Term Date" value={formData?.term_date} onChange={set('term_date')} readOnly={isReadOnly} />
             </Grid2>
+            {planFields('B')}
           </div>
         )}
       </div>
@@ -922,6 +949,8 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
               <YNSelect label="Family Deductible Met" value={formData?.family_deductible_met} onChange={set('family_deductible_met')} readOnly={isReadOnly} />
               <NumberInput label="Individual Deductible Remaining ($)" value={formData?.individual_deductible_remaining} onChange={set('individual_deductible_remaining')} readOnly={isReadOnly} />
             </div>
+            {planFields('C')}
+            <p className="text-xs text-text-secondary">Not met does not mean $0 has been paid. Record the actual remaining amount, or use the unavailable-answer section. NA is never treated as a zero balance.</p>
           </div>
         )}
       </div>
@@ -930,6 +959,7 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
         <SectionHeader title="D. Preventive / Diagnostic Coverage" icon="Stethoscope" isOpen={openSections?.D} onToggle={() => toggleSection('D')} />
         {openSections?.D && (
           <div className="p-4 border border-border rounded-xl space-y-3">
+            {planFields('D')}
             <Grid3>
               <TextInput label="Comp Exam D0150 Frequency" value={formData?.prev_diag?.comp_exam_d0150} onChange={setNested('prev_diag', 'comp_exam_d0150')} readOnly={isReadOnly} />
               <TextInput label="Periodic Exam D0120 Frequency" value={formData?.prev_diag?.periodic_exam_d0120} onChange={setNested('prev_diag', 'periodic_exam_d0120')} readOnly={isReadOnly} />
