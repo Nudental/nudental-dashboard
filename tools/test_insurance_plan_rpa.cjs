@@ -1,7 +1,7 @@
 'use strict';
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const {validate,fromForm,matchPatient,decidePolicy,decideGroup,planClarifications}=require('./insurance_plan_rpa.cjs');
+const {validate,fromForm,matchPatient,decidePolicy,decideGroup,planClarifications,decideBenefitEntry}=require('./insurance_plan_rpa.cjs');
 const p={patient_first_name:'Example',patient_last_name:'Only',patient_dob:'1980-01-01',office_name:'Eatontown',location_id:'14000000000433',subscriber_relationship:'Self',subscriber_full_name:'Example Only',subscriber_dob:'1980-01-01',carrier_name:'Fixture Carrier',payer_id:'00123',group_number:'00045',group_name:'Fixture Group',subscriber_id:'000678A',effective_date:'2026-01-01',coverage_order:'Primary',coverage_status:'Active',coverage_details:{annual_max:1500,deductible:0,preventive_pct:100,basic_pct:80,major_pct:50}};
 const v=x=>validate({...p,...x},'2026-11-20');
 test('preserves zero benefit and identifiers with leading zeroes',()=>{assert.equal(v({}).STATUS,'READY_FOR_BROWSER');assert.equal(p.subscriber_id,'000678A');});
@@ -38,7 +38,27 @@ test('PPO wording alone never chooses an office fee schedule',()=>{
 test('local coverage and age limits require exact confirmed answers',()=>{
  const r=planClarifications({...clarified,form_data:{...clarified.form_data,dependent_age_status:'Age limit applies',local_d7953_1_status:'Covered separately'}});assert.ok(r.reasons.includes('AGE_LIMIT_AMBIGUOUS'));assert.ok(r.reasons.includes('LOCAL_CODE_MAPPING_REQUIRED'));
 });
-test('legacy zeros and unavailable mapping overrides are held for review',()=>{
+test('legacy zeros and unavailable mapping overrides are noted without inventing values',()=>{
  assert.ok(planClarifications({dep_age_limit:0}).reasons.includes('AGE_LIMIT_AMBIGUOUS'));
  const r=planClarifications({...clarified,form_data:{...clarified.form_data,not_applicable:{'form_data.ascend_fee_schedule_name':'NA'}}});assert.equal(r.fee_schedule.name,null);assert.ok(r.reasons.includes('FEE_SCHEDULE_MAPPING_REQUIRED'));
+});
+
+test('missing optional clarification fields do not block completed-form transcription',()=>{
+ const result=v({source_status:'completed',request_status:'completed',source_request_id:'r',request_id:'r',request_verification_id:'v',verification_id:'v',source_patient_name:'Example Only',request_patient_dob:p.patient_dob,plan_clarifications:planClarifications({})});
+ assert.equal(result.STATUS,'READY_FOR_BROWSER');assert.equal(result.issues.length,0);assert.ok(result.warnings.includes('FEE_SCHEDULE_MAPPING_REQUIRED'));
+});
+
+test('a supplied benefit replaces a differing value while retaining a discrepancy signal',()=>{
+ const result=decideBenefitEntry({source_value:1500,ascend_value:1000,exact_field_available:true});
+ assert.equal(result.action,'COPY_FORM_VALUE');assert.equal(result.value,1500);assert.equal(result.discrepancy,true);
+});
+
+test('zero and false are supplied answers; NA never overwrites an existing benefit',()=>{
+ for(const value of [0,false])assert.equal(decideBenefitEntry({source_value:value,ascend_value:50,exact_field_available:true}).value,value);
+ for(const value of [null,'','NA','Not available'])assert.equal(decideBenefitEntry({source_value:value,ascend_value:1500,exact_field_available:true}).action,'LEAVE_UNCHANGED');
+});
+
+test('unsupported or unclear field mappings preserve the exact source in a note',()=>{
+ const result=decideBenefitEntry({source_value:'1/LT per tooth',ascend_value:'1/60M',exact_field_available:false});
+ assert.equal(result.action,'RECORD_SOURCE_NOTE');assert.equal(result.value,'1/LT per tooth');assert.equal(result.discrepancy,true);
 });

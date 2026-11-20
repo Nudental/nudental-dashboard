@@ -28,7 +28,16 @@ function planClarifications(source) {
     local.carrier_code=extra('local_d7953_1_carrier_code');local.coverage_pct=extra('local_d7953_1_pct');local.frequency=extra('local_d7953_1_frequency');
     if(!/^D\d{4}$/.test(local.carrier_code||'')||unavailable(local.coverage_pct)||!numeric(local.coverage_pct,100)||unavailable(local.frequency))reasons.push('LOCAL_CODE_MAPPING_REQUIRED');
   } else reasons.push('LOCAL_CODE_MAPPING_REQUIRED');
-  return {STATUS:reasons.length?'NEEDS_HUMAN_REVIEW':'READY_FOR_BROWSER',reasons:[...new Set(reasons)],fee_schedule:fee,ages,local_d7953_1:local};
+  // These are field-level notes, not prerequisites for copying the rest of the
+  // completed form. Never turn an unavailable optional mapping into a job hold.
+  return {STATUS:'READY_FOR_BROWSER',review_required:reasons.length>0,reasons:[...new Set(reasons)],fee_schedule:fee,ages,local_d7953_1:local};
+}
+
+function decideBenefitEntry({source_value,ascend_value,exact_field_available}) {
+  if(unavailable(source_value))return {action:'LEAVE_UNCHANGED',value:null,discrepancy:false,record_source_note:true};
+  const discrepancy=!unavailable(ascend_value)&&String(source_value)!==String(ascend_value);
+  if(exact_field_available!==true)return {action:'RECORD_SOURCE_NOTE',value:source_value,discrepancy,record_source_note:true};
+  return {action:'COPY_FORM_VALUE',value:source_value,discrepancy,record_source_note:false};
 }
 
 function fromForm(verification, request) {
@@ -86,9 +95,8 @@ function validate(p,today) {
     if(p.source_status!=='completed'||p.request_status==='cancelled')add('source_status','NOT_ELIGIBLE');
     if(p.source_request_id!==p.request_id||p.request_verification_id!==p.verification_id)add('request_id','SOURCE_LINK_CONFLICT');
     if(norm(p.source_patient_name)!==norm(p.patient_first_name+' '+p.patient_last_name)||p.request_patient_dob!==p.patient_dob)add('patient','SOURCE_CONFLICT');
-    for(const reason of p.plan_clarifications?.reasons||[])add('plan_clarifications',reason);
   }
-  return {STATUS:issues.length?'NEEDS_HUMAN_REVIEW':'READY_FOR_BROWSER',issues};
+  return {STATUS:issues.length?'NEEDS_HUMAN_REVIEW':'READY_FOR_BROWSER',issues,warnings:p.plan_clarifications?.reasons||[]};
 }
 
 function matchPatient(p, rows, complete) {
@@ -123,4 +131,4 @@ function decideGroup(p, rows, complete) {
   }
   return {STATUS:'CREATE_GROUP_ALLOWED'};
 }
-module.exports={LOCATION,norm,unavailable,fromForm,validate,matchPatient,decidePolicy,decideGroup,planClarifications};
+module.exports={LOCATION,norm,unavailable,fromForm,validate,matchPatient,decidePolicy,decideGroup,planClarifications,decideBenefitEntry};
