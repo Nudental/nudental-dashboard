@@ -23,6 +23,7 @@ import DentrixPatientLookupModal from './DentrixPatientLookupModal';
 import DentrixUploadConfirmModal from './DentrixUploadConfirmModal';
 import InsuranceRequestActions from './InsuranceRequestActions';
 import InsurancePlanDiscrepancies from './InsurancePlanDiscrepancies';
+import InsurancePlanEntryStatus from './InsurancePlanEntryStatus';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -419,6 +420,10 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canRe
           <InsuranceRequestActions key={request.id} request={request}
             canManage={canComplete || canAccess('workflow.insurance.submit')} canComplete={canComplete}
             onChanged={updated => { onRefresh?.(updated); loadVerification(); if (canReview) loadAuditLog(); }} />
+
+          <InsurancePlanEntryStatus key={`plan-${request.id}`} requestId={request.id}
+            canManage={canComplete || canAccess('workflow.insurance.submit') || isSuperAdmin}
+            onChanged={() => { if (canReview) loadAuditLog(); }} />
 
           {/* ── Verification Form Actions ── */}
           <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4 space-y-3">

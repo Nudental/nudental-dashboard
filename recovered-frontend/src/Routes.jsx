@@ -141,6 +141,8 @@ const Routes = () => {
             <Route path="/pending-approvals" element={<PendingApprovals />} />
             <Route path="/patient-follow-up" element={<PatientFollowup />} />
             <Route path="/office-calls" element={<PatientFollowup officeCalls />} />
+            <Route path="/office-texts" element={<PatientFollowup communications="office-texts" />} />
+            <Route path="/internal-campaigns" element={<PatientFollowup communications="internal-campaigns" />} />
             <Route path="/request-supplies" element={<RequestSupplies />} />
             <Route path="/front-desk-approvals" element={<FrontDeskApprovals />} />
             <Route path="/audit-dashboard" element={<AuditDashboard />} />

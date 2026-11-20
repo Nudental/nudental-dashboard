@@ -47,6 +47,24 @@ class ReviewNotices(unittest.TestCase):
         self.assertIn('Return to verification',args[-1])
         self.assertIn('Do not cancel',args[-1])
 
+    def test_plan_review_explains_retry_without_claiming_pdf_or_plan_success(self):
+        self.target['issue_kind']='plan_entry'
+        self.assertEqual(self.deliver(),'sent')
+        args=self.mail.call_args_list[0].args
+        self.assertIn('Insurance plan entry needs review',args[5])
+        self.assertIn('Retry plan entry',args[-1])
+        self.assertIn('Some information may already be saved',args[-1])
+        self.assertIn('Do not create another request or add another insurance policy',args[-1])
+        self.assertIn('Patricia:',args[-1])
+        self.assertIn('Office manager / patient coordinator:',args[-1])
+        self.assertNotIn('before it can be filed',args[-1])
+
+    def test_plan_review_destination_change_before_send_cancels(self):
+        self.target['issue_kind']='plan_entry'
+        self.destination.side_effect=[self.target,{**self.target,'issue_kind':'filing'}]
+        self.assertEqual(self.deliver(),'cancelled')
+        self.assertEqual(self.mail.call_count,1)
+
     def test_save_before_send_and_safe_content(self):
         def mail(*args):
             if args[:2]==('drafts','create'):

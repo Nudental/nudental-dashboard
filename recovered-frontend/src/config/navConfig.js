@@ -262,6 +262,14 @@ export const NAV_GROUPS = [
         description: 'Review incoming and outgoing phone activity and missed-call callbacks by office',
       },
       {
+        id: 'office-texts', label: 'Office Texts', icon: 'MessageSquare', route: '/office-texts', roles: ['super_admin'],
+        description: 'Staff outreach, automated messages and patient replies by office',
+      },
+      {
+        id: 'internal-campaigns', label: 'Internal Campaigns', icon: 'Megaphone', route: '/internal-campaigns', roles: ['super_admin'],
+        description: 'Prepare office email and text campaigns for existing patients',
+      },
+      {
         id: 'request-supplies',
         label: 'Request Supplies',
         shortLabel: 'Supplies',
@@ -528,6 +536,11 @@ export const ROUTE_TO_NAV = NAV_GROUPS?.reduce((acc, group) => {
  * Check if a nav item is visible for a given user profile + permissions
  */
 export function isNavItemVisible(item, userProfile, hasPermission) {
+  // Preserve the already-published private communications access exactly.
+  if (['office-texts', 'internal-campaigns'].includes(item?.id)) {
+    return userProfile?.role === 'super_admin' || (userProfile?.role === 'regional_manager' &&
+      userProfile?.id === '2954e9e7-9b8a-4ed3-a624-71f91c36d2c3' && userProfile?.email?.toLowerCase() === 'ny@thenudental.com');
+  }
   if (item?.id === 'patient-follow-up') {
     return ['super_admin', 'office_manager'].includes(userProfile?.role) ||
       ['Front Desk', 'Office Manager', 'Patient Care Coordinator', 'Patient Care Coordinator (Front Desk)'].includes(userProfile?.job_title);

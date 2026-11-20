@@ -36,17 +36,28 @@ def deliver_review(row, destination, save, mail, clock=lambda: datetime.now(time
             return 'sent'
     else:
         needs_info = target.get('issue_kind') == 'needs_info'
-        introduction = (f"An insurance request for {target['office_name']} needs corrected or missing insurance information before verification can continue."
-                        if needs_info else f"An insurance breakdown for {target['office_name']} needs review before it can be filed in Ascend.")
-        action = ("Open the request, read the issue, and contact the patient or insurer for the correct information. "
-                  "Add the response in the request and select Return to verification. Do not cancel a request just because information is unavailable."
-                  if needs_info else "Open the request, review the filing issue, and coordinate the correction.")
+        plan_entry = target.get('issue_kind') == 'plan_entry'
+        if plan_entry:
+            introduction = f"Insurance plan entry for {target['office_name']} needs review in Ascend. Some information may already be saved. PDF filing is tracked separately."
+            action = ("Office manager / patient coordinator: open the secure request below and read the plan-entry issue and discrepancy log. "
+                      "Patricia: clarify the insurance answers needed for the correction. Keep the completed breakdown and its history. "
+                      "After the issue is addressed, record what changed under Insurance plan in Ascend and select Retry plan entry. "
+                      "The automation will check the patient and existing policies before continuing. "
+                      "Do not create another request or add another insurance policy. For a save error or a locked record, reply to this email for help.")
+        else:
+            introduction = (f"An insurance request for {target['office_name']} needs corrected or missing insurance information before verification can continue."
+                            if needs_info else f"An insurance breakdown for {target['office_name']} needs review before it can be filed in Ascend.")
+            action = ("Open the request, read the issue, and contact the patient or insurer for the correct information. "
+                      "Add the response in the request and select Return to verification. Do not cancel a request just because information is unavailable."
+                      if needs_info else "Open the request, review the filing issue, and coordinate the correction.")
         body = (f"{introduction}\n\n"
                 f"Patricia and the requesting office's manager/front-desk team are being notified. "
                 f"{action}\n"
                 f"{DASHBOARD}?request={target['request_id']}\n\n"
                 f"NU Dental Dashboard\nReview notice {marker}")
-        subject = 'NU Dental | Insurance information needs attention' if needs_info else 'NU Dental | Insurance breakdown needs review'
+        subject = ('NU Dental | Insurance plan entry needs review' if plan_entry else
+                   'NU Dental | Insurance information needs attention' if needs_info else
+                   'NU Dental | Insurance breakdown needs review')
         item = mail('drafts', 'create', '--to', recipient, '--subject', subject, '--body', body)
         draft = item.get('draftId') or item.get('id') or item.get('draft', {}).get('id')
         if not isinstance(draft, str) or not re.fullmatch(r'[\w-]+', draft):
