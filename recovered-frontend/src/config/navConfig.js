@@ -259,6 +259,7 @@ export const NAV_GROUPS = [
         icon: 'PhoneCall',
         route: '/office-calls',
         roles: ['super_admin'],
+        permissionAny: ['workflow.office_calls.view'],
         description: 'Review incoming and outgoing phone activity and missed-call callbacks by office',
       },
       {
@@ -542,7 +543,7 @@ export function isNavItemVisible(item, userProfile, hasPermission) {
       userProfile?.id === '2954e9e7-9b8a-4ed3-a624-71f91c36d2c3' && userProfile?.email?.toLowerCase() === 'ny@thenudental.com');
   }
   if (item?.id === 'patient-follow-up') {
-    return ['super_admin', 'office_manager'].includes(userProfile?.role) ||
+    return hasPermission('workflow.patient_followup.view') || ['super_admin', 'office_manager'].includes(userProfile?.role) ||
       ['Front Desk', 'Office Manager', 'Patient Care Coordinator', 'Patient Care Coordinator (Front Desk)'].includes(userProfile?.job_title);
   }
   if (item?.assistantScans) return hasPermission('resources.inventory.assigned_scans') || /\b(rda|da|dental assist(?:ant)?|dental asst)\b/i.test(userProfile?.job_title || '');

@@ -37,6 +37,7 @@ class UserIdentity:
     email: str = ''
     display_name: str = ''
     disabled_permissions: frozenset = frozenset()
+    has_personal_resources: bool = False
 
 
 @dataclass(frozen=True)
@@ -54,6 +55,9 @@ def uuid_value(value):
     except (ValueError, TypeError, AttributeError):
         raise AccessFailure(403) from None
 
+
+NAMED_INSURANCE_COORDINATOR = "5c29c9cc-6db1-4368-9bc6-ff058f32dc20"
+COORDINATOR_GRANTS = frozenset(["workflow.patient_followup.view","workflow.office_calls.view","workflow.huddle.view","huddle:view","huddle:edit","workflow.eod.view","workflow.tasks.view","workflow.insurance.view","workflow.insurance.submit","workflow.insurance.assign","workflow.insurance.complete","workflow.insurance.cancel","workflow.insurance.email_office","workflow.insurance.mark_uploaded","workflow.insurance.upload_to_dentrix","resources.directory.view","finance.rcm.view","finance.rcm.claims.view","finance.rcm.payment.view","finance.rcm.adjustment.view","finance.rcm.dashboard.view","finance.rcm.ar_aging.view","finance.rcm.daily_comparison.view","finance.rcm.eassist_daily.view"])
 
 class UserResolver:
     """Use existing Supabase Auth, then authoritative profile and permission rows."""
@@ -86,6 +90,14 @@ class UserResolver:
                 'user_id': 'eq.' + user_id, 'select': 'office_id,all_offices'})
             permissions = self._get(session, '/rest/v1/role_permissions', params={
                 'role': 'eq.' + profile['role'], 'select': 'permission,enabled'})
+            named_coordinator = []
+            if user_id == NAMED_INSURANCE_COORDINATOR and profile['role'] == 'staff':
+                named_coordinator = self._get(session, '/rest/v1/staff_workflow_grants', params={
+                    'user_id': 'eq.' + user_id, 'select': 'permission'})
+            named_payroll = []
+            if user_id in {'2954e9e7-9b8a-4ed3-a624-71f91c36d2c3', '300385cb-de78-4bb5-9670-d8245f87aecf'}:
+                named_payroll = self._get(session, '/rest/v1/named_payroll_permissions', params={
+                    'user_id': 'eq.' + user_id, 'select': 'permission'})
         if not isinstance(assignments, list) or not isinstance(permissions, list):
             raise AccessFailure(503)
         offices = {primary} if primary else set()
@@ -110,9 +122,25 @@ class UserResolver:
                 enabled.add(key)
             elif row.get('enabled') is False:
                 disabled.add(key)
+        for row in named_payroll:
+            key = row.get('permission', '')
+            if key.startswith('finance.payroll.'):
+                enabled.add(key)
+                disabled.discard(key)
+        if not isinstance(named_coordinator, list):
+            raise AccessFailure(503)
+        for row in named_coordinator:
+            if not isinstance(row, dict) or not isinstance(row.get('permission'), str):
+                raise AccessFailure(503)
+            key = row['permission']
+            if key in COORDINATOR_GRANTS:
+                enabled.add(key)
+                disabled.discard(key)
         email = user.get('email')
         display_name = profile.get('full_name') or profile.get('username') or email or user_id
-        return UserIdentity(user_id, profile['role'], primary, frozenset(offices), bool(all_offices), frozenset(enabled), email if isinstance(email, str) else '', display_name if isinstance(display_name,str) else user_id, frozenset(disabled))
+        metadata = user.get('app_metadata')
+        has_resources = isinstance(metadata, dict) and metadata.get('nu_dashboard_resources') is True
+        return UserIdentity(user_id, profile['role'], primary, frozenset(offices), bool(all_offices), frozenset(enabled), email if isinstance(email, str) else '', display_name if isinstance(display_name,str) else user_id, frozenset(disabled), has_personal_resources=has_resources)
 
     def _get(self, session, path, *, token=None, params=None):
         headers = {'apikey': self.service_key, 'Authorization': 'Bearer ' + (token or self.service_key)}

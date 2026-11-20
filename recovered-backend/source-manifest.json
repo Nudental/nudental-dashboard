@@ -742,11 +742,11 @@
   },
   {
     "source_file": "middleware/api_identity.py",
-    "sha256": "0ce8a3e85ba835224054cead3328aa805b199fa1aba6ca7e35aac5664101bf1c",
-    "template_sha256": "0ce8a3e85ba835224054cead3328aa805b199fa1aba6ca7e35aac5664101bf1c",
+    "sha256": "65a03c6c359e613a3a37ac041e76cb71d6592745527e4e28d12be7b6e57e5856",
+    "template_sha256": "65a03c6c359e613a3a37ac041e76cb71d6592745527e4e28d12be7b6e57e5856",
     "round_trip_exact": true,
     "introduced": "phase6-api-identity",
-    "bytes": 11799
+    "bytes": 13258
   },
   {
     "source_file": "middleware/api_payroll_policy.py",
