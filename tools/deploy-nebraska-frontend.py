@@ -1,6 +1,6 @@
 """Publish the isolated access navigation, retaining all existing immutable assets."""
 from pathlib import Path
-import hashlib,json,os,subprocess,tarfile,shutil,requests
+import hashlib,json,os,subprocess,tarfile,shutil,time,requests
 root=Path.home()/'.cache/nebraska-access-20261120'
 manifest=json.loads((root/'frontend-manifest.json').read_text())
 token=(Path.home()/'.config/cloudflare/collab-platform-pages-deploy-2026-09.token').read_text().strip()
@@ -43,8 +43,11 @@ assert r.returncode==0,'Frontend publishing failed'
 current=project()['canonical_deployment']
 assert current['id']!=manifest['expected_deployment'] and current['latest_stage']['status']=='success'
 assert current['deployment_trigger']['metadata']['commit_hash']==manifest['commit']
-asset=requests.get('https://nudashboard.com/'+manifest['entry'],timeout=45);asset.raise_for_status()
-assert hashlib.sha256(asset.content).hexdigest()==manifest['files'][manifest['entry']]
+for attempt in range(25):
+ asset=requests.get('https://nudashboard.com/'+manifest['entry'],timeout=15)
+ if asset.ok and hashlib.sha256(asset.content).hexdigest()==manifest['files'][manifest['entry']]:break
+ time.sleep(1)
+else:raise RuntimeError('Published asset did not reach the production domain')
 result={'deployment':current['id'],'url':current['url'],'commit':manifest['commit'],'entry':manifest['entry'],'entry_sha256':manifest['files'][manifest['entry']],'preserved_assets':preserved}
 (root/'frontend-result.json').write_text(json.dumps(result,indent=2));print(json.dumps(result))
 
