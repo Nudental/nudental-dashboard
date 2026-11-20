@@ -12,7 +12,7 @@ function planClarifications(source) {
   const f=source.form_data||{}, na=f.not_applicable||{}, reasons=[];
   const extra=key=>Object.hasOwn(na,'form_data.'+key)?null:f[key];
   const fee={status:extra('ascend_fee_schedule_status'),name:extra('ascend_fee_schedule_name'),confirmed_by:extra('ascend_fee_schedule_confirmed_by')};
-  if(fee.status!=='Confirmed with office'||unavailable(fee.name)||unavailable(fee.confirmed_by)) reasons.push('FEE_SCHEDULE_MAPPING_REQUIRED');
+  if(fee.status!=='Confirmed with office'||unavailable(fee.name)) reasons.push('FEE_SCHEDULE_MAPPING_REQUIRED');
   const ages={};
   for(const [key,status] of [['dep_age_limit','dependent_age_status'],['student_age_limit','student_age_status']]) {
     const answer=extra(status), raw=Object.hasOwn(na,key)?null:source[key];

@@ -35,6 +35,11 @@ test('unavailable ages and local not-covered status override stale numbers witho
 test('PPO wording alone never chooses an office fee schedule',()=>{
  const r=planClarifications({...clarified,fee_schedule:'PPO',form_data:{...clarified.form_data,ascend_fee_schedule_status:'Office review needed'}});assert.ok(r.reasons.includes('FEE_SCHEDULE_MAPPING_REQUIRED'));
 });
+
+test('an exact supplied fee schedule does not need a second reviewer name',()=>{
+ const r=planClarifications({...clarified,form_data:{...clarified.form_data,ascend_fee_schedule_confirmed_by:null}});
+ assert.equal(r.fee_schedule.name,'Fixture office PPO');assert.equal(r.reasons.includes('FEE_SCHEDULE_MAPPING_REQUIRED'),false);
+});
 test('local coverage and age limits require exact confirmed answers',()=>{
  const r=planClarifications({...clarified,form_data:{...clarified.form_data,dependent_age_status:'Age limit applies',local_d7953_1_status:'Covered separately'}});assert.ok(r.reasons.includes('AGE_LIMIT_AMBIGUOUS'));assert.ok(r.reasons.includes('LOCAL_CODE_MAPPING_REQUIRED'));
 });
