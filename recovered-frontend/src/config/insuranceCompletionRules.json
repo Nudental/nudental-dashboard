@@ -187,6 +187,8 @@
     "path": "dep_age_limit",
     "label": "Dependent age limit",
     "type": "number",
+    "min": 1,
+    "when": [{"path":"form_data.dependent_age_status","eq":"Age limit applies"}],
     "max": 130,
     "integer": true,
     "allowNA": true
@@ -196,6 +198,8 @@
     "path": "student_age_limit",
     "label": "Student age limit",
     "type": "number",
+    "min": 1,
+    "when": [{"path":"form_data.student_age_status","eq":"Age limit applies"}],
     "max": 130,
     "integer": true,
     "allowNA": true

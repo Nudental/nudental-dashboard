@@ -8,6 +8,29 @@ const date = value => typeof value==='string' && /^\d{4}-\d{2}-\d{2}$/.test(valu
 const id = value => typeof value==='string' && value===value.trim() && !unavailable(value) && /^[A-Za-z0-9][A-Za-z0-9 ./-]{0,79}$/.test(value);
 const numeric = (v,max=Infinity) => (typeof v==='number' || typeof v==='string' && /^\d+(\.\d+)?$/.test(v)) && Number.isFinite(Number(v)) && Number(v)>=0 && Number(v)<=max;
 
+function planClarifications(source) {
+  const f=source.form_data||{}, na=f.not_applicable||{}, reasons=[];
+  const extra=key=>Object.hasOwn(na,'form_data.'+key)?null:f[key];
+  const fee={status:extra('ascend_fee_schedule_status'),name:extra('ascend_fee_schedule_name'),confirmed_by:extra('ascend_fee_schedule_confirmed_by')};
+  if(fee.status!=='Confirmed with office'||unavailable(fee.name)||unavailable(fee.confirmed_by)) reasons.push('FEE_SCHEDULE_MAPPING_REQUIRED');
+  const ages={};
+  for(const [key,status] of [['dep_age_limit','dependent_age_status'],['student_age_limit','student_age_status']]) {
+    const answer=extra(status), raw=Object.hasOwn(na,key)?null:source[key];
+    ages[key]={status:answer,limit:null};
+    if(answer==='Age limit applies') {
+      if(unavailable(raw)||!numeric(raw,130)||Number(raw)<1||!Number.isInteger(Number(raw))) reasons.push('AGE_LIMIT_AMBIGUOUS');
+      else ages[key].limit=Number(raw);
+    } else if(!['Not available','No age limit confirmed'].includes(answer)) reasons.push('AGE_LIMIT_AMBIGUOUS');
+  }
+  const local={status:extra('local_d7953_1_status'),carrier_code:null,coverage_pct:null,frequency:null};
+  if(local.status==='Not covered')local.coverage_pct=0;
+  else if(local.status==='Covered separately') {
+    local.carrier_code=extra('local_d7953_1_carrier_code');local.coverage_pct=extra('local_d7953_1_pct');local.frequency=extra('local_d7953_1_frequency');
+    if(!/^D\d{4}$/.test(local.carrier_code||'')||unavailable(local.coverage_pct)||!numeric(local.coverage_pct,100)||unavailable(local.frequency))reasons.push('LOCAL_CODE_MAPPING_REQUIRED');
+  } else reasons.push('LOCAL_CODE_MAPPING_REQUIRED');
+  return {STATUS:reasons.length?'NEEDS_HUMAN_REVIEW':'READY_FOR_BROWSER',reasons:[...new Set(reasons)],fee_schedule:fee,ages,local_d7953_1:local};
+}
+
 function fromForm(verification, request) {
   const f=verification.form_data||{}, na=f.not_applicable||{};
   const value=(key)=>Object.hasOwn(na,key) ? null : verification[key];
@@ -26,6 +49,7 @@ function fromForm(verification, request) {
     effective_date:value('eff_date'), termination_date:value('term_date'),
     coverage_order:extra('coverage_order'), coverage_status:extra('coverage_status'),
     coverage_details:{annual_max:value('yearly_max'),deductible:value('deductible'),preventive_pct:value('pct_prev'),basic_pct:value('pct_basic'),major_pct:value('pct_major')},
+    plan_clarifications:planClarifications(verification),
     // Retain the full form in memory for item-by-item entry, including limitations.
     source:verification
   };
@@ -62,6 +86,7 @@ function validate(p,today) {
     if(p.source_status!=='completed'||p.request_status==='cancelled')add('source_status','NOT_ELIGIBLE');
     if(p.source_request_id!==p.request_id||p.request_verification_id!==p.verification_id)add('request_id','SOURCE_LINK_CONFLICT');
     if(norm(p.source_patient_name)!==norm(p.patient_first_name+' '+p.patient_last_name)||p.request_patient_dob!==p.patient_dob)add('patient','SOURCE_CONFLICT');
+    for(const reason of p.plan_clarifications?.reasons||[])add('plan_clarifications',reason);
   }
   return {STATUS:issues.length?'NEEDS_HUMAN_REVIEW':'READY_FOR_BROWSER',issues};
 }
@@ -98,4 +123,4 @@ function decideGroup(p, rows, complete) {
   }
   return {STATUS:'CREATE_GROUP_ALLOWED'};
 }
-module.exports={LOCATION,norm,unavailable,fromForm,validate,matchPatient,decidePolicy,decideGroup};
+module.exports={LOCATION,norm,unavailable,fromForm,validate,matchPatient,decidePolicy,decideGroup,planClarifications};

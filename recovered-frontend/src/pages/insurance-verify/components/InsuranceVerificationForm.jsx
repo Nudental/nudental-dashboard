@@ -393,17 +393,33 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
         const update = event => {
           if (isReadOnly) return;
           const value = event.target.value;
-          setFormData(previous => ({ ...previous, form_data: { ...(previous.form_data || {}), [field.key]: value,
-            not_applicable: { ...(previous.form_data?.not_applicable || {}), ['form_data.' + field.key]: undefined } } }));
+          setFormData(previous => {
+            const next = { ...previous, form_data: { ...(previous.form_data || {}), [field.key]: value,
+              not_applicable: { ...(previous.form_data?.not_applicable || {}), ['form_data.' + field.key]: undefined } } };
+            for (const dependent of planEntryFields.filter(item => item.when?.some(condition => condition.path === 'form_data.' + field.key))) {
+              if (!completionRuleApplies(dependent, next)) {
+                next.form_data[dependent.key] = null;
+                next.form_data.not_applicable['form_data.' + dependent.key] = undefined;
+              }
+            }
+            const agePath = { dependent_age_status: 'dep_age_limit', student_age_status: 'student_age_limit' }[field.key];
+            if (agePath) {
+              if (value !== 'Age limit applies') next[agePath] = null;
+              next.form_data.not_applicable[agePath] = value === 'Not available' ? 'Not available'
+                : value === 'No age limit confirmed' ? 'No age limit confirmed by carrier' : undefined;
+            }
+            return next;
+          });
         };
         const props = { id, value: formData.form_data?.[field.key] ?? '', onChange: update,
           className: 'w-full px-3 py-2 text-sm rounded-lg border border-border bg-surface-primary text-text-primary',
-          'aria-describedby': field.multiline ? id + '-help' : undefined };
+          'aria-describedby': field.placeholder ? id + '-help' : undefined };
         return <div key={field.key} className={field.multiline ? 'sm:col-span-2' : ''}>
           <label htmlFor={id} className="block text-xs font-medium text-text-secondary mb-1">{field.label}</label>
           {field.type === 'enum' ? <select {...props} disabled={isReadOnly}><option value="">Select an answer</option>{field.options.map(option => <option key={option} value={option}>{option}</option>)}</select>
-            : field.multiline ? <><textarea {...props} rows={3} readOnly={isReadOnly} /><p id={id + '-help'} className="text-xs text-text-secondary mt-1">{field.placeholder}</p></>
-              : <input {...props} type="number" min="0" step="0.01" readOnly={isReadOnly} />}
+            : field.multiline ? <textarea {...props} rows={3} readOnly={isReadOnly} />
+              : <input {...props} type={field.type === 'number' ? 'number' : 'text'} min={field.type === 'number' ? (field.min ?? 0) : undefined} max={field.max} step={field.type === 'number' ? '0.01' : undefined} readOnly={isReadOnly} />}
+          {field.placeholder && <p id={id + '-help'} className="text-xs text-text-secondary mt-1">{field.placeholder}</p>}
         </div>;
       })}
     </div>
@@ -870,7 +886,7 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
             </Grid3>
             <Grid3>
               <TextInput label="Payor ID" value={formData?.payor_id} onChange={set('payor_id')} readOnly={isReadOnly} />
-              <TextInput label="Fee Schedule" value={formData?.fee_schedule} onChange={set('fee_schedule')} readOnly={isReadOnly} />
+              <TextInput label="Carrier network / fee schedule name" value={formData?.fee_schedule} onChange={set('fee_schedule')} readOnly={isReadOnly} />
               <div>
                 <Label>Network</Label>
                 <select
@@ -941,8 +957,8 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <YNSelect label="Waiting Period" value={formData?.waiting_period} onChange={set('waiting_period')} readOnly={isReadOnly} />
               <YNSelect label="Missing Tooth Clause" value={formData?.missing_tooth_clause} onChange={set('missing_tooth_clause')} readOnly={isReadOnly} />
-              <NumberInput label="Dependent Age Limit" value={formData?.dep_age_limit} onChange={set('dep_age_limit')} readOnly={isReadOnly} />
-              <NumberInput label="Student Age Limit" value={formData?.student_age_limit} onChange={set('student_age_limit')} readOnly={isReadOnly} />
+              {(isCompleted || !formData.form_data?.dependent_age_status || formData.form_data.dependent_age_status === 'Age limit applies') && <NumberInput label="Dependent Age Limit" value={formData?.dep_age_limit} onChange={set('dep_age_limit')} readOnly={isReadOnly} />}
+              {(isCompleted || !formData.form_data?.student_age_status || formData.form_data.student_age_status === 'Age limit applies') && <NumberInput label="Student Age Limit" value={formData?.student_age_limit} onChange={set('student_age_limit')} readOnly={isReadOnly} />}
               <YNSelect label="Can charge UCR if not covered" value={formData?.ucr_allowed} onChange={set('ucr_allowed')} readOnly={isReadOnly} />
               <YNSelect label="Is plan self-funded" value={formData?.self_funded} onChange={set('self_funded')} readOnly={isReadOnly} />
               <NumberInput label="Family Deductible ($)" value={formData?.family_deductible} onChange={set('family_deductible')} readOnly={isReadOnly} />
@@ -950,6 +966,7 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
               <NumberInput label="Individual Deductible Remaining ($)" value={formData?.individual_deductible_remaining} onChange={set('individual_deductible_remaining')} readOnly={isReadOnly} />
             </div>
             {planFields('C')}
+            <p className="text-xs text-text-secondary">For an unknown age, select Not available or record NA. Do not enter 0 as an age placeholder. No age limit must be confirmed separately by the carrier.</p>
             <p className="text-xs text-text-secondary">Not met does not mean $0 has been paid. Record the actual remaining amount, or use the unavailable-answer section. NA is never treated as a zero balance.</p>
           </div>
         )}
@@ -1100,6 +1117,8 @@ export default function InsuranceVerificationForm({ request, onBack, onSaved }) 
         <SectionHeader title="G. Oral Surgery" icon="Scissors" isOpen={openSections?.G} onToggle={() => toggleSection('G')} />
         {openSections?.G && (
           <div className="p-4 border border-border rounded-xl space-y-3">
+            {planFields('G')}
+            <p className="text-xs text-text-secondary">D7953 and the office's D7953.1 code have separate coverage decisions. Do not copy coverage between them without confirmation.</p>
             <YNSelect label="Does OS go to medical as primary" value={formData?.oral_surgery?.os_to_medical_primary} onChange={setNested('oral_surgery', 'os_to_medical_primary')} readOnly={isReadOnly} />
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {['d7210_pct', 'd7220_pct', 'd7230_pct', 'd7240_pct', 'd7241_pct', 'd7250_pct', 'd7251_pct']?.map((k) => (

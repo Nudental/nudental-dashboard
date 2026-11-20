@@ -22,6 +22,7 @@ import EmailPDFToOfficeModal from './EmailPDFToOfficeModal';
 import DentrixPatientLookupModal from './DentrixPatientLookupModal';
 import DentrixUploadConfirmModal from './DentrixUploadConfirmModal';
 import InsuranceRequestActions from './InsuranceRequestActions';
+import InsurancePlanDiscrepancies from './InsurancePlanDiscrepancies';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -694,6 +695,7 @@ export default function RequestDetailDrawer({ request, onClose, onRefresh, canRe
           )}
 
           {/* Audit Trail */}
+          {canReview && !auditLoading && <InsurancePlanDiscrepancies entries={auditLog} />}
           {canReview && <div className="space-y-3">
             <div className="flex items-center gap-2 pb-1 border-b border-gray-200 dark:border-gray-700">
               <Icon name="History" size={15} className="text-primary" />

@@ -19,6 +19,7 @@ import { format, parseISO } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { insertAuditLog } from './insuranceVerifyService';
 import planEntryFields from '../config/insurancePlanEntryFields.json';
+import { completionRuleApplies } from './insuranceCompletionValidation';
 
 // ─── Nu Dental Brand / Color Palette ─────────────────────────────────────────
 // 2905C ≈ #8DC8E8  (light sky blue)
@@ -583,7 +584,7 @@ export function generateInsuranceVerificationPDF(verification, request, logoResu
     ['Notes', dash(verification?.notes)],
   ]);
 
-  const planRows = planEntryFields.map(field => [field.label, verification?.form_data?.[field.key]
+  const planRows = planEntryFields.filter(field => completionRuleApplies(field, verification)).map(field => [field.label, verification?.form_data?.[field.key]
     ?? verification?.form_data?.not_applicable?.['form_data.' + field.key]])
     .filter(([, value]) => value !== null && value !== undefined && String(value).trim() !== '');
   if (planRows.length) {

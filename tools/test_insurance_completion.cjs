@@ -10,7 +10,7 @@ const rules=validation.completionRules;
 function put(data,key,value) {const parts=key.split('.');if(parts.length===1)data[key]=value;else(data[parts[0]]||={})[parts[1]]=value;}
 function completeFixture() {
   const d={};for(const r of rules)put(d,r.path,r.type==='number'? (r.max===130?26:50):r.type==='boolean'?true:r.type==='date'?'2026-11-19':r.type==='enum'?r.options[0]:r.type==='checkboxes'?{preventive:true,basic:true,major:true}:'Carrier confirmed answer');
-  Object.assign(d,{patient_name:'Synthetic Audit',subscriber_name:'Synthetic Subscriber',insurance_name:'TEST ONLY',insurance_phone:'2025550100',member_id:'NOT-A-REAL-MEMBER',employee_initials:'QA',ref_number:'TEST-REF',office:'Eatontown'});d.form_data.deductible_structure='Separate by category';return d;
+  Object.assign(d,{patient_name:'Synthetic Audit',subscriber_name:'Synthetic Subscriber',insurance_name:'TEST ONLY',insurance_phone:'2025550100',member_id:'NOT-A-REAL-MEMBER',employee_initials:'QA',ref_number:'TEST-REF',office:'Eatontown'});d.form_data.deductible_structure='Separate by category';d.form_data.local_d7953_1_status='Covered separately';return d;
 }
 const fixture=completeFixture();
 test('fully answered breakdown is accepted',()=>assert.equal(validation.validateInsuranceCompletion(fixture).length,0));
@@ -40,8 +40,36 @@ test('text answers NA and unavailable are accepted directly',()=>{
 test('zero coverage and No are answers; nonapplicable dependent questions are skipped',()=>{
   const d=structuredClone(fixture);for(const r of rules){if(r.type==='number')put(d,r.path,0);if(r.type==='boolean')put(d,r.path,false);}
   d.form_data.deductible_structure='No deductible';
+  d.form_data.dependent_age_status='Not available';d.form_data.student_age_status='Not available';d.form_data.local_d7953_1_status='Not covered';d.form_data.ascend_fee_schedule_status='Office review needed';
   for(const r of rules.filter(r=>r.when))put(d,r.path,null);
   assert.equal(validation.validateInsuranceCompletion(d).length,0);
+});
+
+test('unknown age cannot be encoded as a zero cutoff, and no age limit is a separate answer',()=>{
+  for(const [key,status] of [['dep_age_limit','dependent_age_status'],['student_age_limit','student_age_status']]) {
+    const d=structuredClone(fixture);d[key]=0;
+    assert.ok(validation.validateInsuranceCompletion(d).some(e=>e.path===key));
+    d[key]=null;d.form_data[status]='Not available';assert.equal(validation.validateInsuranceCompletion(d).length,0);
+    d.form_data[status]='No age limit confirmed';assert.equal(validation.validateInsuranceCompletion(d).length,0);
+    d.form_data[status]='Age limit applies';assert.ok(validation.validateInsuranceCompletion(d).some(e=>e.path===key));
+  }
+});
+
+test('local code coverage is separate and office mapping may be referred for review',()=>{
+  const d=structuredClone(fixture);d.form_data.local_d7953_1_pct=101;
+  assert.ok(validation.validateInsuranceCompletion(d).some(e=>e.path==='form_data.local_d7953_1_pct'));
+  d.form_data.local_d7953_1_status='Not covered';d.form_data.ascend_fee_schedule_status='Office review needed';
+  for(const key of ['local_d7953_1_carrier_code','local_d7953_1_pct','local_d7953_1_frequency','ascend_fee_schedule_name','ascend_fee_schedule_confirmed_by'])d.form_data[key]=null;
+  assert.equal(validation.validateInsuranceCompletion(d).length,0);
+  d.form_data.local_d7953_1_status='Covered separately';assert.ok(validation.validateInsuranceCompletion(d).some(e=>e.path==='form_data.local_d7953_1_carrier_code'));
+});
+
+test('discrepancy view selects the latest comparison while preserving the original',()=>{
+  const view=load('src/pages/insurance-verify/components/InsurancePlanDiscrepancies.jsx',{'react':{}});
+  const rows=[{id:'original',created_at:'2026-11-19',event_type:'insurance_plan_discrepancy_log',metadata:{discrepancies:[]}},
+    {id:'resolution',created_at:'2026-11-20',event_type:'insurance_plan_discrepancy_resolution',metadata:{discrepancies:[]}},
+    {id:'unrelated',created_at:'2026-11-21',event_type:'other',metadata:{discrepancies:[]}}];
+  assert.equal(view.latestDiscrepancyLog(rows).id,'resolution');assert.equal(rows[0].id,'original');
 });
 test('negative, out-of-range, invalid dates and inconsistent amounts are rejected',()=>{
   for(const [key,value] of [['pct_prev',-1],['pct_prev',101],['deductible',-1],['yearly_max',Infinity],['yearly_max',true],['dep_age_limit',25.5],['patient_dob','2026-02-30'],['remaining_max',51],['individual_deductible_remaining',51],['term_date','2020-01-01']]) {
@@ -81,13 +109,19 @@ test('switching a plan answer to unavailable clears the value; entering an answe
     for(const v of Object.values(n))if(Array.isArray(v))v.forEach(walk);else if(v&&typeof v==='object')walk(v);
   }walk(ast);assert.ok(unavailable);assert.ok(update);
   let state={form_data:{subscriber_relationship:'Self',renewal_month:'January',not_applicable:{}}};
-  const context={isReadOnly:false,field:{key:'subscriber_relationship'},setFormData:fn=>{state=fn(state)}};
+  const context={isReadOnly:false,field:{key:'subscriber_relationship'},planEntryFields:require('../recovered-frontend/src/config/insurancePlanEntryFields.json'),completionRuleApplies:validation.completionRuleApplies,setFormData:fn=>{state=fn(state)}};
   vm.runInNewContext('('+source.slice(unavailable.start,unavailable.end)+')',context)('form_data.subscriber_relationship','Carrier could not confirm');
   assert.equal(state.form_data.subscriber_relationship,null);assert.equal(state.form_data.renewal_month,'January');
   assert.equal(state.form_data.not_applicable['form_data.subscriber_relationship'],'Carrier could not confirm');
   const enter=vm.runInNewContext('('+source.slice(update.start,update.end)+')',context);
   enter({target:{value:'Spouse'}});assert.equal(state.form_data.subscriber_relationship,'Spouse');
   assert.equal(state.form_data.not_applicable['form_data.subscriber_relationship'],undefined);
+  context.field={key:'local_d7953_1_status'};state.form_data.local_d7953_1_pct=80;state.form_data.local_d7953_1_carrier_code='D7953';
+  enter({target:{value:'Not covered'}});assert.equal(state.form_data.local_d7953_1_pct,null);assert.equal(state.form_data.local_d7953_1_carrier_code,null);
+  context.field={key:'dependent_age_status'};state.dep_age_limit=26;
+  enter({target:{value:'Not available'}});assert.equal(state.dep_age_limit,null);assert.equal(state.form_data.not_applicable.dep_age_limit,'Not available');
+  enter({target:{value:'Age limit applies'}});assert.equal(state.dep_age_limit,null);assert.equal(state.form_data.not_applicable.dep_age_limit,undefined);
+  context.field={key:'subscriber_relationship'};
   context.isReadOnly=true;enter({target:{value:'Self'}});assert.equal(state.form_data.subscriber_relationship,'Spouse');
 });
 

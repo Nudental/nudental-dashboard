@@ -38,7 +38,7 @@ begin
         when 'checkboxes' then valid := value->'preventive'='true'::jsonb or value->'basic'='true'::jsonb or value->'major'='true'::jsonb;
         when 'number' then
           valid := jsonb_typeof(value) in ('number','string') and raw ~ '^[0-9]+(\\.[0-9]+)?$';
-          if valid then valid := raw::numeric>=0 and (not (rule ? 'max') or raw::numeric<=(rule->>'max')::numeric)
+          if valid then valid := raw::numeric>=coalesce((rule->>'min')::numeric,0) and (not (rule ? 'max') or raw::numeric<=(rule->>'max')::numeric)
             and (not coalesce((rule->>'integer')::boolean,false) or trunc(raw::numeric)=raw::numeric); end if;
         when 'date' then
           valid := jsonb_typeof(value)='string' and raw ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$';
